@@ -1,0 +1,76 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Detaktik Question - Savol-javob platformasi</title>
+
+    <meta name="description" content="Detaktik Question - Savol-javob va test platformasi. O‘qituvchilar va o‘quvchilar uchun interaktiv o‘rganish vositasi.">
+    <meta name="author" content="Detaktik Team">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph Meta -->
+    <meta property="og:title" content="Detaktik Question - Savol-javob platformasi">
+    <meta property="og:site_name" content="Detaktik Question">
+    <meta property="og:description" content="Savollar va testlar bilan interaktiv o‘rganish uchun Detaktik Question platformasi.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:image" content="{% static 'assets/media/favicons/social-preview.png' %}">
+
+    <!-- Icons -->
+    <link rel="shortcut icon" href="{% static 'assets/media/favicons/favicon.png' %}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'assets/media/favicons/favicon-192x192.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/media/favicons/apple-touch-icon-180x180.png' %}">
+    <!-- END Icons -->
+
+    <!-- Stylesheets -->
+    <!-- OneUI framework -->
+    <link rel="stylesheet" id="css-main" href="{% static 'assets/css/oneui.min.css' %}">
+
+    <!-- Color Theme -->
+    <link rel="stylesheet" id="css-theme" href="{% static 'assets/css/themes/amethyst.min.css' %}">
+    <!-- END Stylesheets -->
+
+    {% block style %}
+    {% endblock style %}
+</head>
+
+
+  <body>
+    <div id="page-container" class="sidebar-o sidebar-dark enable-page-overlay side-scroll page-header-fixed main-content-narrow">
+      <!-- Side Overlay-->
+      {% include  'question/components/aside.html' %}
+      <!-- END Side Overlay -->
+
+      <!-- Sidebar -->
+      {% include  'question/components/sidebar.html' %}
+      <!-- END Sidebar -->
+
+      <!-- Header -->
+      {% include  'question/components/header.html' %}
+      <!-- END Header -->
+
+      <!-- Main Container -->
+      {% block content %}
+      {% endblock content %}
+      <!-- END Main Container -->
+
+      <!-- Footer -->
+      {% include  'question/components/footer.html' %}
+      <!-- END Footer -->
+    </div>
+    <!-- END Page Container -->
+    <script src="{% static 'assets/js/oneui.app.min.js' %}"></script>
+
+    <!-- Page JS Plugins -->
+    <script src="{% static 'assets/js/plugins/chart.js/chart.umd.js' %}"></script>
+
+    <!-- Page JS Code -->
+    <script src="{% static 'assets/js/pages/be_pages_dashboard_v1.min.js' %}"></script>
+
+  {% block script %}
+  {% endblock script %}
+  </body>
+</html>

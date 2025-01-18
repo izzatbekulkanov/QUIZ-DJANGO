@@ -1,0 +1,71 @@
+{% load static %}
+<!doctype html>
+<html lang="uz">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Detaktik Question - Admin Panel</title>
+
+    <meta name="description" content="Detaktik Question - Django asosidagi savol-javob va test platformasi.">
+    <meta name="author" content="Detaktik Team">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph Meta -->
+    <meta property="og:title" content="Detaktik Question - Admin Panel">
+    <meta property="og:site_name" content="Detaktik Question">
+    <meta property="og:description" content="Detaktik Question - Django asosidagi savol-javob va test platformasi.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:image" content="{% static 'assets/media/favicons/favicon.png' %}">
+
+    <!-- Faviconlar -->
+    <link rel="shortcut icon" href="{% static 'assets/media/favicons/favicon.png' %}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'assets/media/favicons/favicon-192x192.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/media/favicons/apple-touch-icon-180x180.png' %}">
+    <!-- END Faviconlar -->
+
+    <!-- Asosiy CSS -->
+    <link rel="stylesheet" id="css-main" href="{% static 'assets/css/oneui.min.css' %}">
+
+    <!-- Tema CSS -->
+    <link rel="stylesheet" id="css-theme" href="{% static 'assets/css/themes/amethyst.min.css' %}">
+    <!-- END Stylesheets -->
+</head>
+
+  <body>
+    <div id="page-container" class="page-header-fixed main-content-boxed">
+
+        <!-- Header -->
+        {% include 'dashboard/components/header.html' %}
+
+
+      <!-- Main Container -->
+      {% block content %}
+      {% endblock content %}
+      <!-- END Main Container -->
+
+            <!-- Footer -->
+        {% include 'dashboard/components/footer.html' %}
+        <!-- END Footer -->
+    </div>
+    <!-- END Page Container -->
+
+    <script src="{% static 'assets/js/oneui.app.min.js' %}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const darkMode = getCookie('dark_mode');
+
+          if (darkMode === 'true') {
+            self._uiApiLayout('dark_mode_on');
+          } else {
+            self._uiApiLayout('dark_mode_off');
+          }
+        });
+
+    </script>
+
+  {% block script %}
+  {% endblock script %}
+  </body>
+</html>

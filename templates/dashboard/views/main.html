@@ -1,0 +1,193 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block style %}
+{% endblock style %}
+
+
+{% block content %}
+    <main id="main-container">
+        <!-- Hero -->
+        <div id="one-hero" class="bg-body-extra-light">
+          <div class="content content-full">
+            <div class="row g-0 justify-content-center text-center">
+              <div class="col-md-10 pt-7 pb-5">
+                <div class="d-inline-flex align-items-center space-x-1 fs-sm badge bg-body text-dark mb-2 p-2">
+                  <i class="fa fa-fw fa-award text-success"></i>
+                  <span>Best seller dashboard template</span>
+                </div>
+                <h1 class="h1 fw-black mb-3">
+                  Build web apps that your users will love using
+                </h1>
+                <p class="fs-5 fw-medium text-muted mb-4 mx-xl-8">
+                  One super flexible UI framework for amazing developers and web agencies. Now based on <span class="text-body-color fw-semibold">Bootstrap 5</span>, with <span class="text-body-color fw-semibold">no jQuery</span> in core and an amazing brand new <span class="text-body-color fw-semibold">dark mode</span>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- END Hero -->
+        <!-- Features -->
+        <div id="one-features" class="bg-body-extra-light">
+          <div class="content content-full">
+            <div class="py-5">
+              <div class="row mb-5">
+                <div class="col-md-6">
+                  <h2 class="h1 fw-black mb-2">
+                    OneUI <span class="fw-medium">Features</span>
+                  </h2>
+                  <p class="fs-lg fw-medium text-muted mb-0">
+                    Build user friendly and modern dashboards using the latest tech. Now is the time with a best selling UI framework.
+                  </p>
+                </div>
+                <div class="col-md-6 d-none d-md-flex align-items-md-center justify-content-md-end">
+                  <p class="h1 fw-bold text-body-bg-dark mb-0">
+                    Carefully Crafted.
+                  </p>
+                </div>
+              </div>
+              <div class="row items-push">
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                  <!-- Bootstrap 5 -->
+                  <div class="item item-rounded bg-amethyst-lighter my-4">
+                    <i class="fa fa-2x fa-fire text-amethyst"></i>
+                  </div>
+                  <h4 class="mb-2">Bootstrap 5</h4>
+                  <p class="text-muted">
+                    The latest Bootstrap version now powers OneUI framework. Amazing new features and utilities are ready for you to use.
+                  </p>
+                  <!-- END Bootstrap 5 -->
+                </div>
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                  <!-- Sass -->
+                  <div class="item item-rounded bg-smooth-lighter my-4">
+                    <i class="fab fa-2x fa-sass text-smooth"></i>
+                  </div>
+                  <h4 class="mb-2">Sass</h4>
+                  <p class="text-muted">
+                    OneUI was built with Sass, overriding and extending Bootstrap in an intelligent way to ensure a perfect and modular workflow.
+                  </p>
+                  <!-- END Sass -->
+                </div>
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                  <!-- ES6 -->
+                  <div class="item item-rounded bg-flat-lighter my-4">
+                    <span class="fw-bold text-flat">ES6</span>
+                  </div>
+                  <h4 class="mb-2">ECMAScript 6</h4>
+                  <p class="text-muted">
+                    OneUI was built with ES6, the new major JavaScript release which enables us writing cleaner and better code. No jQuery in core.
+                  </p>
+                  <!-- END ES6 -->
+                </div>
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                  <!-- Font Awesome 6 -->
+                  <div class="item item-rounded bg-warning-light my-4">
+                    <i class="fab fa-2x fa-font-awesome text-warning"></i>
+                  </div>
+                  <h4 class="mb-2">Font Awesome 6</h4>
+                  <p class="text-muted">
+                    OneUI comes packed with one of the most popular icon sets, bringing you over 2000 freshly made icons for your projects.
+                  </p>
+                  <!-- END Font Awesome 6 -->
+                </div>
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                  <!-- Gulp -->
+                  <div class="item item-rounded bg-city-lighter my-4">
+                    <i class="fab fa-2x fa-gulp text-city"></i>
+                  </div>
+                  <h4 class="mb-2">Gulp 4</h4>
+                  <p class="text-muted">
+                    We created smart development tasks to help you focus on your projects. Just install the npm dependencies and use them out of the box.
+                  </p>
+                  <!-- END Gulp -->
+                </div>
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                  <!-- webpack -->
+                  <div class="item item-rounded bg-default-lighter my-4">
+                    <i class="fa fa-2x fa-boxes text-default"></i>
+                  </div>
+                  <h4 class="mb-2">webpack + Babel</h4>
+                  <p class="text-muted">
+                    Babel makes your JavaScript code compatible with older browsers and webpack bundles your JavaScript files together.
+                  </p>
+                  <!-- END webpack -->
+                </div>
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                  <!-- Browsersync -->
+                  <div class="item item-rounded bg-modern-lighter my-4">
+                    <i class="fab fa-2x fa-chrome text-modern"></i>
+                  </div>
+                  <h4 class="mb-2">Browsersync</h4>
+                  <p class="text-muted">
+                    It will serve and sync your project across different browsers and also refresh them each time your save your files.
+                  </p>
+                  <!-- END Browsersync -->
+                </div>
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                  <!-- Autoprefixer -->
+                  <div class="item item-rounded bg-smooth-lighter my-4">
+                    <i class="fab fa-2x fa-autoprefixer text-smooth"></i>
+                  </div>
+                  <h4 class="mb-2">Autoprefixer</h4>
+                  <p class="text-muted">
+                    Peace of mind when working with Sass. Use the latest CSS syntax and Autoprefixer will auto add any required prefixes for older browsers.
+                  </p>
+                  <!-- END Autoprefixer -->
+                </div>
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                  <!-- Modular Approach -->
+                  <div class="item item-rounded bg-success-light my-4">
+                    <i class="fa fa-2x fa-truck-loading text-success"></i>
+                  </div>
+                  <h4 class="mb-2">Modular Approach</h4>
+                  <p class="text-muted">
+                    You can add your JavaScript or Sass overrides/customizations without altering the original files, making the update process an easy one.
+                  </p>
+                  <!-- END Modular Approach -->
+                </div>
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                  <!-- Improved Design -->
+                  <div class="item item-rounded bg-info-light my-4">
+                    <i class="fa fa-2x fa-brush text-info"></i>
+                  </div>
+                  <h4 class="mb-2">Improved Design</h4>
+                  <p class="text-muted">
+                    Small touches and improvements were introduced throughout the template. From colors to layout and from custom elements to plugins.
+                  </p>
+                  <!-- END Improved Design -->
+                </div>
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                  <!-- New Features -->
+                  <div class="item item-rounded bg-body my-4">
+                    <i class="fa fa-2x fa-moon text-dark"></i>
+                  </div>
+                  <h4 class="mb-2">Dark Mode</h4>
+                  <p class="text-muted">
+                    It is finally here and looks amazing! Carefully integrated and made to work with all color themes and included pages. You will love it!
+                  </p>
+                  <!-- END New Features -->
+                </div>
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                  <!-- New Features -->
+                  <div class="item item-rounded bg-warning-light my-4">
+                    <i class="fa fa-2x fa-star text-warning"></i>
+                  </div>
+                  <h4 class="mb-2">Free Update</h4>
+                  <p class="text-muted">
+                    We love our customers, so we are giving the 5.x version away as a free update to all existing ones! Thank you all for your support!
+                  </p>
+                  <!-- END New Features -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- END Features -->
+
+      </main>
+{% endblock content %}
+
+
+{% block script %}
+{% endblock script %}
