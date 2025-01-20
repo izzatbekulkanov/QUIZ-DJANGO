@@ -6,7 +6,7 @@
 {% block content %}
     <main id="main-container">
         <!-- Hero -->
-        <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+        <div class="bg-image overflow-hidden" style="background-image: url('{% static "{% static 'assets/media/photos/photo3@2x.jpg" %}');">
           <div class="bg-primary-dark-op">
             <div class="content content-full">
               <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
@@ -29,11 +29,84 @@
 
         <!-- Page Content -->
         <div class="content">
-
+          <div class="content">
+            <h3 class="mb-4">Guruhlar va Ruxsatlar</h3>
+          
+            <!-- Guruhlar jadvali -->
+            <div class="table-responsive">
+              <table class="table table-bordered table-striped">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Guruh nomi</th>
+                    <th>Guruh foydalanuvchilari</th>
+                    <th>Birikkan ruxsatlar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for group in groups %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ group.name }}</td>
+                    <td>
+                      {% if group.user_set.exists %}
+                        <ul>
+                          {% for user in group.user_set.all %}
+                          <li>{{ user.username }}</li>
+                          {% endfor %}
+                        </ul>
+                      {% else %}
+                        <span class="text-muted">Foydalanuvchilar yo'q</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if group.permissions.exists %}
+                        <ul>
+                          {% for permission in group.permissions.all %}
+                          <li>{{ permission.name }}</li>
+                          {% endfor %}
+                        </ul>
+                      {% else %}
+                        <span class="text-muted">Ruxsatlar yo'q</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          
+            <!-- Barcha ruxsatlar -->
+            <h3 class="mt-5">Barcha Ruxsatlar</h3>
+            <div class="table-responsive">
+              <table class="table table-bordered table-striped">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Ruxsat nomi</th>
+                    <th>Model nomi</th>
+                    <th>Kod nomi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for permission in permissions %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ permission.name }}</td>
+                    <td>{{ permission.content_type.model }}</td>
+                    <td>{{ permission.codename }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
         <!-- END Page Content -->
       </main>
 {% endblock content %}
 
 {% block script %}
+  
+
 {% endblock script %}

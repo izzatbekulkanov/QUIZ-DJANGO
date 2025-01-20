@@ -1,0 +1,225 @@
+{% extends 'question/main.html' %}
+{% load static %}
+{% block style %}
+  <link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
+{% endblock style %}
+{% block content %}
+  <main id="main-container">
+    <!-- Hero -->
+    <div class="bg-image overflow-hidden"
+         style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+      <div class="bg-primary-dark-op">
+        <div class="content content-full">
+          <div
+            class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+            <div class="flex-grow-1">
+              <h1 class="fw-semibold text-white mb-0">{{ test.name }}</h1>
+              <h2 class="h4 fw-normal text-white-75 mb-0"><code><i> {{ test.name }}</i></code> ga savollar biriktirish
+              </h2>
+            </div>
+            <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
+              <a class="btn btn-light px-4 py-2" href="{% url 'question' %}">
+                <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END Hero -->
+    <!-- Page Content -->
+    <div class="content">
+      <div class="block block-rounded">
+        <div class="block-header block-header-default">
+          <h3 class="block-title">Savol Qo'shish</h3>
+        </div>
+        <div class="block-content">
+          <form method="POST" enctype="multipart/form-data" id="question-form">
+            {% csrf_token %}
+            {{ form.media }}
+            <!-- CKEditor uchun Savol Matni -->
+            <div class="mb-4">
+              <label class="form-label" for="id_text">Savol matni</label>
+              {{ form.text }}
+            </div>
+            <!-- Savol Rasmi -->
+            <div class="mb-4">
+              <label class="form-label" for="id_image">Savol rasmini yuklash (ixtiyoriy)</label>
+              <div class="input-group">
+                <input
+                  type="file"
+                  class="form-control"
+                  id="id_image"
+                  name="image"
+                  accept="image/*">
+                <label class="input-group-text" for="id_image">
+                  <i class="fa fa-upload"></i> Yuklash
+                </label>
+              </div>
+            </div>
+            <!-- Variantlar -->
+            <div id="answers-section" class="mb-4">
+              <label class="form-label">Variantlar</label>
+              <div class="answer-item d-flex mb-2">
+                <input type="text" class="form-control me-2" name="answers[]" placeholder="Variantni kiriting" required>
+                <div class="form-check form-switch">
+                  <input type="checkbox" class="form-check-input" name="is_correct[]">
+                  <label class="form-check-label">To'g'ri</label>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm ms-2 remove-answer">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-success mb-3" id="add-answer">
+              <i class="fa fa-plus"></i> Yangi variant qo'shish
+            </button>
+            <!-- Saqlash -->
+            <div class="mb-4 text-end">
+              <button type="submit" class="btn btn-alt-primary">
+                <i class="fa fa-save me-1"></i> Saqlash
+              </button>
+            </div>
+          </form>
+        </div>
+          <div class="block-content">
+            <!-- Testga tegishli savollar va javoblar -->
+            <div class="mb-4">
+              <h5 class="mb-3">Savollar va javoblar</h5>
+              {% if questions %}
+                <ul class="list-group">
+                  {% for question in questions %}
+                    <li class="list-group-item p-3">
+                      <div class="row align-items-start">
+                        <!-- Tartib raqami -->
+                        <div class="col-md-1 text-center">
+                          <span class="badge bg-primary fs-6">{{ forloop.counter }}</span>
+                        </div>
+                        
+                        <!-- Savol matni va rasmi -->
+                        <div class="col-md-5">
+                          <div class="mb-2 text-truncate" style="max-height: 80px; overflow: hidden;">
+                            <strong class="d-block text-primary" style="max-width: 100%; height: 300px; object-fit: cover; border-radius: 8px;">{{ question.text|safe }}</strong>
+                          </div>
+                          {% if question.image %}
+                            <div class="text-center mb-3">
+                              <img src="{{ question.image.url }}" alt="Savol rasmi" class="img-fluid"
+                                   style="max-width: 100%; height: 150px; object-fit: cover; border-radius: 8px;">
+                            </div>
+                          {% endif %}
+                        </div>
+            
+                        <!-- Javoblar ro‘yxati -->
+                        <div class="col-md-6">
+                          <ul class="list-unstyled">
+                            {% for answer in question.answers.all %}
+                              <li class="d-flex align-items-center mb-2">
+                                <span class="me-2">{{ answer.text }}</span>
+                                {% if answer.is_correct %}
+                                  <span class="badge bg-success">To'g'ri</span>
+                                {% else %}
+                                  <span class="badge bg-danger">Noto'g'ri</span>
+                                {% endif %}
+                              </li>
+                            {% endfor %}
+                          </ul>
+                        </div>
+                      </div>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <div class="alert alert-info text-center">
+                  <p class="mb-0">Hozircha savollar mavjud emas.</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+
+      </div>
+    </div>
+    <!-- END Page Content -->
+  </main>
+{% endblock content %}
+{% block script %}
+  <!-- jQuery (required for Select2 + Bootstrap Maxlength plugin) -->
+  <script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
+  <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+  <script>
+    document.getElementById('add-answer').addEventListener('click', function() {
+      const answersSection = document.getElementById('answers-section');
+      const answerItem = document.createElement('div');
+      answerItem.className = 'answer-item d-flex mb-2';
+      answerItem.innerHTML = `
+    <input type="text" class="form-control me-2" name="answers[]" placeholder="Variantni kiriting" required>
+    <div class="form-check form-switch">
+      <input type="checkbox" class="form-check-input" name="is_correct[]">
+      <label class="form-check-label">To'g'ri</label>
+    </div>
+    <button type="button" class="btn btn-danger btn-sm ms-2 remove-answer">
+      <i class="fa fa-trash"></i>
+    </button>`;
+      answersSection.appendChild(answerItem);
+    });
+
+    document.getElementById('answers-section').addEventListener('click', function(e) {
+      if (e.target.closest('.remove-answer')) {
+        e.target.closest('.answer-item').remove();
+      }
+    });
+  </script>
+  <script>
+    document.getElementById('question-form').addEventListener('submit', function(e) {
+      e.preventDefault(); // Formani avtomatik yuborishni to'xtatadi
+      const formData = new FormData(this);
+
+      Swal.fire({
+        title: 'Tasdiqlaysizmi?',
+        text: 'Savol va javoblarni saqlamoqchimisiz?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ha, saqlash!',
+        cancelButtonText: 'Bekor qilish',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch("{% url 'add-question-test' test.id %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+          })
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                Swal.fire(
+                  'Muvaffaqiyatli!',
+                  data.message,
+                  'success',
+                ).then(() => {
+                  window.location.reload(); // Sahifani qayta yuklash
+                });
+              } else {
+                Swal.fire(
+                  'Xatolik!',
+                  data.errors.text || 'Ma\'lumotlarni saqlashda xatolik yuz berdi.',
+                  'error',
+                );
+              }
+            })
+            .catch(error => {
+              Swal.fire(
+                'Xatolik!',
+                'Server bilan bog‘lanishda xatolik yuz berdi.',
+                'error',
+              );
+              console.error('Error:', error);
+            });
+        }
+      });
+    });
+  </script>
+{% endblock script %}

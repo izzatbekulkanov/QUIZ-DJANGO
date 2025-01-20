@@ -52,18 +52,6 @@
     <!-- END Page Container -->
 
     <script src="{% static 'assets/js/oneui.app.min.js' %}"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-          const darkMode = getCookie('dark_mode');
-
-          if (darkMode === 'true') {
-            self._uiApiLayout('dark_mode_on');
-          } else {
-            self._uiApiLayout('dark_mode_off');
-          }
-        });
-
-    </script>
 
   {% block script %}
   {% endblock script %}

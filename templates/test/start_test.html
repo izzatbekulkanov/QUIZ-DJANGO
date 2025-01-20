@@ -1,0 +1,133 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block style %}
+{% endblock style %}
+
+
+{% block content %}
+    <main id="main-container">
+    <!-- Duration Countdown -->
+    <div class="text-end mb-3">
+        <span class="badge bg-primary p-2 fs-5" id="countdown-timer">00:00</span>
+    </div>
+
+    <!-- Savollar -->
+    <div id="questions-container">
+        {% for question in questions %}
+        <div class="question-block {% if forloop.first %}d-block{% else %}d-none{% endif %}" data-question-id="{{ question.id }}">
+            <h5 class="mb-3">{{ question.text|safe }}</h5>
+            {% if question.image %}
+            <div class="mb-3">
+                <img src="{{ question.image.url }}" class="img-fluid" style="max-width: 100%; border-radius: 8px;">
+            </div>
+            {% endif %}
+            <!-- Javoblar -->
+            <ul class="list-unstyled">
+                {% for answer in question.answers.all %}
+                <li>
+                    <label>
+                        <input type="radio" name="answer_{{ question.id }}" value="{{ answer.id }}">
+                        {{ answer.text }}
+                    </label>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Tugmalar -->
+    <div class="d-flex justify-content-between mt-4">
+        <button class="btn btn-secondary btn-sm" id="prev-btn" disabled>Oldingi</button>
+        <button class="btn btn-primary btn-sm" id="next-btn">Keyingi</button>
+    </div>
+
+    <!-- Yakunlash -->
+    <div class="text-end mt-4">
+        <button class="btn btn-danger" id="finish-btn">Testni Yakunlash</button>
+    </div>
+</main>
+{% endblock content %}
+
+
+
+{% block script %}
+
+    <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+  
+  <script>
+document.addEventListener('DOMContentLoaded', function () {
+    let currentQuestionIndex = 0;
+    const questions = document.querySelectorAll('.question-block');
+    const totalQuestions = questions.length;
+
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const finishBtn = document.getElementById('finish-btn');
+
+    function showQuestion(index) {
+        questions.forEach((q, i) => {
+            q.classList.toggle('d-block', i === index);
+            q.classList.toggle('d-none', i !== index);
+        });
+
+        prevBtn.disabled = index === 0;
+        nextBtn.disabled = index === totalQuestions - 1;
+    }
+
+    prevBtn.addEventListener('click', function () {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            showQuestion(currentQuestionIndex);
+        }
+    });
+
+    nextBtn.addEventListener('click', function () {
+        if (currentQuestionIndex < totalQuestions - 1) {
+            currentQuestionIndex++;
+            showQuestion(currentQuestionIndex);
+        }
+    });
+
+    finishBtn.addEventListener('click', function () {
+        Swal.fire({
+            title: 'Testni yakunlashni xohlaysizmi?',
+            text: 'Siz yakunlangan testni qayta ishlay olmaysiz.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ha, yakunlash',
+            cancelButtonText: 'Bekor qilish'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Testni yakunlash uchun AJAX so‘rovi
+                console.log('Testni yakunlash!');
+            }
+        });
+    });
+
+    // Countdown
+    const countdownTimer = document.getElementById('countdown-timer');
+    let duration = {{ assignment.duration }} * 60; // Seconds
+
+    function updateCountdown() {
+        const minutes = Math.floor(duration / 60);
+        const seconds = duration % 60;
+        countdownTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+        if (duration > 0) {
+            duration--;
+        } else {
+            Swal.fire({
+                title: 'Vaqt tugadi!',
+                text: 'Test avtomatik yakunlandi.',
+                icon: 'info',
+            }).then(() => {
+                finishBtn.click();
+            });
+        }
+    }
+    setInterval(updateCountdown, 1000);
+});
+</script>
+{% endblock script %}

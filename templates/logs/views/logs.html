@@ -1,0 +1,205 @@
+{% extends 'question/main.html' %}
+{% load static %}
+{% block style %}
+{% endblock style %}
+
+{% block content %}
+    <main id="main-container">
+        <!-- Hero -->
+        <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+          <div class="bg-primary-dark-op">
+            <div class="content content-full">
+              <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+                <!-- Loglar sarlavhasi -->
+                <div class="flex-grow-1">
+                  <h1 class="fw-semibold text-white mb-0">Loglar</h1>
+                  <h2 class="h4 fw-normal text-white-75 mb-0">Barcha tizim loglari</h2>
+                </div>
+                <!-- Loglarni tozalash tugmasi -->
+                <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
+                  <span class="d-inline-block">
+                    <a class="btn btn-danger px-4 py-2" data-toggle="click-ripple" href="javascript:void(0)" onclick="clearLogs()">
+                      <i class="fa fa-trash me-1 opacity-50"></i> Loglarni tozalash
+                    </a>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- END Hero -->
+
+        <!-- Page Content -->
+        <div class="content">
+          <h3 class="mb-4">Log yozuvlari</h3>
+
+          <div class="mb-4">
+            <form method="GET" class="row g-2">
+              <div class="col-md-2">
+                <input type="text" class="form-control" name="user" placeholder="Foydalanuvchi" value="{{ filters.user|default_if_none:'' }}">
+              </div>
+              <div class="col-md-2">
+                <input type="text" class="form-control" name="ip" placeholder="IP Manzil" value="{{ filters.ip|default_if_none:'' }}">
+              </div>
+              <div class="col-md-2">
+                <select class="form-select" name="method">
+                  <option value="" {% if not filters.method %}selected{% endif %}>Metodni tanlang</option>
+                  <option value="GET" {% if filters.method == "GET" %}selected{% endif %}>GET</option>
+                  <option value="POST" {% if filters.method == "POST" %}selected{% endif %}>POST</option>
+                  <option value="PUT" {% if filters.method == "PUT" %}selected{% endif %}>PUT</option>
+                  <option value="DELETE" {% if filters.method == "DELETE" %}selected{% endif %}>DELETE</option>
+                  <option value="PATCH" {% if filters.method == "PATCH" %}selected{% endif %}>PATCH</option>
+                  <option value="HEAD" {% if filters.method == "HEAD" %}selected{% endif %}>HEAD</option>
+                  <option value="OPTIONS" {% if filters.method == "OPTIONS" %}selected{% endif %}>OPTIONS</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <input type="text" class="form-control" name="path" placeholder="Path" value="{{ filters.path|default_if_none:'' }}">
+              </div>
+              <div class="col-md-2">
+                <input type="date" class="form-control" name="date" value="{{ filters.date|default_if_none:'' }}">
+              </div>
+              <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">Qidirish</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Vaqt</th>
+                  <th>IP Manzil</th>
+                  <th>Metod</th>
+                  <th>Path</th>
+                  <th>Status Kode</th>
+                  <th>Foydalanuvchi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for log in logs %}
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ log.timestamp }}</td>
+                  <td>{{ log.ip_address|default:"Noma'lum" }}</td>
+                  <td>{{ log.method }}</td>
+                  <td>{{ log.path }}</td>
+                  <td>{{ log.status_code }}</td>
+                  <td>
+                    {% if log.user %}
+                      {{ log.user.username }}
+                    {% else %}
+                      Anonim
+                    {% endif %}
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="7" class="text-center">Log yozuvlari topilmadi</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+          <!-- Pagination -->
+          <nav aria-label="Log pagination">
+            <ul class="pagination justify-content-center">
+              {% if logs.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ logs.previous_page_number }}" aria-label="Oldingi">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">&laquo;</span>
+              </li>
+              {% endif %}
+
+              {% for num in logs.paginator.page_range %}
+              <li class="page-item {% if logs.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+              </li>
+              {% endfor %}
+
+              {% if logs.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ logs.next_page_number }}" aria-label="Keyingi">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+              {% else %}
+              <li class="page-item disabled">
+                <span class="page-link">&raquo;</span>
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
+          <!-- END Pagination -->
+        </div>
+        <!-- END Page Content -->
+      </main>
+{% endblock content %}
+
+{% block script %}
+  <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+
+  <script>
+  function clearLogs() {
+    Swal.fire({
+      title: 'Tasdiqlaysizmi?',
+      text: "Barcha loglarni o'chirmoqchimisiz?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Ha, tozalash!',
+      cancelButtonText: 'Bekor qilish',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch('{% url "clear-logs" %}', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              Swal.fire({
+                title: 'Muvaffaqiyatli!',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK',
+              }).then(() => {
+                window.location.reload(); // Sahifani qayta yuklash
+              });
+            } else {
+              Swal.fire({
+                title: 'Xatolik!',
+                text: data.message || "Loglarni o'chirishda xatolik yuz berdi.",
+                icon: 'error',
+                confirmButtonText: 'OK',
+              });
+            }
+          })
+          .catch((error) => {
+            Swal.fire({
+              title: 'Xatolik!',
+              text: 'Server bilan bog\'lanishda xatolik yuz berdi.',
+              icon: 'error',
+              confirmButtonText: 'OK',
+            });
+            console.error('Xatolik:', error);
+          });
+      }
+    });
+  }
+</script>
+{% endblock script %}

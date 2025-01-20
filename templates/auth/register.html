@@ -1,0 +1,182 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Ro'yhatdan o'tish</title>
+
+  <!-- Favicons -->
+  <link rel="shortcut icon" href="{% static 'assets/media/favicons/favicon.png' %}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{% static 'assets/media/favicons/favicon-192x192.png' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/media/favicons/apple-touch-icon-180x180.png' %}">
+
+  <!-- Styles -->
+  <link rel="stylesheet" id="css-main" href="{% static 'assets/css/oneui.min.css' %}">
+  <link rel="stylesheet" id="css-theme" href="{% static 'assets/css/themes/amethyst.min.css' %}">
+</head>
+<body>
+<div id="page-container">
+  <!-- Main Container -->
+  <main id="main-container">
+    <div class="hero-static d-flex align-items-center">
+      <div class="content">
+        <div class="row justify-content-center push">
+          <div class="col-md-8 col-lg-6 col-xl-4">
+            <div class="block block-rounded mb-0">
+              <div class="block-header block-header-default">
+                <h3 class="block-title">Ro'yhatdan o'tish</h3>
+              </div>
+              <div class="block-content">
+                <div class="p-sm-3 px-lg-4 px-xxl-5 py-lg-5">
+                  <h1 class="h2 mb-1">Detaktik</h1>
+                  <p class="fw-medium text-muted">
+                    Yangi hisob yaratish uchun ma'lumotlarni to'ldiring.
+                  </p>
+
+                  <!-- Registration Form -->
+                  <form method="POST" enctype="multipart/form-data" action="{% url 'register' %}">
+                    {% csrf_token %}
+                    <div class="py-3">
+                      <div class="row">
+                        <div class="mb-4">
+                          <label class="form-label" for="id_username">Foydalanuvchi nomi</label>
+                          <input type="text" class="form-control form-control-alt form-control-lg" id="id_username"
+                                 name="username" placeholder="Foydalanuvchi nomini kiriting" required>
+                          <small id="username-feedback" class="text-danger d-none">Foydalanuvchi nomi band!</small>
+                        </div>
+                        <div class="mb-4 col-6">
+                          <label class="form-label" for="id_first_name">Ism</label>
+                          <input type="text" class="form-control form-control-alt form-control-lg" id="id_first_name"
+                                 name="first_name" placeholder="Ismingizni kiriting" required>
+                        </div>
+                        <div class="mb-4 col-6  ">
+                          <label class="form-label" for="id_second_name">Familiya</label>
+                          <input type="text" class="form-control form-control-alt form-control-lg" id="id_second_name"
+                                 name="second_name" placeholder="Familiyangizni kiriting" required>
+                        </div>
+                        <div class="mb-4">
+                          <label class="form-label" for="id_gender">Jinsi</label>
+                          <select class="form-select form-control-alt form-control-lg" id="id_gender" name="gender"
+                                  required>
+                            <option value="" disabled selected>Tanlang...</option>
+                            <option value="male">Erkak</option>
+                            <option value="female">Ayol</option>
+                          </select>
+                        </div>
+                        <div class="mb-4">
+                          <label class="form-label" for="id_profile_picture">Profil rasmi</label>
+                          <input type="file" class="form-control form-control-alt form-control-lg"
+                                 id="id_profile_picture" name="profile_picture" accept="image/*">
+                        </div>
+                        <div class="mb-4 col-6">
+  <label class="form-label" for="id_password">Parol</label>
+  <input type="password" class="form-control form-control-alt form-control-lg" id="id_password"
+         name="password" placeholder="Parol kiriting" required>
+</div>
+                        <div class="mb-4 col-6">
+                          <label class="form-label" for="id_password_confirm">Parolni tasdiqlash</label>
+                          <input type="password" class="form-control form-control-alt form-control-lg"
+                                 id="id_password_confirm" name="password_confirm" placeholder="Parolni qayta kiriting"
+                                 required>
+                        </div>
+                        <div id="password-feedback" class="text-danger mt-1 d-none">
+                          Parollar mos kelmadi!
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row mb-4">
+                      <div class="col-md-12 col-xl-12">
+                        <button type="submit" class="btn w-100 btn-alt-primary" id="register-button" disabled>
+                          <i class="fa fa-fw fa-user-plus me-1 opacity-50"></i> Ro'yhatdan o'tish
+                        </button>
+                      </div>
+                      </div>
+                     <div class="row mb-4">
+                      <div class="col-md-12 col-xl-12">
+                        <a class="btn w-100 btn-alt-success" href="{% url 'login' %}">
+                          <i class="fa fa-fw fa-enter me-1 opacity-50"></i> Ro'yhatdan o'tish
+                        </a>
+                      </div>
+                     </div>
+                  </form>
+                  <!-- END Registration Form -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fs-sm text-muted text-center">
+          <strong>version 1.0</strong> &copy; <span data-toggle="year-copy"></span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="{% static 'assets/js/oneui.app.min.js' %}"></script>
+
+<script>
+  document.getElementById('id_username').addEventListener('input', function () {
+    const username = this.value.trim();
+    const feedback = document.getElementById('username-feedback');
+    const registerButton = document.getElementById('register-button');
+
+    if (username.length > 0) {
+      fetch(`/account/check-username/?username=${username}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.is_taken) {
+            feedback.textContent = 'Foydalanuvchi nomi band!';
+            feedback.classList.remove('d-none');
+            registerButton.disabled = true; // Tugmani o'chirib qo'yish
+          } else {
+            feedback.textContent = '';
+            feedback.classList.add('d-none');
+            registerButton.disabled = false; // Tugmani faollashtirish
+          }
+        })
+        .catch(error => {
+          console.error('Xatolik yuz berdi:', error);
+          feedback.textContent = 'Tekshirishda xatolik yuz berdi!';
+          feedback.classList.remove('d-none');
+          registerButton.disabled = true; // Xato bo'lsa, tugmani o'chirib qo'yish
+        });
+    } else {
+      feedback.textContent = '';
+      feedback.classList.add('d-none');
+      registerButton.disabled = true; // Bo'sh qiymatda tugmani o'chirib qo'yish
+    }
+  });
+  
+</script>
+<script>
+  const passwordInput = document.getElementById('id_password');
+  const confirmPasswordInput = document.getElementById('id_password_confirm');
+  const feedback = document.getElementById('password-feedback');
+  const registerButton = document.getElementById('register-button');
+
+  function validatePasswords() {
+    const password = passwordInput.value.trim();
+    const confirmPassword = confirmPasswordInput.value.trim();
+
+    if (password.length === 0 || confirmPassword.length === 0) {
+      feedback.textContent = '';
+      feedback.classList.add('d-none');
+      registerButton.disabled = true;
+    } else if (password !== confirmPassword) {
+      feedback.textContent = 'Parollar mos kelmadi!';
+      feedback.classList.remove('d-none');
+      registerButton.disabled = true;
+    } else {
+      feedback.textContent = '';
+      feedback.classList.add('d-none');
+      registerButton.disabled = false;
+    }
+  }
+
+  // Hodisalarni kuzatish
+  passwordInput.addEventListener('input', validatePasswords);
+  confirmPasswordInput.addEventListener('input', validatePasswords);
+</script>
+</body>
+</html>

@@ -23,31 +23,25 @@
   <!-- Navigation -->
   <ul class="nav-main nav-main-horizontal nav-main-hover d-none d-lg-block me-2">
     <li class="nav-main-item">
-      <a class="nav-main-link" href="{% url 'dashboard' %}">
+      <a class="nav-main-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
         <i class="nav-main-link-icon fa fa-home"></i>
         <span class="nav-main-link-name">Bosh sahifa</span>
       </a>
     </li>
     <li class="nav-main-item">
-      <a class="nav-main-link" href="{">
+      <a class="nav-main-link {% if request.resolver_match.url_name == 'dashboard-categories' %}active{% endif %}" href="{% url 'dashboard-categories' %}">
         <i class="nav-main-link-icon fa fa-list"></i>
         <span class="nav-main-link-name">Test Kategoriyalari</span>
       </a>
     </li>
     <li class="nav-main-item">
-      <a class="nav-main-link" href="{% url 'main' %}">
+      <a class="nav-main-link {% if request.resolver_match.url_name == 'main' %}active{% endif %}" href="{% url 'main' %}">
         <i class="nav-main-link-icon fa fa-user"></i>
         <span class="nav-main-link-name">Mening Sahifam</span>
       </a>
     </li>
   </ul>
   <!-- END Navigation -->
-
-  <!-- Dark Mode -->
-  <button type="button" class="btn btn-alt-secondary me-1" data-toggle="layout" data-action="dark_mode_toggle">
-    <i class="far fa-moon"></i>
-  </button>
-  <!-- END Dark Mode -->
 
   {% if user.is_authenticated %}
   <!-- Logout -->

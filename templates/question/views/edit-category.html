@@ -1,0 +1,159 @@
+{% extends 'question/main.html' %}
+{% load static %}
+{% block style %}
+  <link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
+  
+{% endblock style %}
+
+{% block content %}
+    <main id="main-container">
+        <!-- Hero -->
+        <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+          <div class="bg-primary-dark-op">
+            <div class="content content-full">
+              <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+                <div class="flex-grow-1">
+                  <h1 class="fw-semibold text-white mb-0">Kategoriyalar</h1>
+                  <h2 class="h4 fw-normal text-white-75 mb-0">Yangi kategoriya qo'shish</h2>
+                </div>
+                <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
+                  <a class="btn btn-light px-4 py-2" href="{% url 'categories' %}">
+                    <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- END Hero -->
+
+        <!-- Page Content -->
+        <div class="content">
+          <!-- Add Category -->
+          <div class="block block-rounded">
+            <form id="editCategoryForm" method="POST" action="{% url 'edit-category' category.id %}" enctype="multipart/form-data">
+              {% csrf_token %}
+              <!-- Category Name -->
+              <div class="mb-4">
+                  <label class="form-label" for="category-name">Kategoriya Nomi</label>
+                  <input type="text" class="form-control" id="category-name" name="name" value="{{ category.name }}" required>
+              </div>
+              <!-- Description -->
+              <div class="mb-4">
+                  <label class="form-label" for="category-description">Kategoriya Ta'rifi</label>
+                  <textarea class="form-control" id="category-description" name="description" rows="4">{{ category.description }}</textarea>
+              </div>
+              <!-- Image Upload -->
+              <div class="mb-4 text-center">
+                  <label class="form-label d-block">Kategoriya Rasmi</label>
+                  <div class="position-relative" style="width: 150px; height: 150px; margin: auto;">
+                      <img 
+                          id="categoryImagePreview" 
+                          src="{% if category.image %}{{ category.image.url }}{% else %}{% static 'assets/media/various/ecom_product1.png' %}{% endif %}" 
+                          alt="Kategoriya Rasmi" 
+                          class="img-thumbnail rounded-circle"
+                          style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
+                          onclick="document.getElementById('category-image').click();" 
+                      >
+                      <input 
+                          type="file" 
+                          id="category-image" 
+                          name="image" 
+                          accept="image/*" 
+                          style="display: none;" 
+                          onchange="previewCategoryImage(this);"
+                      >
+                      <div class="position-absolute bottom-0 end-0">
+                          <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('category-image').click();">
+                              <i class="fa fa-camera"></i>
+                          </button>
+                      </div>
+                  </div>
+              </div>
+              <!-- Submit Button -->
+              <div class="mb-4 text-end">
+                  <button type="button" class="btn btn-alt-primary" id="submitEditCategory">
+                      <i class="fa fa-save me-1 opacity-50"></i> Yangilash
+                  </button>
+              </div>
+          </form>
+          </div>
+          <!-- END Add Category -->
+        </div>
+        <!-- END Page Content -->
+
+      </main>
+{% endblock content %}
+
+{% block script %}
+        <!-- jQuery (required for Select2 + Bootstrap Maxlength plugin) -->
+    <script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+<script>
+    document.getElementById('submitEditCategory').addEventListener('click', function () {
+        Swal.fire({
+            title: 'Tasdiqlaysizmi?',
+            text: "Kategoriyani yangilamoqchimisiz?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ha, yangilash!',
+            cancelButtonText: 'Bekor qilish',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('editCategoryForm');
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Muvaffaqiyatli!',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonText: 'OK',
+                        }).then(() => {
+                            window.location.href = '{% url "categories" %}'; // Redirect after success
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Xatolik!',
+                            text: data.message || "Ma'lumotni yangilashda xatolik yuz berdi.",
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Xatolik!',
+                        text: 'Server bilan bog\'lanishda xatolik yuz berdi.',
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                    });
+                    console.error('Error:', error);
+                });
+            }
+        });
+    });
+
+    // Function to preview uploaded category image
+    function previewCategoryImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('categoryImagePreview').src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock script %}

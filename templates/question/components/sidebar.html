@@ -39,15 +39,16 @@
           </a>
         </li>
         <li class="nav-main-item ">
-          <a class="nav-main-link {% if request.resolver_match.url_name == 'answer_question' %}active{% endif %}" href="{% url 'answer_question' %}">
-            <i class="nav-main-link-icon fas fa-tasks"></i>
-            <span class="nav-main-link-name">Topshiriqlar</span>
-          </a>
-        </li>
-        <li class="nav-main-item ">
           <a class="nav-main-link {% if request.resolver_match.url_name == 'question' %}active{% endif %}" href="{% url 'question' %}">
             <i class="nav-main-link-icon fas fa-question-circle"></i>
             <span class="nav-main-link-name">Savollar</span>
+          </a>
+        </li>
+        <li class="nav-main-item ">
+          <a class="nav-main-link {% if request.resolver_match.url_name == 'assign-test' %}active{% endif %}" href="{% url 'assign-test' %}">
+            
+          <i class="nav-main-link-icon fas fa-tasks"></i>
+            <span class="nav-main-link-name">Topshiriqlar</span>
           </a>
         </li>
           <li class="nav-main-item">

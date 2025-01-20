@@ -1,4 +1,3 @@
-# logs/middleware.py
 from .models import Log
 from django.utils.timezone import now
 from django.contrib.auth import get_user_model
@@ -17,7 +16,8 @@ class LogMiddleware:
         user_agent = request.META.get('HTTP_USER_AGENT', '')
         user = request.user if request.user.is_authenticated else None
 
-        Log.objects.create(
+        # Logni saqlash
+        log = Log.objects.create(
             timestamp=now(),
             ip_address=ip_address,
             method=request.method,
@@ -26,6 +26,9 @@ class LogMiddleware:
             user_agent=user_agent,
             user=user,
         )
+
+        # Terminalga chiqarish
+        self.print_log(log)
 
         return response
 
@@ -37,3 +40,17 @@ class LogMiddleware:
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
+
+    @staticmethod
+    def print_log(log):
+        """Log ma'lumotlarini terminalga chiqarish"""
+        print(f"""
+       
+        Vaqt: {log.timestamp}
+        IP Manzil: {log.ip_address}
+        Metod: {log.method}
+        Path: {log.path}
+        Status Code: {log.status_code}
+        User Agent: {log.user_agent}
+        Foydalanuvchi: {log.user.username if log.user else "Anonim"}
+        """)

@@ -39,8 +39,54 @@ DYNAMIC_APPS = [
 INSTALLED_APPS = LOCAL_APPS + DYNAMIC_APPS
 
 INSTALLED_APPS += [
-    'channels',
+    'django_ckeditor_5',
 ]
+
+# CKEditor sozlamalari
+customColorPalette = [
+    {'color': 'hsl(4, 90%, 58%)', 'label': 'Red'},
+    {'color': 'hsl(340, 82%, 52%)', 'label': 'Pink'},
+    {'color': 'hsl(291, 64%, 42%)', 'label': 'Purple'},
+    {'color': 'hsl(231, 48%, 48%)', 'label': 'Indigo'},
+    {'color': 'hsl(207, 90%, 54%)', 'label': 'Blue'},
+]
+
+CKEDITOR_5_CUSTOM_CSS = None
+CKEDITOR_5_CONFIGS = {
+    'default': {
+        'toolbar': [
+            'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|',
+            'undo', 'redo', 'imageUpload', 'insertTable'
+        ],
+        'image': {
+            'toolbar': [
+                'imageTextAlternative', '|',
+                'imageStyle:full', 'imageStyle:alignLeft', 'imageStyle:alignCenter', 'imageStyle:alignRight'
+            ],
+            'styles': [
+                'full', 'alignLeft', 'alignCenter', 'alignRight'
+            ],
+        },
+        'table': {
+            'contentToolbar': ['tableColumn', 'tableRow', 'mergeTableCells', 'tableProperties'],
+            'tableProperties': {
+                'borderColors': [
+                    {'color': 'hsl(4, 90%, 58%)', 'label': 'Red'},
+                    {'color': 'hsl(340, 82%, 52%)', 'label': 'Pink'},
+                    {'color': 'hsl(291, 64%, 42%)', 'label': 'Purple'}
+                ],
+                'backgroundColors': [
+                    {'color': 'hsl(207, 90%, 54%)', 'label': 'Blue'},
+                    {'color': 'hsl(231, 48%, 48%)', 'label': 'Indigo'},
+                    {'color': 'hsl(262, 52%, 47%)', 'label': 'Deep Purple'}
+                ],
+            }
+        },
+        'mediaEmbed': {
+            'previewsInData': True,
+        },
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -121,24 +167,24 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Logging configuration
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs/debug.log',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'file': {
+#             'level': 'DEBUG',
+#             'class': 'logging.FileHandler',
+#             'filename': BASE_DIR / 'logs/debug.log',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['file'],
+#             'level': 'DEBUG',
+#             'propagate': True,
+#         },
+#     },
+# }
 
 # Default email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

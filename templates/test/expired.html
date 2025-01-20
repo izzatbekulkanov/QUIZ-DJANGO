@@ -1,0 +1,34 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block style %}
+{% endblock style %}
+
+
+{% block content %}
+    <main id="main-container">
+    <div class="content content-boxed">
+        <div class="block block-rounded block-transparent bg-body-extra-light">
+            <div class="block-content text-center">
+                <h1 class="display-4 text-danger">
+                    <i class="fa fa-times-circle me-2"></i> Test Vaqti Tugagan
+                </h1>
+                <p class="fs-5 text-muted">
+                    {{ message }}
+                </p>
+                <a href="{% url 'dashboard' %}" class="btn btn-primary mt-4">
+                    <i class="fa fa-home me-1"></i> Bosh Sahifaga Qaytish
+                </a>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock content %}
+
+
+
+{% block script %}
+
+    <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+  
+{% endblock script %}

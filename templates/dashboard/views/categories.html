@@ -1,0 +1,57 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block style %}
+{% endblock style %}
+
+
+{% block content %}
+    <main id="main-container">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="bg-body-light border-bottom mb-4">
+      <div class="content py-2">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item">
+            <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Bosh sahifa</a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">Testlar</li>
+        </ol>
+      </div>
+    </nav>
+    <!-- END Breadcrumb -->
+        <div class="content">
+  <h2 class="mb-4">Kategoriyalar</h2>
+  <div class="row">
+    {% for category in categories %}
+      <div class="col-md-4 mb-4">
+        <div class="card">
+          {% if category.image %}
+            <img src="{{ category.image.url }}" class="card-img-top" alt="{{ category.name }}" style="height: 200px; object-fit: cover;">
+          {% else %}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+              <span class="text-muted">Rasm mavjud emas</span>
+            </div>
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">{{ category.name }}</h5>
+            <p class="card-text">
+              {{ category.description|default:"Tavsif mavjud emas" }}
+            </p>
+          </div>
+          <div class="card-footer text-end">
+            <a href="{% url 'category-assignments' category.id %}" class="btn btn-primary btn-sm">Ko'rish</a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p class="text-muted">Hozircha kategoriya mavjud emas.</p>
+    {% endfor %}
+  </div>
+</div>
+    </main>
+{% endblock content %}
+
+
+
+{% block script %}
+{% endblock script %}

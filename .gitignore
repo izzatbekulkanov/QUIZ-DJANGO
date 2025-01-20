@@ -10,9 +10,9 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-env/
+
 venv/
-ENV/
+
 build/
 dist/
 
@@ -25,16 +25,9 @@ dist/
 
 # Django migrations
 */migrations/*
-*.sqlite3
 
 # Static files
 staticfiles/
-
-# Media files
-media/
-
-# Environment variables
-.env
 
 # VS Code settings
 .vscode/

@@ -1,0 +1,42 @@
+from django import forms
+from django_ckeditor_5.widgets import CKEditor5Widget
+
+from .models import Test
+
+class TestForm(forms.ModelForm):
+    class Meta:
+        model = Test
+        fields = ['name', 'description', 'category']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Test nomini kiriting'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Test taʼrifini kiriting', 'rows': 4}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+class AddQuestionForm(forms.Form):
+    text = forms.CharField(
+        label="Savol matni",
+        widget=CKEditor5Widget(config_name='default'),
+        required=True,
+    )
+    image = forms.ImageField(
+        label="Savol rasmi (ixtiyoriy)",
+        required=False,
+        widget=forms.ClearableFileInput(attrs={"accept": "image/*"})
+    )
+    answers = forms.CharField(
+        label="Variantlar",
+        widget=forms.HiddenInput,
+        required=False
+    )
+
+    def clean_answers(self):
+        answers = self.data.getlist('answers[]')
+        is_correct_flags = self.data.getlist('is_correct[]')
+
+        if not answers or len(answers) < 2:
+            raise forms.ValidationError("Kamida 2 ta variant kiritishingiz kerak!")
+        if is_correct_flags.count('on') == 0:
+            raise forms.ValidationError("Hech bo'lmaganda bitta to'g'ri javob belgilanmashi kerak!")
+
+        return {"answers": answers, "is_correct_flags": is_correct_flags}
