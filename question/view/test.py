@@ -1,6 +1,10 @@
 import json
+import random
+from datetime import datetime
+from django.db.models import F
 
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import JsonResponse
@@ -8,9 +12,9 @@ from django.shortcuts import render, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-
+from django.utils.timezone import now, make_aware
 from question.forms import TestForm, AddQuestionForm
-from question.models import Test, Category, Question, Answer, StudentTestAssignment, StudentQuestion
+from question.models import Test, Category, Question, Answer, StudentTestAssignment, StudentTest, StudentTestQuestion
 
 
 @method_decorator(login_required, name='dispatch')
@@ -218,49 +222,79 @@ class AssignTestView(View):
         }
         return render(request, self.template_name, context)
 
+
 @method_decorator(login_required, name='dispatch')
 class AddAssignTestView(View):
     template_name = 'question/views/add-assign-test.html'
 
     def get(self, request):
+        # Test va kategoriya maʼlumotlarini form uchun yuborish
         categories = Category.objects.all()
-        return render(request, self.template_name, {'categories': categories})
+        tests = Test.objects.all()
+        context = {
+            'categories': categories,
+            'tests': tests,
+        }
+        return render(request, self.template_name, context)
 
     def post(self, request):
-        category_id = request.POST.get('category')
-        test_id = request.POST.get('test')
-        total_questions = int(request.POST.get('total_questions'))
-        start_time = request.POST.get('start_time')
-        end_time = request.POST.get('end_time')
-        duration = int(request.POST.get('duration'))
-
-        category = get_object_or_404(Category, id=category_id)
-        test = get_object_or_404(Test, id=test_id)
-
-        # Assignment yaratish
-        assignment = StudentTestAssignment.objects.create(
-            teacher=request.user,
-            category=category,
-            test=test,
-            total_questions=total_questions,
-            start_time=start_time,
-            end_time=end_time,
-            duration=duration
-        )
-
-        # Savollar generatsiya qilish
         try:
-            questions = assignment.generate_questions()
-            for question in questions:
-                StudentQuestion.objects.create(
-                    assignment=assignment,
-                    student=request.user,
-                    question=question
-                )
-        except ValueError as e:
-            return JsonResponse({"success": False, "message": str(e)})
+            # POST so‘rovdan maʼlumotlarni olish
+            category_id = request.POST.get('category_id')
+            test_id = request.POST.get('test_id')
+            total_questions = int(request.POST.get('total_questions', 0))
+            start_time_str = request.POST.get('start_time')
+            end_time_str = request.POST.get('end_time')
+            duration = request.POST.get('duration')
 
-        return JsonResponse({"success": True, "message": "Test muvaffaqiyatli tayinlandi!"})
+            # Ob'yektlarni olish
+            category = get_object_or_404(Category, id=category_id)
+            test = get_object_or_404(Test, id=test_id)
+
+            # Savollar sonini tekshirish
+            available_questions = test.questions.count()
+            if total_questions > available_questions:
+                return JsonResponse({
+                    'success': False,
+                    'message': f"Testda faqat {available_questions} ta savol mavjud. Iltimos, mos son kiriting."
+                }, status=400)
+
+            # Boshlanish va tugash vaqtlarini formatlash va timezone qo‘shish
+            try:
+                start_time = make_aware(datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M'))
+                end_time = make_aware(datetime.strptime(end_time_str, '%Y-%m-%dT%H:%M'))
+            except ValueError:
+                return JsonResponse({'success': False, 'message': 'Vaqt noto‘g‘ri formatda kiritilgan.'}, status=400)
+
+            # Vaqtni tekshirish
+            if start_time >= end_time:
+                return JsonResponse({'success': False, 'message': 'Boshlanish vaqti tugash vaqtidan oldin bo‘lishi kerak.'}, status=400)
+
+            # Mavjud topshiriqni tekshirish
+            if StudentTestAssignment.objects.filter(
+                category=category,
+                test=test,
+                start_time=start_time,
+                end_time=end_time,
+            ).exists():
+                return JsonResponse({'success': False, 'message': 'Bunday test topshirig‘i allaqachon mavjud!'}, status=400)
+
+            # Test topshirig‘ini yaratish
+            assignment = StudentTestAssignment.objects.create(
+                teacher=request.user,
+                test=test,
+                category=category,
+                total_questions=total_questions,
+                start_time=start_time,
+                end_time=end_time,
+                duration=duration,  # Davomiylik daqiqalarda
+                is_active=True,
+                status='pending'
+            )
+
+            return JsonResponse({'success': True, 'message': 'Test topshirig‘i muvaffaqiyatli qo‘shildi!'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ToggleActiveView(View):
@@ -284,33 +318,188 @@ class ToggleActiveView(View):
             return JsonResponse({"success": False, "message": str(e)}, status=500)
 
 
-class FetchTestsView(View):
-    def get(self, request):
-        category_id = request.GET.get('category_id')
+@method_decorator(login_required, name='dispatch')
+class StartTestDetailView(View):
+    template_name = 'test/start_test_detail.html'
 
-        # Testlarni va savollar sonini olish
-        tests = Test.objects.filter(category_id=category_id).annotate(
-            question_count=Count('questions')
-        ).values('id', 'name', 'question_count')
+    def get(self, request, assignment_id):
+        # StudentTestAssignment obyektini olish
+        assignment = get_object_or_404(StudentTestAssignment, id=assignment_id)
 
-        return JsonResponse({'tests': list(tests)})
+        # Tegishli test, kategoriya va o‘qituvchi maʼlumotlarini olish
+        assignment_data = {
+            'id': assignment.id,
+            'test_name': assignment.test.name,
+            'category_name': assignment.category.name,
+            'teacher_name': assignment.teacher.full_name,
+            'total_questions': assignment.total_questions,
+            'start_time': assignment.start_time,
+            'end_time': assignment.end_time,
+            'duration': assignment.duration,
+            'status': assignment.status,
+            'is_active': assignment.is_active,
+            'created_at': assignment.created_at,
+        }
+
+        # Render qilish
+        return render(request, self.template_name, {'assignment': assignment_data})
 
 @method_decorator(login_required, name='dispatch')
 class StartTestView(View):
-    template_name = 'start_test.html'
+    template_name = 'test/start_test.html'
 
     def get(self, request, assignment_id):
-        assignment = get_object_or_404(StudentTestAssignment, id=assignment_id, student=request.user)
-        questions = assignment.student_questions.select_related('question').prefetch_related('question__answers')
-        return render(request, self.template_name, {'assignment': assignment, 'questions': questions})
+        # StudentTestAssignment ni olish
+        assignment = get_object_or_404(StudentTestAssignment, id=assignment_id)
 
-    def post(self, request, assignment_id):
-        assignment = get_object_or_404(StudentTestAssignment, id=assignment_id, student=request.user)
-        for question_id, answers in request.POST.items():
-            student_question = assignment.student_questions.get(question_id=question_id)
-            selected_answers = Answer.objects.filter(id__in=answers)
-            student_question.answers.set(selected_answers)
-            student_question.check_correctness()
-        assignment.status = 'completed'
-        assignment.save()
-        return JsonResponse({"success": True, "message": "Test yakunlandi!"})
+        # Foydalanuvchiga tegishli yakunlanmagan testni qidirish
+        unfinished_test = StudentTest.objects.filter(
+            student=request.user,
+            assignment=assignment,
+            completed=False
+        ).first()
+
+        if unfinished_test:
+            # Mavjud yakunlanmagan testni qayta ochish
+            elapsed_time = (now() - unfinished_test.start_time).seconds
+            remaining_time = max(0, assignment.duration * 60 - elapsed_time)  # Sekundlarda
+
+            questions_data = []
+            for student_question in unfinished_test.student_questions.order_by('order').all():
+                answers = list(student_question.question.answers.all())
+                questions_data.append({
+                    'id': student_question.id,
+                    'text': student_question.question.text,
+                    'image': student_question.question.image.url if student_question.question.image else None,
+                    'answers': [
+                        {
+                            'id': answer.id,
+                            'text': answer.text,
+                            'selected': student_question.selected_answer == answer  # Tanlanganmi yoki yo'q
+                        }
+                        for answer in answers
+                    ]
+                })
+
+            context = {
+                'assignment': assignment,
+                'student_test': unfinished_test,
+                'questions': questions_data,
+                'remaining_time': remaining_time,  # Qolgan vaqtni yuborish
+            }
+        else:
+            # Yangi test yaratish
+            student_test = StudentTest.objects.create(
+                student=request.user,
+                assignment=assignment,
+                start_time=now()
+            )
+
+            # Savollarni generatsiya qilish va tartibini saqlash
+            available_questions = list(assignment.test.questions.all())
+            if len(available_questions) < assignment.total_questions:
+                return JsonResponse({'success': False, 'message': 'Yetarli savollar mavjud emas.'}, status=400)
+
+            selected_questions = random.sample(available_questions, assignment.total_questions)
+            for index, question in enumerate(selected_questions, start=1):
+                StudentTestQuestion.objects.create(
+                    student_test=student_test,
+                    question=question,
+                    order=index  # Tartibini saqlash
+                )
+
+            questions_data = []
+            for student_question in student_test.student_questions.order_by('order').all():
+                answers = list(student_question.question.answers.all())
+                questions_data.append({
+                    'id': student_question.id,
+                    'text': student_question.question.text,
+                    'image': student_question.question.image.url if student_question.question.image else None,
+                    'answers': [
+                        {
+                            'id': answer.id,
+                            'text': answer.text,
+                            'selected': False  # Yangi test uchun tanlanmagan
+                        }
+                        for answer in answers
+                    ]
+                })
+
+            context = {
+                'assignment': assignment,
+                'student_test': student_test,
+                'questions': questions_data,
+                'remaining_time': assignment.duration * 60,  # To'liq vaqt
+            }
+
+        return render(request, self.template_name, context)
+
+@method_decorator(login_required, name='dispatch')
+class GetRemainingTimeView(View):
+    def get(self, request, test_id):
+        student_test = get_object_or_404(StudentTest, id=test_id, student=request.user)
+
+        if student_test.completed:
+            return JsonResponse({'success': False, 'message': 'Test yakunlangan.'}, status=400)
+
+        assignment = student_test.assignment
+        elapsed_time = (now() - student_test.start_time).seconds
+        remaining_time = max(0, assignment.duration * 60 - elapsed_time)
+
+        return JsonResponse({'success': True, 'remaining_time': remaining_time})
+@method_decorator(login_required, name='dispatch')
+class SaveAnswerView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            student_question_id = data.get('student_question_id')
+            answer_id = data.get('answer_id')
+
+            # StudentTestQuestion obyektini olish
+            student_question = get_object_or_404(StudentTestQuestion, id=student_question_id)
+            selected_answer = get_object_or_404(Answer, id=answer_id)
+
+            # Javobni saqlash
+            student_question.selected_answer = selected_answer
+            student_question.is_correct = selected_answer.is_correct
+            student_question.save()
+
+            return JsonResponse({'success': True, 'message': 'Javob muvaffaqiyatli saqlandi!'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=400)
+
+@method_decorator(login_required, name='dispatch')
+class FinishTestView(View):
+    def post(self, request, test_id):
+        student_test = get_object_or_404(StudentTest, id=test_id, student=request.user)
+
+        # Testni yakunlash
+        correct_answers = student_test.student_questions.filter(is_correct=True).count()
+        total_questions = student_test.student_questions.count()
+        score = (correct_answers / total_questions) * 100
+
+        student_test.completed = True
+        student_test.end_time = now()
+        student_test.duration = (student_test.end_time - student_test.start_time).seconds // 60
+        student_test.score = score
+        student_test.save()
+
+        # Natija sahifasiga yo'naltirish uchun natija URLini qaytarish
+        result_url = f"/test/test_result/{student_test.id}/"
+        return JsonResponse({'success': True, 'message': f'Test tugatildi. Natijangiz: {score:.2f}%', 'redirect_url': result_url})
+
+@method_decorator(login_required, name='dispatch')
+class TestResultView(View):
+    template_name = 'test/test_result.html'
+
+    def get(self, request, test_id):
+        student_test = get_object_or_404(StudentTest, id=test_id, student=request.user)
+        correct_answers = student_test.student_questions.filter(is_correct=True).count()
+        total_questions = student_test.student_questions.count()
+
+        context = {
+            'student_test': student_test,
+            'correct_answers': correct_answers,
+            'total_questions': total_questions,
+        }
+        return render(request, self.template_name, context)

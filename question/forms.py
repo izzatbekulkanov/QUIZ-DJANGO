@@ -13,16 +13,21 @@ class TestForm(forms.ModelForm):
             'category': forms.Select(attrs={'class': 'form-select'}),
         }
 
+
 class AddQuestionForm(forms.Form):
     text = forms.CharField(
         label="Savol matni",
-        widget=CKEditor5Widget(config_name='default'),
+        widget=forms.Textarea(attrs={
+            "class": "form-control",
+            "placeholder": "Savol matnini kiriting",
+            "rows": 5
+        }),
         required=True,
     )
     image = forms.ImageField(
         label="Savol rasmi (ixtiyoriy)",
         required=False,
-        widget=forms.ClearableFileInput(attrs={"accept": "image/*"})
+        widget=forms.ClearableFileInput(attrs={"accept": "image/*", "class": "form-control"})
     )
     answers = forms.CharField(
         label="Variantlar",
@@ -34,8 +39,11 @@ class AddQuestionForm(forms.Form):
         answers = self.data.getlist('answers[]')
         is_correct_flags = self.data.getlist('is_correct[]')
 
+        # Kamida 2 ta variant bo'lishi kerakligini tekshirish
         if not answers or len(answers) < 2:
             raise forms.ValidationError("Kamida 2 ta variant kiritishingiz kerak!")
+
+        # Kamida 1 ta to'g'ri javob bo'lishini tekshirish
         if is_correct_flags.count('on') == 0:
             raise forms.ValidationError("Hech bo'lmaganda bitta to'g'ri javob belgilanmashi kerak!")
 

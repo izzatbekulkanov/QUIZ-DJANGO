@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.views import View
@@ -12,6 +12,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from account.models import CustomUser
 from django.db.models.functions import TruncDate
+
+from question.models import StudentTest, Category, StudentTestQuestion
 
 
 @method_decorator(login_required, name='dispatch')
@@ -73,6 +75,8 @@ class UsersView(View):
             return JsonResponse({"success": False, "message": "Foydalanuvchi topilmadi!"}, status=404)
         except Exception as e:
             return JsonResponse({"success": False, "message": f"Xatolik yuz berdi: {str(e)}"}, status=500)
+
+
 @method_decorator(login_required, name='dispatch')
 class AddUserView(View):
     template_name = 'question/views/add-user.html'
@@ -209,4 +213,60 @@ class ResultsView(View):
     template_name = 'question/views/results.html'
 
     def get(self, request):
-        return render(request, self.template_name)
+        # Filters
+        category_id = request.GET.get('category')
+        test_name = request.GET.get('test')
+
+        # Base query
+        completed_tests = StudentTest.objects.filter(completed=True).select_related(
+            'student', 'assignment__test', 'assignment__category'
+        ).order_by('-end_time')
+
+        # Apply filters
+        if category_id:
+            completed_tests = completed_tests.filter(assignment__category_id=category_id)
+        if test_name:
+            completed_tests = completed_tests.filter(assignment__test__name__icontains=test_name)
+
+        # Fetch categories for the filter dropdown
+        categories = Category.objects.all()
+
+        context = {
+            'completed_tests': completed_tests,
+            'categories': categories,
+        }
+        return render(request, self.template_name, context)
+
+@method_decorator(login_required, name='dispatch')
+class ViewTestDetailsView(View):
+    template_name = 'question/views/test_details.html'
+
+    def get(self, request, test_id):
+        # Fetch the StudentTest object
+        test = get_object_or_404(
+            StudentTest.objects.prefetch_related(
+                Prefetch(
+                    'student_questions',  # Correct related name for StudentTestQuestion
+                    queryset=StudentTestQuestion.objects.select_related(
+                        'question', 'selected_answer'
+                    ).prefetch_related(
+                        'question__answers'  # Fetch all answers for each question
+                    )
+                )
+            ),
+            id=test_id
+        )
+
+        # Calculate statistics
+        total_questions = test.student_questions.count()
+        correct_answers = test.student_questions.filter(is_correct=True).count()
+        incorrect_answers = total_questions - correct_answers
+
+        context = {
+            'test': test,
+            'total_questions': total_questions,
+            'correct_answers': correct_answers,
+            'incorrect_answers': incorrect_answers,
+        }
+
+        return render(request, self.template_name, context)

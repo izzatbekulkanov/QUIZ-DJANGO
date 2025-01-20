@@ -1,6 +1,10 @@
+import json
+import random
 from datetime import timedelta
 
+from django.core.paginator import Paginator
 from django.db.models import Prefetch
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -8,7 +12,7 @@ from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from django.views import View
 
-from question.models import Category, StudentTestAssignment
+from question.models import Category, StudentTestAssignment, StudentTest
 
 
 @method_decorator(login_required, name='dispatch')
@@ -59,16 +63,43 @@ class CategoryAssignmentsView(View):
 
 
 @method_decorator(login_required, name='dispatch')
-class StartTestView(View):
-    template_name = 'test/start_test.html'
-
+class CheckUnfinishedTestView(View):
     def get(self, request, assignment_id):
-        assignment = get_object_or_404(StudentTestAssignment, id=assignment_id, is_active=True, status='pending')
+        # Foydalanuvchiga tegishli yakunlanmagan testni qidirish
+        unfinished_test = StudentTest.objects.filter(
+            student=request.user,
+            assignment_id=assignment_id,
+            completed=False
+        ).exists()
 
+        return JsonResponse({'unfinished': unfinished_test})
 
-        # Savollarni tayyorlash
-        questions = assignment.test.questions.all()
-        return render(request, self.template_name, {
-            'assignment': assignment,
-            'questions': questions,
-        })
+@login_required
+def all_results(request):
+    query = StudentTest.objects.select_related('assignment__category', 'student').filter(completed=True)
+
+    # Filtering
+    first_name = request.GET.get('first_name', '').strip()
+    second_name = request.GET.get('second_name', '').strip()
+    category_id = request.GET.get('category')
+
+    if first_name:
+        query = query.filter(student__first_name__icontains=first_name)
+    if second_name:
+        query = query.filter(student__last_name__icontains=second_name)
+    if category_id:
+        query = query.filter(assignment__category__id=category_id)
+
+    # Pagination
+    paginator = Paginator(query, 10)  # 10 results per page
+    page_number = request.GET.get('page', 1)
+    results = paginator.get_page(page_number)
+
+    # Fetch categories for dropdown
+    categories = Category.objects.all()
+
+    context = {
+        'results': results,
+        'categories': categories,
+    }
+    return render(request, 'test/all_results.html', context)

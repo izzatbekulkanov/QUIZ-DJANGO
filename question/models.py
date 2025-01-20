@@ -30,13 +30,13 @@ class Test(models.Model):
 
 class Question(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='questions')
-    text = CKEditor5Field(config_name='default')  # CKEditor5 ni ishlatamiz
+    text = models.TextField()  # Matn uchun TextField ishlatilmoqda
     image = models.ImageField(upload_to='questions/images/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.text
+        return self.text[:50]  # Matnning birinchi 50 belgisi qaytariladi
 
 class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
@@ -46,18 +46,7 @@ class Answer(models.Model):
     def __str__(self):
         return f"{self.text} ({'Correct' if self.is_correct else 'Incorrect'})"
 
-class UserTestResult(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='test_results', null=True, blank=True)
-    test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='results')
-    score = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
-    completed_at = models.DateTimeField(auto_now_add=True)
-    guest_first_name = models.CharField(max_length=100, null=True, blank=True)
-    guest_last_name = models.CharField(max_length=100, null=True, blank=True)
 
-    def __str__(self):
-        if self.user:
-            return f"{self.user.username} - {self.test.name}: {self.score}"
-        return f"{self.guest_first_name} {self.guest_last_name} - {self.test.name}: {self.score}"
 
 class StudentTestAssignment(models.Model):
     teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='test_assignments')
@@ -74,38 +63,27 @@ class StudentTestAssignment(models.Model):
     def __str__(self):
         return f"{self.teacher} - {self.test.name} ({self.start_time} - {self.end_time})"
 
-    def generate_questions(self):
-        """
-        Test uchun random savollar generatsiya qilish.
-        """
-        all_questions = list(self.test.questions.all())
-        if len(all_questions) < self.total_questions:
-            raise ValueError("Testda yetarli savollar mavjud emas.")
-        return random.sample(all_questions, self.total_questions)
-
-    def calculate_end_time(self):
-        """
-        Testning avtomatik tugash vaqtini hisoblash.
-        """
-        return self.start_time + timedelta(minutes=self.duration)
-
-
-class StudentQuestion(models.Model):
-    assignment = models.ForeignKey(StudentTestAssignment, on_delete=models.CASCADE, related_name='student_questions')
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='student_questions')
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    answers = models.ManyToManyField(Answer, related_name='student_answers')  # O‘quvchi belgilagan javoblar
-    is_correct = models.BooleanField(default=False)
-    answered_at = models.DateTimeField(null=True, blank=True)
+class StudentTest(models.Model):
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='student_tests')
+    assignment = models.ForeignKey(StudentTestAssignment, on_delete=models.CASCADE, related_name='student_tests')
+    questions = models.ManyToManyField('Question', through='StudentTestQuestion')
+    start_time = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    completed = models.BooleanField(default=False)
+    duration = models.PositiveIntegerField(default=0)  # Daqiqalarda davomiylik
+    score = models.FloatField(default=0.0)  # Foydalanuvchi natijasi
 
     def __str__(self):
-        return f"{self.student.username} - {self.question.text[:30]}"
+        return f"{self.student.username} - {self.assignment.test.name}"
 
-    def check_correctness(self):
-        """
-        To‘g‘ri yoki noto‘g‘ri ekanligini tekshirish.
-        """
-        correct_answers = set(self.question.answers.filter(is_correct=True))
-        selected_answers = set(self.answers.all())
-        self.is_correct = correct_answers == selected_answers
-        self.save()
+
+class StudentTestQuestion(models.Model):
+    student_test = models.ForeignKey(StudentTest, on_delete=models.CASCADE, related_name='student_questions')
+    question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='student_test_questions')
+    selected_answer = models.ForeignKey('Answer', on_delete=models.SET_NULL, null=True, blank=True)
+    is_correct = models.BooleanField(default=False)
+    order = models.PositiveIntegerField()  # Savollar tartibini saqlash
+
+    def __str__(self):
+        return f"{self.student_test.student.username} - {self.question.text[:50]}"
+

@@ -99,3 +99,27 @@ class AddCategoryView(View):
             return JsonResponse({"success": True, "message": "Kategoriya muvaffaqiyatli qo'shildi!"})
         except Exception as e:
             return JsonResponse({"success": False, "message": f"Xatolik yuz berdi: {str(e)}"})
+
+
+class GetCategoryTestsView(View):
+    def get(self, request):
+        category_id = request.GET.get('category_id')
+        if not category_id:
+            return JsonResponse({'success': False, 'message': 'Kategoriya ID berilmadi.'}, status=400)
+
+        tests = Test.objects.filter(category_id=category_id).values('id', 'name')
+        return JsonResponse({'success': True, 'tests': list(tests)}, status=200)
+
+
+class GetTestQuestionsCountView(View):
+    def get(self, request):
+        test_id = request.GET.get('test_id')
+        if not test_id:
+            return JsonResponse({'success': False, 'message': 'Test ID berilmadi.'}, status=400)
+
+        try:
+            test = Test.objects.get(id=test_id)
+            total_questions = test.questions.count()  # Testga tegishli savollar soni
+            return JsonResponse({'success': True, 'total_questions': total_questions}, status=200)
+        except Test.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Test topilmadi.'}, status=404)

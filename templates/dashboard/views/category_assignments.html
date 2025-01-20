@@ -43,7 +43,7 @@
                 {% for assignment in assignments %}
                   <tr>
                     <td class="text-center">{{ forloop.counter }}</td>
-                    <td>{{ assignment.teacher.username }}</td>
+                    <td>{{ assignment.teacher.first_name }} {{ assignment.teacher.second_name }}</td>
                     <td>{{ assignment.test.name }}</td>
                     <td class="text-center">{{ assignment.total_questions }}</td>
                     <td>{{ assignment.start_time|date:"Y-m-d H:i" }}</td>
@@ -82,18 +82,7 @@
         button.addEventListener('click', function () {
             const assignmentId = this.getAttribute('data-assignment-id');
 
-            Swal.fire({
-                title: 'Testni boshlashga tayyormisiz?',
-                text: 'Sizning vaqtingiz davomiyligi boshlangan paytdan orqaga sanaydi.',
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Ha, boshlayman',
-                cancelButtonText: 'Bekor qilish'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = `/start-test/${assignmentId}/`;
-                }
-            });
+            window.location.href = `/start-test-detail/${assignmentId}/`;
         });
     });
 });

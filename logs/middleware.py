@@ -28,7 +28,7 @@ class LogMiddleware:
         )
 
         # Terminalga chiqarish
-        self.print_log(log)
+        # self.print_log(log)
 
         return response
 

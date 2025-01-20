@@ -1,0 +1,152 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block style %}
+{% endblock style %}
+
+
+{% block content %}
+<main id="main-container" class="content">
+    <nav aria-label="breadcrumb" class="bg-body-light border-bottom">
+      <ol class="breadcrumb px-3 py-2">
+          <li class="breadcrumb-item">
+              <a href="{% url 'dashboard' %}"><i class="fa fa-home me-1"></i> Bosh sahifa</a>
+          </li>
+          <li class="breadcrumb-item">
+              <a href="javascript:history.back()">Topshiriqlar</a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">Test maʼlumotlari</li>
+      </ol>
+  </nav>
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Test maʼlumotlari</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th>Test nomi</th>
+                        <td>{{ assignment.test_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Kategoriya</th>
+                        <td>{{ assignment.category_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>O'qituvchi</th>
+                        <td>{{ assignment.teacher_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Savollar soni</th>
+                        <td>{{ assignment.total_questions }}</td>
+                    </tr>
+                    <tr>
+                        <th>Boshlanish vaqti</th>
+                        <td>{{ assignment.start_time }}</td>
+                    </tr>
+                    <tr>
+                        <th>Tugash vaqti</th>
+                        <td>{{ assignment.end_time }}</td>
+                    </tr>
+                    <tr>
+                        <th>Davomiylik</th>
+                        <td>{{ assignment.duration }} daqiqa</td>
+                    </tr>
+                </tbody>
+            </table>
+          <div class="card-footer text-end">
+              <button class="btn btn-success btn-lg w-100" id="start-test-btn" data-assignment-id="{{ assignment.id }}">
+                  <i class="fa fa-play me-2"></i>Testni Boshlash
+              </button>
+          </div>
+        </div>
+    </div>
+</main>
+
+{% endblock content %}
+
+
+
+{% block script %}
+
+  <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+
+  <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const startButton = document.getElementById('start-test-btn');
+
+    startButton.addEventListener('click', function () {
+        const assignmentId = this.getAttribute('data-assignment-id');
+
+        // Foydalanuvchi uchun tekshirish
+        fetch(`/check-unfinished-test/${assignmentId}/`, { // Backenddan tekshirish
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.unfinished) {
+                    // Yakunlanmagan test mavjud bo‘lsa
+                    Swal.fire({
+                        title: 'Yakunlanmagan test mavjud!',
+                        text: 'Siz oldingi testni yakunlamadingiz. Testni davom ettirishni xohlaysizmi?',
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ha, davom ettirish',
+                        cancelButtonText: 'Bekor qilish',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = `/start-test/${assignmentId}/`; // Yakunlanmagan testga yo‘naltirish
+                        }
+                    });
+                } else {
+                    // Yangi testni boshlash
+                    Swal.fire({
+                        title: 'Testni boshlashni xohlaysizmi?',
+                        text: "Tasdiqlangandan so‘ng testni boshlash imkoniyati bo‘ladi.",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ha, boshlash',
+                        cancelButtonText: 'Bekor qilish',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Orqaga sanoqni boshlash
+                            let countdown = 3;
+                            const interval = setInterval(() => {
+                                Swal.fire({
+                                    title: `${countdown}`,
+                                    html: 'Test boshlanmoqda...',
+                                    timer: 1000,
+                                    showConfirmButton: false,
+                                    allowOutsideClick: false,
+                                    allowEscapeKey: false,
+                                    didOpen: () => {
+                                        Swal.showLoading();
+                                    },
+                                });
+
+                                countdown -= 1;
+
+                                // Sanoq tugagandan keyin yo‘naltirish
+                                if (countdown < 0) {
+                                    clearInterval(interval);
+                                    window.location.href = `/start-test/${assignmentId}/`;
+                                }
+                            }, 1000);
+                        }
+                    });
+                }
+            })
+            .catch((error) => {
+                Swal.fire('Xatolik', 'Server bilan bog‘lanishda muammo yuz berdi.', 'error');
+                console.error(error);
+            });
+    });
+});
+  </script>
+
+{% endblock script %}

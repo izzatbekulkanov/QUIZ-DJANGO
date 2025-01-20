@@ -1,0 +1,132 @@
+{% extends 'question/main.html' %}
+{% load static %}
+{% block style %}
+  <style>
+  .question-content {
+    max-width: 400px; /* Adjust as necessary */
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+  table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+td {
+    word-wrap: break-word;
+    vertical-align: top;
+}
+
+td img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+</style>
+{% endblock style %}
+
+{% block content %}
+<main id="main-container">
+    <!-- Hero -->
+    <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+        <div class="bg-primary-dark-op">
+            <div class="content content-full">
+                <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+                    <div class="flex-grow-1">
+                        <h1 class="fw-semibold text-white mb-0">Natijalar</h1>
+                        <h2 class="h4 fw-normal text-white-75 mb-0">Barcha natijalar ro'yhati</h2>
+                    </div>
+                  <div class="mt-3 mt-sm-0">
+              <!-- Back Button -->
+              <a href="javascript:history.back()" class="btn btn-alt-secondary">
+                <i class="fa fa-arrow-left me-1"></i> Ortga
+              </a>
+            </div>
+                </div>
+              
+            </div>
+        </div>
+    </div>
+    <!-- END Hero -->
+
+    <!-- Page Content -->
+    <div class="content">
+    <div class="block block-rounded">
+        <div class="block-header block-header-default">
+            <h3 class="block-title">{{ test.assignment.test.name }} - Natijalar Tafsilotlari</h3>
+        </div>
+        <div class="block-content">
+            <p><strong>Foydalanuvchi:</strong> {{ test.student.username }}</p>
+            <p><strong>Kategoriya:</strong> {{ test.assignment.category.name }}</p>
+            <p><strong>Natija:</strong> {{ test.score|floatformat:2 }}%</p>
+            <p><strong>Davomiylik:</strong> {{ test.duration }} minut</p>
+            <p><strong>Bajarilgan vaqt:</strong> {{ test.end_time|date:"Y-m-d H:i" }}</p>
+            <p><strong>To‘g‘ri javoblar:</strong> {{ correct_answers }} / {{ total_questions }}</p>
+            <p><strong>Noto‘g‘ri javoblar:</strong> {{ incorrect_answers }}</p>
+        </div>
+    </div>
+
+    <div class="block block-rounded mt-4">
+        <div class="block-header block-header-default">
+            <h3 class="block-title">Savollar va Javoblar</h3>
+        </div>
+        <div class="block-content">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>#</th>
+                            <th>Savol</th>
+                            <th>Javobingiz</th>
+                            <th>To‘g‘ri Javob</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                      {% for student_question in test.student_questions.all %}
+                      <tr>
+                          <td>{{ forloop.counter }}</td>
+                          <td>
+                              <div class="question-content">
+                                  {{ student_question.question.text|safe }}
+                              </div>
+                          </td>
+                          <td>
+                              {% if student_question.selected_answer %}
+                              {{ student_question.selected_answer.text }}
+                              {% else %}
+                              <span class="text-muted">Javob berilmagan</span>
+                              {% endif %}
+                          </td>
+                          <td>
+                              {% for answer in student_question.question.answers.all %}
+                                  {% if answer.is_correct %}
+                                  {{ answer.text }}
+                                  {% endif %}
+                              {% endfor %}
+                          </td>
+                          <td>
+                              {% if student_question.is_correct %}
+                              <span class="badge bg-success">To‘g‘ri</span>
+                              {% else %}
+                              <span class="badge bg-danger">Noto‘g‘ri</span>
+                              {% endif %}
+                          </td>
+                      </tr>
+                      {% empty %}
+                      <tr>
+                          <td colspan="5" class="text-center text-muted">Savollar mavjud emas.</td>
+                      </tr>
+                      {% endfor %}
+                  </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- END Page Content -->
+</main>
+{% endblock content %}
+
+{% block script %}
+{% endblock script %}

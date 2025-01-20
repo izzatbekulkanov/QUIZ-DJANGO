@@ -54,23 +54,29 @@ class RegisterView(View):
 
         # Foydalanuvchini yaratish
         try:
-            user = CustomUser.objects.create(
+            user = CustomUser.objects.create_user(
                 username=username,
                 first_name=first_name,
                 second_name=second_name,
                 gender=gender,
                 profile_picture=profile_picture,
+                password=password,
                 is_student=True
             )
-            user.save()
 
-            # Foydalanuvchini tizimga kiritish
+            # Foydalanuvchini tizimga avtomatik kiritish
+            authenticated_user = authenticate(request, username=username, password=password)
+            if authenticated_user:
+                redirect('login')
+                messages.success(request, "Ro'yxatdan o'tish va tizimga kirish muvaffaqiyatli!")
+                return redirect('main')  # Tizimga kirgandan keyin asosiy sahifaga yo'naltirish
+            else:
+                messages.error(request, "Tizimga avtomatik kirishda xatolik yuz berdi.")
 
-            messages.success(request, "Ro'yxatdan o'tish muvaffaqiyatli yakunlandi!")
-            return redirect('login')  # Tizimga kirgandan keyin sahifaga yo'naltirish
         except Exception as e:
             messages.error(request, f"Ro'yxatdan o'tishda xatolik yuz berdi: {str(e)}")
-            return render(request, self.template_name)
+
+        return render(request, self.template_name)
 
 def check_username(request):
     username = request.GET.get('username', '').strip()

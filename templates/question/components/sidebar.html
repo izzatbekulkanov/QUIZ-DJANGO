@@ -57,7 +57,8 @@
                 <span class="nav-main-link-name">Natijalar</span>
               </a>
             </li>
-        <li class="nav-main-item ">
+        {% if request.user.is_superuser %}
+      <li class="nav-main-item ">
           <a class="nav-main-link {% if request.resolver_match.url_name == 'logs' %}active{% endif %}" href="{% url 'logs' %}">
             <i class="nav-main-link-icon fas fa-file-alt"></i>
             <span class="nav-main-link-name">Loglar</span>
@@ -69,6 +70,7 @@
             <span class="nav-main-link-name">Rollar</span>
           </a>
         </li>
+      {% endif %}
       </ul>
     </div>
     <!-- END Side Navigation -->

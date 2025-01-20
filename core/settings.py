@@ -21,12 +21,6 @@ LOCAL_APPS = [
 
 ASGI_APPLICATION = 'core.asgi.application'
 
-# Channel layers for WebSocket
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
-    },
-}
 
 DYNAMIC_APPS = [
     'django.contrib.admin',
@@ -40,6 +34,7 @@ INSTALLED_APPS = LOCAL_APPS + DYNAMIC_APPS
 
 INSTALLED_APPS += [
     'django_ckeditor_5',
+    'common',
 ]
 
 # CKEditor sozlamalari
@@ -147,11 +142,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tashkent'  # Tashkent vaqti
+USE_TZ = True  # Timezone-aware vaqtni ishlatish
 
 USE_I18N = True
-
-USE_TZ = True
 
 STATIC_URL = 'static/'
 
