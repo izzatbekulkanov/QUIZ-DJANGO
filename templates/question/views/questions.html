@@ -157,54 +157,55 @@
   <script>
   function deleteTest(testId) {
     Swal.fire({
-      title: 'Tasdiqlaysizmi?',
-      text: "Ushbu testni o‘chirmoqchimisiz?",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Ha, o‘chirish!',
-      cancelButtonText: 'Bekor qilish',
+        title: 'Tasdiqlaysizmi?',
+        text: "Ushbu testni o‘chirmoqchimisiz?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ha, o‘chirish!',
+        cancelButtonText: 'Bekor qilish',
     }).then((result) => {
-      if (result.isConfirmed) {
-        fetch(`/question/question/delete/${testId}/`, {
-          method: 'DELETE',
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-          },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              Swal.fire({
-                title: 'Muvaffaqiyatli!',
-                text: data.message,
-                icon: 'success',
-                confirmButtonText: 'OK',
-              }).then(() => {
-                window.location.reload(); // Sahifani qayta yuklash
-              });
-            } else {
-              Swal.fire({
-                title: 'Xatolik!',
-                text: data.message || "Testni o'chirishda xatolik yuz berdi.",
-                icon: 'error',
-                confirmButtonText: 'OK',
-              });
-            }
-          })
-          .catch((error) => {
-            Swal.fire({
-              title: 'Xatolik!',
-              text: 'Server bilan bog‘lanishda xatolik yuz berdi.',
-              icon: 'error',
-              confirmButtonText: 'OK',
-            });
-            console.error('Error:', error);
-          });
-      }
+        if (result.isConfirmed) {
+            fetch(`/question/question/delete/${testId}/`, {
+                method: 'POST', // DELETE o'rniga POST ishlatilmoqda
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value, // CSRF token
+                },
+                body: JSON.stringify({ action: 'delete' }), // Qo'shimcha bayroq
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Muvaffaqiyatli!',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonText: 'OK',
+                        }).then(() => {
+                            window.location.reload(); // Sahifani qayta yuklash
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Xatolik!',
+                            text: data.message || "Testni o'chirishda xatolik yuz berdi.",
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                        });
+                    }
+                })
+                .catch((error) => {
+                    Swal.fire({
+                        title: 'Xatolik!',
+                        text: 'Server bilan bog‘lanishda xatolik yuz berdi.',
+                        icon: 'error',
+                        confirmButtonText: 'OK',
+                    });
+                    console.error('Error:', error);
+                });
+        }
     });
-  }
+}
 </script>
 {% endblock script %}

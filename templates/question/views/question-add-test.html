@@ -61,19 +61,20 @@
             <div id="answers-section" class="mb-4">
               <label class="form-label">Variantlar</label>
               <div class="answer-item d-flex mb-2">
-                <input type="text" class="form-control me-2" name="answers[]" placeholder="Variantni kiriting" required>
-                <div class="form-check form-switch">
-                  <input type="checkbox" class="form-check-input" name="is_correct[]">
-                  <label class="form-check-label">To'g'ri</label>
-                </div>
-                <button type="button" class="btn btn-danger btn-sm ms-2 remove-answer">
-                  <i class="fa fa-trash"></i>
-                </button>
+                  <input type="text" class="form-control me-2" name="answers[]" placeholder="Variantni kiriting" required>
+                  <div class="form-check form-switch">
+                      <input type="checkbox" class="form-check-input is-correct-checkbox">
+                      <input type="hidden" name="is_correct[]" value="false">
+                      <label class="form-check-label">To'g'ri</label>
+                  </div>
+                  <button type="button" class="btn btn-danger btn-sm ms-2 remove-answer">
+                      <i class="fa fa-trash"></i>
+                  </button>
               </div>
-            </div>
-            <button type="button" class="btn btn-sm btn-success mb-3" id="add-answer">
+          </div>
+          <button type="button" class="btn btn-sm btn-success mb-3" id="add-answer">
               <i class="fa fa-plus"></i> Yangi variant qo'shish
-            </button>
+          </button>
             <!-- Saqlash -->
             <div class="mb-4 text-end">
               <button type="submit" class="btn btn-alt-primary">
@@ -147,26 +148,44 @@
   <script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
   <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
   <script>
-    document.getElementById('add-answer').addEventListener('click', function() {
-      const answersSection = document.getElementById('answers-section');
-      const answerItem = document.createElement('div');
-      answerItem.className = 'answer-item d-flex mb-2';
-      answerItem.innerHTML = `
-    <input type="text" class="form-control me-2" name="answers[]" placeholder="Variantni kiriting" required>
-    <div class="form-check form-switch">
-      <input type="checkbox" class="form-check-input" name="is_correct[]">
-      <label class="form-check-label">To'g'ri</label>
-    </div>
-    <button type="button" class="btn btn-danger btn-sm ms-2 remove-answer">
-      <i class="fa fa-trash"></i>
-    </button>`;
-      answersSection.appendChild(answerItem);
+    // Yangi variant qo'shish
+    document.getElementById('add-answer').addEventListener('click', function () {
+        const answersSection = document.getElementById('answers-section');
+        const answerItem = document.createElement('div');
+        answerItem.className = 'answer-item d-flex mb-2';
+        answerItem.innerHTML = `
+            <input type="text" class="form-control me-2" name="answers[]" placeholder="Variantni kiriting" required>
+            <div class="form-check form-switch">
+                <input type="checkbox" class="form-check-input is-correct-checkbox">
+                <input type="hidden" name="is_correct[]" value="false">
+                <label class="form-check-label">To'g'ri</label>
+            </div>
+            <button type="button" class="btn btn-danger btn-sm ms-2 remove-answer">
+                <i class="fa fa-trash"></i>
+            </button>`;
+        answersSection.appendChild(answerItem);
+    
+        // Checkbox va yashirin inputni sinxronlashtirish
+        const checkbox = answerItem.querySelector('.is-correct-checkbox');
+        const hiddenInput = answerItem.querySelector('input[type="hidden"][name="is_correct[]"]');
+        checkbox.addEventListener('change', function () {
+            hiddenInput.value = this.checked ? 'true' : 'false';
+        });
     });
-
-    document.getElementById('answers-section').addEventListener('click', function(e) {
-      if (e.target.closest('.remove-answer')) {
-        e.target.closest('.answer-item').remove();
-      }
+    
+    // Mavjud checkboxlarni sinxronlashtirish (sahifa yuklanganda)
+    document.querySelectorAll('.is-correct-checkbox').forEach(checkbox => {
+        const hiddenInput = checkbox.nextElementSibling;
+        checkbox.addEventListener('change', function () {
+            hiddenInput.value = this.checked ? 'true' : 'false';
+        });
+    });
+    
+    // Variantni o'chirish
+    document.getElementById('answers-section').addEventListener('click', function (e) {
+        if (e.target.closest('.remove-answer')) {
+            e.target.closest('.answer-item').remove();
+        }
     });
   </script>
   <script>

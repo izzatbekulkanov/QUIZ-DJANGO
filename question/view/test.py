@@ -90,15 +90,12 @@ class AddQuestionView(View):
 
 @method_decorator(login_required, name='dispatch')
 class DeleteTestView(View):
-    def delete(self, request, test_id):
+    def post(self, request, test_id):
         if request.user.is_superuser:  # Only admins can delete tests
-            test = get_object_or_404(Test.objects.annotate(
-                question_count=Count('questions'),
-                result_count=Count('results')
-            ), id=test_id)
+            test = get_object_or_404(Test.objects.annotate( question_count=Count('questions')), id=test_id)
 
             # Check if there are related questions or results
-            if test.question_count == 0 and test.result_count == 0:
+            if test.question_count == 0:
                 test.delete()
                 return JsonResponse({"success": True, "message": "Test muvaffaqiyatli o‘chirildi!"})
             else:
@@ -153,30 +150,46 @@ class AddQuestionTestView(View):
 
     def post(self, request, test_id):
         test = get_object_or_404(Test, id=test_id)
+        print(f"Test ID: {test_id}, Test: {test}")  # Test ma'lumotini tekshirish
+
         form = AddQuestionForm(request.POST, request.FILES)
+        print(f"POST ma'lumotlari: {request.POST}")  # POST ma'lumotlarini tekshirish
+        print(f"Fayllar: {request.FILES}")  # Yuklangan fayllarni tekshirish
 
         if form.is_valid():
+            print("Form validatsiyadan o'tdi!")  # Form validatsiyasi muvaffaqiyatli o'tganini tekshirish
+
             # Savolni yaratish
             question = Question.objects.create(
                 test=test,
                 text=form.cleaned_data['text'],
-                image=form.cleaned_data['image']
+                image=form.cleaned_data.get('image')  # Rasmlar ixtiyoriy
             )
+            print(f"Yaratilgan savol: {question}")  # Yaratilgan savolni tekshirish
 
             # Javoblar va ularning atributlarini olish
             answers = request.POST.getlist('answers[]')  # Javob matnlari
             is_correct_flags = request.POST.getlist('is_correct[]')  # To'g'ri yoki noto'g'ri bayrog'i
 
+            print(f"Answers: {answers}")  # Kiruvchi javoblarni tekshirish
+            print(f"Is_correct_flags: {is_correct_flags}")  # To'g'ri javoblar bayrog'ini tekshirish
+
             # Variantlarni yaratish
             for index, answer_text in enumerate(answers):
+                is_correct = is_correct_flags[index].lower() == 'true'
+                print(
+                    f"Javob: {answer_text.strip()}, To'g'ri: {is_correct}")  # Har bir javobni va uning holatini tekshirish
+
                 Answer.objects.create(
                     question=question,
                     text=answer_text.strip(),
-                    is_correct=(is_correct_flags[index] == 'on' if index < len(is_correct_flags) else False)
+                    is_correct=is_correct
                 )
 
+            print("Savol va barcha javoblar muvaffaqiyatli saqlandi!")  # Yakuniy muvaffaqiyat xabari
             return JsonResponse({"success": True, "message": "Savol va barcha javoblar muvaffaqiyatli saqlandi!"})
 
+        print(f"Form validatsiya xatoliklari: {form.errors}")  # Form validatsiyasi xatolarini tekshirish
         return JsonResponse({"success": False, "errors": form.errors})
 
 @method_decorator(login_required, name='dispatch')
