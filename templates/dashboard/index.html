@@ -31,6 +31,26 @@
     <!-- Tema CSS -->
     <link rel="stylesheet" id="css-theme" href="{% static 'assets/css/themes/amethyst.min.css' %}">
     <!-- END Stylesheets -->
+    <style>
+      /* Hamburger tugmasini yaxshi ko'rinishi uchun */
+.nav-main-link {
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+}
+
+.nav-main-link-icon {
+  margin-right: 5px;
+}
+
+/* Mobil qurilmalarda menu moslashuvchanligi */
+@media (max-width: 768px) {
+  .nav-main-link {
+    width: 100%;
+    justify-content: center;
+  }
+}
+    </style>
     {% block style %}
     {% endblock style %}
 </head>

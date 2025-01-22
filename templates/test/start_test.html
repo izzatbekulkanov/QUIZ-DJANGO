@@ -5,112 +5,140 @@
 {% block style %}
 
 <style>
-  /* Javoblar uchun hover effekti */
-  .answer-item {
-      transition: all 0.3s ease;
-  }
-  
-  .answer-item:hover {
-      background-color: #f0f8ff; /* Pastel ko‘k rang */
-      cursor: pointer;
-  }
-  
-  .answer-item.border-success {
-      border: 2px solid #198754; /* Success rang */
-      background-color: #d4edda; /* Success fon rangi */
-  }
+
+    #countdown-timer {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    .question-progress-badge {
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+    }
+    .question-progress-badge.bg-primary {
+        border-color: #007bff;
+    }
+    .question-progress-badge:hover {
+        background-color: #0056b3;
+        color: white;
+    }
+        /* Header va Footer-ni yashirish */
+    #page-header,
+    #page-footer {
+        display: none;
+    }
+
+    /* Umumiy javob itemlar uchun */
+    .answer-item {
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+        border-radius: 5px;
+    }
+
+    /* Hover effekti */
+    .answer-item:hover {
+        background-color: #f8f9fa; /* Bootstrapning engil fon rangi */
+        cursor: pointer;
+    }
+
+    /* Tanlangan javob uchun */
+    .answer-item.border-success {
+        border: 2px solid #198754; /* Success rang */
+        background-color: #d4edda; /* Success fon */
+    }
+
+    /* Radio tugma uchun maxsus stil */
+    .form-check-input {
+        cursor: pointer;
+        width: 1.5rem;
+        height: 1.5rem;
+        margin-right: 10px;
+    }
+
+    /* Label uchun moslashuvchan stil */
+    .answer-item label {
+        cursor: pointer;
+        font-size: 1rem; /* Matnning o'qilishi uchun kattaroq */
+        color: #212529; /* Bootstrapning asosiy qora rangi */
+    }
+
+    /* Javob tanlanganda avtomatik border */
+    .answer-item input[type="radio"]:checked + span {
+        font-weight: bold;
+        color: #198754; /* Success rang */
+    }
+
+    /* Mobil qurilmalar uchun optimallashtirish */
+    @media (max-width: 576px) {
+        .answer-item {
+            padding: 10px;
+        }
+
+        .form-check-input {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .answer-item label {
+            font-size: 0.9rem;
+        }
+    }
+    .question-progress-badge {
+    cursor: pointer;
+}
 </style>
-  <style>
-      /* Timer and tracker container */
-      .position-fixed {
-          max-height: 100%; /* Yuqori burchakda to‘liq sig‘adi */
-          overflow-y: auto; /* Juda ko‘p savollarda scroll */
-      }
-
-      /* Timer style */
-      #countdown-timer {
-          font-size: 1.2rem;
-          font-weight: bold;
-      }
-
-      /* Progress tracker badge styling */
-      .progress-tracker .badge {
-          border-radius: 50%; /* Dumaloq shakl */
-          display: inline-block;
-          text-align: center;
-          font-weight: bold;
-          font-size: 0.8rem; /* Kichikroq matn */
-      }
-
-      /* Badge-lar orasidagi masofa */
-      .progress-tracker .col-2 {
-          flex: 0 0 auto;
-          max-width: 16.6667%; /* Bir qatorga 6 ta */
-      }
-
-      .progress-tracker .row {
-          justify-content: center;
-          margin-left: 0;
-          margin-right: 0;
-      }
-      .cursor-pointer{
-          cursor: pointer;
-      }
-  </style>
 
 {% endblock style %}
 
 
 {% block content %}
-  <main id="main-container">
-    <div class="container mt-5">
-        <!-- Timer va Progress Tracker -->
-        <div class="position-fixed top-0 end-0 m-3 bg-white p-3 shadow rounded" style="z-index: 1050; width: 220px;">
+<main id="main-container" class="bg-light min-vh-100 d-flex flex-column justify-content-between">
+    <!-- Timer va Progress Tracker -->
+    <div class="container py-4">
+        <div class="bg-white shadow rounded p-3 mx-auto text-center" style="max-width: 320px;">
             <!-- Timer -->
-            <div class="text-center mb-3">
-                <span class="badge bg-primary fs-5 p-3 rounded w-100" id="countdown-timer">00:00</span>
-            </div>
-
+            <span id="countdown-timer" class="badge bg-primary text-white fs-5 py-2 px-4 rounded-pill d-block mx-auto">
+                00:00
+            </span>
             <!-- Progress Tracker -->
-            <div class="progress-tracker">
-                <div class="row g-2">
-                    {% for question in questions %}
-                    <div class="col-2 text-center">
-                        <span
-                            class="badge {% if forloop.first %}bg-primary{% else %}bg-secondary{% endif %} question-progress-badge cursor-pointer"
-                            data-question-id="{{ question.id }}"
-                            style="width: 30px; height: 30px; line-height: 30px; font-size: 0.8rem;">
-                            {{ forloop.counter }}
-                        </span>
-                    </div>
-                    {% if forloop.counter|divisibleby:6 %}
-                    </div><div class="row g-2">
-                    {% endif %}
-                    {% endfor %}
+            <div class="row mt-4 g-2 justify-content-center">
+                {% for question in questions %}
+                <div class="col-auto">
+                    <span
+                        class="badge {% if forloop.first %}bg-primary text-white{% else %}bg-secondary text-dark{% endif %}
+                        question-progress-badge d-flex align-items-center justify-content-center"
+                        data-question-id="{{ question.id }}"
+                        style="width: 36px; height: 36px; font-size: 0.85rem; cursor: pointer;">
+                        {{ forloop.counter }}
+                    </span>
                 </div>
+                {% endfor %}
             </div>
         </div>
+    </div>
 
-        <!-- Savollar -->
-        <div class="card shadow-lg question-card mx-auto" style="max-width: 800px; min-height: 500px;">
+    <!-- Savollar -->
+    <div class="container mb-auto">
+        <div class="card shadow-sm mx-auto" style="max-width: 768px;">
             {% for question in questions %}
-            <div class="question-block card-body {% if forloop.first %}d-block{% else %}d-none{% endif %}"
-                 data-question-id="{{ question.id }}">
-                <div class="question-content">
-                    <h4 class="text-primary mb-4 text-center">{{ question.text|safe }}</h4>
+            <div class="question-block {% if forloop.first %}d-block{% else %}d-none{% endif %}" data-question-id="{{ question.id }}">
+                <div class="card-body">
+                    <h5 class="text-primary text-center mb-4">{{ question.text|safe }}</h5>
                     {% if question.image %}
                     <div class="text-center mb-4">
-                        <img src="{{ question.image }}" alt="Question Image" class="img-fluid rounded border"
-                             style="max-width: 100%; border-radius: 10px; max-height: 300px;">
+                        <img src="{{ question.image }}" alt="Question Image" class="img-fluid rounded shadow-sm" style="max-height: 240px;">
                     </div>
                     {% endif %}
                     <ul class="list-group">
                         {% for answer in question.answers %}
-                        <li class="list-group-item answer-item {% if answer.selected %}border-success{% endif %}">
-                            <label class="d-flex align-items-center cursor-pointer  ">
-                                <input type="radio" name="question_{{ question.id }}" value="{{ answer.id }}"
-                                       class="me-2" {% if answer.selected %}checked{% endif %}>
-                                <span>{{ answer.text }}</span>
+                        <li class="list-group-item answer-item d-flex align-items-center p-3 {% if answer.selected %}border-success bg-light{% endif %}">
+                            <label for="answer_{{ answer.id }}" class="d-flex align-items-center w-100 mb-0">
+                                <input
+                                    type="radio"
+                                    name="question_{{ question.id }}"
+                                    value="{{ answer.id }}"
+                                    id="answer_{{ answer.id }}"
+                                    class="form-check-input me-3"
+                                    {% if answer.selected %}checked{% endif %}>
+                                <span class="text-break">{{ answer.text }}</span>
                             </label>
                         </li>
                         {% endfor %}
@@ -119,20 +147,20 @@
             </div>
             {% endfor %}
         </div>
+    </div>
 
-        <!-- Navigation Buttons -->
-        <div class="fixed-bottom bg-light py-3 shadow-lg">
-            <div class="container d-flex justify-content-between align-items-center">
-                <button class="btn btn-secondary" id="prev-btn" disabled>
-                    <i class="fa fa-arrow-left me-2"></i>Oldingi
-                </button>
-                <button class="btn btn-primary" id="next-btn">
-                    Keyingisi<i class="fa fa-arrow-right ms-2"></i>
-                </button>
-                <button class="btn btn-danger btn-lg" id="finish-test-btn">
-                    <i class="fa fa-check me-2"></i>Testni Tugatish
-                </button>
-            </div>
+    <!-- Navigation Buttons -->
+    <div class="bg-white py-3 shadow-sm">
+        <div class="container d-flex justify-content-between align-items-center">
+            <button class="btn btn-outline-secondary btn-sm" id="prev-btn" disabled>
+                <i class="fa fa-arrow-left me-2"></i>Oldingi
+            </button>
+            <button class="btn btn-primary btn-sm" id="next-btn">
+                Keyingisi<i class="fa fa-arrow-right ms-2"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" id="finish-test-btn">
+                <i class="fa fa-check me-2"></i>Tugatish
+            </button>
         </div>
     </div>
 </main>
@@ -144,63 +172,21 @@
 
   <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
   <script>
-  document.querySelectorAll('input[type="radio"]').forEach((radio) => {
-    radio.addEventListener('change', function () {
-        const questionId = this.name.split('_')[1];
-
-        // Hozirgi savolga tegishli barcha javoblarni olish
-        const answers = document.querySelectorAll(`input[name="question_${questionId}"]`);
-        answers.forEach((answer) => {
-            const parentLi = answer.closest('.answer-item');
-            parentLi.classList.remove('border-success'); // Avvalgi tanlanganlardan border-successni olib tashlash
-        });
-
-        // Tanlangan javobga border-success qo‘shish
-        const selectedAnswer = this.closest('.answer-item');
-        selectedAnswer.classList.add('border-success');
-    });
-});
-  </script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     const countdownTimer = document.getElementById('countdown-timer');
     const questionBlocks = document.querySelectorAll('.question-block');
     const progressBadges = document.querySelectorAll('.question-progress-badge');
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const finishTestBtn = document.getElementById('finish-test-btn');
-    let currentQuestionIndex = 0;
+    let currentQuestionIndex = parseInt(localStorage.getItem('currentQuestionIndex')) || 0; // Saqlangan indeksni o'qi
     let remainingTime = {{ remaining_time }}; // Serverdan kelgan qolgan vaqt (sekundlarda)
-    let isTestRunning = true; // Test davomida bu holat `true` bo'ladi
+    let isTestRunning = true;
+
     // Sahifadan chiqishga ruxsat bermaslik
-    window.onbeforeunload = function () {
-        if (isTestRunning) {
-            return 'Test davomida sahifadan chiqish tavsiya etilmaydi.';
-        }
-    };
+    window.onbeforeunload = () => (isTestRunning ? 'Test davomida sahifadan chiqish tavsiya etilmaydi.' : null);
 
-    // Sahifadagi barcha linklarga SweetAlert2 orqali ogohlantirish
-    const links = document.querySelectorAll('a');
-    links.forEach(link => {
-        link.addEventListener('click', function (event) {
-            event.preventDefault(); // Linkning odatiy harakatini to'xtatish
-            Swal.fire({
-                title: 'Diqqat!',
-                text: 'Test davomida sahifadan chiqish tavsiya etilmaydi.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Baribir chiqaman',
-                cancelButtonText: 'Testni davom ettir',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    isTestRunning = false; // Foydalanuvchi tasdiqlasa, chiqishga ruxsat beriladi
-                    window.location.href = this.href; // Link manziliga o'tish
-                }
-            });
-        });
-    });
-
-    // Timer Countdown
+    // Timer Countdown funksiyasi
     function updateCountdown() {
         if (remainingTime > 0) {
             const minutes = Math.floor(remainingTime / 60);
@@ -208,17 +194,14 @@
             countdownTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             remainingTime--;
         } else {
-            clearInterval(timerInterval); // Timer to'xtatiladi
-            Swal.fire('Vaqt tugadi!', 'Test avtomatik yakunlandi.', 'info').then(() => {
-                finishTestBtn.click(); // Test yakunlash tugmasi bosiladi
-            });
+            clearInterval(timerInterval);
+            Swal.fire('Vaqt tugadi!', 'Test avtomatik yakunlandi.', 'info').then(() => finishTestBtn.click());
         }
     }
-
     const timerInterval = setInterval(updateCountdown, 1000);
     updateCountdown();
 
-    // Savolni ko'rsatish
+    // Savollarni ko'rsatish funksiyasi
     function showQuestion(index) {
         questionBlocks.forEach((block, i) => {
             block.classList.toggle('d-block', i === index);
@@ -230,69 +213,93 @@
         });
         prevBtn.disabled = index === 0;
         nextBtn.disabled = index === questionBlocks.length - 1;
+
+        // Joriy savol indeksini saqlash
+        localStorage.setItem('currentQuestionIndex', index);
     }
 
-    // Radio tugmalarni boshqarish
-    document.querySelectorAll('input[type="radio"]').forEach((radio) => {
-        radio.addEventListener('change', function () {
-            const questionId = this.name.split('_')[1];
-            const answerId = this.value;
+    // Javobni tanlash va serverga yuborish funksiyasi
+    function handleAnswerSelection(radio) {
+        const questionId = radio.name.split('_')[1];
+        const answerId = radio.value;
 
-            fetch('/save-answer/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
-                body: JSON.stringify({
-                    student_question_id: questionId,
-                    answer_id: answerId,
-                }),
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (!data.success) {
-                        Swal.fire('Xatolik', data.message, 'error');
-                    } else {
-                        const badge = document.querySelector(`.question-progress-badge[data-question-id="${questionId}"]`);
-                        if (badge) badge.classList.add('bg-success');
-                    }
-                })
-                .catch((error) => {
-                    console.error('Server bilan bog‘lanishda muammo:', error);
-                    Swal.fire('Xatolik', 'Server bilan bog‘lanishda muammo yuz berdi.', 'error');
-                });
+        // Javobni serverga yuborish
+        fetch('/save-answer/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({ student_question_id: questionId, answer_id: answerId }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                Swal.fire('Xatolik', data.message, 'error');
+            } else {
+                document.querySelector(`.question-progress-badge[data-question-id="${questionId}"]`)
+                    ?.classList.add('bg-success');
+            }
+        })
+        .catch(() => Swal.fire('Xatolik', 'Server bilan bog‘lanishda muammo yuz berdi.', 'error'));
+
+        // UI-ni yangilash
+        document.querySelectorAll(`input[name="question_${questionId}"]`).forEach(answer => {
+            answer.closest('.answer-item').classList.remove('border-success');
         });
-    });
+        radio.closest('.answer-item').classList.add('border-success');
+    }
 
-    // Oldingi savolga o'tish
-    prevBtn.addEventListener('click', function () {
+    // Savollarni boshqarish tugmalari
+    prevBtn.addEventListener('click', () => {
         if (currentQuestionIndex > 0) {
             currentQuestionIndex--;
             showQuestion(currentQuestionIndex);
         }
     });
-
-    // Keyingi savolga o'tish
-    nextBtn.addEventListener('click', function () {
+    nextBtn.addEventListener('click', () => {
         if (currentQuestionIndex < questionBlocks.length - 1) {
             currentQuestionIndex++;
             showQuestion(currentQuestionIndex);
         }
     });
-
-    // Progress tracker orqali savolga o'tish
-    progressBadges.forEach((badge, i) => {
-        badge.addEventListener('click', function () {
-            currentQuestionIndex = i;
-            showQuestion(i);
+    progressBadges.forEach((badge, index) => {
+        badge.addEventListener('click', () => {
+            currentQuestionIndex = index;
+            showQuestion(index);
         });
     });
 
-    // Testni tugatish
-// Testni yakunlash tugmasi uchun hodisa
-    finishTestBtn.addEventListener('click', function () {
-        const unansweredQuestions = [...questionBlocks].filter((block) => {
+    // Javoblarni tanlash hodisasi
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', () => handleAnswerSelection(radio));
+    });
+
+    // Testni yakunlash funksiyasi
+    function submitTest() {
+        fetch(`/finish-test/{{ student_test.id }}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                isTestRunning = false;
+                Swal.fire('Tabriklaymiz!', data.message, 'success').then(() => {
+                    window.location.href = data.redirect_url;
+                });
+            } else {
+                Swal.fire('Xatolik', data.message, 'error');
+            }
+        })
+        .catch(() => Swal.fire('Xatolik', 'Testni tugatishda muammo yuz berdi.', 'error'));
+    }
+
+    // Testni yakunlash hodisasi
+    finishTestBtn.addEventListener('click', () => {
+        const unansweredQuestions = [...questionBlocks].filter(block => {
             const questionId = block.dataset.questionId;
             return !document.querySelector(`input[name="question_${questionId}"]:checked`);
         });
@@ -305,10 +312,8 @@
                 showCancelButton: true,
                 confirmButtonText: 'Davom etish',
                 cancelButtonText: 'Ortga qaytish',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    submitTest();
-                }
+            }).then(result => {
+                if (result.isConfirmed) submitTest();
             });
         } else {
             Swal.fire({
@@ -318,41 +323,14 @@
                 showCancelButton: true,
                 confirmButtonText: 'Ha, yakunlash',
                 cancelButtonText: 'Bekor qilish',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    submitTest();
-                }
+            }).then(result => {
+                if (result.isConfirmed) submitTest();
             });
         }
     });
 
-    // Testni yakunlash funksiyasi
-    function submitTest() {
-        fetch(`/finish-test/{{ student_test.id }}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-            },
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.success) {
-                    isTestRunning = false; // Test yakunlanganda sahifadan chiqishga ruxsat beriladi
-                    Swal.fire('Tabriklaymiz!', data.message, 'success').then(() => {
-                        window.location.href = data.redirect_url; // Natija sahifasiga yo'naltirish
-                    });
-                } else {
-                    Swal.fire('Xatolik', data.message, 'error');
-                }
-            })
-            .catch((error) => {
-                console.error('Server bilan bog‘lanishda muammo:', error);
-                Swal.fire('Xatolik', 'Testni tugatishda muammo yuz berdi.', 'error');
-            });
-    }
-
     // Dastlabki sozlamalar
     showQuestion(currentQuestionIndex);
 });
-  </script>
+</script>
 {% endblock script %}
