@@ -1,11 +1,15 @@
+import re
+from django.core.files import File  # ✅ MUHIM: File ni shu yerda import qiling
 from django.contrib.auth.decorators import login_required
 from django.db.models import Prefetch
 from django.http import JsonResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.decorators import method_decorator
 from django.views import View
-
+from django.conf import settings
 from question.models import Category, Test
+import os
+import shutil
 
 
 @method_decorator(login_required, name='dispatch')
@@ -47,34 +51,58 @@ class CategoriesView(View):
             print(f"WARNING: Unauthorized delete attempt by user ID {request.user.id} ({request.user.username}).")
             return JsonResponse({"success": False, "message": "Sizda bu amalni bajarish uchun ruxsat yo‘q!"})
 
+
+
 @method_decorator(login_required, name='dispatch')
 class EditCategoryView(View):
     template_name = 'question/views/edit-category.html'
 
     def get(self, request, category_id):
-        # Kategoriya ma'lumotlarini olish
         category = get_object_or_404(Category, id=category_id)
-        context = {
-            'category': category,
-        }
-        return render(request, self.template_name, context)
+        return render(request, self.template_name, {'category': category})
 
     def post(self, request, category_id):
-        # Kategoriya ma'lumotlarini yangilash
         category = get_object_or_404(Category, id=category_id)
+
         name = request.POST.get('name')
         description = request.POST.get('description')
-        image = request.FILES.get('image', category.image)  # Agar rasm yuborilmagan bo'lsa, eski rasm saqlanadi
+        image = request.FILES.get('image')
+
+        # 🔒 Tekshiruv: nom kiritilganmi
+        if not name:
+            message = "Kategoriya nomi kiritilishi shart!"
+            if self._is_ajax(request):
+                return JsonResponse({"success": False, "message": message})
+            else:
+                return render(request, self.template_name, {
+                    "category": category,
+                    "error": message
+                })
 
         try:
             category.name = name
             category.description = description
-            category.image = image
+            if image:
+                category.image = image
             category.save()
-            return JsonResponse({"success": True, "message": "Kategoriya muvaffaqiyatli yangilandi!"})
-        except Exception as e:
-            return JsonResponse({"success": False, "message": f"Xatolik yuz berdi: {str(e)}"})
 
+            if self._is_ajax(request):
+                return JsonResponse({"success": True, "message": "Kategoriya muvaffaqiyatli yangilandi!"})
+            else:
+                return redirect('categories')
+
+        except Exception as e:
+            message = f"Xatolik yuz berdi: {str(e)}"
+            if self._is_ajax(request):
+                return JsonResponse({"success": False, "message": message})
+            else:
+                return render(request, self.template_name, {
+                    "category": category,
+                    "error": message
+                })
+
+    def _is_ajax(self, request):
+        return request.headers.get('x-requested-with') == 'XMLHttpRequest'
 @method_decorator(login_required, name='dispatch')
 class AddCategoryView(View):
     template_name = 'question/views/add-category.html'
@@ -83,22 +111,65 @@ class AddCategoryView(View):
         return render(request, self.template_name)
 
     def post(self, request):
+        print("📥 POST so‘rov qabul qilindi.")
+
         name = request.POST.get('name')
         description = request.POST.get('description')
         image = request.FILES.get('image')
 
+        print(f"➡️  Kiritilgan nom: {name}")
+        print(f"➡️  Tavsif: {description}")
+        print(f"➡️  Rasm: {'Yuklangan' if image else 'Yuklanmagan'}")
+
         if not name:
-            return JsonResponse({"success": False, "message": "Kategoriya nomi kiritilishi shart!"})
+            print("❌ Kategoriya nomi yo‘q!")
+            return self._response(request, success=False, message="Kategoriya nomi kiritilishi shart!")
 
         try:
-            category = Category.objects.create(
-                name=name,
-                description=description,
-                image=image,
-            )
-            return JsonResponse({"success": True, "message": "Kategoriya muvaffaqiyatli qo'shildi!"})
+            # Rasm bo'lmasa — default static rasmni media'ga nusxalash
+            if not image:
+                print("ℹ️  Rasm yuklanmadi, default static rasmdan foydalaniladi.")
+
+                static_default_path = os.path.join(settings.BASE_DIR, 'static', 'assets', 'images', 'question_category.png')
+                media_path = os.path.join(settings.MEDIA_ROOT, 'category_images')
+                os.makedirs(media_path, exist_ok=True)
+
+                safe_name = re.sub(r'[^a-zA-Z0-9_-]', '_', name.lower())
+                filename = f"default_{safe_name}.png"
+                new_image_path = os.path.join(media_path, filename)
+
+                shutil.copy(static_default_path, new_image_path)
+                print(f"✅ Default rasm nusxa olindi: {new_image_path}")
+
+                with open(new_image_path, 'rb') as f:
+                    image_file = File(f)
+                    image_file.name = f'category_images/{filename}'
+                    category = Category.objects.create(
+                        name=name,
+                        description=description,
+                        image=image_file,
+                    )
+                    print(f"✅ Kategoriya yaratildi (default rasm): {category.name}")
+            else:
+                category = Category.objects.create(
+                    name=name,
+                    description=description,
+                    image=image,
+                )
+                print(f"✅ Kategoriya yaratildi (upload rasm): {category.name}")
+
+            return self._response(request, success=True, message="Kategoriya muvaffaqiyatli qo'shildi!")
+
         except Exception as e:
-            return JsonResponse({"success": False, "message": f"Xatolik yuz berdi: {str(e)}"})
+            print(f"❌ Xatolik: {str(e)}")
+            return self._response(request, success=False, message=f"Xatolik yuz berdi: {str(e)}")
+
+    def _response(self, request, success, message):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({"success": success, "message": message})
+        if success:
+            return redirect('categories')  # yoki o'zingiz xohlagan sahifa
+        return render(request, self.template_name, {"error": message})
 
 
 class GetCategoryTestsView(View):

@@ -6,6 +6,7 @@ from django_ckeditor_5.fields import CKEditor5Field
 from django.db import models
 from django.conf import settings
 
+
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(null=True, blank=True)
@@ -15,6 +16,7 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Test(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='tests')
@@ -38,6 +40,7 @@ class Question(models.Model):
     def __str__(self):
         return self.text[:50]  # Matnning birinchi 50 belgisi qaytariladi
 
+
 class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
     text = models.CharField(max_length=200)  # 'text' maydoni aniq ko'rsatilgan
@@ -45,7 +48,6 @@ class Answer(models.Model):
 
     def __str__(self):
         return f"{self.text} ({'Correct' if self.is_correct else 'Incorrect'})"
-
 
 
 class StudentTestAssignment(models.Model):
@@ -57,11 +59,13 @@ class StudentTestAssignment(models.Model):
     end_time = models.DateTimeField()
     duration = models.PositiveIntegerField(default=30)  # Davomiylik (daqiqa ko'rinishida)
     is_active = models.BooleanField(default=True)  # Active yoki Active emas
-    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('completed', 'Completed')], default='pending')
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('completed', 'Completed')],
+                              default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.teacher} - {self.test.name} ({self.start_time} - {self.end_time})"
+
 
 class StudentTest(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='student_tests')
@@ -87,3 +91,32 @@ class StudentTestQuestion(models.Model):
     def __str__(self):
         return f"{self.student_test.student.username} - {self.question.text[:50]}"
 
+
+class SystemSetting(models.Model):
+    name = models.CharField(max_length=255, verbose_name="Tizim nomi")
+    description = models.TextField(blank=True, null=True, verbose_name="Tizim haqida tavsif")
+    logo = models.ImageField(upload_to='system/logo/', blank=True, null=True, verbose_name="Logo")
+    favicon = models.ImageField(upload_to='system/favicon/', blank=True, null=True, verbose_name="Favicon")
+    contact_email = models.EmailField(blank=True, null=True, verbose_name="Aloqa email")
+    contact_phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="Aloqa telefoni")
+    address = models.TextField(blank=True, null=True, verbose_name="Manzil")
+    footer_text = models.CharField(max_length=255, blank=True, null=True, verbose_name="Footer matni")
+    is_active = models.BooleanField(default=True, verbose_name="Faollashtirilganmi")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # HEMIS
+    hemis_url = models.URLField(blank=True, null=True, verbose_name="HEMIS URL")
+    hemis_api_key = models.CharField(max_length=255, blank=True, null=True, verbose_name="HEMIS API Key")
+
+    # Holat
+    status = models.CharField(max_length=50, choices=[
+        ('active', 'Sayt ishlamoqda'),
+        ('maintenance', 'Sayt tamirlanmoqda'),
+        ('offline', 'Sayt offline'),
+    ], default='active', verbose_name="Sayt holati")
+
+    # ✅ YANGI MAYDON:
+    status_message = models.TextField(blank=True, null=True, verbose_name="Holat matni")
+
+    def __str__(self):
+        return self.name

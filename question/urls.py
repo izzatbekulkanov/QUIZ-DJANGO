@@ -2,6 +2,8 @@ from django.urls import path
 
 from .view.category import CategoriesView, AddCategoryView, EditCategoryView, GetCategoryTestsView, \
     GetTestQuestionsCountView
+from .view.hemis_users import ImportStudentsFromHemisStreamView, ImportStaffFromHemisStreamView
+from .view.site import site_settings_view
 from .view.test import QuestionView, AddQuestionView, DeleteTestView, EditTestView, AddQuestionTestView, \
     AssignTestView, ToggleActiveView, AddAssignTestView
 from .views import MainView, UsersView, \
@@ -31,4 +33,8 @@ urlpatterns = [
     path('roles/', RolesView.as_view(), name='roles'),
     path('results/', ResultsView.as_view(), name='results'),
     path('test/<int:test_id>/details/', ViewTestDetailsView.as_view(), name='view-test-details'),
+    path('site-settings/', site_settings_view, name='site_settings'),
+
+    path('import/students/', ImportStudentsFromHemisStreamView.as_view(), name='import_students'),
+    path('import/staff/', ImportStaffFromHemisStreamView.as_view(), name='import_staff'),
 ]

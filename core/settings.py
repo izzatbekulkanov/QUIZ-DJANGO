@@ -21,7 +21,6 @@ LOCAL_APPS = [
 
 ASGI_APPLICATION = 'core.asgi.application'
 
-
 DYNAMIC_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -111,6 +110,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.template.context_processors.media',
                 'django.contrib.messages.context_processors.messages',
+                'common.context_processors.system_settings',
             ],
         },
     },
@@ -188,7 +188,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'your_email@gmail.com'
 EMAIL_HOST_PASSWORD = 'your_email_password'
 
-
 # REST framework configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -198,8 +197,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
-
-
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
@@ -213,7 +210,6 @@ SIMPLE_JWT = {
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
 }
-
 
 # Login and Logout URLs
 LOGIN_URL = '/account/login/'

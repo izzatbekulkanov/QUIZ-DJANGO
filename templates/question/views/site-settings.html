@@ -1,0 +1,147 @@
+{% extends 'question/main.html' %}
+{% load static %}
+{% block content %}
+<main id="main-container">
+
+  <!-- Hero -->
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+    <div class="bg-primary-dark-op">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-0">Tizim sozlamalari</h1>
+            <h2 class="h4 fw-normal text-white-75 mb-0">Aktiv platforma ma'lumotlarini tahrirlash</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- END Hero -->
+
+  <!-- Page Content -->
+  <div class="content content-boxed">
+    <div class="block block-rounded">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Tizim sozlamalari formasi</h3>
+      </div>
+      <div class="block-content">
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="p-3">
+          {% csrf_token %}
+          <div class="row">
+            <!-- Chap ustun -->
+            <div class="col-md-6">
+              <div class="mb-2">
+                <label class="form-label text-muted small mb-1">Tizim nomi</label>
+                <input type="text" name="name" class="form-control form-control-sm"
+                       value="{{ request.POST.name|default:system.name }}">
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label text-muted small mb-1">Tavsif</label>
+                <textarea name="description" class="form-control form-control-sm" rows="3">{{ request.POST.description|default:system.description }}</textarea>
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label text-muted small mb-1">Email</label>
+                <input type="email" name="contact_email" class="form-control form-control-sm"
+                       value="{{ request.POST.contact_email|default:system.contact_email }}">
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label text-muted small mb-1">Telefon</label>
+                <input type="text" name="contact_phone" class="form-control form-control-sm"
+                       value="{{ request.POST.contact_phone|default:system.contact_phone }}">
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label text-muted small mb-1">Manzil</label>
+                <textarea name="address" class="form-control form-control-sm" rows="2">{{ request.POST.address|default:system.address }}</textarea>
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label text-muted small mb-1">Footer matni</label>
+                <input type="text" name="footer_text" class="form-control form-control-sm"
+                       value="{{ request.POST.footer_text|default:system.footer_text }}">
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label text-muted small mb-1">HEMIS API manzili</label>
+                <input type="url" name="hemis_url" class="form-control form-control-sm"
+                       value="{{ request.POST.hemis_url|default:system.hemis_url }}">
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label text-muted small mb-1">HEMIS API kaliti</label>
+                <input type="text" name="hemis_api_key" class="form-control form-control-sm"
+                       value="{{ request.POST.hemis_api_key|default:system.hemis_api_key }}">
+              </div>
+            </div>
+
+            <!-- O‘ng ustun -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label text-muted small mb-1">Logo yuklash</label>
+                <input type="file" name="logo" class="form-control form-control-sm">
+                {% if system.logo %}
+                  <img src="{{ system.logo.url }}" class="img-thumbnail mt-2" width="120" alt="Logo">
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label text-muted small mb-1">Favicon yuklash</label>
+                <input type="file" name="favicon" class="form-control form-control-sm">
+                {% if system.favicon %}
+                  <img src="{{ system.favicon.url }}" class="img-thumbnail mt-2" width="32" alt="Favicon">
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label text-muted small mb-1">Sayt holati</label>
+                <select name="site_status" class="form-select form-select-sm">
+                  <option value="active" {% if request.POST.site_status == "active" or system.status == "active" %}selected{% endif %}>Ishlamoqda</option>
+                  <option value="maintenance" {% if request.POST.site_status == "maintenance" or system.status == "maintenance" %}selected{% endif %}>Texnik tamirda</option>
+                  <option value="offline" {% if request.POST.site_status == "offline" or system.status == "offline" %}selected{% endif %}>Yopiq</option>
+                </select>
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label text-muted small mb-1">Holat matni</label>
+                <textarea name="status_message" class="form-control form-control-sm" rows="3">{{ request.POST.status_message|default:system.status_message }}</textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-3 text-end">
+            <button type="submit" class="btn btn-sm btn-primary px-4">
+              <i class="fa fa-save me-1"></i> Saqlash
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+      setTimeout(() => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+      }, 3000);
+    });
+  });
+</script>
+{% endblock content %}

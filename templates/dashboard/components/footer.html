@@ -1,13 +1,27 @@
 {% load static %}
-<footer id="page-footer" class="bg-body-light">
+<footer id="page-footer" class="bg-white border-top shadow-sm">
   <div class="content py-3">
-    <div class="row fs-sm">
-      <div class="col-sm-6 order-sm-2 py-1 text-center text-sm-end">
-        Yaratuvchilar <i class="fa fa-heart text-danger"></i> bilan <a class="fw-semibold" href="https://yourwebsite.com" target="_blank">Detaktik Team</a>
+    <div class="row align-items-center fs-sm text-muted">
+
+      <!-- Chap tomon: Tizim nomi va yil -->
+      <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+        <a href="https://yourwebsite.com" class="fw-semibold text-primary text-decoration-none" target="_blank">
+          {{ system.name }}
+        </a>
+        &copy; <span id="year-copy"></span>. Barcha huquqlar himoyalangan.
       </div>
-      <div class="col-sm-6 order-sm-1 py-1 text-center text-sm-start">
-        <a class="fw-semibold" href="https://yourwebsite.com" target="_blank">Detaktik Question</a> &copy; <span data-toggle="year-copy"></span>
+
+      <!-- O‘ng tomon: Yaratuvchi -->
+      <div class="col-md-6 text-center text-md-end">
+        <small class="text-muted">
+          Dasturchi: <strong>Izzatbek Ulkanov</strong> | NamDPI RTTM
+        </small>
       </div>
+
     </div>
   </div>
 </footer>
+
+<script>
+  document.getElementById('year-copy').textContent = new Date().getFullYear();
+</script>

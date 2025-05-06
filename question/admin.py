@@ -1,7 +1,8 @@
 # question/admin.py
 from django.contrib import admin
 from .models import Category, Test, Question, Answer, StudentTestAssignment, StudentTest, StudentTestQuestion
-
+from django.utils.html import format_html
+from .models import SystemSetting
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -91,3 +92,53 @@ class StudentTestAdmin(admin.ModelAdmin):
     def reset_scores(self, request, queryset):
         queryset.update(score=0.0, completed=False)
         self.message_user(request, "Scores reset for selected tests.")
+
+
+@admin.register(SystemSetting)
+class SystemSettingAdmin(admin.ModelAdmin):
+    list_display = (
+        'name', 'status', 'is_active', 'updated_at',
+        'logo_preview', 'favicon_preview'
+    )
+    list_filter = ('is_active', 'status', 'updated_at')
+    search_fields = (
+        'name', 'description', 'contact_email', 'contact_phone',
+        'hemis_url', 'hemis_api_key'
+    )
+    readonly_fields = ('logo_preview', 'favicon_preview', 'updated_at')
+
+    fieldsets = (
+        ("Asosiy ma'lumotlar", {
+            'fields': ('name', 'description', 'status', 'is_active')
+        }),
+        ("HEMIS integratsiyasi", {
+            'fields': ('hemis_url', 'hemis_api_key')
+        }),
+        ("Kontakt ma'lumotlar", {
+            'fields': ('contact_email', 'contact_phone', 'address')
+        }),
+        ("Vizual sozlamalar", {
+            'fields': ('logo', 'logo_preview', 'favicon', 'favicon_preview', 'footer_text')
+        }),
+        ("Texnik ma'lumotlar", {
+            'fields': ('updated_at',)
+        }),
+    )
+
+    def logo_preview(self, obj):
+        if obj.logo:
+            return format_html('<img src="{}" width="100" style="border:1px solid #ccc;" />', obj.logo.url)
+        return "(Yo'q)"
+    logo_preview.short_description = "Logo ko‘rinishi"
+
+    def favicon_preview(self, obj):
+        if obj.favicon:
+            return format_html('<img src="{}" width="32" style="border:1px solid #ccc;" />', obj.favicon.url)
+        return "(Yo'q)"
+    favicon_preview.short_description = "Favicon ko‘rinishi"
+
+    def save_model(self, request, obj, form, change):
+        if obj.is_active:
+            # Faqat bitta aktiv sozlama bo‘lishi kerak
+            SystemSetting.objects.exclude(pk=obj.pk).update(is_active=False)
+        super().save_model(request, obj, form, change)

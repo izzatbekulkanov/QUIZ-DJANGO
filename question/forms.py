@@ -1,7 +1,8 @@
 from django import forms
 from django_ckeditor_5.widgets import CKEditor5Widget
 
-from .models import Test
+from .models import Test, SystemSetting
+
 
 class TestForm(forms.ModelForm):
     class Meta:
@@ -51,3 +52,5 @@ class AddQuestionForm(forms.Form):
         cleaned_data['answers'] = answers
         cleaned_data['is_correct_flags'] = is_correct_flags
         return cleaned_data
+
+
