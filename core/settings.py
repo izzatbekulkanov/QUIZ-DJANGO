@@ -1,12 +1,10 @@
 from pathlib import Path
-# Simple JWT settings
 from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-1((^1n9a13z-6yge#o$-g$p9^p5r6$iohu(a!=l5i3h@*n5gb2'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
@@ -16,7 +14,7 @@ LOCAL_APPS = [
     'question',
     'dashboard',
     'logs',
-    'bot',  # Telegram bot app
+    'bot',
 ]
 
 ASGI_APPLICATION = 'core.asgi.application'
@@ -29,11 +27,12 @@ DYNAMIC_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
-INSTALLED_APPS = LOCAL_APPS + DYNAMIC_APPS
 
-INSTALLED_APPS += [
+INSTALLED_APPS = LOCAL_APPS + DYNAMIC_APPS + [
     'django_ckeditor_5',
     'common',
+    'rest_framework',
+    'rest_framework_simplejwt',
 ]
 
 # CKEditor sozlamalari
@@ -93,7 +92,12 @@ MIDDLEWARE = [
     'logs.middleware.LogMiddleware',
 ]
 
-# settings.py
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://webtest.namspi.uz'
+]
+
 AUTH_USER_MODEL = 'account.CustomUser'
 
 ROOT_URLCONF = 'core.urls'
@@ -142,45 +146,17 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'Asia/Tashkent'  # Tashkent vaqti
-USE_TZ = True  # Timezone-aware vaqtni ishlatish
-
+TIME_ZONE = 'Asia/Tashkent'
+USE_TZ = True
 USE_I18N = True
 
-STATIC_URL = 'static/'
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
+STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Logging configuration
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         'file': {
-#             'level': 'DEBUG',
-#             'class': 'logging.FileHandler',
-#             'filename': BASE_DIR / 'logs/debug.log',
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['file'],
-#             'level': 'DEBUG',
-#             'propagate': True,
-#         },
-#     },
-# }
-
-# Default email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -188,7 +164,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'your_email@gmail.com'
 EMAIL_HOST_PASSWORD = 'your_email_password'
 
-# REST framework configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -197,6 +172,11 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'account.backends.FaceAuthBackend',
+]
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
@@ -211,8 +191,15 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-# Login and Logout URLs
 LOGIN_URL = '/account/login/'
 LOGOUT_URL = '/account/logout/'
-LOGIN_REDIRECT_URL = '/'  # Redirect after successful login
-LOGOUT_REDIRECT_URL = '/account/login/'  # Redirect after logout
+LOGIN_REDIRECT_URL = '/dashboard/'  # Updated to redirect to dashboard
+LOGOUT_REDIRECT_URL = '/account/login/'
+
+# Session settings
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_SAVE_EVERY_REQUEST = True  # Save session on every request

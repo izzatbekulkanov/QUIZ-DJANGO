@@ -2,6 +2,8 @@
 import random
 from datetime import timedelta
 
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 from django_ckeditor_5.fields import CKEditor5Field
 from django.db import models
 from django.conf import settings
@@ -19,12 +21,19 @@ class Category(models.Model):
 
 
 class Test(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='tests')
+    category = models.ForeignKey('Category', on_delete=models.CASCADE, related_name='tests')
     name = models.CharField(max_length=200)
     description = models.TextField(null=True, blank=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # Talabalarni biriktirish uchun ManyToManyField
+    students = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='assigned_tests',
+        blank=True,
+        limit_choices_to={'is_student': True},  # Faqat talabalarni ko‘rsatish
+    )
 
     def __str__(self):
         return self.name
@@ -51,20 +60,47 @@ class Answer(models.Model):
 
 
 class StudentTestAssignment(models.Model):
-    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='test_assignments')
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                on_delete=models.CASCADE,
+                                related_name='test_assignments')
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='assignments')
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='test_assignments')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE,
+                                 related_name='test_assignments')
+
     total_questions = models.PositiveIntegerField(default=10)
     start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
-    duration = models.PositiveIntegerField(default=30)  # Davomiylik (daqiqa ko'rinishida)
-    is_active = models.BooleanField(default=True)  # Active yoki Active emas
-    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('completed', 'Completed')],
-                              default='pending')
+    end_time   = models.DateTimeField()
+    duration   = models.PositiveIntegerField(default=30)
+
+    is_active  = models.BooleanField(default=True)
+    status     = models.CharField(
+        max_length=20,
+        choices=[('pending', 'Pending'), ('completed', 'Completed')],
+        default='pending'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+    attempts   = models.PositiveIntegerField(default=0)
+
+    # 🔎 Faqat ikkita tekshiruv qoldi
+    def clean(self):
+        if self.start_time >= self.end_time:
+            raise ValidationError("Boshlanish vaqti tugash vaqtidan oldin bo‘lishi kerak.")
+        if self.total_questions > self.test.questions.count():
+            raise ValidationError(
+                f"Savollar soni testdagi savollar sonidan ({self.test.questions.count()}) oshmasligi kerak."
+            )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()            # clean() ni majburiy chaqiramiz
+        super().save(*args, **kwargs)
+
+    def increment_attempts(self):
+        """Urinishlar sonini birga oshiradi."""
+        self.attempts += 1
+        self.save()
 
     def __str__(self):
-        return f"{self.teacher} - {self.test.name} ({self.start_time} - {self.end_time})"
+        return f"{self.teacher} - {self.test.name} ({self.start_time} – {self.end_time})"
 
 
 class StudentTest(models.Model):

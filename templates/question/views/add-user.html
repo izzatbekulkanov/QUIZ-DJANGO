@@ -1,96 +1,206 @@
 {% extends 'question/main.html' %}
 {% load static %}
 {% block style %}
+<style>
+  .block-content {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  .form-section {
+    padding: 15px 0;
+  }
+  .form-section h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 15px;
+  }
+  .form-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #34495e;
+  }
+  .form-control, .form-select {
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+  }
+  .profile-picture-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 10px auto;
+  }
+  .profile-picture-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #e9ecef;
+    transition: border-color 0.3s;
+  }
+  .profile-picture-container img:hover {
+    border-color: #3498db;
+    cursor: pointer;
+  }
+  .form-check-label i {
+    margin-right: 6px;
+  }
+  .is-invalid ~ .invalid-feedback {
+    display: block;
+    font-size: 0.8rem;
+    color: #e74c3c;
+  }
+  .btn-primary {
+    background-color: #3498db;
+    border-color: #3498db;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 10px;
+    transition: background-color 0.3s;
+  }
+  .btn-primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+  }
+  .nav-tabs {
+    border-bottom: 2px solid #e9ecef;
+  }
+  .nav-tabs .nav-link {
+    color: #34495e;
+    font-weight: 500;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 15px;
+    margin-right: 5px;
+  }
+  .nav-tabs .nav-link.active {
+    color: #3498db;
+    border-bottom: 2px solid #3498db;
+    background: #f8f9fa;
+  }
+  .nav-tabs .nav-link:hover {
+    color: #3498db;
+    border-bottom: 2px solid #3498db;
+  }
+  .tab-content {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+  }
+  @media (max-width: 576px) {
+    .profile-picture-container {
+      width: 80px;
+      height: 80px;
+    }
+    .form-section h4 {
+      font-size: 1rem;
+    }
+    .nav-tabs .nav-link {
+      font-size: 0.85rem;
+      padding: 8px 10px;
+    }
+  }
+</style>
 {% endblock style %}
 
 {% block content %}
-    <main id="main-container">
-        <!-- Hero -->
-        <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
-          <div class="bg-primary-dark-op">
-            <div class="content content-full">
-              <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
-                <div class="flex-grow-1">
-                  <h1 class="fw-semibold text-white mb-0">Users</h1>
-                  <h2 class="h4 fw-normal text-white-75 mb-0">Welcome To Add User</h2>
-                </div>
-                <div class="mt-3 mt-sm-0">
-                  <!-- Back Button -->
-                  <a href="javascript:history.back()" class="btn btn-alt-secondary">
-                    <i class="fa fa-arrow-left me-1"></i> Ortga
-                  </a>
-                </div>
-              </div>
-            </div>
+<main id="main-container">
+  <!-- Hero -->
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+    <div class="bg-primary-dark-op">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-0">Foydalanuvchilar</h1>
+            <h2 class="h4 fw-normal text-white-75 mb-0">Yangi Foydalanuvchi Qo‘shish</h2>
+          </div>
+          <div class="mt-3 mt-sm-0">
+            <a href="javascript:history.back()" class="btn btn-alt-secondary">
+              <i class="fa fa-arrow-left me-1"></i> Ortga
+            </a>
           </div>
         </div>
-        <!-- END Hero -->
+      </div>
+    </div>
+  </div>
+  <!-- END Hero -->
 
-        <!-- Page Content -->
-        <div class="content">
-          <!-- User Creation Form -->
-          <div class="block block-rounded block-bordered">
-            <div class="block-header block-header-default">
-              <h3 class="block-title">Yangi foydalanuvchi yaratish</h3>
-            </div>
-            <div class="block-content">
-              <!-- Form -->
-              <form id="userForm" method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="row">
-                  <!-- First Name -->
-                  <div class="col-md-4 mb-3">
+  <!-- Page Content -->
+  <div class="content">
+    <div class="block block-rounded block-bordered">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Yangi Foydalanuvchi Yaratish</h3>
+      </div>
+      <div class="block-content">
+        <form id="userForm" method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+          <!-- Tab Navigation -->
+          <ul class="nav nav-tabs" id="userFormTabs" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="basic-tab" data-bs-toggle="tab" href="#basic" role="tab">Asosiy Ma'lumotlar</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#contact" role="tab">Aloqa Ma'lumotlari</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="teacher-tab" data-bs-toggle="tab" href="#teacher" role="tab">O'qituvchi Ma'lumotlari</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="student-tab" data-bs-toggle="tab" href="#student" role="tab">Talaba Ma'lumotlari</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="additional-tab" data-bs-toggle="tab" href="#additional" role="tab">Qo‘shimcha Ma'lumotlar</a>
+            </li>
+          </ul>
+
+          <!-- Tab Content -->
+          <div class="tab-content" id="userFormTabContent">
+            <!-- Asosiy Ma'lumotlar -->
+            <div class="tab-pane fade show active" id="basic" role="tabpanel">
+              <div class="form-section">
+                <h4>Asosiy Ma'lumotlar</h4>
+                <div class="row g-3">
+                  <div class="col-md-4">
                     <label class="form-label" for="first_name">Ism</label>
                     <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Ismingizni kiriting" required>
+                    <div class="invalid-feedback">Ismni kiritish majburiy.</div>
                   </div>
-                  <!-- Second Name -->
-                  <div class="col-md-4 mb-3">
+                  <div class="col-md-4">
                     <label class="form-label" for="second_name">Familiya</label>
                     <input type="text" class="form-control" id="second_name" name="second_name" placeholder="Familiyangizni kiriting" required>
+                    <div class="invalid-feedback">Familiyani kiritish majburiy.</div>
                   </div>
-                  <div class="col-md-4 mb-3">
+                  <div class="col-md-4">
+                    <label class="form-label" for="third_name">Otasining ismi</label>
+                    <input type="text" class="form-control" id="third_name" name="third_name" placeholder="Otasining ismini kiriting">
+                  </div>
+                  <div class="col-md-4">
                     <label class="form-label" for="username">Foydalanuvchi nomi</label>
                     <input type="text" class="form-control" id="username" name="username" placeholder="Foydalanuvchi nomini kiriting" required>
+                    <div class="invalid-feedback">Foydalanuvchi nomini kiritish majburiy.</div>
                   </div>
-                </div>
-                <div class="row">
-                  <!-- Phone Number -->
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label" for="phone_number">Telefon raqam</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="phone_number"
-                      name="phone_number"
-                      placeholder="+998 XX XXX XX XX"
-                      required
-                    >
-                  </div>
-                  <!-- Address -->
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label" for="address">Manzil</label>
-                    <input type="text" class="form-control" id="address" name="address" placeholder="Manzilingizni kiriting" required>
-                  </div>
-                </div>
-                <div class="row">
-                  <!-- Date of Birth -->
-                  <div class="col-md-6 mb-3">
+                  <div class="col-md-4">
                     <label class="form-label" for="date_of_birth">Tug'ilgan sana</label>
                     <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
+                    <div class="invalid-feedback">Tug'ilgan sanani kiritish majburiy.</div>
                   </div>
-                  <!-- Gender -->
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">Jinsi</label>
-                    <select class="form-select" name="gender" required>
+                  <div class="col-md-4">
+                    <label class="form-label" for="gender">Jinsi</label>
+                    <select class="form-select" id="gender" name="gender" required>
                       <option value="" disabled selected>Tanlang</option>
                       <option value="male">Erkak</option>
                       <option value="female">Ayol</option>
                     </select>
+                    <div class="invalid-feedback">Jinsni tanlash majburiy.</div>
                   </div>
-                </div>
-                <div class="row">
-                  <!-- Nationality -->
-                  <div class="col-md-6 mb-3">
+                  <div class="col-md-6">
                     <label class="form-label" for="nationality">Millati</label>
                     <select class="form-select" id="nationality" name="nationality" required>
                       <option value="" disabled selected>Millatingizni tanlang</option>
@@ -99,135 +209,305 @@
                       <option value="Kyrgyz">Qirg'iz</option>
                       <option value="Tajik">Tojik</option>
                       <option value="Turkmen">Turkman</option>
-                      <option value="Afghan">Afg'on</option>
-                      <option value="Pakistani">Pokistonlik</option>
-                      <option value="Indian">Hind</option>
-                      <option value="Chinese">Xitoylik</option>
-                      <option value="Japanese">Yapon</option>
-                      <option value="Korean">Koreys</option>
-                      <option value="Malaysian">Malayziyalik</option>
-                      <option value="Indonesian">Indoneziyalik</option>
-                      <option value="Filipino">Filippinlik</option>
-                      <option value="Vietnamese">Vetnamlik</option>
-                      <option value="Thai">Tay</option>
-                      <option value="Bangladeshi">Bangladeshlik</option>
-                      <option value="Sri Lankan">Shri-Lankalik</option>
-                      <option value="Nepali">Nepallik</option>
-                      <option value="Mongolian">Mo'g'ul</option>
-                      <option value="Iranian">Eronlik</option>
-                      <option value="Iraqi">Iroqlik</option>
-                      <option value="Saudi Arabian">Saudiya Arabistonlik</option>
-                      <option value="Syrian">Suriya</option>
-                      <option value="Jordanian">Iordaniyalik</option>
-                      <option value="Palestinian">Falastinlik</option>
-                      <option value="Turkish">Turk</option>
-                      <option value="Armenian">Arman</option>
-                      <option value="Azerbaijani">Ozarbayjonlik</option>
-                      <option value="Georgian">Gruzin</option>
+                    </select>
+                    <div class="invalid-feedback">Millatni tanlash majburiy.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="citizenship">Fuqaroligi</label>
+                    <input type="text" class="form-control" id="citizenship" name="citizenship" placeholder="Masalan: O‘zbekiston" required>
+                    <div class="invalid-feedback">Fuqarolikni kiritish majburiy.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Aloqa Ma'lumotlari -->
+            <div class="tab-pane fade" id="contact" role="tabpanel">
+              <div class="form-section">
+                <h4>Aloqa Ma'lumotlari</h4>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="phone_number">Telefon raqam</label>
+                    <input type="text" class="form-control" id="phone_number" name="phone_number" placeholder="+998 XX XXX XX XX" required>
+                    <div class="invalid-feedback">Telefon raqamni kiritish majburiy.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="contact_email">Elektron pochta</label>
+                    <input type="email" class="form-control" id="contact_email" name="contact_email" placeholder="Elektron pochtangizni kiriting">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="address">Manzil</label>
+                    <input type="text" class="form-control" id="address" name="address" placeholder="Manzilingizni kiriting" required>
+                    <div class="invalid-feedback">Manzilni kiritish majburiy.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="emergency_contact">Favqulodda aloqa raqami</label>
+                    <input type="text" class="form-control" id="emergency_contact" name="emergency_contact" placeholder="+998 XX XXX XX XX">
+                  </div>
+                  <div class="col-md-4 offset-md-4 text-center">
+                    <label class="form-label d-block">Profil rasmi</label>
+                    <div class="profile-picture-container">
+                      <img id="profilePicturePreview" src="{% static 'assets/media/avatars/avatar0.jpg' %}" alt="Profil rasmi">
+                      <input type="file" id="profile_picture" name="profile_picture" accept="image/*" style="display: none;">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- O'qituvchi Ma'lumotlari -->
+            <div class="tab-pane fade" id="teacher" role="tabpanel">
+              <div class="form-section">
+                <h4>O'qituvchi Ma'lumotlari</h4>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="job_title">Lavozim</label>
+                    <input type="text" class="form-control" id="job_title" name="job_title" placeholder="Masalan: O'qituvchi">
+                    <div class="invalid-feedback">Lavozimni kiritish majburiy.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="company_name">Tashkilot nomi</label>
+                    <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Masalan: Namangan davlat pedagogika instituti">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="department">Fakultet/Kafedra</label>
+                    <input type="text" class="form-control" id="department" name="department" placeholder="Masalan: Pedagogika">
+                    <div class="invalid-feedback">Fakultet/kafedra nomini kiritish majburiy.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="academic_degree">Ilmiy daraja</label>
+                    <input type="text" class="form-control" id="academic_degree" name="academic_degree" placeholder="Masalan: Pedagogika fanlari doktori">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="academic_rank">Ilmiy unvon</label>
+                    <input type="text" class="form-control" id="academic_rank" name="academic_rank" placeholder="Masalan: Dotsent">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="staff_position">Xodim lavozimi</label>
+                    <input type="text" class="form-control" id="staff_position" name="staff_position" placeholder="Masalan: Katta o'qituvchi">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="employee_id_number">Xodim ID raqami</label>
+                    <input type="number" class="form-control" id="employee_id_number" name="employee_id_number" placeholder="Masalan: 123456">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Talaba Ma'lumotlari -->
+            <div class="tab-pane fade" id="student" role="tabpanel">
+              <div class="form-section">
+                <h4>Talaba Ma'lumotlari</h4>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="student_id_number">Talaba ID raqami</label>
+                    <input type="text" class="form-control" id="student_id_number" name="student_id_number" placeholder="Masalan: 451251100027">
+                    <div class="invalid-feedback">Talaba ID raqamini kiritish majburiy.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="group_name">Guruh nomi</label>
+                    <input type="text" class="form-control" id="group_name" name="group_name" placeholder="Masalan: MPL-BU-23">
+                    <div class="invalid-feedback">Guruh nomini kiritish majburiy.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="specialty">Mutaxassislik kodi</label>
+                    <input type="text" class="form-control" id="specialty" name="specialty" placeholder="Masalan: 60110300">
+                    <div class="invalid-feedback">Mutaxassislik kodini kiritish majburiy.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="specialty_name">Mutaxassislik nomi</label>
+                    <input type="text" class="form-control" id="specialty_name" name="specialty_name" placeholder="Masalan: Maxsus pedagogika: logopediya">
+                    <div class="invalid-feedback">Mutaxassislik nomini kiritish majburiy.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="education_level">Ta'lim darajasi</label>
+                    <input type="text" class="form-control" id="education_level" name="education_level" placeholder="Masalan: Bakalavr">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="education_type">Ta'lim turi</label>
+                    <select class="form-select" id="education_type" name="education_type">
+                      <option value="" disabled selected>Tanlang</option>
+                      <option value="Bakalavr">Bakalavr</option>
+                      <option value="Magistratura">Magistratura</option>
                     </select>
                   </div>
-                  <!-- Profile Picture -->
-                 <div class="col-md-6 mb-3 text-center">
-                  <label class="form-label d-block">Profil rasmi</label>
-                  <div class="position-relative" style="width: 150px; height: 150px; margin: auto;">
-                    <img
-                      id="profilePicturePreview"
-                      src="{% static 'assets/media/avatars/avatar0.jpg' %}"
-                      alt="Profil rasmi"
-                      class="img-thumbnail rounded-circle"
-                      style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
-                      onclick="document.getElementById('profile_picture').click();"
-                    >
-                    <input
-                      type="file"
-                      id="profile_picture"
-                      name="profile_picture"
-                      accept="image/*"
-                      style="display: none;"
-                      onchange="previewProfilePicture(this); validateProfilePicture();"
-                    >
+                  <div class="col-md-6">
+                    <label class="form-label" for="education_form_name">Ta'lim shakli</label>
+                    <select class="form-select" id="education_form_name" name="education_form_name">
+                      <option value="" disabled selected>Tanlang</option>
+                      <option value="Kunduzgi">Kunduzgi</option>
+                      <option value="Sirtqi">Sirtqi</option>
+                      <option value="Kechki">Kechki</option>
+                    </select>
+                    <div class="invalid-feedback">Ta'lim shaklini kiritish majburiy.</div>
                   </div>
-                  <small id="profilePictureError" class="text-danger d-none">Iltimos, rasm yuklang.</small>
+                  <div class="col-md-6">
+                    <label class="form-label" for="payment_form">To'lov shakli</label>
+                    <select class="form-select" id="payment_form" name="payment_form">
+                      <option value="" disabled selected>Tanlang</option>
+                      <option value="Davlat granti">Davlat granti</option>
+                      <option value="To‘lov-shartnoma">To‘lov-shartnoma</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="education_year">Ta'lim yili</label>
+                    <input type="text" class="form-control" id="education_year" name="education_year" placeholder="Masalan: 2024-2025">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="department_name">Fakultet nomi</label>
+                    <input type="text" class="form-control" id="department_name" name="department_name" placeholder="Masalan: Pedagogika">
+                    <div class="invalid-feedback">Fakultet nomini kiritish majburiy.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="level_name">Kurs</label>
+                    <select class="form-select" id="level_name" name="level_name">
+                      <option value="" disabled selected>Tanlang</option>
+                      <option value="1-kurs">1-kurs</option>
+                      <option value="2-kurs">2-kurs</option>
+                      <option value="3-kurs">3-kurs</option>
+                      <option value="4-kurs">4-kurs</option>
+                    </select>
+                    <div class="invalid-feedback">Kursni kiritish majburiy.</div>
+                  </div>
                 </div>
-                </div>
-                <div class="row">
-                  <!-- Bio -->
-                  <div class="col-12 mb-3">
+              </div>
+            </div>
+
+            <!-- Qo'shimcha Ma'lumotlar -->
+            <div class="tab-pane fade" id="additional" role="tabpanel">
+              <div class="form-section">
+                <h4>Qo'shimcha Ma'lumotlar</h4>
+                <div class="row g-3">
+                  <div class="col-12">
                     <label class="form-label" for="bio">Qo'shimcha ma'lumot (Bio)</label>
-                    <textarea class="form-control" id="bio" name="bio" rows="4" placeholder="Qo'shimcha ma'lumot yozing" required></textarea>
+                    <textarea class="form-control" id="bio" name="bio" rows="4" placeholder="Qo'shimcha ma'lumot yozing"></textarea>
                   </div>
-                </div>
-                <div class="row">
-                  <!-- Is Teacher -->
-                  <div class="col-md-6 mb-3">
+                  <div class="col-md-6">
                     <div class="form-check d-flex align-items-center">
-                      <input class="form-check-input me-2" type="checkbox" id="is_teacher" name="is_teacher" required>
+                      <input class="form-check-input me-2" type="checkbox" id="is_teacher" name="is_teacher">
                       <label class="form-check-label d-flex align-items-center" for="is_teacher">
                         <i class="fas fa-chalkboard-teacher me-2 text-primary"></i> O'qituvchi
                       </label>
                     </div>
                   </div>
-                  <!-- Is Student -->
-                  <div class="col-md-6 mb-3">
+                  <div class="col-md-6">
                     <div class="form-check d-flex align-items-center">
-                      <input class="form-check-input me-2" type="checkbox" id="is_student" name="is_student" required>
+                      <input class="form-check-input me-2" type="checkbox" id="is_student" name="is_student">
                       <label class="form-check-label d-flex align-items-center" for="is_student">
                         <i class="fas fa-user-graduate me-2 text-success"></i> Talaba
                       </label>
                     </div>
                   </div>
                 </div>
-                <!-- Submit Button -->
-                <div class="text-end">
-                  <button type="button" id="submitButton" class="btn btn-primary w-100 mb-2">
-                    <i class="fas fa-save"></i> Saqlash
-                  </button>
-                </div>
-              </form>
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+
+          <!-- Submit Button -->
+          <div class="text-end mt-3">
+            <button type="button" id="submitButton" class="btn btn-primary w-100">
+              <i class="fas fa-save me-2"></i> Saqlash
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
 {% endblock content %}
 
 {% block script %}
-  <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
-  <script>
+<script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+<script>
+  // Profil rasmini oldindan ko'rish
   function previewProfilePicture(input) {
     const preview = document.getElementById('profilePicturePreview');
-    const errorText = document.getElementById('profilePictureError');
     if (input.files && input.files[0]) {
       const reader = new FileReader();
       reader.onload = function (e) {
         preview.src = e.target.result;
       };
       reader.readAsDataURL(input.files[0]);
-      errorText.classList.add('d-none'); // Xatolik matnini yashirish
     }
   }
 
-  function validateProfilePicture() {
-    const input = document.getElementById('profile_picture');
-    const errorText = document.getElementById('profilePictureError');
-    if (!input.files || input.files.length === 0) {
-      errorText.classList.remove('d-none'); // Xatolik matnini ko'rsatish
-      input.classList.add('is-invalid'); // Inputga xato holatini qo'shish
-      return false;
-    } else {
-      errorText.classList.add('d-none'); // Xatolik matnini yashirish
-      input.classList.remove('is-invalid'); // Xato holatini olib tashlash
-      return true;
-    }
-  }
+  // Telefon raqamini va favqulodda aloqa raqamini formatlash
+  document.addEventListener('DOMContentLoaded', function () {
+    const formatPhoneNumber = (input) => {
+      input.addEventListener('input', function () {
+        let value = input.value.replace(/\D/g, '');
+        if (value.startsWith('998')) {
+          value = value.slice(3);
+        }
+        const formatted = '+998 ' +
+          (value.slice(0, 2) ? value.slice(0, 2) + ' ' : '') +
+          (value.slice(2, 5) ? value.slice(2, 5) + ' ' : '') +
+          (value.slice(5, 7) ? value.slice(5, 7) + ' ' : '') +
+          (value.slice(7, 9) ? value.slice(7, 9) : '');
+        input.value = formatted.trim();
+      });
+    };
 
+    formatPhoneNumber(document.getElementById('phone_number'));
+    formatPhoneNumber(document.getElementById('emergency_contact'));
+
+    // Profil rasm inputini boshqarish
+    document.getElementById('profilePicturePreview').addEventListener('click', function() {
+      document.getElementById('profile_picture').click();
+    });
+    document.getElementById('profile_picture').addEventListener('change', function() {
+      previewProfilePicture(this);
+    });
+
+    // O'qituvchi va talaba fieldlarini ko'rsatish/yashirish
+    const isTeacherCheckbox = document.getElementById('is_teacher');
+    const isStudentCheckbox = document.getElementById('is_student');
+    const teacherTabLink = document.getElementById('teacher-tab');
+    const studentTabLink = document.getElementById('student-tab');
+
+    isTeacherCheckbox.addEventListener('change', function() {
+      if (this.checked) {
+        teacherTabLink.classList.remove('d-none');
+        teacherTabLink.click(); // O'qituvchi tab'ini avtomatik ochish
+        document.querySelectorAll('#teacher input[id="job_title"], #teacher input[id="department"]').forEach(input => {
+          input.setAttribute('required', 'true');
+        });
+      } else {
+        teacherTabLink.classList.add('d-none');
+        document.querySelectorAll('#teacher input[id="job_title"], #teacher input[id="department"]').forEach(input => {
+          input.removeAttribute('required');
+        });
+      }
+    });
+
+    isStudentCheckbox.addEventListener('change', function() {
+      if (this.checked) {
+        studentTabLink.classList.remove('d-none');
+        studentTabLink.click(); // Talaba tab'ini avtomatik ochish
+        document.querySelectorAll('#student input[id="student_id_number"], #student input[id="group_name"], #student input[id="specialty"], #student input[id="specialty_name"], #student select[id="education_form_name"], #student input[id="department_name"], #student select[id="level_name"]').forEach(input => {
+          input.setAttribute('required', 'true');
+        });
+      } else {
+        studentTabLink.classList.add('d-none');
+        document.querySelectorAll('#student input[id="student_id_number"], #student input[id="group_name"], #student input[id="specialty"], #student input[id="specialty_name"], #student select[id="education_form_name"], #student input[id="department_name"], #student select[id="level_name"]').forEach(input => {
+          input.removeAttribute('required');
+        });
+      }
+    });
+
+    // Tab'lar dastlab yashirin bo'ladi
+    teacherTabLink.classList.add('d-none');
+    studentTabLink.classList.add('d-none');
+  });
+
+  // Forma yuborish
   document.getElementById('submitButton').addEventListener('click', function (event) {
-    event.preventDefault(); // Formani avtomatik yuborishni to'xtatish
-    const isValidPicture = validateProfilePicture(); // Rasmni tekshirish
+    event.preventDefault();
     const form = document.getElementById('userForm');
     let isValid = true;
 
-    // Inputlar validatsiyasi
-    form.querySelectorAll('input, select').forEach((input) => {
+    // Inputlarni validatsiya qilish
+    form.querySelectorAll('input[required], select[required]').forEach((input) => {
       if (!input.value) {
         input.classList.add('is-invalid');
         isValid = false;
@@ -236,15 +516,14 @@
       }
     });
 
-    // Agar rasm va boshqa inputlar valid bo'lsa
-    if (isValid && isValidPicture) {
+    if (isValid) {
       Swal.fire({
         title: 'Tasdiqlaysizmi?',
         text: "Foydalanuvchini saqlamoqchimisiz?",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
+        confirmButtonColor: '#3498db',
+        cancelButtonColor: '#e74c3c',
         confirmButtonText: 'Ha, saqlash!',
         cancelButtonText: 'Bekor qilish',
       }).then((result) => {
@@ -267,6 +546,7 @@
                   confirmButtonText: 'OK',
                 }).then(() => {
                   form.reset();
+                  document.getElementById('profilePicturePreview').src = '{% static "assets/media/avatars/avatar0.jpg" %}';
                   window.location.reload();
                 });
               } else {
@@ -276,6 +556,18 @@
                   icon: 'error',
                   confirmButtonText: 'OK',
                 });
+                if (data.errors) {
+                  Object.keys(data.errors).forEach(key => {
+                    const input = document.getElementById(key);
+                    if (input) {
+                      input.classList.add('is-invalid');
+                      const feedback = input.nextElementSibling;
+                      if (feedback && feedback.classList.contains('invalid-feedback')) {
+                        feedback.textContent = data.errors[key];
+                      }
+                    }
+                  });
+                }
               }
             })
             .catch((error) => {
@@ -289,45 +581,14 @@
             });
         }
       });
+    } else {
+      Swal.fire({
+        title: 'Xatolik!',
+        text: 'Iltimos, barcha majburiy maydonlarni to‘ldiring.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+      });
     }
   });
 </script>
-  
-  <script>
-    function previewProfilePicture(input) {
-      const preview = document.getElementById('profilePicturePreview');
-  
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-  
-        reader.onload = function (e) {
-          preview.src = e.target.result;
-        };
-  
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
-  </script>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const phoneInput = document.getElementById('phone_number');
-  
-      phoneInput.addEventListener('input', function () {
-        let value = phoneInput.value.replace(/\D/g, ''); // Faqat raqamlarni qoldiradi
-        if (value.startsWith('998')) {
-          value = value.slice(3); // Agar 998 bo'lsa, olib tashlaydi (raqam ichida formatlaymiz)
-        }
-  
-        // Telefon raqam formatini qo'llash
-        const formatted = '+998 ' + 
-          (value.slice(0, 2) ? value.slice(0, 2) + ' ' : '') +
-          (value.slice(2, 5) ? value.slice(2, 5) + ' ' : '') +
-          (value.slice(5, 7) ? value.slice(5, 7) + ' ' : '') +
-          (value.slice(7, 9) ? value.slice(7, 9) : '');
-  
-        phoneInput.value = formatted.trim(); // Formatlangan qiymatni inputga qo'yadi
-      });
-    });
-  </script>
 {% endblock script %}

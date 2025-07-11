@@ -1,113 +1,187 @@
 {% extends 'question/main.html' %}
 {% load static %}
 {% block style %}
+  <style>
+      .filter-group {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+      }
 
+      .filter-group .form-select {
+          width: auto;
+          min-width: 150px;
+      }
+
+      .input-group-sm .form-control {
+          font-size: 0.875rem;
+      }
+
+      .table th, .table td {
+          vertical-align: middle;
+      }
+
+      .block-rounded {
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+
+      .pagination-sm .page-link {
+          font-size: 0.875rem;
+          padding: 0.25rem 0.5rem;
+      }
+  </style>
 {% endblock style %}
-
 {% block content %}
-  <main id="main-container">
-    <!-- Page Content -->
-    <div class="content">
-      <!-- Quick Overview -->
-      <div class="row">
-        <div class="col-6 col-lg-3">
-          <a class="block block-rounded block-link-shadow text-center" href="javascript:void(0)">
-            <div class="block-content block-content-full">
-              <div class="fs-2 fw-semibold text-dark">{{ today_users_count }}</div>
-            </div>
-            <div class="block-content py-2 bg-body-light">
-              <p class="fw-medium fs-sm text-muted mb-0">
-                Bugun qo'shilgan
-              </p>
-            </div>
-          </a>
-        </div>
-        <div class="col-6 col-lg-3">
-          <a class="block block-rounded block-link-shadow text-center" href="javascript:void(0)">
-            <div class="block-content block-content-full">
-              <div class="fs-2 fw-semibold text-dark">{{ yesterday_users_count }}</div>
-            </div>
-            <div class="block-content py-2 bg-body-light">
-              <p class="fw-medium fs-sm text-muted mb-0">
-                Kecha qo'shilgan
-              </p>
-            </div>
-          </a>
-        </div>
-        <div class="col-6 col-lg-3">
-          <a class="block block-rounded block-link-shadow text-center" href="javascript:void(0)">
-            <div class="block-content block-content-full">
-              <div class="fs-2 fw-semibold text-dark">{{ month_users_count }}</div>
-            </div>
-            <div class="block-content py-2 bg-body-light">
-              <p class="fw-medium fs-sm text-muted mb-0">
-                Ushbu oyda qo'shilgan
-              </p>
-            </div>
+<main id="main-container">
+  <!-- Page Content -->
+  <div class="content">
+    <!-- Quick Overview -->
+    <div class="row">
+      <div class="col-6 col-lg-3">
+        <a class="block block-rounded block-link-shadow text-center" href="javascript:void(0)">
+          <div class="block-content block-content-full">
+            <div class="fs-2 fw-semibold text-dark">{{ total_users_count }}</div>
+          </div>
+          <div class="block-content py-2 bg-body-light">
+            <p class="fw-medium fs-sm text-muted mb-0">Jami foydalanuvchilar</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-6 col-lg-3">
+        <a class="block block-rounded block-link-shadow text-center" href="javascript:void(0)">
+          <div class="block-content block-content-full">
+            <div class="fs-2 fw-semibold text-dark">{{ today_users_count }}</div>
+          </div>
+          <div class="block-content py-2 bg-body-light">
+            <p class="fw-medium fs-sm text-muted mb-0">Bugun qo'shilgan</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-6 col-lg-3">
+        <a class="block block-rounded block-link-shadow text-center" href="javascript:void(0)">
+          <div class="block-content block-content-full">
+            <div class="fs-2 fw-semibold text-dark">{{ yesterday_users_count }}</div>
+          </div>
+          <div class="block-content py-2 bg-body-light">
+            <p class="fw-medium fs-sm text-muted mb-0">Kecha qo'shilgan</p>
+          </div>
+        </a>
+      </div>
+      <div class="col-6 col-lg-3">
+        <a class="block block-rounded block-link-shadow text-center" href="javascript:void(0)">
+          <div class="block-content block-content-full">
+            <div class="fs-2 fw-semibold text-dark">{{ month_users_count }}</div>
+          </div>
+          <div class="block-content py-2 bg-body-light">
+            <p class="fw-medium fs-sm text-muted mb-0">Ushbu oyda qo'shilgan</p>
+          </div>
+        </a>
+      </div>
+    </div>
+    <!-- END Quick Overview -->
+
+    <!-- All Users -->
+    <div class="block block-rounded">
+      <div class="block-header block-header-default d-flex justify-content-between align-items-center">
+        <h3 class="block-title mb-0">Foydalanuvchilar</h3>
+        <div class="d-flex align-items-center gap-2">
+          <div class="dropdown">
+            <button class="btn btn-sm btn-success dropdown-toggle" data-bs-toggle="dropdown">
+              <i class="fa fa-upload me-1"></i> Yuklash
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="javascript:void(0)" onclick="importStaff()">
+                <i class="fa fa-user-tie text-success me-1"></i> Hodimlar</a></li>
+              <li><a class="dropdown-item" href="javascript:void(0)" onclick="importStudents()">
+                <i class="fa fa-user-graduate text-primary me-1"></i> Talabalar</a></li>
+            </ul>
+          </div>
+          <button class="btn btn-sm btn-warning" onclick="generateFaceEncodings()">
+            <i class="fa fa-camera me-1"></i> Encoding yaratish
+          </button>
+          <a class="btn btn-sm btn-info" href="{% url 'add-user' %}">
+            <i class="fa fa-plus me-1"></i> Yangi
           </a>
         </div>
       </div>
-      <!-- END Quick Overview -->
 
-      <!-- All Users -->
-      <div class="block block-rounded">
-        <div class="block-header block-header-default d-flex justify-content-between align-items-center">
-          <h3 class="block-title mb-0">Foydalanuvchilar</h3>
-          <div class="d-flex align-items-center gap-2">
-            <div class="dropdown">
-              <button class="btn btn-sm btn-success dropdown-toggle" data-bs-toggle="dropdown">
-                <i class="fa fa-upload me-1"></i> Yuklash
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="importStaff()">
-                  <i class="fa fa-user-tie text-success me-1"></i> Hodimlar</a></li>
-                <li><a class="dropdown-item" href="javascript:void(0)" onclick="importStudents()">
-                  <i class="fa fa-user-graduate text-primary me-1"></i> Talabalar</a></li>
-              </ul>
+      <div class="block-content">
+        <form method="GET" class="mb-3">
+          <div class="d-flex filter-group">
+            <div class="input-group input-group-sm flex-grow-1">
+              <input type="text" name="search" id="search" value commissioned by="{{ search_query }}" class="form-control"
+                     placeholder="Foydalanuvchini qidiring...">
+              <button class="btn btn-light" type early="submit"><i class="fa fa-search"></i></button>
             </div>
-            <a class="btn btn-sm btn-info" href="{% url 'add-user' %}">
-              <i class="fa fa-plus me-1"></i> Yangi
-            </a>
+            <select class="form-select form-select-sm" name="filter_type" id="filter_type" onchange="this.form.submit()">
+              <option value="" {% if not filter_type %}selected{% endif %}>Hammasi</option>
+              <option value="student" {% if filter_type == 'student' %}selected{% endif %}>Talaba</option>
+              <option value="teacher" {% if filter_type == 'teacher' %}selected{% endif %}>Hodim</option>
+              <option value="other" {% if filter_type == 'other' %}selected{% endif %}>Boshqa</option>
+              <option value="group" {% if filter_type == 'group' %}selected{% endif %}>Guruh bo'yicha</option>
+            </select>
+            {% if filter_type == 'group' %}
+              <select class="form-select form-select-sm" name="group_name" id="group_name" onchange="this.form.submit()">
+                <option value="" {% if not group_name %}selected{% endif %}>Barcha guruhlar</option>
+                {% for group in groups %}
+                  <option value="{{ group.group_name }}" {% if group_name == group.group_name %}selected{% endif %}>{{ group.group_name }}</option>
+                {% endfor %}
+              </select>
+            {% endif %}
           </div>
-        </div>
+        </form>
 
-        <div class="block-content">
-          <form method="GET" class="mb-3">
-            <div class="input-group input-group-sm">
-              <input type="text" name="search" id="search" value="{{ search_query }}" class="form-control"
-                     placeholder="Foydalanuvchini qidiring..">
-              <button class="btn btn-light" type="submit"><i class="fa fa-search"></i></button>
-            </div>
-          </form>
+        <!-- CSRF token for DELETE requests -->
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
-          <div class="table-responsive">
-            <table class="table table-sm table-striped table-bordered align-middle text-center">
-              <thead class="table-light">
+        <div class="table-responsive">
+          <table class="table table-sm table-striped table-bordered align-middle text-center">
+            <thead class="table-light">
               <tr>
-                <th style="width: 40px;">#</th>
+                <th scope="width: 40px;">#</th>
                 <th>Ism</th>
                 <th>Familiya</th>
-                <th class="d-none d-md-table-cell">Telefon</th>
-                <th class="d-none d-md-table-cell">Manzil</th>
+                <th>Akademik guruh</th>
+                <th>Holati</th>
                 <th class="d-none d-md-table-cell">Tug'ilgan sana</th>
                 <th>Rasm</th>
+                <th>Yuz encoding</th>
                 <th>Harakat</th>
               </tr>
-              </thead>
-              <tbody>
+            </thead>
+            <tbody>
               {% for user in users %}
                 <tr>
                   <td>{{ forloop.counter }}</td>
-                  <td>{{ user.first_name }}</td>
-                  <td>{{ user.second_name }}</td>
-                  <td class="d-none d-md-table-cell">{{ user.phone_number|default:"–" }}</td>
-                  <td class="d-none d-md-table-cell">{{ user.address|default:"–" }}</td>
-                  <td class="d-none d-md-table-cell">{{ user.date_of_birth|date:"Y-m-d" }}</td>
+                  <td>{{ user.first_name|default:"–" }}</td>
+                  <td>{{ user.second_name|default:"–" }}</td>
                   <td>
-                    <img src="
-
-                      {% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
+                    {% if user.group_name %}
+                      {{ user.group_name }}
+                    {% else %}
+                      <span class="text-danger">Biriktirilmagan</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if user.is_student %}
+                      Talaba {% if user.level_name %}({{ user.level_name }}){% endif %}
+                    {% elif user.is_teacher %}
+                      O‘qituvchi {% if user.staff_position %}({{ user.staff_position }}){% endif %}
+                    {% else %}
+                      Boshqa
+                    {% endif %}
+                  </td>
+                  <td class="d-none d-md-table-cell">{{ user.date_of_birth|date:"Y-m-d"|default:"–" }}</td>
+                  <td>
+                    <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
                          alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                  </td>
+                  <td>
+                    {% if user.face_encoding %}
+                      <span class="badge bg-success">Yaratilgan</span>
+                    {% else %}
+                      <span class="badge bg-danger">Yaratilmagan</span>
+                    {% endif %}
                   </td>
                   <td>
                     <a href="{% url 'edit-user' user.id %}" class="btn btn-sm btn-alt-primary" data-bs-toggle="tooltip"
@@ -122,80 +196,79 @@
                 </tr>
               {% empty %}
                 <tr>
-                  <td colspan="8" class="text-muted text-center">Foydalanuvchilar topilmadi</td>
+                  <td colspan="9" class="text-muted text-center">Foydalanuvchilar topilmadi</td>
                 </tr>
               {% endfor %}
-              </tbody>
-            </table>
-          </div>
-
-          <nav class="d-flex justify-content-end mt-3">
-            <ul class="pagination pagination-sm mb-0">
-              {% with current=users.number total=users.paginator.num_pages %}
-                {% if users.has_previous %}
-                  <li class="page-item">
-                    <a class="page-link" href="?page=
-                      {{ users.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">&laquo;</a>
-                  </li>
-                {% endif %}
-
-                {% if current > 3 %}
-                  <li class="page-item"><a class="page-link"
-                                           href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">1</a>
-                  </li>
-                  {% if current > 4 %}
-                    <li class="page-item disabled"><span class="page-link">...</span></li>
-                  {% endif %}
-                {% endif %}
-
-                {% for num in users.paginator.page_range %}
-                  {% if num >= current|add:'-2' and num <= current|add:'2' %}
-                    <li class="page-item {% if num == current %}active{% endif %}">
-                      <a class="page-link"
-                         href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
-                    </li>
-                  {% endif %}
-                {% endfor %}
-
-                {% if current < total|add:'-2' %}
-                  {% if current < total|add:'-3' %}
-                    <li class="page-item disabled"><span class="page-link">...</span></li>
-                  {% endif %}
-                  <li class="page-item"><a class="page-link" href="?page=
-                    {{ total }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ total }}</a></li>
-                {% endif %}
-
-                {% if users.has_next %}
-                  <li class="page-item">
-                    <a class="page-link" href="?page=
-                      {{ users.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">&raquo;</a>
-                  </li>
-                {% endif %}
-              {% endwith %}
-            </ul>
-          </nav>
+            </tbody>
+          </table>
         </div>
-      </div>
-      <!-- END All Users -->
-    </div>
-    <!-- END Page Content -->
-  </main>
 
-  <!-- Progress Modal -->
-  <div class="modal fade" id="studentImportModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-sm modal-dialog-centered">
-      <div class="modal-content text-center">
-        <div class="modal-body">
-          <i class="fa fa-spinner fa-spin fa-2x text-primary mb-3"></i>
-          <h6 id="studentImportStatus">Yuklanmoqda...</h6>
-          <div class="progress mt-3" style="height: 8px;">
-            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
-                 role="progressbar" style="width: 0%;" id="studentImportProgress"></div>
-          </div>
+        <nav class="d-flex justify-content-end mt-3">
+          <ul class="pagination pagination-sm mb-0">
+            {% with current=users.number total=users.paginator.num_pages %}
+              {% if users.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ users.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if group_name %}&group_name={{ group_name }}{% endif %}">«</a>
+                </li>
+              {% endif %}
+
+              {% if current > 3 %}
+                <li class="page-item"><a class="page-link"
+                                         href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if group_name %}&group_name={{ group_name }}{% endif %}">1</a>
+                </li>
+                {% if current > 4 %}
+                  <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+              {% endif %}
+
+              {% for num in users.paginator.page_range %}
+                {% if num >= current|add:'-2' and num <= current|add:'2' %}
+                  <li class="page-item {% if num == current %}active{% endif %}">
+                    <a class="page-link"
+                       href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if group_name %}&group_name={{ group_name }}{% endif %}">{{ num }}</a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+
+              {% if current < total|add:'-2' %}
+                {% if current < total|add:'-3' %}
+                  <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+                <li class="page-item"><a class="page-link"
+                                         href="?page={{ total }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if group_name %}&group_name={{ group_name }}{% endif %}">{{ total }}</a>
+                </li>
+              {% endif %}
+
+              {% if users.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ users.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if group_name %}&group_name={{ group_name }}{% endif %}">»</a>
+                </li>
+              {% endif %}
+            {% endwith %}
+          </ul>
+        </nav>
+      </div>
+    </div>
+    <!-- END All Users -->
+  </div>
+  <!-- END Page Content -->
+</main>
+
+<!-- Progress Modal -->
+<div class="modal fade" id="studentImportModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body">
+        <i class="fa fa-spinner fa-spin fa-2x text-primary mb-3"></i>
+        <h6 id="studentImportStatus">Yuklanmo politiciansqda...</h6>
+        <div class="progress mt-3" style="height: 8px;">
+          <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+               role="progressbar" style="width: 0%;" id="studentImportProgress"></div>
         </div>
       </div>
     </div>
   </div>
+</div>
 {% endblock content %}
 
 {% block script %}
@@ -203,7 +276,7 @@
 
   <script>
     function deleteUser(userId) {
-      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
 
       if (!csrfToken) {
         console.error('CSRF token topilmadi!');
@@ -243,7 +316,7 @@
                   icon: 'success',
                   confirmButtonText: 'OK',
                 }).then(() => {
-                  window.location.reload(); // Sahifani qayta yuklash
+                  window.location.reload();
                 });
               } else {
                 Swal.fire({
@@ -326,6 +399,34 @@
         document.getElementById('studentImportProgress').style.width = '100%';
       };
     }
+
+    function generateFaceEncodings() {
+      const modal = new bootstrap.Modal(document.getElementById('studentImportModal'));
+      modal.show();
+      document.getElementById('studentImportStatus').innerText = 'Yuz encodinglari yaratilmoqda...';
+      document.getElementById('studentImportProgress').style.width = '0%';
+
+      const source = new EventSource("{% url 'generate_face_encodings' %}");
+      source.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        document.getElementById('studentImportStatus').innerText = data.status;
+        document.getElementById('studentImportProgress').style.width = data.progress + '%';
+
+        if (data.progress >= 100) {
+          source.close();
+          setTimeout(() => {
+            modal.hide();
+            location.reload();
+          }, 2000);
+        }
+      };
+
+      source.onerror = function(err) {
+        console.error('❌ SSE xato (face encoding):', err);
+        source.close();
+        document.getElementById('studentImportStatus').innerText = '❌ Yuz encodinglarini yaratishda xatolik!';
+        document.getElementById('studentImportProgress').style.width = '100%';
+      };
+    }
   </script>
 {% endblock script %}
-

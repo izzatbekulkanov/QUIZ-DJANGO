@@ -4,99 +4,42 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-
-    <title>OneUI - Bootstrap 5 Admin Template &amp; UI Framework</title>
-
-    <meta name="description" content="OneUI - Bootstrap 5 Admin Template &amp; UI Framework created by pixelcave and published on Themeforest">
+    <title>Test Tizimi - Kirish</title>
+    <meta name="description" content="Test Tizimi Kirish Sahifasi">
     <meta name="author" content="pixelcave">
     <meta name="robots" content="noindex, nofollow">
-
-    <!-- Open Graph Meta -->
-    <meta property="og:title" content="OneUI - Bootstrap 5 Admin Template &amp; UI Framework">
-    <meta property="og:site_name" content="OneUI">
-    <meta property="og:description" content="OneUI - Bootstrap 5 Admin Template &amp; UI Framework created by pixelcave and published on Themeforest">
+    <meta property="og:title" content="Test Tizimi - Kirish">
+    <meta property="og:site_name" content="Test Tizimi">
+    <meta property="og:description" content="Test Tizimi Kirish Sahifasi">
     <meta property="og:type" content="website">
     <meta property="og:url" content="">
     <meta property="og:image" content="">
-
-    <!-- Icons -->
-    <!-- The following icons can be replaced with your own, they are used by desktop and mobile browsers -->
     <link rel="shortcut icon" href="{% static 'assets/media/favicons/favicon.png' %}">
     <link rel="icon" type="image/png" sizes="192x192" href="{% static 'assets/media/favicons/favicon-192x192.png' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/media/favicons/apple-touch-icon-180x180.png' %}">
-    <!-- END Icons -->
-
-    <!-- Stylesheets -->
-    <!-- OneUI framework -->
     <link rel="stylesheet" id="css-main" href="{% static 'assets/css/oneui.min.css' %}">
-
-    <!-- You can include a specific file from css/themes/ folder to alter the default color theme of the template. eg: -->
-    <!-- <link rel="stylesheet" id="css-theme" href="{% static 'assets/css/themes/amethyst.min.css' %}"> -->
-    <!-- END Stylesheets -->
+    <style>
+      .password-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        font-size: 1.2rem;
+      }
+    </style>
   </head>
-
   <body>
-    <!-- Page Container -->
-    <!--
-      Available classes for #page-container:
-
-      GENERIC
-
-        'remember-theme'                            Remembers active color theme and dark mode between pages using localStorage when set through
-                                                    - Theme helper buttons [data-toggle="theme"],
-                                                    - Layout helper buttons [data-toggle="layout" data-action="dark_mode_[on/off/toggle]"]
-                                                    - ..and/or One.layout('dark_mode_[on/off/toggle]')
-
-      SIDEBAR & SIDE OVERLAY
-
-        'sidebar-r'                                 Right Sidebar and left Side Overlay (default is left Sidebar and right Side Overlay)
-        'sidebar-mini'                              Mini hoverable Sidebar (screen width > 991px)
-        'sidebar-o'                                 Visible Sidebar by default (screen width > 991px)
-        'sidebar-o-xs'                              Visible Sidebar by default (screen width < 992px)
-        'sidebar-dark'                              Dark themed sidebar
-
-        'side-overlay-hover'                        Hoverable Side Overlay (screen width > 991px)
-        'side-overlay-o'                            Visible Side Overlay by default
-
-        'enable-page-overlay'                       Enables a visible clickable Page Overlay (closes Side Overlay on click) when Side Overlay opens
-
-        'side-scroll'                               Enables custom scrolling on Sidebar and Side Overlay instead of native scrolling (screen width > 991px)
-
-      HEADER
-
-        ''                                          Static Header if no class is added
-        'page-header-fixed'                         Fixed Header
-
-      HEADER STYLE
-
-        ''                                          Light themed Header
-        'page-header-dark'                          Dark themed Header
-
-      MAIN CONTENT LAYOUT
-
-        ''                                          Full width Main Content if no class is added
-        'main-content-boxed'                        Full width Main Content with a specific maximum width (screen width > 1200px)
-        'main-content-narrow'                       Full width Main Content with a percentage width (screen width > 1200px)
-
-      DARK MODE
-
-        'sidebar-dark page-header-dark dark-mode'   Enable dark mode (light sidebar/header is not supported with dark mode)
-    -->
     <div id="page-container">
-
-      <!-- Main Container -->
       <main id="main-container">
-        <!-- Page Content -->
         <div class="hero-static d-flex align-items-center">
           <div class="content">
             <div class="row justify-content-center push">
               <div class="col-md-8 col-lg-6 col-xl-4">
-                <!-- Sign In Block -->
                 <div class="block block-rounded mb-0">
                   <div class="block-header block-header-default">
                     <h3 class="block-title">Tizimga kirish</h3>
                     <div class="block-options">
-                      <a class="btn-block-option fs-sm" href="">Parolni unutdingizmi?</a>
                       <a class="btn-block-option" href="{% url 'register' %}" data-bs-toggle="tooltip" data-bs-placement="left" title="Yangi hisob yaratish">
                         <i class="fa fa-user-plus"></i>
                       </a>
@@ -104,20 +47,22 @@
                   </div>
                   <div class="block-content">
                     <div class="p-sm-3 px-lg-4 px-xxl-5 py-lg-5">
-                      <h1 class="h2 mb-1">Hamkor Edu</h1>
+                      <h1 class="h2 mb-1">Test Tizimi</h1>
                       <p class="fw-medium text-muted">
                         Xush kelibsiz, iltimos tizimga kiring.
                       </p>
-
-                      <!-- Login Form -->
+                      {% if error %}
+                        <p class="text-danger">{{ error }}</p>
+                      {% endif %}
                       <form class="js-validation-signin" method="POST" action="{% url 'login' %}">
                         {% csrf_token %}
                         <div class="py-3">
                           <div class="mb-4">
                             <input type="text" class="form-control form-control-alt form-control-lg" id="login-username" name="username" placeholder="Foydalanuvchi nomi" required>
                           </div>
-                          <div class="mb-4">
+                          <div class="mb-4 position-relative">
                             <input type="password" class="form-control form-control-alt form-control-lg" id="login-password" name="password" placeholder="Parol" required>
+                            <span class="password-toggle" onclick="togglePassword()">🙈</span>
                           </div>
                           <div class="mb-4">
                             <div class="form-check">
@@ -126,48 +71,43 @@
                             </div>
                           </div>
                         </div>
-                        <div class="row mb-4">
-                          <div class="col-md-6 col-xl-5">
-                            <button type="submit" class="btn w-100 btn-alt-primary">
-                              <i class="fa fa-fw fa-sign-in-alt me-1 opacity-50"></i> Kirish
-                            </button>
-                          </div>
+                        <div class="mb-4 space-y-2">
+                          <button type="submit" class="btn w-100 btn-alt-primary">
+                            <i class="fa fa-fw fa-sign-in-alt me-1 opacity-50"></i> Kirish
+                          </button>
+                          <a href="{% url 'face_login' %}" class="btn w-100 btn-alt-info">
+                            <i class="fa fa-fw fa-camera me-1 opacity-50"></i> Yuz orqali kirish
+                          </a>
                         </div>
                       </form>
-                      <!-- END Login Form -->
                     </div>
                   </div>
                 </div>
-
-                <!-- END Sign In Block -->
               </div>
             </div>
             <div class="fs-sm text-muted text-center">
-              <strong>version 1.0</strong> &copy; <span data-toggle="year-copy"></span>
+              <strong>version 1.0</strong> © <span data-toggle="year-copy"></span>
             </div>
           </div>
         </div>
-        <!-- END Page Content -->
       </main>
-      <!-- END Main Container -->
     </div>
-    <!-- END Page Container -->
-
-    <!--
-        OneUI JS
-
-        Core libraries and functionality
-        webpack is putting everything together at assets/_js/main/app.js
-    -->
     <script src="{% static 'assets/js/oneui.app.min.js' %}"></script>
-
-    <!-- jQuery (required for jQuery Validation plugin) -->
     <script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
-
-    <!-- Page JS Plugins -->
     <script src="{% static 'assets/js/plugins/jquery-validation/jquery.validate.min.js' %}"></script>
-
-    <!-- Page JS Code -->
     <script src="{% static 'assets/js/pages/op_auth_signin.min.js' %}"></script>
+    <script>
+      function togglePassword() {
+        const passwordInput = document.getElementById('login-password');
+        const toggleIcon = document.querySelector('.password-toggle');
+        if (passwordInput.type === 'password') {
+          passwordInput.type = 'text';
+          toggleIcon.textContent = '🙉';
+        } else {
+          passwordInput.type = 'password';
+          toggleIcon.textContent = '🙈';
+        }
+      }
+    </script>
   </body>
 </html>

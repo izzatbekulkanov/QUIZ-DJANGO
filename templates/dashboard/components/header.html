@@ -59,19 +59,19 @@
 
       <!-- User Action -->
       <div class="d-flex align-items-center ms-3">
-        {% if user.is_authenticated %}
-        <!-- Logout -->
-        <a class="btn btn-danger ms-2" href="{% url 'logout' %}">
-          <i class="fa fa-sign-out-alt me-1"></i>
-          <span>Chiqish</span>
-        </a>
-        {% else %}
-        <!-- Login -->
-        <a class="btn btn-success ms-2" href="{% url 'login' %}">
-          <i class="fa fa-user-lock me-1"></i>
-          <span>Kirish</span>
-        </a>
-        {% endif %}
+                {% if user.is_authenticated %}
+          <!-- Logout -->
+          <a class="btn btn-sm btn-outline-danger" href="{% url 'logout' %}">
+            <i class="fa fa-sign-out-alt me-1"></i>
+            <span>Chiqish</span>
+          </a>
+          {% else %}
+          <!-- Login -->
+          <a class="btn btn-sm btn-outline-success" href="{% url 'login' %}">
+            <i class="fa fa-user-lock me-1"></i>
+            <span>Kirish</span>
+          </a>
+          {% endif %}
       </div>
       <!-- END User Action -->
     </div>

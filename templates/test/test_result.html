@@ -1,11 +1,8 @@
 {% extends 'dashboard/index.html' %}
 {% load static %}
 {% load custom_filters %}
-
 {% block style %}
 {% endblock style %}
-
-
 {% block content %}
 <main id="main-container">
     <div class="content">
@@ -15,7 +12,7 @@
                     <h3>Test Natijalari</h3>
                 </div>
                 <div class="card-body">
-                    <p><strong>Foydalanuvchi:</strong> {{ student_test.student.username }}</p>
+                    <p><strong>Foydalanuvchi:</strong> {{ student_test.student.first_name }} {{ student_test.student.second_name }}</p>
                     <p><strong>Test:</strong> {{ student_test.assignment.test.name }}</p>
                     <p><strong>Natija:</strong> {{ student_test.score|floatformat:2 }}%</p>
                     <p><strong>To‘g‘ri javoblar:</strong> {{ correct_answers }} / {{ total_questions }}</p>
@@ -29,12 +26,6 @@
     </div>
 </main>
 {% endblock content %}
-
-
-
 {% block script %}
-
     <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
-  
-
 {% endblock script %}

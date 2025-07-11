@@ -1,336 +1,342 @@
-{% extends 'dashboard/index.html' %}
+<!DOCTYPE html>
 {% load static %}
 {% load custom_filters %}
-
-{% block style %}
-
-<style>
-
-    #countdown-timer {
-        font-size: 1.25rem;
-        font-weight: 600;
-    }
-    .question-progress-badge {
-        transition: all 0.2s ease;
-        border: 2px solid transparent;
-    }
-    .question-progress-badge.bg-primary {
-        border-color: #007bff;
-    }
-    .question-progress-badge:hover {
-        background-color: #0056b3;
-        color: white;
-    }
-        /* Header va Footer-ni yashirish */
-    #page-header,
-    #page-footer {
-        display: none;
-    }
-
-    /* Umumiy javob itemlar uchun */
-    .answer-item {
-        transition: background-color 0.3s ease, border-color 0.3s ease;
-        border-radius: 5px;
-    }
-
-    /* Hover effekti */
-    .answer-item:hover {
-        background-color: #f8f9fa; /* Bootstrapning engil fon rangi */
-        cursor: pointer;
-    }
-
-    /* Tanlangan javob uchun */
-    .answer-item.border-success {
-        border: 2px solid #198754; /* Success rang */
-        background-color: #d4edda; /* Success fon */
-    }
-
-    /* Radio tugma uchun maxsus stil */
-    .form-check-input {
-        cursor: pointer;
-        width: 1.5rem;
-        height: 1.5rem;
-        margin-right: 10px;
-    }
-
-    /* Label uchun moslashuvchan stil */
-    .answer-item label {
-        cursor: pointer;
-        font-size: 1rem; /* Matnning o'qilishi uchun kattaroq */
-        color: #212529; /* Bootstrapning asosiy qora rangi */
-    }
-
-    /* Javob tanlanganda avtomatik border */
-    .answer-item input[type="radio"]:checked + span {
-        font-weight: bold;
-        color: #198754; /* Success rang */
-    }
-
-    /* Mobil qurilmalar uchun optimallashtirish */
-    @media (max-width: 576px) {
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sahifasi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        #main-container {
+            min-height: 100vh;
+        }
+        .left-panel {
+            width: 200px;
+            padding: 8px;
+        }
+        .right-panel {
+            width: 180px;
+            padding: 8px;
+            gap: 4px;
+        }
+        .center-content {
+            margin-left: 200px;
+            margin-right: 180px;
+            padding: 8px;
+        }
+        .question-card {
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+        .question-card img {
+            max-height: 200px;
+        }
         .answer-item {
-            padding: 10px;
+            padding: 6px;
+            margin-bottom: 4px;
         }
-
-        .form-check-input {
-            width: 1.25rem;
-            height: 1.25rem;
+        .question-number {
+            width: 32px;
+            height: 32px;
+            font-size: 0.85rem;
         }
-
-        .answer-item label {
+        .time-display {
+            padding: 6px 10px;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .finish-button {
+            padding: 6px;
             font-size: 0.9rem;
         }
-    }
-    .question-progress-badge {
-    cursor: pointer;
-}
-</style>
+        /* iOS 16 uslubidagi dialog oynasi */
+        .ios-dialog {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 13px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            width: 280px;
+            padding: 20px;
+            text-align: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        .ios-dialog-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 999;
+        }
+        .ios-dialog h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .ios-dialog p {
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .ios-dialog button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        .ios-dialog .confirm-btn {
+            background: #007AFF;
+            color: white;
+        }
+        .ios-dialog .cancel-btn {
+            background: #E5E5EA;
+            color: #000;
+        }
+    </style>
+</head>
+<body class="font-inter">
+    <!-- iOS uslubidagi dialog oynasi -->
+    <div class="ios-dialog-overlay" id="dialog-overlay"></div>
+    <div class="ios-dialog" id="finish-dialog">
+        <h3>Testni tugatishni xohlaysizmi?</h3>
+        <p>Test yakunlanganidan so'ng natija qayta o'zgartirilmaydi.</p>
+        <button class="confirm-btn" onclick="confirmFinish()">Ha, yakunlash</button>
+        <button class="cancel-btn" onclick="closeDialog('finish-dialog')">Bekor qilish</button>
+    </div>
+    <div class="ios-dialog" id="unanswered-dialog">
+        <h3>Diqqat!</h3>
+        <p id="unanswered-message"></p>
+        <button class="confirm-btn" onclick="confirmFinish()">Davom etish</button>
+        <button class="cancel-btn" onclick="closeDialog('unanswered-dialog')">Ortga qaytish</button>
+    </div>
+    <div class="ios-dialog" id="leave-dialog">
+        <h3>Sahifadan chiqmoqchimisiz?</h3>
+        <p>Agar boshqa sahifaga o'tishni amalga oshirmoqchi bo'lsangiz, testingiz yakunlanadi.</p>
+        <button class="confirm-btn" onclick="confirmFinish()">Ha, chiqish</button>
+        <button class="cancel-btn" onclick="closeDialog('leave-dialog')">Ortga qaytish</button>
+    </div>
 
-{% endblock style %}
+    <main id="main-container" class="flex bg-gray-100" v-cloak>
+        <!-- Chap panel: Foydalanuvchi ma'lumotlari va Yakunlash tugmasi -->
+        <div class="fixed top-0 bottom-0 left-panel bg-white shadow-lg flex flex-col justify-between">
+            <div class="text-center">
+                <h5 class="text-base font-semibold text-gray-800">{{ user.first_name }} {{ user.second_name }}</h5>
+                <p class="text-sm text-gray-600 mt-1">{{ assignment.test.name }}</p>
+                <p class="text-sm text-gray-600">{{ assignment.category.name }}</p>
+                <p class="text-sm text-gray-600">[[ questions.length ]] savol</p>
+                <p class="text-base font-semibold text-indigo-600 bg-gray-200 time-display rounded-full mt-2">
+                    [[ formattedTime ]]
+                </p>
+            </div>
+            <button
+                class="finish-button w-full bg-red-600 text-white rounded-md hover:bg-red-700 transition-all"
+                @click="finishTest">
+                <i class="fa fa-check mr-1"></i>Tugatish
+            </button>
+        </div>
 
-
-{% block content %}
-<main id="main-container" class="bg-light min-vh-100 d-flex flex-column justify-content-between">
-    <!-- Timer va Progress Tracker -->
-    <div class="container py-4">
-        <div class="bg-white shadow rounded p-3 mx-auto text-center" style="max-width: 320px;">
-            <!-- Timer -->
-            <span id="countdown-timer" class="badge bg-primary text-white fs-5 py-2 px-4 rounded-pill d-block mx-auto">
-                00:00
+        <!-- O'ng panel: Savollar raqamlari (gorizontal, 4 ta bir qatorda) -->
+        <div class="fixed top-0 right-0 right-panel bg-white shadow-lg flex flex-wrap overflow-x-auto">
+            <span
+                v-for="(question, index) in questions"
+                :key="question.id"
+                :class="[
+                    'question-number flex items-center justify-center rounded-full font-semibold cursor-pointer transition-all',
+                    currentQuestionIndex === index ? 'bg-indigo-600 text-white' :
+                    question.answers.some(a => a.selected) ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-800'
+                ]"
+                :data-question-id="question.id"
+                :title="'Savol ' + (index + 1)"
+                @click="scrollToQuestion(index)">
+                [[ index + 1 ]]
             </span>
-            <!-- Progress Tracker -->
-            <div class="row mt-4 g-2 justify-content-center">
-                {% for question in questions %}
-                <div class="col-auto">
-                    <span
-                        class="badge {% if forloop.first %}bg-primary text-white{% else %}bg-secondary text-dark{% endif %}
-                        question-progress-badge d-flex align-items-center justify-content-center"
-                        data-question-id="{{ question.id }}"
-                        style="width: 36px; height: 36px; font-size: 0.85rem; cursor: pointer;">
-                        {{ forloop.counter }}
-                    </span>
-                </div>
-                {% endfor %}
+        </div>
+
+        <!-- Markaziy kontent: Savollar -->
+        <div class="flex-1 center-content overflow-y-auto">
+            <div
+                v-for="(question, index) in questions"
+                :key="question.id"
+                :id="'question-' + question.id"
+                class="question-card bg-white rounded-lg shadow-md">
+                <h5 class="text-base font-semibold text-gray-800 text-center mb-2">
+                    Savol [[ index + 1 ]]: <span v-html="question.text"></span>
+                </h5>
+                <img v-if="question.image" :src="question.image" alt="Question Image" class="mx-auto mb-2 max-h-60 w-auto rounded-lg shadow-sm">
+                <ul class="space-y-1">
+                    <li
+                        v-for="answer in question.answers"
+                        :key="answer.id"
+                        :class="[
+                            'answer-item flex items-center rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer transition-all',
+                            answer.selected ? 'border-green-500 bg-green-50' : ''
+                        ]"
+                        @click="selectAnswer(question.id, answer.id)">
+                        <label :for="'answer_' + answer.id" class="flex items-center w-full">
+                            <input
+                                type="radio"
+                                :name="'question_' + question.id"
+                                :value="answer.id"
+                                :id="'answer_' + answer.id"
+                                class="h-4 w-4 text-green-500 cursor-pointer mr-2"
+                                :checked="answer.selected"
+                                @change="selectAnswer(question.id, answer.id)">
+                            <span class="text-gray-700 flex-1 text-sm">[[ answer.text ]]</span>
+                        </label>
+                    </li>
+                </ul>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Savollar -->
-    <div class="container mb-auto">
-        <div class="card shadow-sm mx-auto" style="max-width: 768px;">
-            {% for question in questions %}
-            <div class="question-block {% if forloop.first %}d-block{% else %}d-none{% endif %}" data-question-id="{{ question.id }}">
-                <div class="card-body">
-                    <h5 class="text-primary text-center mb-4">{{ question.text|safe }}</h5>
-                    {% if question.image %}
-                    <div class="text-center mb-4">
-                        <img src="{{ question.image }}" alt="Question Image" class="img-fluid rounded shadow-sm" style="max-height: 240px;">
-                    </div>
-                    {% endif %}
-                    <ul class="list-group">
-                        {% for answer in question.answers %}
-                        <li class="list-group-item answer-item d-flex align-items-center p-3 {% if answer.selected %}border-success bg-light{% endif %}">
-                            <label for="answer_{{ answer.id }}" class="d-flex align-items-center w-100 mb-0">
-                                <input
-                                    type="radio"
-                                    name="question_{{ question.id }}"
-                                    value="{{ answer.id }}"
-                                    id="answer_{{ answer.id }}"
-                                    class="form-check-input me-3"
-                                    {% if answer.selected %}checked{% endif %}>
-                                <span class="text-break">{{ answer.text }}</span>
-                            </label>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
+    <script>
+    let vueApp = null; // Vue ilovasini global saqlash uchun
 
-    <!-- Navigation Buttons -->
-    <div class="bg-white py-3 shadow-sm">
-        <div class="container d-flex justify-content-between align-items-center">
-            <button class="btn btn-outline-secondary btn-sm" id="prev-btn" disabled>
-                <i class="fa fa-arrow-left me-2"></i>Oldingi
-            </button>
-            <button class="btn btn-primary btn-sm" id="next-btn">
-                Keyingisi<i class="fa fa-arrow-right ms-2"></i>
-            </button>
-            <button class="btn btn-danger btn-sm" id="finish-test-btn">
-                <i class="fa fa-check me-2"></i>Tugatish
-            </button>
-        </div>
-    </div>
-</main>
-{% endblock content %}
+    const { createApp } = Vue;
 
-
-
-{% block script %}
-
-  <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
-  <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const countdownTimer = document.getElementById('countdown-timer');
-    const questionBlocks = document.querySelectorAll('.question-block');
-    const progressBadges = document.querySelectorAll('.question-progress-badge');
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const finishTestBtn = document.getElementById('finish-test-btn');
-    let currentQuestionIndex = parseInt(localStorage.getItem('currentQuestionIndex')) || 0; // Saqlangan indeksni o'qi
-    let remainingTime = {{ remaining_time }}; // Serverdan kelgan qolgan vaqt (sekundlarda)
-    let isTestRunning = true;
-
-    // Sahifadan chiqishga ruxsat bermaslik
-    window.onbeforeunload = () => (isTestRunning ? 'Test davomida sahifadan chiqish tavsiya etilmaydi.' : null);
-
-    // Timer Countdown funksiyasi
-    function updateCountdown() {
-        if (remainingTime > 0) {
-            const minutes = Math.floor(remainingTime / 60);
-            const seconds = remainingTime % 60;
-            countdownTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            remainingTime--;
-        } else {
-            clearInterval(timerInterval);
-            Swal.fire('Vaqt tugadi!', 'Test avtomatik yakunlandi.', 'info').then(() => finishTestBtn.click());
-        }
-    }
-    const timerInterval = setInterval(updateCountdown, 1000);
-    updateCountdown();
-
-    // Savollarni ko'rsatish funksiyasi
-    function showQuestion(index) {
-        questionBlocks.forEach((block, i) => {
-            block.classList.toggle('d-block', i === index);
-            block.classList.toggle('d-none', i !== index);
-        });
-        progressBadges.forEach((badge, i) => {
-            badge.classList.toggle('bg-primary', i === index);
-            badge.classList.toggle('bg-secondary', i !== index);
-        });
-        prevBtn.disabled = index === 0;
-        nextBtn.disabled = index === questionBlocks.length - 1;
-
-        // Joriy savol indeksini saqlash
-        localStorage.setItem('currentQuestionIndex', index);
-    }
-
-    // Javobni tanlash va serverga yuborish funksiyasi
-    function handleAnswerSelection(radio) {
-        const questionId = radio.name.split('_')[1];
-        const answerId = radio.value;
-
-        // Javobni serverga yuborish
-        fetch('/save-answer/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}',
-            },
-            body: JSON.stringify({ student_question_id: questionId, answer_id: answerId }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                Swal.fire('Xatolik', data.message, 'error');
-            } else {
-                document.querySelector(`.question-progress-badge[data-question-id="${questionId}"]`)
-                    ?.classList.add('bg-success');
+    vueApp = createApp({
+        delimiters: ['[[', ']]'],
+        data() {
+            return {
+                questions: {{ questions|to_json|safe }},
+                currentQuestionIndex: parseInt(localStorage.getItem('currentQuestionIndex')) || 0,
+                remainingTime: {{ remaining_time }},
+                isTestRunning: true,
+            };
+        },
+        computed: {
+            formattedTime() {
+                if (this.remainingTime <= 0) return '00:00';
+                const minutes = Math.floor(this.remainingTime / 60);
+                const seconds = this.remainingTime % 60;
+                return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             }
-        })
-        .catch(() => Swal.fire('Xatolik', 'Server bilan bog‘lanishda muammo yuz berdi.', 'error'));
-
-        // UI-ni yangilash
-        document.querySelectorAll(`input[name="question_${questionId}"]`).forEach(answer => {
-            answer.closest('.answer-item').classList.remove('border-success');
-        });
-        radio.closest('.answer-item').classList.add('border-success');
-    }
-
-    // Savollarni boshqarish tugmalari
-    prevBtn.addEventListener('click', () => {
-        if (currentQuestionIndex > 0) {
-            currentQuestionIndex--;
-            showQuestion(currentQuestionIndex);
-        }
-    });
-    nextBtn.addEventListener('click', () => {
-        if (currentQuestionIndex < questionBlocks.length - 1) {
-            currentQuestionIndex++;
-            showQuestion(currentQuestionIndex);
-        }
-    });
-    progressBadges.forEach((badge, index) => {
-        badge.addEventListener('click', () => {
-            currentQuestionIndex = index;
-            showQuestion(index);
-        });
-    });
-
-    // Javoblarni tanlash hodisasi
-    document.querySelectorAll('input[type="radio"]').forEach(radio => {
-        radio.addEventListener('change', () => handleAnswerSelection(radio));
-    });
-
-    // Testni yakunlash funksiyasi
-    function submitTest() {
-        fetch(`/finish-test/{{ student_test.id }}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
+        },
+        methods: {
+            scrollToQuestion(index) {
+                this.currentQuestionIndex = index;
+                const question = document.getElementById(`question-${this.questions[index].id}`);
+                question.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                localStorage.setItem('currentQuestionIndex', index);
             },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                isTestRunning = false;
-                Swal.fire('Tabriklaymiz!', data.message, 'success').then(() => {
-                    window.location.href = data.redirect_url;
-                });
-            } else {
-                Swal.fire('Xatolik', data.message, 'error');
+            selectAnswer(questionId, answerId) {
+                fetch('/save-answer/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                    body: JSON.stringify({ student_question_id: questionId, answer_id: answerId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        showDialog('unanswered-dialog', `Xatolik: ${data.message}`);
+                    } else {
+                        const question = this.questions.find(q => q.id === questionId);
+                        question.answers.forEach(a => a.selected = a.id === answerId);
+                    }
+                })
+                .catch(() => showDialog('unanswered-dialog', "Xatolik: Server bilan bog'lanishda muammo yuz berdi."));
+            },
+            finishTest() {
+                const unansweredQuestions = this.questions.filter(q => !q.answers.some(a => a.selected));
+                if (unansweredQuestions.length > 0) {
+                    document.getElementById('unanswered-message').textContent = `Siz ${unansweredQuestions.length} ta savolga javob bermadingiz. Barchasini to'ldirganingizga ishonch hosil qiling.`;
+                    showDialog('unanswered-dialog');
+                } else {
+                    showDialog('finish-dialog');
+                }
+            },
+            submitTest() {
+                fetch(`/finish-test/{{ student_test.id }}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.isTestRunning = false;
+                        showDialog('unanswered-dialog', data.message, () => {
+                            window.location.href = data.redirect_url;
+                        });
+                    } else {
+                        showDialog('unanswered-dialog', data.message);
+                    }
+                })
+                .catch(() => showDialog('unanswered-dialog', "Xatolik: Testni tugatishda muammo yuz berdi."));
             }
-        })
-        .catch(() => Swal.fire('Xatolik', 'Testni tugatishda muammo yuz berdi.', 'error'));
+        },
+        mounted() {
+            this.timerInterval = setInterval(() => {
+                if (this.remainingTime > 0) {
+                    this.remainingTime--;
+                } else {
+                    clearInterval(this.timerInterval);
+                    showDialog('unanswered-dialog', 'Vaqt tugadi! Test avtomatik yakunlandi.', () => this.submitTest());
+                }
+            }, 1000);
+            this.scrollToQuestion(this.currentQuestionIndex);
+
+            // Sahifadan chiqishni aniqlash
+            window.onbeforeunload = () => {
+                if (this.isTestRunning) {
+                    showDialog('leave-dialog');
+                    return "Test davomida sahifadan chiqish tavsiya etilmaydi.";
+                }
+                return null;
+            };
+        },
+        beforeUnmount() {
+            clearInterval(this.timerInterval);
+        }
+    }).mount('#main-container');
+
+    function showDialog(dialogId, message = null, callback = null) {
+        const dialog = document.getElementById(dialogId);
+        const overlay = document.getElementById('dialog-overlay');
+        if (message) {
+            const messageElement = dialog.querySelector('p');
+            if (messageElement) messageElement.textContent = message;
+        }
+        dialog.style.display = 'block';
+        overlay.style.display = 'block';
+        if (callback) {
+            dialog.querySelector('.confirm-btn').onclick = () => {
+                callback();
+                closeDialog(dialogId);
+            };
+        }
     }
 
-    // Testni yakunlash hodisasi
-    finishTestBtn.addEventListener('click', () => {
-        const unansweredQuestions = [...questionBlocks].filter(block => {
-            const questionId = block.dataset.questionId;
-            return !document.querySelector(`input[name="question_${questionId}"]:checked`);
-        });
+    function closeDialog(dialogId) {
+        const dialog = document.getElementById(dialogId);
+        const overlay = document.getElementById('dialog-overlay');
+        dialog.style.display = 'none';
+        overlay.style.display = 'none';
+    }
 
-        if (unansweredQuestions.length > 0) {
-            Swal.fire({
-                title: 'Diqqat!',
-                text: `Siz ${unansweredQuestions.length} ta savolga javob bermadingiz. Barchasini to‘ldirganingizga ishonch hosil qiling.`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Davom etish',
-                cancelButtonText: 'Ortga qaytish',
-            }).then(result => {
-                if (result.isConfirmed) submitTest();
-            });
-        } else {
-            Swal.fire({
-                title: 'Testni tugatishni xohlaysizmi?',
-                text: 'Test yakunlanganidan so‘ng natija qayta o‘zgartirilmaydi.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Ha, yakunlash',
-                cancelButtonText: 'Bekor qilish',
-            }).then(result => {
-                if (result.isConfirmed) submitTest();
-            });
-        }
-    });
-
-    // Dastlabki sozlamalar
-    showQuestion(currentQuestionIndex);
-});
-</script>
-{% endblock script %}
+    function confirmFinish() {
+        closeDialog('finish-dialog');
+        closeDialog('unanswered-dialog');
+        closeDialog('leave-dialog');
+        vueApp.submitTest(); // Global saqlangan vueApp orqali submitTest chaqiriladi
+    }
+    </script>
+</body>
+</html>

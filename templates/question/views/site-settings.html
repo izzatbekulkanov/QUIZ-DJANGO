@@ -1,10 +1,10 @@
 {% extends 'question/main.html' %}
 {% load static %}
+
 {% block content %}
 <main id="main-container">
-
   <!-- Hero -->
-  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
     <div class="bg-primary-dark-op">
       <div class="content content-full">
         <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
@@ -25,7 +25,6 @@
         <h3 class="block-title">Tizim sozlamalari formasi</h3>
       </div>
       <div class="block-content">
-
         {% if messages %}
           {% for message in messages %}
             <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
@@ -43,47 +42,47 @@
               <div class="mb-2">
                 <label class="form-label text-muted small mb-1">Tizim nomi</label>
                 <input type="text" name="name" class="form-control form-control-sm"
-                       value="{{ request.POST.name|default:system.name }}">
+                       value="{{ setting.name|default:'' }}">
               </div>
 
               <div class="mb-2">
                 <label class="form-label text-muted small mb-1">Tavsif</label>
-                <textarea name="description" class="form-control form-control-sm" rows="3">{{ request.POST.description|default:system.description }}</textarea>
+                <textarea name="description" class="form-control form-control-sm" rows="3">{{ setting.description|default:'' }}</textarea>
               </div>
 
               <div class="mb-2">
                 <label class="form-label text-muted small mb-1">Email</label>
                 <input type="email" name="contact_email" class="form-control form-control-sm"
-                       value="{{ request.POST.contact_email|default:system.contact_email }}">
+                       value="{{ setting.contact_email|default:'' }}">
               </div>
 
               <div class="mb-2">
                 <label class="form-label text-muted small mb-1">Telefon</label>
                 <input type="text" name="contact_phone" class="form-control form-control-sm"
-                       value="{{ request.POST.contact_phone|default:system.contact_phone }}">
+                       value="{{ setting.contact_phone|default:'' }}">
               </div>
 
               <div class="mb-2">
                 <label class="form-label text-muted small mb-1">Manzil</label>
-                <textarea name="address" class="form-control form-control-sm" rows="2">{{ request.POST.address|default:system.address }}</textarea>
+                <textarea name="address" class="form-control form-control-sm" rows="2">{{ setting.address|default:'' }}</textarea>
               </div>
 
               <div class="mb-2">
                 <label class="form-label text-muted small mb-1">Footer matni</label>
                 <input type="text" name="footer_text" class="form-control form-control-sm"
-                       value="{{ request.POST.footer_text|default:system.footer_text }}">
+                       value="{{ setting.footer_text|default:'' }}">
               </div>
 
               <div class="mb-2">
                 <label class="form-label text-muted small mb-1">HEMIS API manzili</label>
                 <input type="url" name="hemis_url" class="form-control form-control-sm"
-                       value="{{ request.POST.hemis_url|default:system.hemis_url }}">
+                       value="{{ setting.hemis_url|default:'' }}">
               </div>
 
               <div class="mb-2">
                 <label class="form-label text-muted small mb-1">HEMIS API kaliti</label>
                 <input type="text" name="hemis_api_key" class="form-control form-control-sm"
-                       value="{{ request.POST.hemis_api_key|default:system.hemis_api_key }}">
+                       value="{{ setting.hemis_api_key|default:'' }}">
               </div>
             </div>
 
@@ -92,31 +91,31 @@
               <div class="mb-3">
                 <label class="form-label text-muted small mb-1">Logo yuklash</label>
                 <input type="file" name="logo" class="form-control form-control-sm">
-                {% if system.logo %}
-                  <img src="{{ system.logo.url }}" class="img-thumbnail mt-2" width="120" alt="Logo">
+                {% if setting.logo %}
+                  <img src="{{ setting.logo.url }}" class="img-thumbnail mt-2" width="120" alt="Logo">
                 {% endif %}
               </div>
 
               <div class="mb-3">
                 <label class="form-label text-muted small mb-1">Favicon yuklash</label>
                 <input type="file" name="favicon" class="form-control form-control-sm">
-                {% if system.favicon %}
-                  <img src="{{ system.favicon.url }}" class="img-thumbnail mt-2" width="32" alt="Favicon">
+                {% if setting.favicon %}
+                  <img src="{{ setting.favicon.url }}" class="img-thumbnail mt-2" width="32" alt="Favicon">
                 {% endif %}
               </div>
 
               <div class="mb-3">
                 <label class="form-label text-muted small mb-1">Sayt holati</label>
                 <select name="site_status" class="form-select form-select-sm">
-                  <option value="active" {% if request.POST.site_status == "active" or system.status == "active" %}selected{% endif %}>Ishlamoqda</option>
-                  <option value="maintenance" {% if request.POST.site_status == "maintenance" or system.status == "maintenance" %}selected{% endif %}>Texnik tamirda</option>
-                  <option value="offline" {% if request.POST.site_status == "offline" or system.status == "offline" %}selected{% endif %}>Yopiq</option>
+                  <option value="active" {% if setting.status == 'active' %}selected{% endif %}>Ishlamoqda</option>
+                  <option value="maintenance" {% if setting.status == 'maintenance' %}selected{% endif %}>Texnik tamirda</option>
+                  <option value="offline" {% if setting.status == 'offline' %}selected{% endif %}>Yopiq</option>
                 </select>
               </div>
 
               <div class="mb-2">
                 <label class="form-label text-muted small mb-1">Holat matni</label>
-                <textarea name="status_message" class="form-control form-control-sm" rows="3">{{ request.POST.status_message|default:system.status_message }}</textarea>
+                <textarea name="status_message" class="form-control form-control-sm" rows="3">{{ setting.status_message|default:'' }}</textarea>
               </div>
             </div>
           </div>
@@ -127,7 +126,6 @@
             </button>
           </div>
         </form>
-
       </div>
     </div>
   </div>

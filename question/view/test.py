@@ -9,10 +9,13 @@ from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.timezone import now, make_aware
+from django.views.decorators.http import require_POST
+
 from question.forms import TestForm, AddQuestionForm
 from question.models import Test, Category, Question, Answer, StudentTestAssignment, StudentTest, StudentTestQuestion
 
@@ -26,9 +29,10 @@ class QuestionView(View):
         category_filter = request.GET.get('category', None)  # Filter by category
         search_query = request.GET.get('search', '')  # Search by name
 
-        # Get all tests with question count
+        # Get all tests with question count and student count
         tests_queryset = Test.objects.select_related('category').annotate(
-            question_count=Count('questions')
+            question_count=Count('questions'),
+            student_count=Count('students')  # Talabalar sonini hisoblash
         )
 
         # Apply filters
@@ -46,7 +50,7 @@ class QuestionView(View):
         categories = Category.objects.all()
 
         context = {
-            'tests': tests,  # Paginated test objects with question counts
+            'tests': tests,  # Paginated test objects with question and student counts
             'categories': categories,  # All categories for filtering
             'filters': {
                 'category': category_filter,
@@ -236,12 +240,36 @@ class AssignTestView(View):
         return render(request, self.template_name, context)
 
 
+@method_decorator([login_required, require_POST], name='dispatch')
+class DeleteAssignmentView(View):
+    def post(self, request, assignment_id):
+        try:
+            assignment = get_object_or_404(StudentTestAssignment, id=assignment_id)
+
+            # Agar topshiriqqa bog'liq StudentTest yozuvlari mavjud bo'lsa, o'chirishni taqiqlash
+            if assignment.student_tests.exists():
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Bu topshiriqni o‘chirish mumkin emas, chunki unga tegishli talaba testlari mavjud.'
+                }, status=400)
+
+            assignment.delete()
+            return JsonResponse({
+                'success': True,
+                'message': 'Topshiriq muvaffaqiyatli o‘chirildi!'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Xatolik yuz berdi: {str(e)}'
+            }, status=500)
+
+
 @method_decorator(login_required, name='dispatch')
 class AddAssignTestView(View):
     template_name = 'question/views/add-assign-test.html'
 
     def get(self, request):
-        # Test va kategoriya maʼlumotlarini form uchun yuborish
         categories = Category.objects.all()
         tests = Test.objects.all()
         context = {
@@ -252,15 +280,14 @@ class AddAssignTestView(View):
 
     def post(self, request):
         try:
-            # POST so‘rovdan maʼlumotlarni olish
             category_id = request.POST.get('category_id')
             test_id = request.POST.get('test_id')
             total_questions = int(request.POST.get('total_questions', 0))
             start_time_str = request.POST.get('start_time')
             end_time_str = request.POST.get('end_time')
             duration = request.POST.get('duration')
+            max_attempts = int(request.POST.get('max_attempts', 3))  # Yangi maydon
 
-            # Ob'yektlarni olish
             category = get_object_or_404(Category, id=category_id)
             test = get_object_or_404(Test, id=test_id)
 
@@ -269,30 +296,52 @@ class AddAssignTestView(View):
             if total_questions > available_questions:
                 return JsonResponse({
                     'success': False,
-                    'message': f"Testda faqat {available_questions} ta savol mavjud. Iltimos, mos son kiriting."
+                    'message': f"Testda faqat {available_questions} ta savol mavjud."
                 }, status=400)
 
-            # Boshlanish va tugash vaqtlarini formatlash va timezone qo‘shish
+            # Maksimal urinishlar sonini tekshirish
+            if max_attempts < 1:
+                return JsonResponse({
+                    'success': False,
+                    'message': "Maksimal urinishlar soni 1 dan kam bo‘lishi mumkin emas."
+                }, status=400)
+
+            # Vaqtni parsing qilish
             try:
-                start_time = make_aware(datetime.strptime(start_time_str, '%Y-%m-%dT%H:%M'))
-                end_time = make_aware(datetime.strptime(end_time_str, '%Y-%m-%dT%H:%M'))
-            except ValueError:
-                return JsonResponse({'success': False, 'message': 'Vaqt noto‘g‘ri formatda kiritilgan.'}, status=400)
+                start_time = make_aware(datetime.strptime(start_time_str, '%Y-%m-%d %H:%M'))
+                end_time = make_aware(datetime.strptime(end_time_str, '%Y-%m-%d %H:%M'))
+            except ValueError as e:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Vaqt formati noto‘g‘ri (YYYY-MM-DD HH:mm).'
+                }, status=400)
 
-            # Vaqtni tekshirish
+            # Vaqt validatsiyasi
+            now = timezone.now()
+            if start_time < now:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Boshlanish vaqti hozirgi vaqtdan keyin bo‘lishi kerak.'
+                }, status=400)
             if start_time >= end_time:
-                return JsonResponse({'success': False, 'message': 'Boshlanish vaqti tugash vaqtidan oldin bo‘lishi kerak.'}, status=400)
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Boshlanish vaqti tugash vaqtidan oldin bo‘lishi kerak.'
+                }, status=400)
 
-            # Mavjud topshiriqni tekshirish
+            # Topshiriq allaqachon mavjudligini tekshirish
             if StudentTestAssignment.objects.filter(
                 category=category,
                 test=test,
                 start_time=start_time,
                 end_time=end_time,
             ).exists():
-                return JsonResponse({'success': False, 'message': 'Bunday test topshirig‘i allaqachon mavjud!'}, status=400)
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Bunday test topshirig‘i allaqachon mavjud!'
+                }, status=400)
 
-            # Test topshirig‘ini yaratish
+            # Topshiriqni yaratish
             assignment = StudentTestAssignment.objects.create(
                 teacher=request.user,
                 test=test,
@@ -300,15 +349,21 @@ class AddAssignTestView(View):
                 total_questions=total_questions,
                 start_time=start_time,
                 end_time=end_time,
-                duration=duration,  # Davomiylik daqiqalarda
+                duration=duration,
                 is_active=True,
-                status='pending'
+                status='pending',
+                attempts=max_attempts  # Yangi maydonni saqlash
             )
 
-            return JsonResponse({'success': True, 'message': 'Test topshirig‘i muvaffaqiyatli qo‘shildi!'})
+            return JsonResponse({
+                'success': True,
+                'message': 'Test topshirig‘i muvaffaqiyatli qo‘shildi!'
+            })
         except Exception as e:
-            return JsonResponse({'success': False, 'message': str(e)}, status=500)
-
+            return JsonResponse({
+                'success': False,
+                'message': f'Xatolik yuz berdi: {str(e)}'
+            }, status=500)
 @method_decorator(csrf_exempt, name='dispatch')
 class ToggleActiveView(View):
     def post(self, request, assignment_id):

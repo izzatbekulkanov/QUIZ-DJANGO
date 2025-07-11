@@ -2,74 +2,420 @@
 {% load static %}
 
 {% block style %}
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+      .content {
+          max-width: 1000px;
+          margin: 0 auto;
+          padding: 10px;
+      }
+
+      .profile-img, .profile-placeholder {
+          width: 100px;
+          height: 100px;
+          object-fit: cover;
+          border-radius: 0.25rem;
+          border: 1px solid #dee2e6;
+      }
+
+      .profile-placeholder {
+          background-color: #e9ecef;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.2rem;
+          color: #6c757d;
+      }
+
+      .badge-custom {
+          background-color: #e9ecef;
+          color: #495057;
+          padding: 0.4rem 0.8rem;
+          border-radius: 0.8rem;
+          font-size: 0.85rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+      }
+
+      .btn-primary-custom {
+          padding: 0.4rem 0.8rem;
+          border-radius: 0.25rem;
+          font-size: 0.9rem;
+      }
+
+      .test-card {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+      }
+
+      .test-card .card-body {
+          flex-grow: 1;
+          padding: 0.8rem;
+      }
+
+      .test-card .card-footer {
+          padding: 0.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+      }
+
+      .card, .test-card {
+          margin-bottom: 1rem;
+      }
+
+      h3 {
+          margin: 1rem 0;
+      }
+
+      hr {
+          margin: 1.5rem 0;
+      }
+
+      .card-text {
+          margin-bottom: 0.5rem;
+      }
+
+      /* iOS 16 uslubidagi dialog oynasi */
+      .ios-dialog {
+          display: none;
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: rgba(255, 255, 255, 0.95);
+          border-radius: 13px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+          width: 280px;
+          padding: 20px;
+          text-align: center;
+          z-index: 1000;
+      }
+
+      .ios-dialog-overlay {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.4);
+          z-index: 999;
+      }
+
+      .ios-dialog h3 {
+          font-size: 1.1rem;
+          font-weight: 600;
+          margin-bottom: 10px;
+      }
+
+      .ios-dialog p {
+          font-size: 0.9rem;
+          color: #333;
+          margin-bottom: 15px;
+      }
+
+      .ios-dialog button {
+          width: 100%;
+          padding: 10px;
+          margin: 5px 0;
+          border-radius: 8px;
+          font-size: 1rem;
+          font-weight: 500;
+          border: none;
+          transition: background-color 0.2s;
+      }
+
+      .ios-dialog .confirm-btn {
+          background: #007AFF;
+          color: white;
+      }
+
+      .ios-dialog .confirm-btn:hover {
+          background: #005BBB;
+      }
+
+      .ios-dialog .cancel-btn {
+          background: #E5E5EA;
+          color: #000;
+      }
+
+      .ios-dialog .cancel-btn:hover {
+          background: #D1D1D6;
+      }
+
+      /* Sanash animatsiyasi */
+      .countdown-overlay {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.7);
+          z-index: 1001;
+          align-items: center;
+          justify-content: center;
+      }
+
+      .countdown-text {
+          font-size: 4rem;
+          color: white;
+          font-weight: bold;
+      }
+  </style>
 {% endblock style %}
 
-
 {% block content %}
-    <main id="main-container">
-        <!-- Hero -->
-        <div id="one-hero" class="bg-body-extra-light">
-            <div class="content content-full">
-                <div class="row g-0 justify-content-center text-center">
-                    <div class="col-md-10 pt-7 pb-5">
-                        <!-- Badge -->
-                        <div class="d-inline-flex align-items-center space-x-1 fs-sm badge bg-body text-dark mb-2 p-2">
-                            <i class="fa fa-fw fa-language text-primary"></i>
-                            <span>Xorijiy tillarni o'rganish uchun innovatsion platforma</span>
-                        </div>
-                        <!-- Title -->
-                        <h1 class="h1 fw-black mb-3">
-                            Boshlang‘ich sinf o‘quvchilari uchun til o‘rganishni qiziqarli qiling
-                        </h1>
-                        <!-- Description -->
-                        <p class="fs-5 fw-medium text-muted mb-4 mx-xl-8">
-                            Bizning dasturimiz boshlang‘ich sinf o‘quvchilariga xorijiy tillarni <span class="text-body-color fw-semibold">vizual va interaktiv</span> usulda o‘rganishga yordam beradi.
-                        </p>
+  <main id="main-container">
+    <div class="content">
+      <!-- iOS uslubidagi dialog oynalari -->
+      <div class="ios-dialog-overlay" id="dialog-overlay"></div>
+      <div class="ios-dialog" id="ongoing-dialog">
+        <h3>Test ishlash jarayonida</h3>
+        <p>Siz ushbu testni allaqachon boshlagansiz. Davom ettirishni xohlaysizmi?</p>
+        <button class="confirm-btn" onclick="continueTest()">Davom ettirish</button>
+        <button class="cancel-btn" onclick="closeDialog('ongoing-dialog')">Bekor qilish</button>
+      </div>
+      <div class="ios-dialog" id="restart-dialog">
+        <h3>Testni qayta boshlash</h3>
+        <p>Siz ushbu testni yakunlagansiz. Qayta boshlashni xohlaysizmi?</p>
+        <button class="confirm-btn" onclick="startCountdown()">Qayta boshlash</button>
+        <button class="cancel-btn" onclick="closeDialog('restart-dialog')">Bekor qilish</button>
+      </div>
+      <div class="ios-dialog" id="start-dialog">
+        <h3>Testni boshlash</h3>
+        <p>Siz ushbu testni hali boshlamagansiz. Ishlashni xohlaysizmi?</p>
+        <button class="confirm-btn" onclick="startCountdown()">Ishlash</button>
+        <button class="cancel-btn" onclick="closeDialog('start-dialog')">Bekor qilish</button>
+      </div>
+      <div class="countdown-overlay" id="countdown-overlay">
+        <div class="countdown-text" id="countdown-text"></div>
+      </div>
 
-                        <!-- Foydalanuvchi haqida -->
-                        <div class="mt-5 text-start bg-white rounded shadow p-4">
-                            <h3 class="h5 fw-bold mb-3">Foydalanuvchi ma'lumotlari</h3>
-                            <p class="mb-2">
-                                <strong>Ismi:</strong> {{ user.get_full_name|default:user.username }}
-                            </p>
-                            <p class="mb-2">
-                                <strong>Ro'li:</strong> 
-                                {% if user.is_teacher %}
-                                    O'qituvchi
-                                {% elif user.is_student %}
-                                    O'quvchi
-                                {% else %}
-                                    Foydalanuvchi
-                                {% endif %}
-                            </p>
-                            <p class="mb-2">
-                                <strong>Yutuqlar:</strong> 
-                                {% if user.is_student %}
-                                    O'tilgan testlar soni: {{ user.student_questions.count }}
-                                {% else %}
-                                    Hozircha yutuqlar yo'q.
-                                {% endif %}
-                            </p>
-                            <p>
-                                <strong>Ro'yxatdan o'tgan sana:</strong> {{ user.date_joined|date:"Y-m-d H:i" }}
-                            </p>
-                        </div>
+      <div class="text-center mb-3">
+            <span class="badge-custom">
+                <i class="fa fa-graduation-cap text-primary"></i>
+                Namangan davlat pedagogika instituti TEST platformasi
+            </span>
+      </div>
 
-                        <!-- Call to Action -->
-                        <div class="mt-4">
-                            <a href="https://my.ulkanov.uz/" class="btn btn-lg btn-primary me-2">
-                                Dastchi bilan boshlash
-                            </a>
-                        </div>
+      <div class="row justify-content-center">
+        <div class="col-md-10">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                  {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="profile-img">
+                  {% else %}
+                    <div class="profile-placeholder">
+                      {{ user.first_name|slice:":1" }}{{ user.second_name|slice:":1" }}
                     </div>
+                  {% endif %}
                 </div>
+                <div class="col-md-9">
+                  <h3 class="card-title mb-2">Foydalanuvchi ma'lumotlari</h3>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p class="mb-1">
+                        <strong>Ismi:</strong> {{ user.first_name|default:user.username }} {{ user.second_name|default:"" }}
+                      </p>
+                      <p class="mb-1"><strong>Ro'li:</strong> Foydalanuvchi</p>
+                      <p class="mb-1"><strong>Email:</strong> {{ user.email|default:"Ma'lumot yo'q" }}</p>
+                      <p class="mb-1"><strong>Telefon:</strong> {{ user.phone_number|default:"Ma'lumot yo'q" }}</p>
+                      <p class="mb-1"><strong>Kafedra/Fakultet:</strong> {{ user.department|default:"Ma'lumot yo'q" }}
+                      </p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class="mb-1"><strong>Ro'yxatdan o'tgan sana:</strong> {{ user.date_joined|date:"Y-m-d H:i" }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
-        <!-- END Hero -->
-    </main>
+      </div>
+
+      {% if user_assignments %}
+        <hr class="my-4">
+        <h3 class="text-center mb-3">Sizning topshiriqlaringiz</h3>
+        <div class="row">
+          {% for assignment in user_assignments %}
+            <div class="col-md-4 mb-3">
+              <div class="card test-card shadow-sm" data-assignment-id="{{ assignment.id }}">
+                <div class="card-body">
+                  <h5 class="card-title">{{ assignment.test.name }}</h5>
+                  <p class="card-text"><strong>Kategoriya:</strong> {{ assignment.category.name }}</p>
+                  <p class="card-text"><strong>Vaqt:</strong> {{ assignment.start_time|date:"Y-m-d H:i" }}
+                    - {{ assignment.end_time|date:"Y-m-d H:i" }}</p>
+                  <p class="card-text"><strong>Davomiylik:</strong> {{ assignment.duration }} daqiqa</p>
+                  <p class="card-text"><strong>Urinishlar:</strong> {{ assignment.attempts }}
+                    / {{ assignment.max_attempts }}</p>
+                  <p class="card-text"><strong>Qolgan vaqt:</strong> <span class="remaining-time"
+                                                                           data-end-time="{{ assignment.end_time|date:'c' }}">00:00</span>
+                  </p>
+                </div>
+                <div class="card-footer text-center">
+                  <a href="{% url 'start-test' assignment.id %}"
+                     class="btn btn-primary btn-primary-custom start-test-btn">Boshlash</a>
+                </div>
+              </div>
+            </div>
+          {% empty %}
+            <div class="col-12 text-center">
+              <p>Hech qanday faol test topshiriqlari topilmadi.</p>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </main>
 {% endblock content %}
 
-
-
 {% block script %}
+  <script>
+    let currentAssignmentId = null;
+    let currentTestUrl = null;
+
+    function updateRemainingTimes() {
+      document.querySelectorAll('.remaining-time').forEach(span => {
+        const endTimeStr = span.dataset.endTime || span.getAttribute('data-end-time');
+        if (!endTimeStr) {
+          span.textContent = 'Tugadi';
+          return;
+        }
+        const endTime = new Date(endTimeStr);
+        if (isNaN(endTime)) {
+          span.textContent = 'Tugadi';
+          return;
+        }
+
+        let diff = Math.floor((endTime - Date.now()) / 1000);   // jami soniyalar
+        if (diff <= 0) {
+          span.textContent = 'Tugadi';
+          return;
+        }
+
+        // Kun, soat, daqiqa, soniya ajratib olish
+        const days = Math.floor(diff / 86400);
+        diff %= 86400;
+        const hours = Math.floor(diff / 3600);
+        diff %= 3600;
+        const minutes = Math.floor(diff / 60);
+        const seconds = diff % 60;
+
+        // 01:02:03 ko‘rinishi uchun padStart
+        const h = hours.toString().padStart(2, '0');
+        const m = minutes.toString().padStart(2, '0');
+        const s = seconds.toString().padStart(2, '0');
+
+        // Kun bo‘lsa alohida ko‘rsatamiz, bo‘lmasa tashlab ketamiz
+        span.textContent = days > 0
+          ? `${days} kun ${h}:${m}:${s}`
+          : `${h}:${m}:${s}`;
+      });
+    }
+
+    // Har sekund yangilab turish
+    updateRemainingTimes();
+    setInterval(updateRemainingTimes, 1000);
+
+    // Dialog oynalarini boshqarish
+    function showDialog(dialogId, message = null) {
+      const dialog = document.getElementById(dialogId);
+      const overlay = document.getElementById('dialog-overlay');
+      if (message) {
+        const messageElement = dialog.querySelector('p');
+        if (messageElement) messageElement.textContent = message;
+      }
+      dialog.style.display = 'block';
+      overlay.style.display = 'block';
+    }
+
+    function closeDialog(dialogId) {
+      const dialog = document.getElementById(dialogId);
+      const overlay = document.getElementById('dialog-overlay');
+      dialog.style.display = 'none';
+      overlay.style.display = 'none';
+    }
+
+    // Sanash animatsiyasi
+    function startCountdown() {
+      const overlay = document.getElementById('countdown-overlay');
+      const countdownText = document.getElementById('countdown-text');
+      overlay.style.display = 'flex';
+      let count = 3;
+      countdownText.textContent = count;
+      const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownText.textContent = count;
+        } else {
+          clearInterval(interval);
+          overlay.style.display = 'none';
+          window.location.href = currentTestUrl;
+        }
+      }, 1000);
+    }
+
+    // Test holatini tekshirish
+    function checkTestStatus(assignmentId, url) {
+      currentAssignmentId = assignmentId;
+      currentTestUrl = url;
+      fetch(`/check-unfinished-test/${assignmentId}/`, {
+        method: 'GET',
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+        },
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.never_started) {
+            showDialog('start-dialog');
+          } else if (data.unfinished) {
+            showDialog('ongoing-dialog');
+          } else if (data.attempts_exceeded) {
+            showDialog('ongoing-dialog', 'Siz maksimal urinishlar soniga yetdingiz.');
+          } else {
+            showDialog('restart-dialog');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showDialog('ongoing-dialog', 'Xatolik: Test holatini tekshirishda muammo yuz berdi.');
+        });
+    }
+
+    function continueTest() {
+      closeDialog('ongoing-dialog');
+      startCountdown();
+    }
+
+    // Boshlash tugmasi uchun hodisalar
+    document.querySelectorAll('.start-test-btn').forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        const assignmentId = this.closest('.test-card').getAttribute('data-assignment-id');
+        const url = this.getAttribute('href');
+        checkTestStatus(assignmentId, url);
+      });
+    });
+
+    // Tugma animatsiyasi
+    document.querySelectorAll('.btn-primary-custom').forEach(button => {
+      button.addEventListener('click', function() {
+        this.classList.add('btn-clicked');
+        setTimeout(() => {
+          this.classList.remove('btn-clicked');
+        }, 100);
+      });
+    });
+  </script>
 {% endblock script %}

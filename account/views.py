@@ -1,15 +1,13 @@
 # account/views.py
+import base64
+import json
+import logging
 from django.contrib import messages
-from django.contrib.auth.hashers import make_password
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, logout, login
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import authenticate, logout, login, get_user_model
 from django.http import JsonResponse
 from django.views import View
-
-from account.models import CustomUser
+from account.models import CustomUser, FaceEncoding
 
 
 class LoginView(View):
@@ -24,14 +22,64 @@ class LoginView(View):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            # Foydalanuvchini "next" parametri bo'yicha yoki bosh sahifaga yo'naltirish
             next_url = request.GET.get('next', '/')
             return redirect(next_url)
         else:
-            # Xato xabari bilan login sahifasini qayta yuklash
-            return render(request, 'auth/login.html', {'error': 'Invalid credentials'})
+            return render(request, 'auth/login.html', {'error': 'Noto‘g‘ri foydalanuvchi nomi yoki parol'})
 
 
+logger = logging.getLogger(__name__)
+
+class FaceLoginView(View):
+    def get(self, request):
+        return render(request, 'auth/face_login.html')
+
+    def post(self, request):
+        try:
+            data = json.loads(request.body) if request.body else {}
+            images = data.get('images', [])
+            if not images:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Rasm talab qilinadi',
+                    'action': 'retry'
+                })
+
+            user = authenticate(request, images=images)
+            if user:
+                login(request, user, backend='account.backends.FaceAuthBackend')
+                request.session.save()
+                request.session.modified = True
+                next_url = request.GET.get('next', '/')
+                return JsonResponse({
+                    'success': True,
+                    'full_name': user.full_name or 'Ism mavjud emas',
+                    'group_name': user.group_name or '',
+                    'redirect_url': next_url,
+                    'similarity_score': 0.0,
+                    'action': 'stop_camera'
+                })
+
+            return JsonResponse({
+                'success': False,
+                'error': 'Yuz ma’lumotlari mos kelmadi',
+                'action': 'retry'
+            })
+
+        except json.JSONDecodeError:
+            logger.error("[ERROR] JSON dekodlash xatosi")
+            return JsonResponse({
+                'success': False,
+                'error': 'Noto‘g‘ri ma’lumot formati',
+                'action': 'retry'
+            })
+        except Exception as e:
+            logger.error(f"[ERROR] Umumiy xato: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'error': f'Xato: {str(e)}',
+                'action': 'retry'
+            })
 class RegisterView(View):
     template_name = 'auth/register.html'
 
@@ -77,6 +125,7 @@ class RegisterView(View):
             messages.error(request, f"Ro'yxatdan o'tishda xatolik yuz berdi: {str(e)}")
 
         return render(request, self.template_name)
+
 
 def check_username(request):
     username = request.GET.get('username', '').strip()

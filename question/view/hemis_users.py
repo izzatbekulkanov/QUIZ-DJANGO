@@ -172,6 +172,7 @@ class ImportStaffFromHemisStreamView(View):
         def stream():
             logger.info("🔄 [START] Hodimlarni HEMIS'dan import qilish boshlandi")
 
+            # Sozlamalarni tekshirish
             setting = SystemSetting.objects.filter(is_active=True).first()
             if not setting or not setting.hemis_url or not setting.hemis_api_key:
                 msg = "❌ HEMIS sozlamalari topilmadi."
@@ -185,6 +186,7 @@ class ImportStaffFromHemisStreamView(View):
                 'Authorization': f'Bearer {setting.hemis_api_key}'
             }
 
+            # Umumiy hodim sonini aniqlash
             try:
                 logger.info("🔍 1-sahifani yuklab, umumiy sonni aniqlash...")
                 r = requests.get(f'{base_url}&page=1&limit=1', headers=headers, timeout=10)
@@ -200,17 +202,19 @@ class ImportStaffFromHemisStreamView(View):
                     yield 'data: {"status": "🚫 Hodimlar topilmadi", "progress": 0}\n\n'
                     return
             except Exception as e:
-                logger.error(f"❌ JSON parsing xatolik: {e}")
+                logger.error(f"❌ JSON parsing xatolik: {str(e)}", exc_info=True)
                 yield f'data: {{"status": "❌ Parsing xatosi: {str(e)}", "progress": 0}}\n\n'
                 return
 
             page = 1
             limit = 200
             total_processed = 0
-            to_create, to_update = [], []
+            to_create = []
+            to_update = []
 
             while True:
                 try:
+                    # Sahifani yuklash
                     url = f'{base_url}&page={page}&limit={limit}'
                     logger.info(f"📥 So‘rov: {url}")
                     response = requests.get(url, headers=headers, timeout=10)
@@ -225,73 +229,101 @@ class ImportStaffFromHemisStreamView(View):
                         logger.info(f"⛔ {page}-sahifada hodimlar yo‘q.")
                         break
 
+                    # Mavjud foydalanuvchilarni yuklash
                     eids = [s.get('employee_id_number') for s in items if s.get('employee_id_number')]
                     existing_users = {u.username: u for u in User.objects.filter(username__in=eids)}
 
                     for staff in items:
                         eid = staff.get('employee_id_number')
                         if not eid:
+                            logger.warning(f"⚠️ Hodim ID topilmadi: {staff}")
                             continue
 
+                        # Tug‘ilgan sana
                         birth_ts = staff.get('birth_date')
-                        birth_date = datetime.datetime.utcfromtimestamp(birth_ts).date() if isinstance(birth_ts, int) and birth_ts > 0 else None
+                        birth_date = (
+                            datetime.datetime.utcfromtimestamp(birth_ts).date()
+                            if isinstance(birth_ts, int) and birth_ts > 0
+                            else None
+                        )
 
+                        # Hodim ma'lumotlari
                         defaults = {
-                            "full_name": staff.get('full_name'),
-                            "first_name": staff.get('first_name'),
-                            "second_name": staff.get('second_name'),
+                            "full_name": staff.get('full_name') or "",
+                            "first_name": staff.get('first_name') or "",
+                            "second_name": staff.get('second_name') or "",
                             "date_of_birth": birth_date,
-                            "gender": staff.get('gender', {}).get('code'),
-                            "nationality": "O‘zbekiston",
+                            "gender": staff.get('gender', {}).get('code') or "",
+                            "nationality": staff.get('citizenship', {}).get('name') or "O‘zbekiston",
                             "is_teacher": True,
-                            "job_title": staff.get('staffPosition', {}).get('name'),
-                            "company_name": staff.get('department', {}).get('name'),
+                            "job_title": staff.get('staffPosition', {}).get('name') or "",
+                            "company_name": staff.get('department', {}).get('name') or "",
                         }
 
-                        if eid in existing_users:
-                            user = existing_users[eid]
-                            for k, v in defaults.items():
-                                setattr(user, k, v)
-                            to_update.append(user)
-                        else:
-                            user = User(username=eid, **defaults)
-                            user.set_password('namdpi451')
-                            to_create.append(user)
+                        # Yangi yoki yangilanishi kerak bo‘lgan hodim
+                        try:
+                            if eid in existing_users:
+                                user = existing_users[eid]
+                                for k, v in defaults.items():
+                                    setattr(user, k, v)
+                                to_update.append(user)
+                            else:
+                                user = User(username=eid, **defaults)
+                                user.set_password('namdpi451')
+                                to_create.append(user)
 
-                        image_url = staff.get('image')
-                        if image_url and image_url.startswith('http'):
-                            try:
-                                img_response = requests.get(image_url, timeout=5)
-                                if img_response.status_code == 200:
-                                    file_name = os.path.basename(image_url.split('?')[0])
-                                    user.profile_picture.save(file_name, ContentFile(img_response.content), save=False)
-                            except Exception as e:
-                                logger.warning(f"⚠️ Rasm yuklashda xato (EID: {eid}): {e}")
+                            # Rasm yuklash
+                            image_url = staff.get('image')
+                            if image_url and image_url.startswith('http'):
+                                try:
+                                    img_response = requests.get(image_url, timeout=5)
+                                    if img_response.status_code == 200:
+                                        file_name = os.path.basename(image_url.split('?')[0])
+                                        user.profile_picture.save(file_name, ContentFile(img_response.content), save=False)
+                                        user.save()  # Rasm saqlanganda alohida save
+                                        logger.info(f"🖼️ Rasm saqlandi: {eid}")
+                                    else:
+                                        logger.warning(f"⚠️ Rasm yuklashda xato (EID: {eid}): Status {img_response.status_code}")
+                                except Exception as e:
+                                    logger.error(f"❌ Rasm yuklashda xato (EID: {eid}): {str(e)}")
 
-                        total_processed += 1
-                        progress = round((total_processed / total_count) * 100)
-                        yield f'data: {{"status": "{total_processed} ta hodim import qilindi", "progress": {progress}}}\n\n'
+                            total_processed += 1
+                            progress = round((total_processed / total_count) * 100)
+                            yield f'data: {{"status": "{total_processed} ta hodim import qilindi", "progress": {progress}}}\n\n'
 
+                        except Exception as e:
+                            logger.error(f"❌ Hodim (EID: {eid}) ishlovida xato: {str(e)}", exc_info=True)
+                            continue
+
+                    # Ommaviy saqlash
                     if to_create:
-                        User.objects.bulk_create(to_create, batch_size=100)
-                        logger.info(f"🆕 {len(to_create)} ta yangi hodim saqlandi")
-                        to_create.clear()
+                        try:
+                            User.objects.bulk_create(to_create, batch_size=100)
+                            logger.info(f"🆕 {len(to_create)} ta yangi hodim saqlandi")
+                            to_create = []
+                        except Exception as e:
+                            logger.error(f"❌ bulk_create xatosi: {str(e)}", exc_info=True)
+                            yield f'data: {{"status": "❌ Yangi hodimlarni saqlashda xato: {str(e)}", "progress": {progress}}}\n\n'
 
                     if to_update:
-                        User.objects.bulk_update(to_update, fields=list(defaults.keys()), batch_size=100)
-                        logger.info(f"🔁 {len(to_update)} ta hodim yangilandi")
-                        to_update.clear()
+                        try:
+                            User.objects.bulk_update(to_update, fields=list(defaults.keys()), batch_size=100)
+                            logger.info(f"🔁 {len(to_update)} ta hodim yangilandi")
+                            to_update = []
+                        except Exception as e:
+                            logger.error(f"❌ bulk_update xatosi: {str(e)}", exc_info=True)
+                            yield f'data: {{"status": "❌ Hodimlarni yangilashda xato: {str(e)}", "progress": {progress}}}\n\n'
 
                     logger.info(f"✅ Sahifa {page} yakunlandi. Jami: {total_processed} ta")
                     page += 1
-                    time.sleep(0.01)
+                    time.sleep(0.01)  # API cheklovlari uchun minimal pauza
 
                 except Exception as e:
-                    logger.error(f"❌ Sahifa {page} ishlovida xato: {e}")
-                    yield f'data: {{"status": "❌ Sahifa {page} xatosi: {str(e)}", "progress": 0}}\n\n'
+                    logger.error(f"❌ Sahifa {page} ishlovida xato: {str(e)}", exc_info=True)
+                    yield f'data: {{"status": "❌ Sahifa {page} xatosi: {str(e)}", "progress": {progress}}}\n\n'
                     break
 
             logger.info(f"🎉 Import tugadi. Jami: {total_processed} ta hodim saqlandi.")
-            yield f'data: {{"status": "✅ Yakunlandi. Jami: {total_processed}", "progress": 100}}\n\n'
+            yield f'data: {{"status": "✅ Yakunlandi. Jami: {total_processed} ta hodim import qilindi", "progress": 100}}\n\n'
 
         return StreamingHttpResponse(stream(), content_type='text/event-stream')

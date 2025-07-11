@@ -2,63 +2,50 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from question.models import SystemSetting
 
-def site_settings_view(request):
-    print("🔧 Sozlamalar sahifasiga so‘rov keldi:", request.method)
 
+def site_settings_view(request):
+    print("🔧 Tizim sozlamalari sahifasiga so‘rov keldi:", request.method)
+
+    # Faol sozlamani olish, agar yo‘q bo‘lsa None
     setting = SystemSetting.objects.filter(is_active=True).first()
 
     if request.method == 'POST':
         print("📥 POST so‘rovi qabul qilindi")
 
         # Ma'lumotlarni olish
-        name = request.POST.get('name')
-        description = request.POST.get('description')
-        contact_email = request.POST.get('contact_email')
-        contact_phone = request.POST.get('contact_phone')
-        address = request.POST.get('address')
-        footer_text = request.POST.get('footer_text')
-        hemis_url = request.POST.get('hemis_url')
-        hemis_api_key = request.POST.get('hemis_api_key')
-        site_status = request.POST.get('site_status')
-        status_message = request.POST.get('status_message')
+        name = request.POST.get('name', '')
+        description = request.POST.get('description', '')
+        contact_email = request.POST.get('contact_email', '')
+        contact_phone = request.POST.get('contact_phone', '')
+        address = request.POST.get('address', '')
+        footer_text = request.POST.get('footer_text', '')
+        hemis_url = request.POST.get('hemis_url', '')
+        hemis_api_key = request.POST.get('hemis_api_key', '')
+        site_status = request.POST.get('site_status', '')
+        status_message = request.POST.get('status_message', '')
         logo = request.FILES.get('logo')
         favicon = request.FILES.get('favicon')
 
-        # 🔍 Debug
-        print(f"📌 name: {name}")
-        print(f"📌 description: {description}")
-        print(f"📌 contact_email: {contact_email}")
-        print(f"📌 contact_phone: {contact_phone}")
-        print(f"📌 address: {address}")
-        print(f"📌 footer_text: {footer_text}")
-        print(f"📌 hemis_url: {hemis_url}")
-        print(f"📌 hemis_api_key: {hemis_api_key}")
-        print(f"📌 site_status: {site_status}")
-        print(f"📌 status_message: {status_message}")
-        print(f"🖼️ logo: {'yuklandi' if logo else 'yo‘q'}")
-        print(f"🖼️ favicon: {'yuklandi' if favicon else 'yo‘q'}")
-
-        # Majburiy maydonlar
+        # Majburiy maydonlarni tekshirish
         if not name or not site_status:
             print("⚠️ Majburiy maydonlar to‘ldirilmagan")
-            messages.error(request, '❌ Iltimos, barcha majburiy maydonlarni to‘ldiring (tizim nomi, sayt holati).')
+            messages.error(request, "❌ Tizim nomi va sayt holati maydonlari to‘ldirilishi shart.")
             return render(request, 'question/views/site-settings.html', {
-                'setting': setting,
-                'form_data': request.POST
+                'setting': setting
             })
 
         try:
             # Avvalgi sozlamalarni nofaol qilish
             SystemSetting.objects.update(is_active=False)
 
-            # Mavjud yoki yangi sozlama
+            # Mavjud sozlamani yangilash yoki yangi yaratish
             if setting:
                 print("🔁 Mavjud sozlama yangilanmoqda")
             else:
                 print("🆕 Yangi sozlama yaratilmoqda")
                 setting = SystemSetting()
 
-            # Ma'lumotlarni yangilash
+            # Ma'lumotlarni saqlash
             setting.name = name
             setting.description = description
             setting.contact_email = contact_email
@@ -79,20 +66,18 @@ def site_settings_view(request):
                 setting.favicon = favicon
 
             setting.save()
-            print("✅ Sozlamalar saqlandi:", setting.name)
-            messages.success(request, '✅ Tizim sozlamalari muvaffaqiyatli saqlandi.')
+            print(f"✅ Sozlamalar saqlandi: {setting.name}")
+            messages.success(request, "✅ Tizim sozlamalari muvaffaqiyatli saqlandi!")
             return redirect('site_settings')
 
         except Exception as e:
-            print("❌ Xatolik:", e)
-            messages.error(request, f"❌ Xatolik yuz berdi: {str(e)}")
+            print(f"❌ Xatolik yuz berdi: {e}")
+            messages.error(request, f"❌ Xatolik: {str(e)}")
             return render(request, 'question/views/site-settings.html', {
-                'setting': setting,
-                'form_data': request.POST
+                'setting': setting
             })
 
-    # GET so‘rov yoki boshqa holatlarda
+    # GET so‘rovi uchun
     return render(request, 'question/views/site-settings.html', {
-        'setting': setting,
-        'form_data': setting  # fallback uchun mavjud ma’lumotlar
+        'setting': setting
     })

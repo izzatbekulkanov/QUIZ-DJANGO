@@ -2,23 +2,76 @@
 {% load static %}
 {% block style %}
   <link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    .form-control {
+      border-radius: 0.25rem;
+      padding: 0.5rem;
+    }
+    .form-group label {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+    .btn-primary {
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+    }
+    .content-heading {
+      margin-bottom: 1.5rem;
+    }
+    .flatpickr-input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ced4da;
+      border-radius: 0.25rem;
+    }
+    .flatpickr-calendar {
+      font-family: Arial, sans-serif;
+    }
+    /* Yonma-yon joylashuv uchun */
+    .form-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .form-row .form-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    /* iOS 16 uslubidagi SweetAlert2 sozlamalari */
+    .swal2-ios {
+      border-radius: 16px !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif !important;
+    }
+    .swal2-ios .swal2-title {
+      font-size: 1.4rem !important;
+      font-weight: 600 !important;
+      color: #000 !important;
+    }
+    .swal2-ios .swal2-content {
+      font-size: 1rem !important;
+      color: #333 !important;
+    }
+    .swal2-ios .swal2-confirm {
+      background-color: #007aff !important;
+      color: #fff !important;
+      border-radius: 8px !important;
+      font-weight: 500 !important;
+    }
+  </style>
 {% endblock style %}
 {% block content %}
-
   <main id="main-container">
-    <!-- Hero -->
-    <div class="bg-image overflow-hidden"
-         style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+    <div class="bg-image overflow-hidden" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
       <div class="bg-primary-dark-op">
         <div class="content content-full">
-          <div
-            class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+          <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
             <div class="flex-grow-1">
               <h1 class="fw-semibold text-white mb-0">Topshiriqlar</h1>
               <h2 class="h4 fw-normal text-white-75 mb-0">Topshiriqlar qo'shish</h2>
             </div>
             <div class="mt-3 mt-sm-0">
-              <!-- Back Button -->
               <a href="javascript:history.back()" class="btn btn-alt-secondary">
                 <i class="fa fa-arrow-left me-1"></i> Ortga
               </a>
@@ -27,193 +80,318 @@
         </div>
       </div>
     </div>
-    <!-- END Hero -->
-    <!-- Page Content -->
     <div class="content">
-      <!-- Add Test Form -->
       <h2 class="content-heading">Yangi Test Topshiriq Qo‘shish</h2>
       <form id="add-assignment-form" method="post">
-    {% csrf_token %}
-    <div class="form-group mb-3">
-        <label for="category_id">Kategoriya:</label>
-        <select id="category_id" name="category_id" class="form-control" required data-url="{% url 'category-tests' %}">
+        {% csrf_token %}
+        <div class="form-group mb-3">
+          <label for="category_id">Kategoriya:</label>
+          <select id="category_id" name="category_id" class="form-control" required data-url="{% url 'category-tests' %}">
             <option value="">Kategoriya tanlang</option>
             {% for category in categories %}
             <option value="{{ category.id }}">{{ category.name }}</option>
             {% endfor %}
-        </select>
-    </div>
-    <div class="form-group mb-3">
-        <label for="test_id">Test:</label>
-        <select id="test_id" name="test_id" class="form-control" required>
+          </select>
+        </div>
+        <div class="form-group mb-3">
+          <label for="test_id">Test:</label>
+          <select id="test_id" name="test_id" class="form-control" required>
             <option value="">Avval kategoriya tanlang</option>
-        </select>
-    </div>
-    <div class="form-group mb-3">
-        <label for="total_questions">Savollar soni:</label>
-        <input type="number" id="total_questions" name="total_questions" class="form-control" required min="1">
-    </div>
-    <div class="form-group mb-3">
-        <label for="start_time">Boshlanish vaqti:</label>
-        <input type="datetime-local" id="start_time" name="start_time" class="form-control" required>
-    </div>
-    <div class="form-group mb-3">
-        <label for="end_time">Tugash vaqti:</label>
-        <input type="datetime-local" id="end_time" name="end_time" class="form-control" required>
-    </div>
-    <div class="form-group mb-3">
-        <label for="duration">Davomiylik (daqiqa):</label>
-        <input type="number" id="duration" name="duration" class="form-control" required min="1" value="30">
-    </div>
-    <button type="submit" class="btn btn-primary">Qo‘shish</button>
-</form>
+          </select>
+        </div>
+        <div class="form-group mb-3">
+          <label for="total_questions">Savollar soni:</label>
+          <input type="number" id="total_questions" name="total_questions" class="form-control" required min="1">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="start_time">Boshlanish vaqti:</label>
+            <input type="text" id="start_time" name="start_time" class="form-control" required placeholder="YYYY-MM-DD HH:mm">
+          </div>
+          <div class="form-group">
+            <label for="end_time">Tugash vaqti:</label>
+            <input type="text" id="end_time" name="end_time" class="form-control" required placeholder="YYYY-MM-DD HH:mm">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="duration">Davomiylik (daqiqa):</label>
+            <input type="number" id="duration" name="duration" class="form-control" required min="1" value="30">
+          </div>
+          <div class="form-group">
+            <label for="max_attempts">Maksimal urinishlar soni:</label>
+            <input type="number" id="max_attempts" name="max_attempts" class="form-control" required min="1" value="3">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Qo‘shish</button>
+      </form>
     </div>
   </main>
 {% endblock content %}
 {% block script %}
-  <!-- jQuery (required for Select2 + Bootstrap Maxlength plugin) -->
   <script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
-
   <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const categorySelect = document.getElementById('category_id');
-    const testSelect = document.getElementById('test_id');
-    const totalQuestionsInput = document.getElementById('total_questions');
-    const form = document.getElementById('add-assignment-form');
+    document.addEventListener('DOMContentLoaded', function () {
+      const categorySelect = document.getElementById('category_id');
+      const testSelect = document.getElementById('test_id');
+      const totalQuestionsInput = document.getElementById('total_questions');
+      const startTimeInput = document.getElementById('start_time');
+      const endTimeInput = document.getElementById('end_time');
+      const durationInput = document.getElementById('duration');
+      const maxAttemptsInput = document.getElementById('max_attempts');
+      const form = document.getElementById('add-assignment-form');
 
-    let maxQuestions = 0; // Tanlangan testning savollar soni
+      let maxQuestions = 0;
 
-    // Kategoriya o'zgarganda testlarni yuklash
-    categorySelect.addEventListener('change', function () {
+      flatpickr(startTimeInput, {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        time_24hr: true,
+        minuteIncrement: 1,
+        placeholder: "YYYY-MM-DD HH:mm",
+      });
+
+      flatpickr(endTimeInput, {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        time_24hr: true,
+        minuteIncrement: 1,
+        placeholder: "YYYY-MM-DD HH:mm",
+      });
+
+      categorySelect.addEventListener('change', function () {
         const categoryId = this.value;
         const url = this.getAttribute('data-url');
-
         testSelect.innerHTML = '<option value="">Test yuklanmoqda...</option>';
 
         if (categoryId) {
-            fetch(`${url}?category_id=${categoryId}`, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.success) {
-                        testSelect.innerHTML = '<option value="">Test tanlang</option>';
-                        data.tests.forEach((test) => {
-                            const option = document.createElement('option');
-                            option.value = test.id;
-                            option.textContent = test.name;
-                            testSelect.appendChild(option);
-                        });
-                        Swal.fire('Muvaffaqiyatli', 'Kategoriya bo‘yicha testlar yuklandi!', 'success');
-                    } else {
-                        Swal.fire('Xatolik', data.message || 'Testlarni yuklashda muammo yuz berdi.', 'error');
-                    }
-                })
-                .catch((error) => {
-                    console.error('AJAX xatolik:', error);
-                    Swal.fire('Xatolik', 'Server bilan bog‘lanishda muammo.', 'error');
+          fetch(`${url}?category_id=${categoryId}`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                testSelect.innerHTML = '<option value="">Test tanlang</option>';
+                data.tests.forEach((test) => {
+                  const option = document.createElement('option');
+                  option.value = test.id;
+                  option.textContent = test.name;
+                  testSelect.appendChild(option);
                 });
+                Swal.fire({
+                  title: 'Muvaffaqiyatli',
+                  text: 'Kategoriya bo‘yicha testlar yuklandi!',
+                  icon: 'success',
+                  customClass: { container: 'swal2-ios' },
+                  confirmButtonText: 'OK',
+                });
+              } else {
+                Swal.fire({
+                  title: 'Xatolik',
+                  text: data.message || 'Testlarni yuklashda muammo yuz berdi.',
+                  icon: 'error',
+                  customClass: { container: 'swal2-ios' },
+                  confirmButtonText: 'OK',
+                });
+              }
+            })
+            .catch((error) => {
+              console.error('AJAX xatolik:', error);
+              Swal.fire({
+                title: 'Xatolik',
+                text: 'Server bilan bog‘lanishda muammo.',
+                icon: 'error',
+                customClass: { container: 'swal2-ios' },
+                confirmButtonText: 'OK',
+              });
+            });
         } else {
-            testSelect.innerHTML = '<option value="">Avval kategoriya tanlang</option>';
-            Swal.fire('Eslatma', 'Iltimos, kategoriya tanlang.', 'info');
+          testSelect.innerHTML = '<option value="">Avval kategoriya tanlang</option>';
+          Swal.fire({
+            title: 'Eslatma',
+            text: 'Iltimos, kategoriya tanlang.',
+            icon: 'info',
+            customClass: { container: 'swal2-ios' },
+            confirmButtonText: 'OK',
+          });
         }
-    });
+      });
 
-    // Test o'zgarganda maksimal savollar sonini olish
-    testSelect.addEventListener('change', function () {
+      testSelect.addEventListener('change', function () {
         const testId = this.value;
         if (testId) {
-            fetch(`/question/test-questions-count/?test_id=${testId}`, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.success) {
-                        maxQuestions = data.total_questions;
-                        Swal.fire(
-                            'Muvaffaqiyatli',
-                            `Ushbu test uchun jami ${maxQuestions} ta savol mavjud.`,
-                            'success'
-                        );
-                    } else {
-                        Swal.fire('Xatolik', data.message || 'Savollar sonini olishda muammo yuz berdi.', 'error');
-                    }
-                })
-                .catch((error) => {
-                    console.error('AJAX xatolik:', error);
-                    Swal.fire('Xatolik', 'Server bilan bog‘lanishda muammo.', 'error');
+          fetch(`/question/test-questions-count/?test_id=${testId}`, {
+            method: 'GET',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                maxQuestions = data.total_questions;
+                Swal.fire({
+                  title: 'Muvaffaqiyatli',
+                  text: `Ushbu test uchun jami ${maxQuestions} ta savol mavjud.`,
+                  icon: 'success',
+                  customClass: { container: 'swal2-ios' },
+                  confirmButtonText: 'OK',
                 });
+              } else {
+                Swal.fire({
+                  title: 'Xatolik',
+                  text: data.message || 'Savollar sonini olishda muammo yuz berdi.',
+                  icon: 'error',
+                  customClass: { container: 'swal2-ios' },
+                  confirmButtonText: 'OK',
+                });
+              }
+            })
+            .catch((error) => {
+              console.error('AJAX xatolik:', error);
+              Swal.fire({
+                title: 'Xatolik',
+                text: 'Server bilan bog‘lanishda muammo.',
+                icon: 'error',
+                customClass: { container: 'swal2-ios' },
+                confirmButtonText: 'OK',
+              });
+            });
         } else {
-            maxQuestions = 0;
-            Swal.fire('Eslatma', 'Iltimos, test tanlang.', 'info');
+          maxQuestions = 0;
+          Swal.fire({
+            title: 'Eslatma',
+            text: 'Iltimos, test tanlang.',
+            icon: 'info',
+            customClass: { container: 'swal2-ios' },
+            confirmButtonText: 'OK',
+          });
         }
-    });
+      });
 
-    // Validatsiya qilish
-    totalQuestionsInput.addEventListener('input', function () {
+      totalQuestionsInput.addEventListener('input', function () {
         const enteredValue = parseInt(this.value, 10);
         if (enteredValue > maxQuestions) {
-            Swal.fire(
-                'Xatolik',
-                `Kiritilgan savollar soni ${maxQuestions} dan oshmasligi kerak.`,
-                'error'
-            );
-            this.value = maxQuestions; // Maksimal qiymatga qaytarish
+          Swal.fire({
+            title: 'Xatolik',
+            text: `Kiritilgan savollar soni ${maxQuestions} dan oshmasligi kerak.`,
+            icon: 'error',
+            customClass: { container: 'swal2-ios' },
+            confirmButtonText: 'OK',
+          });
+          this.value = maxQuestions;
         }
-    });
+      });
 
-    // Formni yuborish va muvaffaqiyatli qaytishni Swal orqali ko‘rsatish
-    form.addEventListener('submit', function (event) {
-        event.preventDefault(); // Formni avtomatik yuborilishini to‘xtatish
+      maxAttemptsInput.addEventListener('input', function () {
+        const enteredValue = parseInt(this.value, 10);
+        if (enteredValue < 1) {
+          Swal.fire({
+            title: 'Xatolik',
+            text: 'Maksimal urinishlar soni 1 dan kam bo‘lishi mumkin emas.',
+            icon: 'error',
+            customClass: { container: 'swal2-ios' },
+            confirmButtonText: 'OK',
+          });
+          this.value = 1;
+        }
+      });
+
+      durationInput.addEventListener('input', function () {
+        const enteredValue = parseInt(this.value, 10);
+        if (enteredValue < 1) {
+          Swal.fire({
+            title: 'Xatolik',
+            text: 'Davomiylik 1 daqiqadan kam bo‘lishi mumkin emas.',
+            icon: 'error',
+            customClass: { container: 'swal2-ios' },
+            confirmButtonText: 'OK',
+          });
+          this.value = 1;
+        }
+      });
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const startTime = new Date(startTimeInput.value);
+        const endTime = new Date(endTimeInput.value);
+        const now = new Date();
+
+        if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+          Swal.fire({
+            title: 'Xatolik',
+            text: 'Boshlanish yoki tugash vaqti noto‘g‘ri formatda kiritilgan.',
+            icon: 'error',
+            customClass: { container: 'swal2-ios' },
+            confirmButtonText: 'OK',
+          });
+          return;
+        }
+
+        if (startTime >= endTime) {
+          Swal.fire({
+            title: 'Xatolik',
+            text: 'Boshlanish vaqti tugash vaqtidan keyin bo‘lishi mumkin emas.',
+            icon: 'error',
+            customClass: { container: 'swal2-ios' },
+            confirmButtonText: 'OK',
+          });
+          return;
+        }
+
+        if (endTime <= now) {
+          Swal.fire({
+            title: 'Xatolik',
+            text: 'Tugash vaqti hozirgi vaqtdan oldin bo‘lishi mumkin emas.',
+            icon: 'error',
+            customClass: { container: 'swal2-ios' },
+            confirmButtonText: 'OK',
+          });
+          return;
+        }
 
         const formData = new FormData(form);
         const url = form.action;
 
         fetch(url, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-            },
+          method: 'POST',
+          body: formData,
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
         })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.success) {
-                    Swal.fire({
-                        title: 'Muvaffaqiyatli!',
-                        text: data.message,
-                        icon: 'success',
-                        confirmButtonText: 'OK',
-                    }).then(() => {
-                        // Sahifani yangilash yoki boshqa sahifaga o'tish
-                        window.location.href = '{% url 'assign-test' %}'; // Kerakli URLni o'zgartiring
-                    });
-                } else {
-                    Swal.fire({
-                        title: 'Xatolik!',
-                        text: data.message,
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                    });
-                }
-            })
-            .catch((error) => {
-                console.error('AJAX xatolik:', error);
-                Swal.fire({
-                    title: 'Xatolik!',
-                    text: 'Server bilan bog‘lanishda muammo.',
-                    icon: 'error',
-                    confirmButtonText: 'OK',
-                });
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              Swal.fire({
+                title: 'Muvaffaqiyatli!',
+                text: data.message,
+                icon: 'success',
+                customClass: { container: 'swal2-ios' },
+                confirmButtonText: 'OK',
+              }).then(() => {
+                window.location.href = '{% url 'assign-test' %}';
+              });
+            } else {
+              Swal.fire({
+                title: 'Xatolik!',
+                text: data.message,
+                icon: 'error',
+                customClass: { container: 'swal2-ios' },
+                confirmButtonText: 'OK',
+              });
+            }
+          })
+          .catch((error) => {
+            console.error('AJAX xatolik:', error);
+            Swal.fire({
+              title: 'Xatolik!',
+              text: 'Server bilan bog‘lanishda muammo.',
+              icon: 'error',
+              customClass: { container: 'swal2-ios' },
+              confirmButtonText: 'OK',
             });
+          });
+      });
     });
-});
   </script>
 {% endblock script %}

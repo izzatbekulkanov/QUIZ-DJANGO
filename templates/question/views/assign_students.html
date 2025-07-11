@@ -1,0 +1,228 @@
+{% extends 'question/main.html' %}
+{% load static %}
+{% block style %}
+  <style>
+      .filter-group {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 20px;
+      }
+
+      .filter-group .form-select {
+          width: auto;
+          min-width: 200px;
+      }
+
+      .table th, .table td {
+          vertical-align: middle;
+      }
+
+      .table-responsive {
+          margin-bottom: 20px;
+      }
+
+      .pagination-sm .page-link {
+          font-size: 0.875rem;
+          padding: 0.25rem 0.5rem;
+      }
+
+      .form-check {
+          margin-bottom: 0;
+      }
+  </style>
+{% endblock style %}
+
+{% block content %}
+  <main id="main-container">
+    <div class="bg-image overflow-hidden"
+         style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+      <div class="bg-primary-dark-op">
+        <div class="content content-full">
+          <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2">
+            <div class="flex-grow-1">
+              <h1 class="fw-semibold text-white mb-0">{{ test.name }}</h1>
+              <h2 class="h4 fw-normal text-white-75 mb-0">Talabalarni biriktirish</h2>
+            </div>
+            <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
+              <a class="btn btn-primary px-4 py-2" href="{% url 'question' %}">
+                <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <form method="GET" class="filter-group">
+        <div class="row w-100">
+          <div class="col-md-4">
+            <select class="form-select" name="group" onchange="this.form.submit()">
+              <option value="" {% if not group_filter %}selected{% endif %}>Barcha guruhlar</option>
+              {% for group in groups %}
+                <option value="{{ group }}" {% if group_filter == group %}selected{% endif %}>{{ group }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <input type="text" class="form-control" name="search" placeholder="Talaba nomini qidiring..."
+                   value="{{ search_query|default:'' }}">
+          </div>
+          <div class="col-md-4">
+            <button type="submit" class="btn btn-primary">
+              <i class="fa fa-filter"></i> Filtrlash
+            </button>
+          </div>
+        </div>
+      </form>
+
+
+      <h4>Biriktirish uchun talabalar</h4>
+      <form method="POST">
+        {% csrf_token %}
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped table-sm">
+            <thead>
+            <tr>
+              <th style="width: 40px;">
+                <input type="checkbox" id="select-all" onclick="toggleSelectAll(this)">
+              </th>
+              <th>#</th>
+              <th>Ism</th>
+              <th>Familiya</th>
+              <th>Guruh</th>
+              <th>Talaba ID</th>
+              <th>Rasm</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for student in students %}
+              <tr>
+                <td>
+                  <input type="checkbox" name="students" value="{{ student.id }}">
+                </td>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ student.first_name|default:"–" }}</td>
+                <td>{{ student.second_name|default:"–" }}</td>
+                <td>{{ student.group_name|default:"–" }}</td>
+                <td>{{ student.student_id_number|default:"–" }}</td>
+                <td>
+                  <img src="
+
+                    {% if student.profile_picture %}{{ student.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
+                       alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="text-center">Talabalar topilmadi</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <button type="submit" class="btn btn-success">
+          <i class="fa fa-check me-1"></i> Talabalarni biriktirish
+        </button>
+      </form>
+
+      <nav class="d-flex justify-content-end mt-3">
+        <ul class="pagination pagination-sm mb-0">
+          {% if students.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page=
+
+                {{ students.previous_page_number }}{% if group_filter %}&group={{ group_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}"
+                 aria-label="Previous">«</a>
+            </li>
+          {% endif %}
+
+          {% for num in students.paginator.page_range %}
+            {% if num >= students.number|add:'-2' and num <= students.number|add:'2' %}
+              <li class="page-item {% if students.number == num %}active{% endif %}">
+                <a class="page-link" href="?page=
+
+                  {{ num }}{% if group_filter %}&group={{ group_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if students.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page=
+
+                {{ students.next_page_number }}{% if group_filter %}&group={{ group_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}"
+                 aria-label="Next">»</a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>
+
+      <hr>
+      {% if assigned_students.exists %}
+        <h4>Biriktirilgan talabalar</h4>
+        <div class="table-responsive mb-4">
+          <table class="table table-bordered table-striped table-sm">
+            <thead>
+            <tr>
+              <th>#</th>
+              <th>Ism</th>
+              <th>Familiya</th>
+              <th>Guruh</th>
+              <th>Talaba ID</th>
+              <th>Rasm</th>
+              <th>Harakat</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for student in assigned_students %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ student.first_name|default:"–" }}</td>
+                <td>{{ student.second_name|default:"–" }}</td>
+                <td>{{ student.group_name|default:"–" }}</td>
+                <td>{{ student.student_id_number|default:"–" }}</td>
+                <td>
+                  <img src="
+
+                    {% if student.profile_picture %}{{ student.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
+                       alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                </td>
+                <td>
+                  <form method="POST" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="remove_student" value="{{ student.id }}">
+                    <button type="submit" class="btn btn-sm btn-danger" title="O‘chirish">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+    </div>
+  </main>
+{% endblock content %}
+
+{% block script %}
+  <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+  <script>
+    function toggleSelectAll(checkbox) {
+      const checkboxes = document.querySelectorAll('input[name="students"]');
+      checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    }
+
+    {% if alert %}
+      Swal.fire({
+        title: '{{ alert.message }}',
+        icon: '{{ alert.type }}',
+        confirmButtonText: 'OK',
+      });
+    {% endif %}
+  </script>
+{% endblock script %}

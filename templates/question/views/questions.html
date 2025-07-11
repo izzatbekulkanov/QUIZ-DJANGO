@@ -1,211 +1,280 @@
 {% extends 'question/main.html' %}
 {% load static %}
+
 {% block style %}
+<style>
+  /* Filtrlash formasini responsive qilish */
+  .filter-form .row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .filter-form .col-md-4,
+  .filter-form .col-md-3 {
+    flex: 1 1 100%;
+  }
+  @media (min-width: 768px) {
+    .filter-form .col-md-4 {
+      flex: 1 1 33.33%;
+    }
+    .filter-form .col-md-3 {
+      flex: 1 1 25%;
+    }
+  }
+
+  /* Jadvalni kichik ekranlarda moslashuvchan qilish */
+  .table-responsive {
+    overflow-x: auto;
+  }
+  .table th, .table td {
+    white-space: nowrap; /* Matnni bir qatorga joylashtirish */
+  }
+  .table td.description {
+    white-space: normal; /* Ta'rif uchun ko‘p qatorli matn */
+    max-width: 200px;
+  }
+
+  /* Harakatlar tugmalarini responsive qilish */
+  .action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: center;
+  }
+  .action-buttons .btn {
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    font-size: 0.875rem;
+  }
+  @media (max-width: 576px) {
+    .action-buttons {
+      flex-direction: column;
+      align-items: center;
+    }
+    .action-buttons .btn {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+  /* Paginationni kichik ekranlarda moslashtirish */
+  .pagination .page-link {
+    padding: 8px 12px;
+    font-size: 0.875rem;
+  }
+</style>
 {% endblock style %}
 
 {% block content %}
-    <main id="main-container">
-        <!-- Hero -->
-        <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
-          <div class="bg-primary-dark-op">
-            <div class="content content-full">
-              <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
-                <div class="flex-grow-1">
-                  <h1 class="fw-semibold text-white mb-0">Savollar</h1>
-                  <h2 class="h4 fw-normal text-white-75 mb-0">Savollar ro'yhati</h2>
-                </div>
-                <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
-                  <span class="d-inline-block">
-                    <a class="btn btn-primary px-4 py-2" href="{% url 'add-question' %}">
-                      <i class="fa fa-plus me-1 opacity-50"></i> Savollar qo'shish
-                    </a>
-                  </span>
-                </div>
-              </div>
-            </div>
+<main id="main-container">
+  <!-- Hero -->
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+    <div class="bg-primary-dark-op">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-0">Savollar</h1>
+            <h2 class="h4 fw-normal text-white-75 mb-0">Savollar ro'yhati</h2>
+          </div>
+          <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
+            <a class="btn btn-primary px-4 py-2" href="{% url 'add-question' %}">
+              <i class="fa fa-plus me-1 opacity-50"></i> Savollar qo'shish
+            </a>
           </div>
         </div>
-        <!-- END Hero -->
+      </div>
+    </div>
+  </div>
+  <!-- END Hero -->
 
-        <!-- Page Content -->
-        <div class="content">
-          <!-- Filters -->
-          <form method="get" class="mb-4">
-            <div class="row">
-              <!-- Category Filter -->
-              <div class="col-md-4">
-                <select class="form-select" name="category" aria-label="Category Filter">
-                  <option value="" {% if not filters.category %}selected{% endif %}>Barcha Kategoriyalar</option>
-                  {% for category in categories %}
-                  <option value="{{ category.id }}" {% if filters.category == category.id|stringformat:"s" %}selected{% endif %}>
-                    {{ category.name }}
-                  </option>
-                  {% endfor %}
-                </select>
-              </div>
+  <!-- Page Content -->
+  <div class="content">
+    <!-- Filters -->
+    <form method="get" class="mb-4 filter-form">
+      <div class="row">
+        <!-- Category Filter -->
+        <div class="col-md-3">
+          <select class="form-select" name="category" aria-label="Category Filter">
+            <option value="" {% if not filters.category %}selected{% endif %}>Barcha Kategoriyalar</option>
+            {% for category in categories %}
+            <option value="{{ category.id }}" {% if filters.category == category.id|stringformat:"s" %}selected{% endif %}>
+              {{ category.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
 
-              <!-- Search Bar -->
-              <div class="col-md-4">
-                <input type="text" class="form-control" name="search" placeholder="Test nomini qidiring..."
-                       value="{{ filters.search|default:'' }}">
-              </div>
+        <!-- Search Bar -->
+        <div class="col-md-4">
+          <input type="text" class="form-control" name="search" placeholder="Test nomini qidiring..."
+                 value="{{ filters.search|default:'' }}">
+        </div>
 
-              <!-- Submit Button -->
-              <div class="col-md-4">
-                <button type="submit" class="btn btn-primary w-100">
-                  <i class="fa fa-filter"></i> Filterlash
+        <!-- Submit Button -->
+        <div class="col-md-3">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fa fa-filter"></i> Filterlash
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Tests Table -->
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped table-vcenter">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nomi</th>
+            <th>Kategoriya</th>
+            <th>Ta'rif</th>
+            <th>Savollar soni</th>
+            <th>Talabalar soni</th>
+            <th>Yaratilgan sana</th>
+            <th class="text-center">Harakatlar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for test in tests %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ test.name }}</td>
+            <td>{{ test.category.name }}</td>
+            <td class="description">
+              {% if test.description %}
+                {{ test.description|truncatewords:10 }}
+              {% else %}
+                <span class="badge bg-warning text-dark">Ta'rif mavjud emas</span>
+              {% endif %}
+            </td>
+            <td>{{ test.question_count }}</td>
+            <td>{{ test.student_count }}</td>
+            <td>{{ test.created_at|date:"Y-m-d H:i" }}</td>
+            <td class="text-center">
+              <div class="action-buttons">
+                <!-- Edit Button -->
+                <a href="{% url 'edit-test' test.id %}" class="btn btn-sm btn-primary" title="Tahrirlash">
+                  <i class="fa fa-pencil-alt"></i>
+                </a>
+                <!-- Delete Button -->
+                <button class="btn btn-sm btn-danger" title="O'chirish" onclick="deleteTest({{ test.id }})">
+                  <i class="fa fa-trash"></i>
                 </button>
+                <!-- Add Questions Button -->
+                <a href="{% url 'add-question-test' test.id %}" class="btn btn-sm btn-success" title="Savol qo'shish">
+                  <i class="fa fa-plus"></i>
+                </a>
+                <!-- Assign Students Button -->
+                <a href="{% url 'assign-students-to-test' test.id %}" class="btn btn-sm btn-info" title="Talabalarni biriktirish">
+                  <i class="fa fa-users"></i>
+                </a>
               </div>
-            </div>
-          </form>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" class="text-center">Hech qanday test topilmadi.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
-          <!-- Tests Table -->
-          <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Nomi</th>
-                  <th>Kategoriya</th>
-                  <th>Ta'rif</th>
-                  <th>Savollar soni</th>
-                  <th>Yaratilgan sana</th>
-                  <th class="text-center">Harakatlar</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for test in tests %}
-                <tr>
-                  <td>{{ forloop.counter }}</td>
-                  <td>{{ test.name }}</td>
-                  <td>{{ test.category.name }}</td>
-                  <td>
-                    {% if test.description %}
-                      {{ test.description }}
-                    {% else %}
-                      <span class="badge bg-warning text-dark">Ta'rif mavjud emas</span>
-                    {% endif %}
-                  </td>
-                  <td>
-                    {{ test.question_count }}
-                  </td>
-                  <td>{{ test.created_at|date:"Y-m-d H:i" }}</td>
-                  <td class="text-center">
-                    <!-- Edit Button -->
-                    <a href="{% url 'edit-test' test.id %}" class="btn btn-sm btn-primary" title="Tahrirlash">
-                      <i class="fa fa-pencil-alt"></i>
-                    </a>
-                    <!-- Delete Button -->
-                    <button class="btn btn-sm btn-danger" title="O'chirish" onclick="deleteTest({{ test.id }})">
-                      <i class="fa fa-trash"></i>
-                    </button>
-                    <!-- Add Questions Button -->
-                    <a href="{% url 'add-question-test' test.id %}" class="btn btn-sm btn-success" title="Savol qo'shish">
-                      <i class="fa fa-plus"></i>
-                    </a>
-                  </td>
-                </tr>
-                {% empty %}
-                <tr>
-                  <td colspan="7" class="text-center">Hech qanday test topilmadi.</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
+    <input type="hidden" id="csrf-token" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
-         <input type="hidden" id="csrf-token" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+      <ul class="pagination justify-content-center">
+        {% if tests.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ tests.previous_page_number }}{% if filters.category %}&category={{ filters.category }}{% endif %}{% if filters.search %}&search={{ filters.search }}{% endif %}" aria-label="Previous">
+            «
+          </a>
+        </li>
+        {% endif %}
 
+        {% for num in tests.paginator.page_range %}
+        <li class="page-item {% if tests.number == num %}active{% endif %}">
+          <a class="page-link" href="?page={{ num }}{% if filters.category %}&category={{ filters.category }}{% endif %}{% if filters.search %}&search={{ filters.search }}{% endif %}">
+            {{ num }}
+          </a>
+        </li>
+        {% endfor %}
 
-          <!-- Pagination -->
-          <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
-              {% if tests.has_previous %}
-              <li class="page-item">
-                <a class="page-link" href="?page={{ tests.previous_page_number }}{% if filters.category %}&category={{ filters.category }}{% endif %}{% if filters.search %}&search={{ filters.search }}{% endif %}" aria-label="Previous">
-                  &laquo;
-                </a>
-              </li>
-              {% endif %}
-
-              {% for num in tests.paginator.page_range %}
-              <li class="page-item {% if tests.number == num %}active{% endif %}">
-                <a class="page-link" href="?page={{ num }}{% if filters.category %}&category={{ filters.category }}{% endif %}{% if filters.search %}&search={{ filters.search }}{% endif %}">
-                  {{ num }}
-                </a>
-              </li>
-              {% endfor %}
-
-              {% if tests.has_next %}
-              <li class="page-item">
-                <a class="page-link" href="?page={{ tests.next_page_number }}{% if filters.category %}&category={{ filters.category }}{% endif %}{% if filters.search %}&search={{ filters.search }}{% endif %}" aria-label="Next">
-                  &raquo;
-                </a>
-              </li>
-              {% endif %}
-            </ul>
-          </nav>
-        </div>
-
-        <!-- END Page Content -->
-      </main>
+        {% if tests.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ tests.next_page_number }}{% if filters.category %}&category={{ filters.category }}{% endif %}{% if filters.search %}&search={{ filters.search }}{% endif %}" aria-label="Next">
+            »
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+  </div>
+  <!-- END Page Content -->
+</main>
 {% endblock content %}
 
 {% block script %}
 <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
 
-  <script>
+<script>
   function deleteTest(testId) {
     Swal.fire({
-        title: 'Tasdiqlaysizmi?',
-        text: "Ushbu testni o‘chirmoqchimisiz?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Ha, o‘chirish!',
-        cancelButtonText: 'Bekor qilish',
+      title: 'Tasdiqlaysizmi?',
+      text: "Ushbu testni o‘chirmoqchimisiz?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Ha, o‘chirish!',
+      cancelButtonText: 'Bekor qilish',
     }).then((result) => {
-        if (result.isConfirmed) {
-            fetch(`/question/question/delete/${testId}/`, {
-                method: 'POST', // DELETE o'rniga POST ishlatilmoqda
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value, // CSRF token
-                },
-                body: JSON.stringify({ action: 'delete' }), // Qo'shimcha bayroq
-            })
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.success) {
-                        Swal.fire({
-                            title: 'Muvaffaqiyatli!',
-                            text: data.message,
-                            icon: 'success',
-                            confirmButtonText: 'OK',
-                        }).then(() => {
-                            window.location.reload(); // Sahifani qayta yuklash
-                        });
-                    } else {
-                        Swal.fire({
-                            title: 'Xatolik!',
-                            text: data.message || "Testni o'chirishda xatolik yuz berdi.",
-                            icon: 'error',
-                            confirmButtonText: 'OK',
-                        });
-                    }
-                })
-                .catch((error) => {
-                    Swal.fire({
-                        title: 'Xatolik!',
-                        text: 'Server bilan bog‘lanishda xatolik yuz berdi.',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                    });
-                    console.error('Error:', error);
-                });
-        }
+      if (result.isConfirmed) {
+        fetch(`/question/question/delete/${testId}/`, {
+          method: 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ action: 'delete' })
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP xatosi: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          if (data.success) {
+            Swal.fire({
+              title: 'Muvaffaqiyatli!',
+              text: data.message,
+              icon: 'success',
+              confirmButtonText: 'OK'
+            }).then(() => {
+              window.location.reload();
+            });
+          } else {
+            Swal.fire({
+              title: 'Xatolik!',
+              text: data.message || "Testni o'chirishda xatolik yuz berdi.",
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+          }
+        })
+        .catch(error => {
+          Swal.fire({
+            title: 'Xatolik!',
+            text: 'Server bilan bog‘lanishda xatolik yuz berdi.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+          console.error('Error:', error);
+        });
+      }
     });
-}
+  }
 </script>
 {% endblock script %}

@@ -1,7 +1,7 @@
-# account/models.py
-from django.contrib.auth.models import AbstractUser, Group, Permission
+import json
+import pickle
+from django.contrib.auth.models import AbstractUser
 from django.db import models
-
 class CustomUser(AbstractUser):
     # Asosiy
     full_name = models.CharField(max_length=255, null=True, blank=True)
@@ -40,10 +40,14 @@ class CustomUser(AbstractUser):
     student_id_number = models.CharField(max_length=100, null=True, blank=True)
     group_name = models.CharField(max_length=100, null=True, blank=True)
     specialty = models.CharField(max_length=255, null=True, blank=True)
+    specialty_name = models.CharField(max_length=255, null=True, blank=True)
     education_level = models.CharField(max_length=100, null=True, blank=True)
     education_type = models.CharField(max_length=100, null=True, blank=True)
+    education_form_name = models.CharField(max_length=100, null=True, blank=True)
     payment_form = models.CharField(max_length=100, null=True, blank=True)
     education_year = models.CharField(max_length=20, null=True, blank=True)
+    department_name = models.CharField(max_length=255, null=True, blank=True)
+    level_name = models.CharField(max_length=100, null=True, blank=True)
 
     # Boshqa
     bio = models.TextField(null=True, blank=True)
@@ -56,3 +60,24 @@ class CustomUser(AbstractUser):
         if not self.full_name and self.first_name and self.second_name:
             self.full_name = f"{self.first_name} {self.second_name}"
         super().save(*args, **kwargs)
+
+
+
+class FaceEncoding(models.Model):
+    user = models.OneToOneField('CustomUser', on_delete=models.CASCADE, related_name='face_encoding')
+    encoding = models.BinaryField(null=True, blank=True)
+    facial_features = models.BinaryField(null=True, blank=True)
+    image_resolution = models.CharField(max_length=20, null=True, blank=True)
+    encoding_version = models.CharField(max_length=20, null=True, blank=True)
+    confidence_score = models.FloatField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} - Face Encoding"
+
+    def get_encoding(self):
+        return pickle.loads(self.encoding) if self.encoding else None
+
+    def get_facial_features(self):
+        return pickle.loads(self.facial_features) if self.facial_features else None

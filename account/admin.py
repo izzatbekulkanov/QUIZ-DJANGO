@@ -1,7 +1,7 @@
 # account/admin.py
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser
+from .models import CustomUser, FaceEncoding
 from django.contrib.auth.models import Group, Permission
 
 class CustomUserAdmin(UserAdmin):
@@ -26,3 +26,13 @@ class CustomUserAdmin(UserAdmin):
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Permission)
+
+@admin.register(FaceEncoding)
+class FaceEncodingAdmin(admin.ModelAdmin):
+    list_display = ('user', 'encoding_version', 'confidence_score', 'created_at')
+    readonly_fields = ('created_at', 'updated_at')
+    actions = ['delete_selected']  # bulk delete uchun
+
+    def delete_queryset(self, request, queryset):
+        """Ommaviy o'chirish uchun optimallashtirilgan usul"""
+        queryset.delete()
