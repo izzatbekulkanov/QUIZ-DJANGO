@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 
-from question.models import Category, StudentTestAssignment, StudentTest, Test
+from question.models import Category, StudentTestAssignment, StudentTest, Test, StudentTestQuestion
 
 
 @method_decorator(login_required, name='dispatch')
@@ -15,14 +15,14 @@ class DashboardView(View):
         user = request.user
         dark_mode = request.COOKIES.get('dark_mode', 'false')
 
-        # 1) O‘qituvchi sifatida tayyorlagan, faol topshiriqlar
+        # O‘qituvchi sifatida tayyorlagan, faol topshiriqlar
         teacher_assignments = StudentTestAssignment.objects.filter(
             teacher=user,
             is_active=True,
             end_time__gte=timezone.now()
         ).select_related('test', 'category')
 
-        # 2) Talaba sifatida bog‘langan topshiriqlar
+        # Talaba sifatida bog‘langan topshiriqlar
         user_assignments = list(teacher_assignments)
         assigned_tests = (
             Test.objects
@@ -37,57 +37,40 @@ class DashboardView(View):
                 defaults={
                     'category': test.category,
                     'is_active': True,
-                    'start_time': timezone.now(),                     # <— MUHIM!
+                    'start_time': timezone.now(),
                     'end_time': timezone.now() + timezone.timedelta(days=7),
                     'duration': 60,
-                    'attempts': 3,                                   # modeldagi to‘g‘ri nom
+                    'attempts': 3,  # Maksimal urinishlar
                 }
             )
-            # Faqat vaqt va holati mos bo‘lsa, ro‘yxatga qo‘shamiz
             if assignment.is_active and assignment.end_time >= timezone.now():
                 user_assignments.append(assignment)
 
         # Id bo‘yicha unikal qilamiz
         user_assignments = {a.id: a for a in user_assignments}.values()
 
+        # Har bir topshiriq uchun foydalanuvchi urinishlar sonini olish
         context = {
             'user': user,
             'dark_mode': dark_mode,
-            'user_assignments': user_assignments,
+            'user_assignments': [
+                {
+                    'id': a.id,
+                    'test': a.test,
+                    'category': a.category,
+                    'start_time': a.start_time,
+                    'end_time': a.end_time,
+                    'duration': a.duration,
+                    'is_active': a.is_active,
+                    'status': a.status,
+                    'attempts': StudentTest.objects.filter(assignment=a, student=user).count(),  # Foydalanuvchi urinishlari
+                    'max_attempts': a.attempts  # Maksimal urinishlar
+                } for a in user_assignments
+            ]
         }
         return render(request, 'dashboard/views/main.html', context)
 
-@method_decorator(login_required, name='dispatch')
-class DashboardCategoriesView(View):
-    def get(self, request):
-        # Barcha kategoriyalarni olish
-        categories = Category.objects.all()
 
-        return render(request, 'dashboard/views/categories.html', {
-            'user': request.user,
-            'categories': categories
-        })
-
-@method_decorator(login_required, name='dispatch')
-class CategoryAssignmentsView(View):
-    template_name = 'dashboard/views/category_assignments.html'
-
-    def get(self, request, category_id):
-        # Kategoriyani olish
-        category = get_object_or_404(Category, id=category_id)
-
-        # Ushbu kategoriyaga tegishli barcha active va pending assignmentlarni olish
-        assignments = StudentTestAssignment.objects.filter(
-            category=category,
-            is_active=True,  # Faqat active bo'lganlar
-            status='pending',  # Faqat pending holatdagilar
-            end_time__gt=timezone.now()  # Faqat tugash vaqti hozirgi vaqtga qaraganda keyin bo'lganlar
-        ).order_by('-start_time')
-
-        return render(request, self.template_name, {
-            'category': category,
-            'assignments': assignments,
-        })
 
 
 @method_decorator(login_required, name='dispatch')
@@ -118,7 +101,9 @@ class CheckUnfinishedTestView(View):
 @login_required
 def all_results(request):
     user = request.user
-    query = StudentTest.objects.select_related('assignment__category', 'student').filter(completed=True, student=user).order_by('-start_time')
+    query = StudentTest.objects.select_related('assignment__category', 'student').filter(
+        completed=True, student=user
+    ).order_by('-start_time')
 
     # Filtering
     first_name = request.GET.get('first_name', '').strip()
@@ -128,12 +113,12 @@ def all_results(request):
     if first_name:
         query = query.filter(student__first_name__icontains=first_name)
     if second_name:
-        query = query.filter(student__last_name__icontains=second_name)
+        query = query.filter(student__second_name__icontains=second_name)
     if category_id:
         query = query.filter(assignment__category__id=category_id)
 
     # Pagination
-    paginator = Paginator(query, 50)  # 50 results per page
+    paginator = Paginator(query, 50)
     page_number = request.GET.get('page', 1)
     results = paginator.get_page(page_number)
 
@@ -143,5 +128,24 @@ def all_results(request):
     context = {
         'results': results,
         'categories': categories,
+        'first_name': first_name,
+        'second_name': second_name,
+        'category_id': category_id,
     }
     return render(request, 'test/all_results.html', context)
+
+
+class ViewResultView(View):
+    template_name = 'test/result.html'
+
+    def get(self, request, result_id):
+        try:
+            result = StudentTest.objects.get(id=result_id, student=request.user)
+            questions = StudentTestQuestion.objects.filter(student_test=result).select_related('question', 'selected_answer').prefetch_related('question__answers').order_by('order')
+            context = {
+                'result': result,
+                'questions': questions,
+            }
+            return render(request, self.template_name, context)
+        except StudentTest.DoesNotExist:
+            return render(request, self.template_name, {'error': 'Natija topilmadi'})

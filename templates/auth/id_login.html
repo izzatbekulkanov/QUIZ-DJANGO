@@ -19,13 +19,55 @@
   <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/media/favicons/apple-touch-icon-180x180.png' %}">
   <link rel="stylesheet" id="css-main" href="{% static 'assets/css/oneui.min.css' %}">
   <style>
-      .password-toggle {
-          position: absolute;
-          right: 10px;
-          top: 50%;
-          transform: translateY(-50%);
-          cursor: pointer;
-          font-size: 1.2rem;
+      .id-input-wrapper {
+          display: flex;
+          justify-content: center;
+          gap: 0.4rem;
+          margin-bottom: 1rem;
+          flex-wrap: nowrap; /* Katta ekranda har doim 1 qator bo‘ladi */
+      }
+
+      .id-input-box {
+          width: 3rem;
+          height: 3rem;
+          font-size: 1.5rem;
+          text-align: center;
+          border-radius: 0.5rem;
+          border: 1px solid #ced4da;
+          flex: 0 0 auto;
+      }
+
+      .id-input-box:invalid {
+          border-color: rgba(43, 131, 89, 0.37);
+      }
+
+      /* ✅ MOBILDA: Wrap va kichik inputlar */
+      @media (max-width: 576px) {
+          .id-input-wrapper {
+              flex-wrap: wrap;
+          }
+
+          .id-input-box {
+              width: 2.4rem;
+              height: 2.8rem;
+              font-size: 1.2rem;
+          }
+
+          .btn {
+              font-size: 0.9rem;
+          }
+      }
+
+      @media (max-width: 400px) {
+          .id-input-box {
+              width: 2.2rem;
+              height: 2.6rem;
+              font-size: 1.1rem;
+          }
+
+          .btn {
+              font-size: 0.85rem;
+          }
       }
   </style>
 </head>
@@ -54,27 +96,29 @@
                     Xush kelibsiz, iltimos tizimga kiring.
                   </p>
                   {% if error %}
-                    <p class="text-danger">{{ error }}</p>
-                  {% endif %}
-                  <form class="js-validation-signin" method="POST" action="{% url 'login' %}">
-                    {% csrf_token %}
-                    <div class="py-3">
-                      <div class="mb-4">
-                        <input type="text" class="form-control form-control-alt form-control-lg" id="login-username"
-                               name="username" placeholder="Foydalanuvchi nomi" required>
-                      </div>
-                      <div class="mb-4 position-relative">
-                        <input type="password" class="form-control form-control-alt form-control-lg" id="login-password"
-                               name="password" placeholder="Parol" required>
-                        <span class="password-toggle" onclick="togglePassword()">🙈</span>
-                      </div>
-                      <div class="mb-4">
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="login-remember" name="remember_me">
-                          <label class="form-check-label" for="login-remember">Eslab qolish</label>
-                        </div>
-                      </div>
+                    <div class="alert alert-danger d-inline-block rounded px-3 py-2 mt-2">
+                        <span class="badge bg-danger me-2">
+                          <i class="fa fa-exclamation-triangle"></i>
+                        </span>
+                      {{ error }}
                     </div>
+                  {% endif %}
+                  <form id="id-login-form" method="POST" action="{% url 'id_login' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="id-input-wrapper">
+                      {% for i in "0123456789" %}
+                        <input type="text"
+                               maxlength="1"
+                               inputmode="numeric"
+                               pattern="[0-9]"
+                               class="form-control id-input-box"
+                               name="id_digit_{{ forloop.counter }}"
+                               id="digit{{ forloop.counter }}"
+                               required>
+                      {% endfor %}
+                    </div>
+
+                    <input type="hidden" name="id_number" id="full-id">
                     <div class="mb-4 space-y-2">
                       <button type="submit" class="btn w-100 btn-alt-primary">
                         <i class="fa fa-fw fa-sign-in-alt me-1 opacity-50"></i> Kirish
@@ -84,11 +128,11 @@
                         <i class="fa fa-fw fa-camera me-1 opacity-50"></i> Yuz orqali kirish
                       </a>
 
-                      <a href="{% url 'id_login' %}" class="btn w-100 btn-alt-success">
-                        <i class="fa fa-fw fa-id-card me-1 opacity-50"></i> ID orqali kirish
+                      <!-- Asosiy login sahifasiga qaytish -->
+                      <a href="{% url 'login' %}" class="btn w-100 btn-alt-secondary">
+                        <i class="fa fa-fw fa-arrow-left me-1 opacity-50"></i> Kirish sahifasiga qaytish
                       </a>
                     </div>
-
                   </form>
                 </div>
               </div>
@@ -128,17 +172,69 @@
 <script src="{% static 'assets/js/plugins/jquery-validation/jquery.validate.min.js' %}"></script>
 <script src="{% static 'assets/js/pages/op_auth_signin.min.js' %}"></script>
 <script>
-  function togglePassword() {
-    const passwordInput = document.getElementById('login-password');
-    const toggleIcon = document.querySelector('.password-toggle');
-    if (passwordInput.type === 'password') {
-      passwordInput.type = 'text';
-      toggleIcon.textContent = '🙉';
-    } else {
-      passwordInput.type = 'password';
-      toggleIcon.textContent = '🙈';
-    }
-  }
+  document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.id-input-box');
+
+    inputs.forEach((input, index) => {
+      input.addEventListener('input', () => {
+        const current = input.value;
+
+        // faqat bitta raqam
+        if (!/^\d$/.test(current)) {
+          input.value = '';
+          return;
+        }
+
+        // Faqat oldingisi to‘ldirilgan bo‘lsa keyingisiga o‘tish
+        if (index < inputs.length - 1) {
+          if (input.value && (index === 0 || inputs[index - 1].value)) {
+            inputs[index + 1].focus();
+          }
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        // Backspace: oldingiga qaytish
+        if (e.key === 'Backspace' && !input.value && index > 0) {
+          inputs[index - 1].focus();
+        }
+      });
+
+      input.addEventListener('focus', () => {
+        // Oldingi inputlar to‘ldirilmagan bo‘lsa, fokus bermaymiz
+        for (let i = 0; i < index; i++) {
+          if (!inputs[i].value) {
+            inputs[i].focus();
+            break;
+          }
+        }
+      });
+    });
+
+    // Formani yuborishda to‘liq tekshiruv va ID yig‘ish
+    document.getElementById('id-login-form').addEventListener('submit', function(e) {
+      let valid = true;
+      const digits = [];
+
+      inputs.forEach(input => {
+        if (!input.value) {
+          input.classList.add('is-invalid');
+          valid = false;
+        } else {
+          input.classList.remove('is-invalid');
+          digits.push(input.value);
+        }
+      });
+
+      if (!valid) {
+        e.preventDefault();
+        return;
+      }
+
+      // Yig‘ilgan ID ni hidden inputga joylash
+      document.getElementById('full-id').value = digits.join('');
+    });
+  });
 </script>
 </body>
 </html>

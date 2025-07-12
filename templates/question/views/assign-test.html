@@ -1,322 +1,302 @@
 {% extends 'question/main.html' %}
 {% load static %}
+
 {% block style %}
-  <link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <style>
-    .table-responsive {
-      overflow-x: auto;
-    }
-    .table th, .table td {
-      vertical-align: middle;
-    }
-    .swal2-ios {
-      border-radius: 16px !important;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif !important;
-    }
-    .swal2-ios .swal2-title {
-      font-size: 1.4rem !important;
-      font-weight: 600 !important;
-      color: #000 !important;
-    }
-    .swal2-ios .swal2-content {
-      font-size: 1rem !important;
-      color: #333 !important;
-    }
-    .swal2-ios .swal2-confirm {
-      background-color: #007aff !important;
-      color: #fff !important;
-      border-radius: 8px !important;
-      font-weight: 500 !important;
-    }
-    .swal2-ios .swal2-cancel {
-      background-color: #ff3b30 !important;
-      color: #fff !important;
-      border-radius: 8px !important;
-      font-weight: 500 !important;
-    }
-  </style>
+<link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 {% endblock style %}
+
 {% block content %}
-  <main id="main-container">
-    <div class="bg-image overflow-hidden" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
-      <div class="bg-primary-dark-op">
-        <div class="content content-full">
-          <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
-            <div class="flex-grow-1">
-              <h1 class="fw-semibold text-white mb-0">Topshiriqlar</h1>
-              <h2 class="h4 fw-normal text-white-75 mb-0">Topshiriqlar Ro'yxati</h2>
-            </div>
-            <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
-              <a class="btn btn-info px-4 py-2" href="{% url 'add-assign-test' %}">
-                <i class="fa fa-plus me-1 opacity-50"></i> Topshiriq qo'shish
-              </a>
-            </div>
-          </div>
+<main id="main-container" class="container-fluid px-0">
+  <!-- Hero -->
+  <div class="bg-primary bg-opacity-75 py-4" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}'); background-size: cover; background-position: center;">
+    <div class="container">
+      <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center my-4 text-center text-sm-start">
+        <div class="flex-grow-1">
+          <h1 class="fw-semibold text-white mb-0">Topshiriqlar</h1>
+          <h2 class="h4 fw-normal text-white-75 mb-0">Topshiriqlar Ro'yxati</h2>
+        </div>
+        <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
+          <a class="btn btn-info" href="{% url 'add-assign-test' %}">
+            <i class="fa fa-plus me-1 opacity-50"></i> Topshiriq qo'shish
+          </a>
         </div>
       </div>
     </div>
-    <div class="content">
-      <div class="block block-rounded">
-        <div class="block-header block-header-default">
-          <h3 class="block-title">Taqdim etilgan testlar</h3>
-        </div>
-        <div class="block-content">
-          <form method="get" class="row g-3 mb-4">
-            <div class="col-md-3">
-              <label for="category" class="form-label">Kategoriya</label>
-              <select class="form-select" id="category" name="category">
-                <option value="">Hammasi</option>
-                {% for category in categories %}
-                  <option value="{{ category.id }}" {% if filters.category|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
-                    {{ category.name }}
-                  </option>
-                {% endfor %}
-              </select>
-            </div>
-            <div class="col-md-3">
-              <label for="test_name" class="form-label">Test nomi</label>
-              <input type="text" id="test_name" name="test_name" class="form-control" placeholder="Test nomi kiriting"
-                     value="{{ filters.test_name }}">
-            </div>
-            <div class="col-md-3">
-              <label for="start_time" class="form-label">Boshlanish vaqti</label>
-              <input type="datetime-local" id="start_time" name="start_time" class="form-control"
-                     value="{{ filters.start_time|date:'Y-m-d\TH:i' }}">
-            </div>
-            <div class="col-md-3">
-              <label for="end_time" class="form-label">Tugash vaqti</label>
-              <input type="datetime-local" id="end_time" name="end_time" class="form-control"
-                     value="{{ filters.end_time|date:'Y-m-d\TH:i' }}">
-            </div>
-            <div class="col-md-12 text-end">
-              <button type="submit" class="btn btn-alt-primary">Filtr</button>
-              <a href="{% url 'assign-test' %}" class="btn btn-alt-secondary">Tozalash</a>
-            </div>
-          </form>
-          <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-              <thead>
+  </div>
+
+  <!-- Page Content -->
+  <div class="container my-4">
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h3 class="card-title">Taqdim etilgan testlar</h3>
+      </div>
+      <div class="card-body">
+        <!-- Filter Form -->
+        <form method="get" class="row g-3 mb-4">
+          <div class="col-md-3">
+            <label for="category" class="form-label">Kategoriya</label>
+            <select class="form-select" id="category" name="category">
+              <option value="">Hammasi</option>
+              {% for category in categories %}
+                <option value="{{ category.id }}" {% if filters.category|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
+                  {{ category.name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="test_name" class="form-label">Test nomi</label>
+            <input type="text" id="test_name" name="test_name" class="form-control" placeholder="Test nomi kiriting" value="{{ filters.test_name }}">
+          </div>
+          <div class="col-md-3">
+            <label for="start_time" class="form-label">Boshlanish vaqti</label>
+            <input type="datetime-local" id="start_time" name="start_time" class="form-control" value="{{ filters.start_time|date:'Y-m-d\TH:i' }}">
+          </div>
+          <div class="col-md-3">
+            <label for="end_time" class="form-label">Tugash vaqti</label>
+            <input type="datetime-local" id="end_time" name="end_time" class="form-control" value="{{ filters.end_time|date:'Y-m-d\TH:i' }}">
+          </div>
+          <div class="col-md-12 text-end">
+            <button type="submit" class="btn btn-primary">Filtr</button>
+            <a href="{% url 'assign-test' %}" class="btn btn-outline-secondary">Tozalash</a>
+          </div>
+        </form>
+
+        <!-- Assignments Table -->
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped table-hover">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>O‘qituvchi</th>
+                <th>Kategoriya</th>
+                <th>Test</th>
+                <th>Savollar soni</th>
+                <th>Boshlanish vaqti</th>
+                <th>Tugash vaqti</th>
+                <th>Urinishlar</th>
+                <th>Holati</th>
+                <th>Status</th>
+                <th class="text-center">Amallar</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for assignment in assignments %}
                 <tr>
-                  <th>#</th>
-                  <th>O‘qituvchi</th>
-                  <th>Kategoriya</th>
-                  <th>Test</th>
-                  <th>Savollar soni</th>
-                  <th>Boshlanish vaqti</th>
-                  <th>Tugash vaqti</th>
-                  <th>Urinishlar</th>
-                  <th>Holati</th>
-                  <th>Status</th>
-                  <th>Amallar</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for assignment in assignments %}
-                  <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ assignment.teacher.username }}</td>
-                    <td>{{ assignment.category.name }}</td>
-                    <td>{{ assignment.test.name }}</td>
-                    <td>{{ assignment.total_questions }}</td>
-                    <td>{{ assignment.start_time|date:"Y-m-d H:i" }}</td>
-                    <td>{{ assignment.end_time|date:"Y-m-d H:i" }}</td>
-                    <td>{{ assignment.attempts }}  {{ assignment.max_attempts }}</td>
-                    <td>
-                      <div class="form-check form-switch">
-                        {% csrf_token %}
-                        <input class="form-check-input toggle-active" type="checkbox" id="is-active-{{ assignment.id }}"
-                               data-id="{{ assignment.id }}" data-active="{{ assignment.is_active }}"
-                               {% if assignment.is_active %}checked{% endif %}>
-                        <label class="form-check-label" for="is-active-{{ assignment.id }}"></label>
-                      </div>
-                    </td>
-                    <td>
-                      {% if assignment.status == 'pending' %}
-                        <span class="badge bg-success">{{ assignment.get_status_display }}</span>
-                      {% else %}
-                        <span class="badge bg-danger">{{ assignment.get_status_display }}</span>
-                      {% endif %}
-                    </td>
-                    <td>
+                  <td>{{ forloop.counter }}</td>
+                  <td>{{ assignment.teacher.username }}</td>
+                  <td>{{ assignment.category.name }}</td>
+                  <td>{{ assignment.test.name }}</td>
+                  <td>{{ assignment.total_questions }}</td>
+                  <td>{{ assignment.start_time|date:"Y-m-d H:i" }}</td>
+                  <td>{{ assignment.end_time|date:"Y-m-d H:i" }}</td>
+                  <td>{{ assignment.attempts }} / {{ assignment.max_attempts }}</td>
+                  <td>
+                    <div class="form-check form-switch">
+                      {% csrf_token %}
+                      <input class="form-check-input toggle-active" type="checkbox" id="is-active-{{ assignment.id }}"
+                             data-id="{{ assignment.id }}" data-active="{{ assignment.is_active }}"
+                             {% if assignment.is_active %}checked{% endif %}>
+                      <label class="form-check-label" for="is-active-{{ assignment.id }}"></label>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge {% if assignment.status == 'pending' %}bg-success{% else %}bg-danger{% endif %}">
+                      {{ assignment.get_status_display }}
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    <div class="btn-group" role="group">
+                      <a href="{% url 'view-assign-test' assignment.id %}" class="btn btn-sm btn-info" title="Ko‘rish">
+                        <i class="fa fa-eye"></i>
+                      </a>
+                      <a href="{% url 'edit-assign-test' assignment.id %}" class="btn btn-sm btn-warning" title="Tahrirlash">
+                        <i class="fa fa-edit"></i>
+                      </a>
                       {% if not assignment.student_tests.exists %}
-                        <button class="btn btn-sm btn-danger delete-assignment" data-id="{{ assignment.id }}">
-                          <i class="fa fa-trash"></i> O‘chirish
+                        <button class="btn btn-sm btn-danger delete-assignment" data-id="{{ assignment.id }}" title="O‘chirish">
+                          <i class="fa fa-trash"></i>
                         </button>
                       {% endif %}
-                    </td>
-                  </tr>
-                {% empty %}
-                  <tr>
-                    <td colspan="11" class="text-center">Hech qanday test mavjud emas.</td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          <nav>
-            <ul class="pagination justify-content-center">
-              {% if assignments.has_previous %}
-                <li class="page-item">
-                  <a class="page-link" href="?page=1{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}">Birinchi</a>
-                </li>
-                <li class="page-item">
-smart_assistant: <a class="page-link" href="?page={{ assignments.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}">
-                    Oldingi
-                  </a>
-                </li>
-              {% endif %}
-              {% for num in assignments.paginator.page_range %}
-                <li class="page-item {% if assignments.number == num %}active{% endif %}">
-                  <a class="page-link" href="?page={{ num }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}">{{ num }}</a>
-                </li>
+                    </div>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="11" class="text-center">Hech qanday test mavjud emas.</td>
+                </tr>
               {% endfor %}
-              {% if assignments.has_next %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ assignments.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}">
-                    Keyingi
-                  </a>
-                </li>
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ assignments.paginator.num_pages }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}">
-                    Oxirgi
-                  </a>
-                </li>
-              {% endif %}
-            </ul>
-          </nav>
+            </tbody>
+          </table>
         </div>
+
+        <!-- Pagination -->
+        <nav>
+          <ul class="pagination pagination-sm justify-content-center">
+            {% if assignments.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page=1{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" aria-label="First">
+                  <span aria-hidden="true">Birinchi</span>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ assignments.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" aria-label="Previous">
+                  <span aria-hidden="true">Oldingi</span>
+                </a>
+              </li>
+            {% endif %}
+            {% for num in assignments.paginator.page_range %}
+              <li class="page-item {% if assignments.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}">{{ num }}</a>
+              </li>
+            {% endfor %}
+            {% if assignments.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ assignments.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" aria-label="Next">
+                  <span aria-hidden="true">Keyingi</span>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ assignments.paginator.num_pages }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}" aria-label="Last">
+                  <span aria-hidden="true">Oxirgi</span>
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
       </div>
     </div>
-  </main>
+  </div>
+</main>
 {% endblock content %}
+
 {% block script %}
-  <script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
-  <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      // Toggle is_active
-      document.querySelectorAll('.toggle-active').forEach(function (toggle) {
-        toggle.addEventListener('change', function () {
-          const assignmentId = this.dataset.id;
-          const isActive = this.checked;
+<script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  // Initialize Flatpickr for datetime inputs
+  flatpickr("#start_time, #end_time", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    time_24hr: true
+  });
 
-          Swal.fire({
-            title: isActive ? 'Faollashtirish?' : 'Faolsizlantirish?',
-            text: `Siz haqiqatan ham ushbu topshiriqni ${isActive ? 'faollashtirmoqchimisiz' : 'faolsizlantirmoqchimisiz'}?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: isActive ? 'Ha, faollashtirish!' : 'Ha, faolsizlantirish!',
-            cancelButtonText: 'Bekor qilish',
-            customClass: { container: 'swal2-ios' },
-          }).then((result) => {
-            if (result.isConfirmed) {
-              fetch(`/question/assignments/toggle-active/${assignmentId}/`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                },
-                body: JSON.stringify({ is_active: isActive }),
-              })
-                .then((response) => response.json())
-                .then((data) => {
-                  if (data.success) {
-                    Swal.fire({
-                      title: 'Muvaffaqiyatli!',
-                      text: data.message,
-                      icon: 'success',
-                      customClass: { container: 'swal2-ios' },
-                      confirmButtonText: 'OK',
-                    });
-                  } else {
-                    Swal.fire({
-                      title: 'Xatolik!',
-                      text: data.message || 'Nimadir xato ketdi.',
-                      icon: 'error',
-                      customClass: { container: 'swal2-ios' },
-                      confirmButtonText: 'OK',
-                    });
-                    this.checked = !isActive;
-                  }
-                })
-                .catch((error) => {
-                  console.error('Error:', error);
-                  Swal.fire({
-                    title: 'Xatolik!',
-                    text: 'Statusni yangilashda xato yuz berdi. Iltimos, qayta urinib ko‘ring.',
-                    icon: 'error',
-                    customClass: { container: 'swal2-ios' },
-                    confirmButtonText: 'OK',
-                  });
-                  this.checked = !isActive;
-                });
+  document.addEventListener('DOMContentLoaded', () => {
+    // Toggle is_active
+    document.querySelectorAll('.toggle-active').forEach(toggle => {
+      toggle.addEventListener('change', async () => {
+        const assignmentId = toggle.dataset.id;
+        const isActive = toggle.checked;
+
+        const result = await Swal.fire({
+          title: isActive ? 'Faollashtirish?' : 'Faolsizlantirish?',
+          text: `Siz haqiqatan ham ushbu topshiriqni ${isActive ? 'faollashtirmoqchimisiz' : 'faolsizlantirmoqchimisiz'}?`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#0d6efd',
+          cancelButtonColor: '#dc3545',
+          confirmButtonText: isActive ? 'Ha, faollashtirish!' : 'Ha, faolsizlantirish!',
+          cancelButtonText: 'Bekor qilish'
+        });
+
+        if (result.isConfirmed) {
+          try {
+            const response = await fetch(`/question/assignments/toggle-active/${assignmentId}/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+              },
+              body: JSON.stringify({ is_active: isActive })
+            });
+            const data = await response.json();
+            if (data.success) {
+              Swal.fire({
+                title: 'Muvaffaqiyatli!',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+              });
             } else {
-              this.checked = !isActive;
+              Swal.fire({
+                title: 'Xatolik!',
+                text: data.message || 'Nimadir xato ketdi.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+              });
+              toggle.checked = !isActive;
             }
-          });
-        });
-      });
-
-      // Delete assignment
-      document.querySelectorAll('.delete-assignment').forEach(function (button) {
-        button.addEventListener('click', function () {
-          const assignmentId = this.dataset.id;
-
-          Swal.fire({
-            title: 'O‘chirishni tasdiqlaysizmi?',
-            text: 'Bu topshiriqni o‘chirishni xohlaysizmi? Bu amalni ortga qaytarib bo‘lmaydi!',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Ha, o‘chirish!',
-            cancelButtonText: 'Bekor qilish',
-            customClass: { container: 'swal2-ios' },
-          }).then((result) => {
-            if (result.isConfirmed) {
-              fetch(`/question/assignments/delete/${assignmentId}/`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                },
-              })
-                .then((response) => response.json())
-                .then((data) => {
-                  if (data.success) {
-                    Swal.fire({
-                      title: 'Muvaffaqiyatli!',
-                      text: data.message,
-                      icon: 'success',
-                      customClass: { container: 'swal2-ios' },
-                      confirmButtonText: 'OK',
-                    }).then(() => {
-                      window.location.reload();
-                    });
-                  } else {
-                    Swal.fire({
-                      title: 'Xatolik!',
-                      text: data.message || 'Topshiriqni o‘chirishda xato yuz berdi.',
-                      icon: 'error',
-                      customClass: { container: 'swal2-ios' },
-                      confirmButtonText: 'OK',
-                    });
-                  }
-                })
-                .catch((error) => {
-                  console.error('Error:', error);
-                  Swal.fire({
-                    title: 'Xatolik!',
-                    text: 'Server bilan bog‘lanishda muammo yuz berdi.',
-                    icon: 'error',
-                    customClass: { container: 'swal2-ios' },
-                    confirmButtonText: 'OK',
-                  });
-                });
-            }
-          });
-        });
+          } catch (error) {
+            Swal.fire({
+              title: 'Xatolik!',
+              text: 'Statusni yangilashda xato yuz berdi. Iltimos, qayta urinib ko‘ring.',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+            toggle.checked = !isActive;
+            console.error('Error:', error);
+          }
+        } else {
+          toggle.checked = !isActive;
+        }
       });
     });
-  </script>
+
+    // Delete assignment
+    document.querySelectorAll('.delete-assignment').forEach(button => {
+      button.addEventListener('click', async () => {
+        const assignmentId = button.dataset.id;
+
+        const result = await Swal.fire({
+          title: 'O‘chirishni tasdiqlaysizmi?',
+          text: 'Bu topshiriqni o‘chirishni xohlaysizmi? Bu amalni ortga qaytarib bo‘lmaydi!',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#0d6efd',
+          cancelButtonColor: '#dc3545',
+          confirmButtonText: 'Ha, o‘chirish!',
+          cancelButtonText: 'Bekor qilish'
+        });
+
+        if (result.isConfirmed) {
+          try {
+            const response = await fetch(`/question/assignments/delete/${assignmentId}/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+              }
+            });
+            const data = await response.json();
+            if (data.success) {
+              Swal.fire({
+                title: 'Muvaffaqiyatli!',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+              }).then(() => window.location.reload());
+            } else {
+              Swal.fire({
+                title: 'Xatolik!',
+                text: data.message || 'Topshiriqni o‘chirishda xato yuz berdi.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+              });
+            }
+          } catch (error) {
+            Swal.fire({
+              title: 'Xatolik!',
+              text: 'Server bilan bog‘lanishda muammo yuz berdi.',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+            console.error('Error:', error);
+          }
+        }
+      });
+    });
+  });
+</script>
 {% endblock script %}

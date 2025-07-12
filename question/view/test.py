@@ -1,13 +1,16 @@
+import io
 import json
 import random
 from datetime import datetime
+
+import openpyxl
 from django.db.models import F
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Count
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -15,6 +18,8 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.timezone import now, make_aware
 from django.views.decorators.http import require_POST
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
 
 from question.forms import TestForm, AddQuestionForm
 from question.models import Test, Category, Question, Answer, StudentTestAssignment, StudentTest, StudentTestQuestion
@@ -239,6 +244,212 @@ class AssignTestView(View):
         }
         return render(request, self.template_name, context)
 
+@method_decorator(login_required, name='dispatch')
+class EditAssignTestView(View):
+    template_name = 'question/views/edit-assign-test.html'
+
+    def get(self, request, assignment_id):
+        # Fetch the assignment or return 404
+        assignment = get_object_or_404(StudentTestAssignment, id=assignment_id)
+        categories = Category.objects.all()
+
+        # Prepare context with assignment data and categories
+        context = {
+            'assignment': assignment,
+            'categories': categories,
+            'filters': {
+                'category_id': str(assignment.category.id),
+                'test_id': str(assignment.test.id),
+                'total_questions': assignment.total_questions,
+                'start_time': assignment.start_time.strftime('%Y-%m-%d %H:%M'),
+                'end_time': assignment.end_time.strftime('%Y-%m-%d %H:%M'),
+                'duration': assignment.duration,
+                'max_attempts': assignment.attempts,
+            }
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, assignment_id):
+        # Fetch the assignment
+        assignment = get_object_or_404(StudentTestAssignment, id=assignment_id)
+
+        try:
+            # Parse form data
+            data = request.POST
+            category_id = data.get('category_id')
+            test_id = data.get('test_id')
+            total_questions = int(data.get('total_questions', 0))
+            start_time = data.get('start_time')
+            end_time = data.get('end_time')
+            duration = int(data.get('duration', 0))
+            max_attempts = int(data.get('max_attempts', 0))
+
+            # Validate inputs
+            if not all([category_id, test_id, total_questions, start_time, end_time, duration, max_attempts]):
+                return JsonResponse({'success': False, 'message': 'Barcha maydonlar to‘ldirilishi kerak.'})
+
+            # Validate category and test
+            category = get_object_or_404(Category, id=category_id)
+            test = get_object_or_404(Test, id=test_id)
+
+            # Validate total questions against test question count
+            test_question_count = test.questions.count()  # Assuming Test model has a related 'questions' field
+            if total_questions > test_question_count:
+                return JsonResponse({
+                    'success': False,
+                    'message': f"Savollar soni testdagi savollar sonidan ({test_question_count}) oshmasligi kerak."
+                })
+
+            # Validate dates
+            from datetime import datetime
+            start_dt = datetime.strptime(start_time, '%Y-%m-%d %H:%M')
+            end_dt = datetime.strptime(end_time, '%Y-%m-%d %H:%M')
+            now = datetime.now()
+
+            if start_dt >= end_dt:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Boshlanish vaqti tugash vaqtidan keyin bo‘lishi mumkin emas.'
+                })
+            if end_dt <= now:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Tugash vaqti hozirgi vaqtdan oldin bo‘lishi mumkin emas.'
+                })
+
+            # Update assignment
+            assignment.category = category
+            assignment.test = test
+            assignment.total_questions = total_questions
+            assignment.start_time = start_dt
+            assignment.end_time = end_dt
+            assignment.duration = duration
+            assignment.max_attempts = max_attempts
+            assignment.save()
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Topshiriq muvaffaqiyatli yangilandi.'
+            })
+
+        except (ValueError, ValidationError) as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e) if str(e) else 'Noto‘g‘ri ma’lumotlar kiritildi.'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': 'Serverda xatolik yuz berdi. Iltimos, qayta urinib ko‘ring.'
+            })
+
+
+@method_decorator(login_required, name='dispatch')
+class ViewAssignTestView(View):
+    template_name = 'question/views/view-assign-test.html'
+
+    def get(self, request, assignment_id):
+        # Fetch the assignment with related objects
+        assignment = get_object_or_404(StudentTestAssignment.objects.select_related('category', 'test', 'teacher'), id=assignment_id)
+
+        # Get filter parameters
+        group_name = request.GET.get('group_name', '')
+        username = request.GET.get('username', '')
+        first_name = request.GET.get('first_name', '')
+        full_name = request.GET.get('full_name', '')
+
+        # Filter student tests
+        student_tests = assignment.student_tests.select_related('student')
+        if group_name:
+            student_tests = student_tests.filter(student__group_name__icontains=group_name)
+        if username:
+            student_tests = student_tests.filter(student__username__icontains=username)
+        if first_name:
+            student_tests = student_tests.filter(student__first_name__icontains=first_name)
+        if full_name:
+            student_tests = student_tests.filter(student__full_name__icontains=full_name)
+
+        # Prepare context
+        context = {
+            'assignment': assignment,
+            'student_tests': student_tests,
+            'filters': {
+                'group_name': group_name,
+                'username': username,
+                'first_name': first_name,
+                'full_name': full_name,
+            }
+        }
+        return render(request, self.template_name, context)
+
+@method_decorator(login_required, name='dispatch')
+class ExportAssignTestView(View):
+    def get(self, request, assignment_id):
+        # Fetch the assignment
+        assignment = get_object_or_404(StudentTestAssignment.objects.select_related('test'), id=assignment_id)
+
+        # Apply filters
+        group_name = request.GET.get('group_name', '')
+        username = request.GET.get('username', '')
+        first_name = request.GET.get('first_name', '')
+        full_name = request.GET.get('full_name', '')
+
+        student_tests = assignment.student_tests.select_related('student')
+        if group_name:
+            student_tests = student_tests.filter(student__group_name__icontains=group_name)
+        if username:
+            student_tests = student_tests.filter(student__username__icontains=username)
+        if first_name:
+            student_tests = student_tests.filter(student__first_name__icontains=first_name)
+        if full_name:
+            student_tests = student_tests.filter(student__full_name__icontains=full_name)
+
+        # Create Excel workbook
+        wb = Workbook()
+        ws = wb.active
+        ws.title = f"Test_{assignment.test.name}_Results"
+
+        # Define headers
+        headers = ['#', 'Username', 'Full Name', 'Group Name', 'Score', 'Completed', 'Duration (MM:SS)']
+        for col_num, header in enumerate(headers, 1):
+            ws[f"{get_column_letter(col_num)}1"] = header
+            ws[f"{get_column_letter(col_num)}1"].font = openpyxl.styles.Font(bold=True)
+
+        # Populate data
+        for row_num, student_test in enumerate(student_tests, 2):
+            ws[f"A{row_num}"] = row_num - 1
+            ws[f"B{row_num}"] = student_test.student.username
+            ws[f"C{row_num}"] = student_test.student.full_name or ''
+            ws[f"D{row_num}"] = student_test.student.group_name or ''
+            ws[f"E{row_num}"] = student_test.score
+            ws[f"F{row_num}"] = 'Yes' if student_test.completed else 'No'
+            ws[f"G{row_num}"] = student_test.get_duration_display()
+
+        # Adjust column widths
+        for col in ws.columns:
+            max_length = 0
+            column = col[0].column_letter
+            for cell in col:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = max_length + 2
+            ws.column_dimensions[column].width = adjusted_width
+
+        # Save to buffer
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        # Create response
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="Test_{assignment.test.name}_Results_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
+        response.write(buffer.getvalue())
+        return response
 
 @method_decorator([login_required, require_POST], name='dispatch')
 class DeleteAssignmentView(View):
@@ -544,17 +755,21 @@ class FinishTestView(View):
         # Testni yakunlash
         correct_answers = student_test.student_questions.filter(is_correct=True).count()
         total_questions = student_test.student_questions.count()
-        score = (correct_answers / total_questions) * 100
+        score = (correct_answers / total_questions * 100) if total_questions > 0 else 0.0
 
         student_test.completed = True
-        student_test.end_time = now()
-        student_test.duration = (student_test.end_time - student_test.start_time).seconds // 60
+        student_test.end_time = timezone.now()
+        student_test.duration = (student_test.end_time - student_test.start_time).seconds  # Soniyalarda
         student_test.score = score
         student_test.save()
 
         # Natija sahifasiga yo'naltirish uchun natija URLini qaytarish
-        result_url = f"/test/test_result/{student_test.id}/"
-        return JsonResponse({'success': True, 'message': f'Test tugatildi. Natijangiz: {score:.2f}%', 'redirect_url': result_url})
+        result_url = f"/results/{student_test.id}/"
+        return JsonResponse({
+            'success': True,
+            'message': f'Test tugatildi. Natijangiz: {score:.2f}%',
+            'redirect_url': result_url
+        })
 
 @method_decorator(login_required, name='dispatch')
 class TestResultView(View):

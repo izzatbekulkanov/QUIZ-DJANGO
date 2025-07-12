@@ -30,6 +30,9 @@ staticfiles/
 # SQLite database
 *.sqlite3
 
+# Media uploads (user-uploaded files)
+media/
+
 # VS Code settings
 .vscode/
 

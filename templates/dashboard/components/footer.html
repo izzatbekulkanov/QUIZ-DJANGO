@@ -2,26 +2,26 @@
 <footer id="page-footer" class="bg-white border-top shadow-sm">
   <div class="content py-3">
     <div class="row align-items-center fs-sm text-muted">
-
       <!-- Chap tomon: Tizim nomi va yil -->
       <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
         <a href="https://yourwebsite.com" class="fw-semibold text-primary text-decoration-none" target="_blank">
           {{ system.name }}
         </a>
-        &copy; <span id="year-copy"></span>. Barcha huquqlar himoyalangan.
+        © <span id="year-copy"></span>. Barcha huquqlar himoyalangan.
       </div>
 
-      <!-- O‘ng tomon: Yaratuvchi -->
+      <!-- O‘ng tomon: Yaratuvchi va versiya -->
       <div class="col-md-6 text-center text-md-end">
         <small class="text-muted">
-          Dasturchi: <strong>Izzatbek Ulkanov</strong> | NamDPI RTTM
+          Dasturchi: <strong>Izzatbek Ulkanov</strong> | NamDPI RTTM | Versiya: <strong>1.0</strong>
         </small>
       </div>
-
     </div>
   </div>
 </footer>
 
+{% block script %}
 <script>
   document.getElementById('year-copy').textContent = new Date().getFullYear();
 </script>
+{% endblock script %}

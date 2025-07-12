@@ -1,0 +1,117 @@
+{% extends 'dashboard/index.html' %}
+{% load static %}
+
+{% block style %}
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  .content { max-width: 1000px; margin: 0 auto; padding: 0.5rem; }
+  .font-roboto { font-family: 'Roboto', sans-serif; }
+  .breadcrumb { font-size: 0.75rem; padding: 0.3rem 0; }
+  .card { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); border-radius: 0.25rem; }
+  .card-body { padding: 0.5rem; }
+  .card-text { font-size: 0.75rem; margin-bottom: 0.3rem; }
+  .btn-sm { padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 0.25rem; }
+  .btn-primary-custom { transition: background-color 0.2s; }
+  .btn-primary-custom.btn-clicked { background-color: #005BBB; }
+  .alert-sm { font-size: 0.75rem; padding: 0.3rem; }
+  h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+  .question-card { margin-bottom: 0.5rem; padding: 0.5rem; }
+  .answer-correct { border: 2px solid #28a745; border-radius: 0.25rem; padding: 0.3rem; display: inline-flex; align-items: center; gap: 0.3rem; }
+  .answer-incorrect { border: 2px solid #dc3545; border-radius: 0.25rem; padding: 0.3rem; display: inline-flex; align-items: center; gap: 0.3rem; }
+  .answer-list { font-size: 0.75rem; margin-top: 0.3rem; }
+  .answer-item-correct { color: #28a745; }
+  .answer-item-incorrect { color: #6c757d; }
+  .fa-check { font-size: 0.7rem; }
+</style>
+{% endblock style %}
+
+{% block content %}
+<main id="main-container" class="font-roboto">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="bg-light border-bottom mb-3">
+    <div class="content py-1">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+          <a href="{% url 'dashboard' %}"><i class="fa fa-home me-1"></i> Bosh sahifa</a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'all_results' %}">Natijalar</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Natija tafsilotlari</li>
+      </ol>
+    </div>
+  </nav>
+
+  <div class="content">
+    <h2>Natija tafsilotlari</h2>
+    {% if error %}
+      <div class="alert alert-danger alert-sm" role="alert">{{ error }}</div>
+    {% else %}
+      <!-- Umumiy natija -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <p class="card-text"><strong>Test:</strong> {{ result.assignment.test.name }}</p>
+          <p class="card-text"><strong>Kategoriya:</strong> {{ result.assignment.category.name }}</p>
+          <p class="card-text"><strong>Boshlash vaqti:</strong> {{ result.start_time|date:"Y-m-d H:i:s" }}</p>
+          <p class="card-text"><strong>Yakunlash vaqti:</strong> {{ result.end_time|date:"Y-m-d H:i:s" }}</p>
+          <p class="card-text"><strong>Davomiylik:</strong> {{ result.get_duration_display }}</p>
+          <p class="card-text"><strong>Baho:</strong> {{ result.score|floatformat:2 }}%</p>
+        </div>
+        <div class="card-footer text-center">
+          <a href="{% url 'all_results' %}" class="btn btn-sm btn-primary btn-primary-custom">
+            <i class="fa fa-arrow-left me-1"></i> Ortga
+          </a>
+        </div>
+      </div>
+
+      <!-- Savollar va javoblar -->
+      <h2 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Savollar va Javoblar</h2>
+      {% if questions %}
+        <div class="row">
+          {% for question in questions %}
+            <div class="col-12">
+              <div class="card question-card">
+                <div class="card-body">
+                  <p class="card-text"><strong>Savol:</strong> {{ question.question.text }}</p>
+                  <p class="card-text">
+                    <strong>Sizning javobingiz:</strong>
+                    <span class="{% if question.is_correct %}answer-correct{% else %}answer-incorrect{% endif %}">
+                      <i class="fa fa-check {% if question.is_correct %}text-success{% else %}text-danger{% endif %}"></i>
+                      {{ question.selected_answer.text|default:"Javob tanlanmagan" }}
+                    </span>
+                  </p>
+                  <p class="card-text"><strong>Javoblar:</strong></p>
+                  <ul class="answer-list">
+                    {% for answer in question.question.answers.all %}
+                      <li class="{% if answer.is_correct %}answer-item-correct{% else %}answer-item-incorrect{% endif %}">
+                        {{ answer.text }} {% if answer.is_correct %}(To‘g‘ri){% endif %}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="alert alert-warning alert-sm" role="alert">Savollar topilmadi</div>
+      {% endif %}
+    {% endif %}
+  </div>
+</main>
+{% endblock content %}
+
+{% block script %}
+<script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+<script>
+  document.querySelectorAll('.btn-primary-custom').forEach(btn => {
+    btn.addEventListener('click', function() {
+      this.classList.add('btn-clicked');
+      setTimeout(() => {
+        this.classList.remove('btn-clicked');
+      }, 100);
+    });
+  });
+</script>
+{% endblock script %}

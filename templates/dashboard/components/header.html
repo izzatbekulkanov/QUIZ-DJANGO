@@ -33,12 +33,7 @@
               <span class="nav-main-link-name">Bosh sahifa</span>
             </a>
           </li>
-          <li class="nav-main-item">
-            <a class="nav-main-link {% if request.resolver_match.url_name == 'dashboard-categories' %}active{% endif %}" href="{% url 'dashboard-categories' %}">
-              <i class="nav-main-link-icon fa fa-list"></i>
-              <span class="nav-main-link-name">Test Kategoriyalari</span>
-            </a>
-          </li>
+
           <li class="nav-main-item">
             <a class="nav-main-link {% if request.resolver_match.url_name == 'all_results' %}active{% endif %}" href="{% url 'all_results' %}">
               <i class="nav-main-link-icon fa fa-chart-bar"></i>

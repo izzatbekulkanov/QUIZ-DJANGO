@@ -1,241 +1,168 @@
 {% extends 'question/main.html' %}
 {% load static %}
+
 {% block style %}
-  <link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
-  <style>
-    .correct-answer {
-      border: 1px solid #28a745;
-      border-radius: 4px;
-      padding: 4px 8px;
-      background-color: #e6f4ea;
-    }
-
-    .modal-body {
-      max-height: 350px;
-      overflow-y: auto;
-      font-size: 0.9rem;
-    }
-
-    .upload-container {
-      transition: all 0.3s ease;
-      cursor: pointer;
-      border: 2px dashed #0056b3;
-      padding: 20px;
-      background-color: #f8f9fa;
-    }
-
-    .upload-container:hover {
-      background-color: #f1f9ff;
-      border-color: #003087;
-      transform: scale(1.01);
-    }
-
-    .upload-container.dragover {
-      background-color: #e6f3ff;
-      border-color: #003087;
-    }
-
-    .upload-container.success {
-      border-color: #28a745;
-      background-color: #e6f4ea;
-    }
-
-    .list-group-item {
-      padding: 10px 15px;
-      font-size: 0.9rem;
-      border-radius: 6px;
-      margin-bottom: 8px;
-    }
-
-    .question-text {
-      max-height: 40px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .answer-list {
-      font-size: 0.85rem;
-      margin-top: 8px;
-    }
-
-    .btn-sm-custom {
-      padding: 4px 10px;
-      font-size: 0.85rem;
-    }
-
-    .nav-tabs .nav-link {
-      font-size: 0.9rem;
-      padding: 8px 16px;
-    }
-
-    .btn-group-inline .btn {
-      margin-right: 10px;
-    }
-  </style>
+<link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
+<style>
+  /* Minimal styles for drag-and-drop visual feedback */
+  .upload-container.dragover {
+    background-color: #e9ecef;
+    border-color: #0d6efd;
+  }
+  .upload-container.success {
+    border-color: #28a745;
+  }
+</style>
 {% endblock style %}
+
 {% block content %}
-  <main id="main-container">
-    <!-- Hero -->
-    <div class="bg-image overflow-hidden"
-         style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
-      <div class="bg-primary-dark-op">
-        <div class="content content-full">
-          <div
-            class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-4 mb-2 text-center text-sm-start">
-            <div class="flex-grow-1">
-              <h1 class="fw-semibold text-white mb-0">{{ test.name }} (Talabalar: {{ student_count }})</h1>
-              <h2 class="h5 fw-normal text-white-75 mb-0"><code><i>{{ test.name }}</i></code> ga savollar biriktirish
-              </h2>
+<main id="main-container" class="container-fluid px-0">
+  <!-- Hero -->
+  <div class="bg-primary bg-opacity-75 py-4" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}'); background-size: cover; background-position: center;">
+    <div class="container">
+      <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center my-4 text-center text-sm-start">
+        <div class="flex-grow-1">
+          <h1 class="fw-semibold text-white mb-0">{{ test.name }} (Talabalar: {{ student_count }})</h1>
+          <h2 class="h5 fw-normal text-white-75 mb-0"><code><i>{{ test.name }}</i></code> ga savollar biriktirish</h2>
+        </div>
+        <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
+          <a class="btn btn-outline-light btn-sm" href="{% url 'question' %}">
+            <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- END Hero -->
+
+  <!-- Page Content -->
+  <div class="container my-4">
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <ul class="nav nav-tabs nav-tabs-alt" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#add-question" data-tab-id="add-question">Savol Qo‘shish</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#import-question" data-tab-id="import-question">Savol Import Qilish</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#export-question" data-tab-id="export-question">Export Qilish</a>
+          </li>
+        </ul>
+      </div>
+      <div class="card-body tab-content">
+        <!-- Savol Qo‘shish Tab -->
+        <div class="tab-pane active show" id="add-question" role="tabpanel">
+          <form method="POST" enctype="multipart/form-data" id="question-form">
+            {% csrf_token %}
+            {{ form.media }}
+            <div class="mb-3">
+              <label class="form-label" for="id_text">Savol matni</label>
+              {{ form.text }}
             </div>
-            <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
-              <a class="btn btn-light btn-sm-custom" href="{% url 'question' %}">
-                <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
+            <div id="answers-section" class="mb-3">
+              <label class="form-label">Variantlar</label>
+              <div class="answer-item d-flex mb-2">
+                <input type="text" class="form-control me-2" name="answers[]" placeholder="Variantni kiriting" required>
+                <div class="form-check form-switch">
+                  <input type="checkbox" class="form-check-input is-correct-checkbox" id="is-correct-0">
+                  <input type="hidden" name="is_correct[]" value="false">
+                  <label class="form-check-label" for="is-correct-0">To‘g‘ri</label>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm ms-2 remove-answer">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-success mb-3" id="add-answer">
+              <i class="fa fa-plus"></i> Yangi variant qo‘shish
+            </button>
+            <div class="text-end">
+              <button type="submit" class="btn btn-primary btn-sm">
+                <i class="fa fa-save me-1"></i> Saqlash
+              </button>
+            </div>
+          </form>
+        </div>
+        <!-- Savol Import Qilish Tab -->
+        <div class="tab-pane" id="import-question" role="tabpanel">
+          <form method="POST" enctype="multipart/form-data" id="import-form">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label class="form-label fw-semibold" for="import-file">Excel faylni yuklang (.xlsx)</label>
+              <div class="upload-container border rounded p-3 text-center bg-light" id="upload-container">
+                <input type="file" class="form-control d-none" id="import-file" name="import_file" accept=".xlsx" required>
+                <i class="fa fa-cloud-upload-alt fa-2x text-primary mb-2"></i>
+                <p class="mb-1 text-muted">Faylni bu yerga sudrab olib keling yoki <span class="text-primary fw-semibold">tanlash uchun bosing</span></p>
+                <p class="mb-0 text-muted small">Faqat .xlsx formatidagi fayllar qabul qilinadi (maksimal 10MB)</p>
+                <p class="mt-2 mb-0 text-primary fw-semibold d-none" id="file-name">Tanlangan fayl: <span></span></p>
+              </div>
+            </div>
+            <div class="btn-group">
+              <a href="{% url 'download-template' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fa fa-download me-1"></i> Shablonni yuklab olish
+              </a>
+              <button type="submit" class="btn btn-primary btn-sm" disabled id="submit-button">
+                <i class="fa fa-upload me-1"></i> Import Qilish
+              </button>
+            </div>
+          </form>
+        </div>
+        <!-- Export Qilish Tab -->
+        <div class="tab-pane" id="export-question" role="tabpanel">
+          <div class="mb-3">
+            <p class="mb-2">Savollarni quyidagi formatlarda eksport qiling:</p>
+            <div class="btn-group">
+              <a href="{% url 'export-questions' test.id 'json' %}" class="btn btn-primary btn-sm">
+                <i class="fa fa-download me-1"></i> JSON
+              </a>
+              <a href="{% url 'export-questions' test.id 'xlsx' %}" class="btn btn-success btn-sm">
+                <i class="fa fa-download me-1"></i> Excel
+              </a>
+              <a href="{% url 'export-questions' test.id 'csv' %}" class="btn btn-info btn-sm">
+                <i class="fa fa-download me-1"></i> CSV
+              </a>
+              <a href="{% url 'export-questions' test.id 'docx' %}" class="btn btn-warning btn-sm">
+                <i class="fa fa-download me-1"></i> Word
               </a>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    <!-- END Hero -->
-    <!-- Page Content -->
-    <div class="content">
-      <div class="block block-rounded">
-        <div class="block-header block-header-default">
-          <ul class="nav nav-tabs nav-tabs-alt" role="tablist">
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="tab" href="#add-question" data-tab-id="add-question">Savol Qo‘shish</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="tab" href="#import-question" data-tab-id="import-question">Savol Import Qilish</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="tab" href="#export-question" data-tab-id="export-question">Export Qilish</a>
-            </li>
-          </ul>
-        </div>
-        <div class="block-content tab-content">
-          <!-- Savol Qo‘shish Tab -->
-          <div class="tab-pane" id="add-question" role="tabpanel">
-            <form method="POST" enctype="multipart/form-data" id="question-form">
-              {% csrf_token %}
-              {{ form.media }}
-              <div class="mb-3">
-                <label class="form-label" for="id_text">Savol matni</label>
-                {{ form.text }}
-              </div>
-              <div id="answers-section" class="mb-3">
-                <label class="form-label">Variantlar</label>
-                <div class="answer-item d-flex mb-2">
-                  <input type="text" class="form-control me-2" name="answers[]" placeholder="Variantni kiriting"
-                         required>
-                  <div class="form-check form-switch">
-                    <input type="checkbox" class="form-check-input is-correct-checkbox">
-                    <input type="hidden" name="is_correct[]" value="false">
-                    <label class="form-check-label">To‘g‘ri</label>
+      <div class="card-body">
+        <!-- Testga tegishli savollar va faqat to‘g‘ri javoblar -->
+        <h5 class="card-title mb-3">Savollar va To‘g‘ri Javoblar</h5>
+        {% if questions %}
+          <ul class="list-group">
+            {% for question in questions %}
+              <li class="list-group-item">
+                <div class="row align-items-start">
+                  <div class="col-md-1 text-center">
+                    <span class="badge bg-primary">{{ forloop.counter }}</span>
                   </div>
-                  <button type="button" class="btn btn-danger btn-sm-custom ms-2 remove-answer">
-                    <i class="fa fa-trash"></i>
-                  </button>
+                  <div class="col-md-5">
+                    <div class="text-primary">{{ question.text|safe }}</div>
+                  </div>
+                  <div class="col-md-6">
+                    {% for answer in question.answers.all %}
+                      {% if answer.is_correct %}
+                        <div class="text-success fw-medium">{{ answer.text }}</div>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
                 </div>
-              </div>
-              <button type="button" class="btn btn-sm-custom btn-success mb-3" id="add-answer">
-                <i class="fa fa-plus"></i> Yangi variant qo‘shish
-              </button>
-              <div class="mb-3 text-end">
-                <button type="submit" class="btn btn-alt-primary btn-sm-custom">
-                  <i class="fa fa-save me-1"></i> Saqlash
-                </button>
-              </div>
-            </form>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="alert alert-info text-center mb-0">
+            Hozircha savollar mavjud emas.
           </div>
-          <!-- Savol Import Qilish Tab -->
-          <div class="tab-pane" id="import-question" role="tabpanel">
-            <form method="POST" enctype="multipart/form-data" id="import-form">
-              {% csrf_token %}
-              <div class="mb-3">
-                <label class="form-label fw-semibold" for="import-file">Excel faylni yuklang (.xlsx)</label>
-                <div class="upload-container border border-2 rounded p-3 text-center bg-light"
-                     id="upload-container">
-                  <input type="file" class="form-control d-none" id="import-file" name="import_file" accept=".xlsx"
-                         required>
-                  <i class="fa fa-cloud-upload-alt fa-2x text-primary mb-2"></i>
-                  <p class="mb-1 text-muted">Faylni bu yerga sudrab olib keling yoki <span
-                    class="text-primary fw-semibold">tanlash uchun bosing</span></p>
-                  <p class="mb-0 text-muted small">Faqat .xlsx formatidagi fayllar qabul qilinadi (maksimal 10MB)</p>
-                  <p class="mt-2 mb-0 text-primary fw-semibold d-none" id="file-name">Tanlangan fayl: <span></span></p>
-                </div>
-              </div>
-              <div class="mb-3 btn-group-inline">
-                <a href="{% url 'download-template' %}" class="btn btn-alt-secondary btn-sm-custom">
-                  <i class="fa fa-download me-1"></i> Shablonni yuklab olish
-                </a>
-                <button type="submit" class="btn btn-alt-primary btn-sm-custom" disabled id="submit-button">
-                  <i class="fa fa-upload me-1"></i> Import Qilish
-                </button>
-              </div>
-            </form>
-          </div>
-          <!-- Export Qilish Tab -->
-          <div class="tab-pane" id="export-question" role="tabpanel">
-            <div class="mb-3">
-              <p>Savollarni quyidagi formatlarda eksport qiling:</p>
-              <div class="btn-group-inline">
-                <a href="{% url 'export-questions' test.id 'json' %}" class="btn btn-primary btn-sm-custom">
-                  <i class="fa fa-download me-1"></i> JSON
-                </a>
-                <a href="{% url 'export-questions' test.id 'xlsx' %}" class="btn btn-success btn-sm-custom">
-                  <i class="fa fa-download me-1"></i> Excel
-                </a>
-                <a href="{% url 'export-questions' test.id 'csv' %}" class="btn btn-info btn-sm-custom">
-                  <i class="fa fa-download me-1"></i> CSV
-                </a>
-                <a href="{% url 'export-questions' test.id 'docx' %}" class="btn btn-warning btn-sm-custom">
-                  <i class="fa fa-download me-1"></i> Word
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="block-content">
-          <!-- Testga tegishli savollar va faqat to‘g‘ri javoblar -->
-          <div class="mb-3">
-            <h5 class="mb-2">Savollar va To‘g‘ri Javoblar</h5>
-            {% if questions %}
-              <ul class="list-group">
-                {% for question in questions %}
-                  <li class="list-group-item">
-                    <div class="row align-items-start">
-                      <div class="col-md-1 text-center">
-                        <span class="badge bg-primary fs-sm">{{ forloop.counter }}</span>
-                      </div>
-                      <div class="col-md-5">
-                        <div class="question-text text-primary">{{ question.text|safe }}</div>
-                      </div>
-                      <div class="col-md-6 answer-list">
-                        {% for answer in question.answers.all %}
-                          {% if answer.is_correct %}
-                            <div class="correct-answer d-inline-block">{{ answer.text }}</div>
-                          {% endif %}
-                        {% endfor %}
-                      </div>
-                    </div>
-                    {% if not forloop.last %}
-                      <hr class="my-2">
-                    {% endif %}
-                  </li>
-                {% endfor %}
-              </ul>
-            {% else %}
-              <div class="alert alert-info text-center">
-                <p class="mb-0">Hozircha savollar mavjud emas.</p>
-              </div>
-            {% endif %}
-          </div>
-        </div>
+        {% endif %}
       </div>
     </div>
-    <!-- END Page Content -->
+
     <!-- Modal -->
     <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg">
@@ -248,236 +175,221 @@
             <div id="questions-preview"></div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-sm-custom" data-bs-dismiss="modal">Bekor qilish</button>
-            <button type="button" class="btn btn-primary btn-sm-custom" id="save-questions">Saqlash</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Bekor qilish</button>
+            <button type="button" class="btn btn-primary btn-sm" id="save-questions">Saqlash</button>
           </div>
         </div>
       </div>
     </div>
-  </main>
+  </div>
+</main>
 {% endblock content %}
+
 {% block script %}
-  <script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
-  <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const tabs = document.querySelectorAll('.nav-tabs .nav-link');
-      const activeTab = localStorage.getItem('activeTab') || 'add-question';
+<script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tabs = document.querySelectorAll('.nav-tabs .nav-link');
+    const activeTab = localStorage.getItem('activeTab') || 'add-question';
 
-      // Faol tabni o‘rnatish
-      tabs.forEach(tab => {
-        if (tab.getAttribute('data-tab-id') === activeTab) {
-          tab.classList.add('active');
-          document.getElementById(activeTab).classList.add('active', 'show');
-        } else {
-          tab.classList.remove('active');
-          const tabPane = document.getElementById(tab.getAttribute('data-tab-id'));
-          if (tabPane) {
-            tabPane.classList.remove('active', 'show');
-          }
-        }
-      });
-
-      // Tab o‘zgarganda cookie’ga saqlash
-      tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-          localStorage.setItem('activeTab', this.getAttribute('data-tab-id'));
-          // Checkbox hodisalarini qayta o‘rnatish
-          initializeCheckboxes();
-        });
-      });
-
-      // Checkbox hodisalarini o‘rnatish funksiyasi
-      function initializeCheckboxes() {
-        const checkboxes = document.querySelectorAll('.is-correct-checkbox');
-        checkboxes.forEach(checkbox => {
-          const hiddenInput = checkbox.nextElementSibling;
-          if (hiddenInput && hiddenInput.tagName === 'INPUT' && hiddenInput.type === 'hidden') {
-            checkbox.removeEventListener('change', updateHiddenInput); // Oldingi hodisani olib tashlash
-            checkbox.addEventListener('change', updateHiddenInput);
-          }
-        });
+    // Set active tab
+    tabs.forEach(tab => {
+      const tabId = tab.getAttribute('data-tab-id');
+      const tabPane = document.getElementById(tabId);
+      if (tabId === activeTab && tabPane) {
+        tab.classList.add('active');
+        tabPane.classList.add('active', 'show');
+      } else if (tabPane) {
+        tab.classList.remove('active');
+        tabPane.classList.remove('active', 'show');
       }
+    });
 
-      function updateHiddenInput() {
-        const hiddenInput = this.nextElementSibling;
-        if (hiddenInput) {
-          hiddenInput.value = this.checked ? 'true' : 'false';
-        }
-      }
+    // Save active tab on click
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        localStorage.setItem('activeTab', tab.getAttribute('data-tab-id'));
+        initializeCheckboxes();
+      });
+    });
 
-      // Dastlabki checkbox hodisalarini o‘rnatish
-      initializeCheckboxes();
-
-      // Variant qo‘shish
-      document.getElementById('add-answer').addEventListener('click', function() {
-        const answersSection = document.getElementById('answers-section');
-        const answerItem = document.createElement('div');
-        answerItem.className = 'answer-item d-flex mb-2';
-        answerItem.innerHTML = `
-          <input type="text" class="form-control me-2" name="answers[]" placeholder="Variantni kiriting" required>
-          <div class="form-check form-switch">
-            <input type="checkbox" class="form-check-input is-correct-checkbox">
-            <input type="hidden" name="is_correct[]" value="false">
-            <label class="form-check-label">To‘g‘ri</label>
-          </div>
-          <button type="button" class="btn btn-danger btn-sm-custom ms-2 remove-answer">
-            <i class="fa fa-trash"></i>
-          </button>`;
-        answersSection.appendChild(answerItem);
-
-        // Yangi checkbox uchun hodisani o‘rnatish
-        const checkbox = answerItem.querySelector('.is-correct-checkbox');
+    // Initialize checkboxes
+    function initializeCheckboxes() {
+      document.querySelectorAll('.is-correct-checkbox').forEach((checkbox, index) => {
         const hiddenInput = checkbox.nextElementSibling;
-        if (hiddenInput) {
+        if (hiddenInput?.tagName === 'INPUT' && hiddenInput.type === 'hidden') {
+          checkbox.id = `is-correct-${index}`; // Ensure unique ID
+          checkbox.removeEventListener('change', updateHiddenInput);
           checkbox.addEventListener('change', updateHiddenInput);
         }
       });
+    }
 
-      // Variant o‘chirish
-      document.getElementById('answers-section').addEventListener('click', function(e) {
-        if (e.target.closest('.remove-answer')) {
-          e.target.closest('.answer-item').remove();
-        }
+    function updateHiddenInput() {
+      const hiddenInput = this.nextElementSibling;
+      if (hiddenInput) hiddenInput.value = this.checked ? 'true' : 'false';
+    }
+
+    initializeCheckboxes();
+
+    // Add new answer
+    document.getElementById('add-answer').addEventListener('click', () => {
+      const answersSection = document.getElementById('answers-section');
+      const index = answersSection.querySelectorAll('.answer-item').length;
+      const answerItem = document.createElement('div');
+      answerItem.className = 'answer-item d-flex mb-2';
+      answerItem.innerHTML = `
+        <input type="text" class="form-control me-2" name="answers[]" placeholder="Variantni kiriting" required>
+        <div class="form-check form-switch">
+          <input type="checkbox" class="form-check-input is-correct-checkbox" id="is-correct-${index}">
+          <input type="hidden" name="is_correct[]" value="false">
+          <label class="form-check-label" for="is-correct-${index}">To‘g‘ri</label>
+        </div>
+        <button type="button" class="btn btn-danger btn-sm ms-2 remove-answer">
+          <i class="fa fa-trash"></i>
+        </button>`;
+      answersSection.appendChild(answerItem);
+
+      const checkbox = answerItem.querySelector('.is-correct-checkbox');
+      checkbox.addEventListener('change', updateHiddenInput);
+    });
+
+    // Remove answer
+    document.getElementById('answers-section').addEventListener('click', e => {
+      if (e.target.closest('.remove-answer')) {
+        e.target.closest('.answer-item').remove();
+      }
+    });
+
+    // File upload handling
+    const uploadContainer = document.getElementById('upload-container');
+    const fileInput = document.getElementById('import-file');
+    const fileNameDisplay = document.getElementById('file-name');
+    const submitButton = document.getElementById('submit-button');
+
+    uploadContainer.addEventListener('click', () => fileInput.click());
+
+    uploadContainer.addEventListener('dragover', e => {
+      e.preventDefault();
+      uploadContainer.classList.add('dragover');
+    });
+
+    uploadContainer.addEventListener('dragleave', () => {
+      uploadContainer.classList.remove('dragover');
+    });
+
+    uploadContainer.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadContainer.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0 && files[0].name.endsWith('.xlsx')) {
+        fileInput.files = files;
+        fileNameDisplay.classList.remove('d-none');
+        fileNameDisplay.querySelector('span').textContent = files[0].name;
+        submitButton.disabled = false;
+        uploadContainer.classList.add('success');
+      } else {
+        Swal.fire('Xatolik!', 'Faqat .xlsx fayllar qabul qilinadi!', 'error');
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        fileNameDisplay.classList.remove('d-none');
+        fileNameDisplay.querySelector('span').textContent = fileInput.files[0].name;
+        submitButton.disabled = false;
+        uploadContainer.classList.add('success');
+      } else {
+        fileNameDisplay.classList.add('d-none');
+        submitButton.disabled = true;
+        uploadContainer.classList.remove('success');
+      }
+    });
+
+    // Import form submission
+    document.getElementById('import-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+
+      Swal.fire({
+        title: 'Yuklanmoqda...',
+        text: 'Iltimos, kuting...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
       });
 
-      // Import formasi
-      const uploadContainer = document.getElementById('upload-container');
-      const fileInput = document.getElementById('import-file');
-      const fileNameDisplay = document.getElementById('file-name');
-      const submitButton = document.getElementById('submit-button');
-
-      // Fayl tanlash uchun click
-      uploadContainer.addEventListener('click', () => fileInput.click());
-
-      // Drag and drop
-      uploadContainer.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadContainer.classList.add('dragover');
-      });
-
-      uploadContainer.addEventListener('dragleave', () => {
-        uploadContainer.classList.remove('dragover');
-      });
-
-      uploadContainer.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadContainer.classList.remove('dragover');
-        const files = e.dataTransfer.files;
-        if (files.length > 0 && files[0].name.endsWith('.xlsx')) {
-          fileInput.files = files;
-          fileNameDisplay.classList.remove('d-none');
-          fileNameDisplay.querySelector('span').textContent = files[0].name;
-          submitButton.disabled = false;
-          uploadContainer.classList.add('success');
-        } else {
-          alert('Faqat .xlsx fayllar qabul qilinadi!');
-        }
-      });
-
-      // Fayl tanlanganda
-      fileInput.addEventListener('change', () => {
-        if (fileInput.files.length > 0) {
-          fileNameDisplay.classList.remove('d-none');
-          fileNameDisplay.querySelector('span').textContent = fileInput.files[0].name;
-          submitButton.disabled = false;
-          uploadContainer.classList.add('success');
-        } else {
-          fileNameDisplay.classList.add('d-none');
-          submitButton.disabled = true;
-          uploadContainer.classList.remove('success');
-        }
-      });
-
-      // Import formasi yuborilishi
-      document.getElementById('import-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-
-        Swal.fire({
-          title: 'Yuklanmoqda...',
-          text: 'Iltimos, kuting...',
-          allowOutsideClick: false,
-          didOpen: () => {
-            Swal.showLoading();
-          },
-        });
-
-        fetch("{% url 'import-questions' test.id %}", {
+      try {
+        const response = await fetch("{% url 'import-questions' test.id %}", {
           method: 'POST',
-          body: formData,
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-        })
-          .then(response => response.json())
-          .then(data => {
-            Swal.close();
-            if (data.success) {
-              const questions = data.questions;
-              let previewHtml = '';
-              questions.forEach((q, index) => {
-                previewHtml += `
-                <div class="mb-3">
-                  <h6 class="fs-sm">Savol ${index + 1}: ${q.text}</h6>
-                  ${q.image_base64 ? `<img src="data:image/png;base64,${q.image_base64}" class="img-fluid mb-2" style="max-width: 150px;">` : ''}
-                  <ul class="list-unstyled">
-                    ${q.answers.map((a, i) => `
-                      <li class="${a[1] ? 'correct-answer' : ''} fs-sm">${i + 1}. ${a[0]}</li>
-                    `).join('')}
-                  </ul>
-                </div>`;
-              });
-              document.getElementById('questions-preview').innerHTML = previewHtml;
-              new bootstrap.Modal(document.getElementById('previewModal')).show();
-            } else {
-              Swal.fire('Xatolik!', data.errors, 'error');
-            }
-          })
-          .catch(error => {
-            Swal.close();
-            Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
-            console.error('Error:', error);
-          });
-      });
+          body: formData
+        });
+        const data = await response.json();
+        Swal.close();
 
-      // Savollarni saqlash
-      document.getElementById('save-questions').addEventListener('click', function() {
-        Swal.fire({
-          title: 'Tasdiqlaysizmi?',
-          text: 'Savollarni saqlamoqchimisiz?',
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: 'Ha, saqlash!',
-          cancelButtonText: 'Bekor qilish',
-        }).then((result) => {
-          if (result.isConfirmed) {
-            fetch("{% url 'save-imported-questions' %}", {
+        if (data.success) {
+          const questions = data.questions;
+          let previewHtml = '';
+          questions.forEach((q, index) => {
+            previewHtml += `
+              <div class="mb-3">
+                <h6 class="fs-sm">Savol ${index + 1}: ${q.text}</h6>
+                ${q.image_base64 ? `<img src="data:image/png;base64,${q.image_base64}" class="img-fluid mb-2" style="max-width: 150px;">` : ''}
+                <ul class="list-unstyled">
+                  ${q.answers.map((a, i) => `
+                    <li class="${a[1] ? 'text-success fw-medium' : ''} fs-sm">${i + 1}. ${a[0]}</li>
+                  `).join('')}
+                </ul>
+              </div>`;
+          });
+          document.getElementById('questions-preview').innerHTML = previewHtml;
+          new bootstrap.Modal(document.getElementById('previewModal')).show();
+        } else {
+          Swal.fire('Xatolik!', data.errors || 'Savollarni import qilishda xatolik yuz berdi.', 'error');
+        }
+      } catch (error) {
+        Swal.close();
+        Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
+        console.error('Error:', error);
+      }
+    });
+
+    // Save imported questions
+    document.getElementById('save-questions').addEventListener('click', async () => {
+      Swal.fire({
+        title: 'Tasdiqlaysizmi?',
+        text: 'Savollarni saqlamoqchimisiz?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#0d6efd',
+        cancelButtonColor: '#dc3545',
+        confirmButtonText: 'Ha, saqlash!',
+        cancelButtonText: 'Bekor qilish'
+      }).then(async result => {
+        if (result.isConfirmed) {
+          try {
+            const response = await fetch("{% url 'save-imported-questions' %}", {
               method: 'POST',
               headers: {
-                'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRFToken': '{{ csrf_token }}',
-              },
-            })
-              .then(response => response.json())
-              .then(data => {
-                if (data.success) {
-                  Swal.fire('Muvaffaqiyatli!', data.message, 'success').then(() => {
-                    window.location.reload();
-                  });
-                } else {
-                  Swal.fire('Xatolik!', data.errors, 'error');
-                }
-              })
-              .catch(error => {
-                Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
-                console.error('Error:', error);
+                'Content-Type': 'application/json'
+              }
+            });
+            const data = await response.json();
+            if (data.success) {
+              Swal.fire('Muvaffaqiyatli!', data.message, 'success').then(() => {
+                window.location.reload();
               });
+            } else {
+              Swal.fire('Xatolik!', data.errors || 'Savollarni saqlashda xatolik yuz berdi.', 'error');
+            }
+          } catch (error) {
+            Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
+            console.error('Error:', error);
           }
-        });
+        }
       });
     });
-  </script>
+  });
+</script>
 {% endblock script %}

@@ -3,6 +3,7 @@ import base64
 import json
 import logging
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, logout, login, get_user_model
 from django.http import JsonResponse
@@ -30,6 +31,7 @@ class LoginView(View):
 
 logger = logging.getLogger(__name__)
 
+
 class FaceLoginView(View):
     def get(self, request):
         return render(request, 'auth/face_login.html')
@@ -50,7 +52,7 @@ class FaceLoginView(View):
                 login(request, user, backend='account.backends.FaceAuthBackend')
                 request.session.save()
                 request.session.modified = True
-                next_url = request.GET.get('next', '/')
+                next_url = request.GET.get('next', '/account/two-login/')
                 return JsonResponse({
                     'success': True,
                     'full_name': user.full_name or 'Ism mavjud emas',
@@ -80,6 +82,52 @@ class FaceLoginView(View):
                 'error': f'Xato: {str(e)}',
                 'action': 'retry'
             })
+
+
+class TwoLoginView(LoginRequiredMixin, View):
+    def get(self, request):
+        user = request.user
+        return render(request, 'auth/two_login.html', {'user_data': user})
+
+
+class IdLoginView(View):
+    template_name = 'auth/id_login.html'
+    default_password = 'namdpi451'
+    default_redirect = '/account/two-login/'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
+        id_number = request.POST.get('id_number', '').strip()
+
+        # ✅ Boshlang'ich tekshiruvlar
+        if len(id_number) != 10 or not id_number.isdigit():
+            return self._error_response(request, "ID raqam noto‘g‘ri yoki to‘liq emas.")
+
+        # ✅ Foydalanuvchini olish va ruxsat tekshiruvi
+        try:
+            id_user = CustomUser.objects.get(username=id_number)
+            if not id_user.auth_is_id:
+                return self._error_response(request, "Administrator tomonidan ruxsat berilmagan.")
+        except CustomUser.DoesNotExist:
+            return self._error_response(request, "Foydalanuvchi topilmadi.")
+
+        # ✅ Autentifikatsiya qilish
+        user = authenticate(request, username=id_number, password=self.default_password)
+        if user is None:
+            return self._error_response(request, "Foydalanuvchi topilmadi yoki parol noto‘g‘ri.")
+
+        # ✅ Tizimga kiritish
+        login(request, user)
+        next_url = request.GET.get('next', self.default_redirect)
+        return redirect(next_url)
+
+    def _error_response(self, request, message):
+        messages.error(request, message)
+        return render(request, self.template_name, {'error': message})
+
+
 class RegisterView(View):
     template_name = 'auth/register.html'
 

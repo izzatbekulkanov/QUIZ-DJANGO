@@ -110,11 +110,17 @@ class StudentTest(models.Model):
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
     completed = models.BooleanField(default=False)
-    duration = models.PositiveIntegerField(default=0)  # Daqiqalarda davomiylik
-    score = models.FloatField(default=0.0)  # Foydalanuvchi natijasi
+    duration = models.PositiveIntegerField(default=0)  # Soniyalarda davomiylik
+    score = models.FloatField(default=0.0)
 
     def __str__(self):
         return f"{self.student.username} - {self.assignment.test.name}"
+
+    def get_duration_display(self):
+        """Soniyalarni MM:SS formatida qaytaradi."""
+        minutes = self.duration // 60
+        seconds = self.duration % 60
+        return f"{minutes:02d}:{seconds:02d}"
 
 
 class StudentTestQuestion(models.Model):

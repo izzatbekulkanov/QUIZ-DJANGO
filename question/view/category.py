@@ -17,40 +17,29 @@ class CategoriesView(View):
     template_name = 'question/views/categories.html'
 
     def get(self, request):
-        # Fetch categories with related tests and questions
-        categories = Category.objects.prefetch_related(
-            Prefetch('tests', queryset=Test.objects.prefetch_related('questions'))
-        )
-
-        context = {
-            'categories': categories,
-        }
+        categories = Category.objects.prefetch_related('tests')
+        context = {'categories': categories}
         return render(request, self.template_name, context)
 
     def delete(self, request, category_id):
-        if request.user.is_superuser:  # Only allow admins to delete
-            try:
-                # Fetch the category or return 404
-                category = get_object_or_404(Category, id=category_id)
-                print(f"DEBUG: Fetched category with ID {category_id}: {category.name}")
+        if not request.user.is_superuser:
+            print(f"[XATO] Foydalanuvchi {request.user.username} kategoriyani o‘chirishga ruxsati yo‘q")
+            return JsonResponse({"success": False, "message": "Sizda bu amalni bajarish uchun ruxsat yo‘q!"},
+                                status=403)
 
-                # Check if the category has related tests
-                if not category.tests.exists():
-                    print(f"DEBUG: No tests are linked to the category '{category.name}'. Proceeding with deletion.")
-                    category.delete()
-                    print(f"DEBUG: Category '{category.name}' successfully deleted.")
-                    return JsonResponse({"success": True, "message": "Kategoriya muvaffaqiyatli o‘chirildi!"})
-                else:
-                    print(f"DEBUG: Cannot delete category '{category.name}' as it has linked tests.")
-                    return JsonResponse({"success": False,
-                                         "message": "Kategoriya tegishli testlar mavjudligi sabab o‘chirib bo‘lmaydi."})
-            except Exception as e:
-                print(f"ERROR: An error occurred while deleting category ID {category_id}: {str(e)}")
-                return JsonResponse({"success": False, "message": f"Xatolik yuz berdi: {str(e)}"})
-        else:
-            print(f"WARNING: Unauthorized delete attempt by user ID {request.user.id} ({request.user.username}).")
-            return JsonResponse({"success": False, "message": "Sizda bu amalni bajarish uchun ruxsat yo‘q!"})
+        try:
+            category = get_object_or_404(Category, id=category_id)
+            if category.tests.exists():
+                print(f"[XATO] Kategoriya '{category.name}' o‘chirilmadi: bog‘liq savollar mavjud")
+                return JsonResponse({"success": False, "message": "Kategoriyada savollar mavjud, o‘chirib bo‘lmaydi"},
+                                    status=400)
 
+            category.delete()
+            print(f"[INFO] Kategoriya '{category.name}' o‘chirildi")
+            return JsonResponse({"success": True, "message": "Kategoriya muvaffaqiyatli o‘chirildi"})
+        except Exception as e:
+            print(f"[XATO] Kategoriya ID {category_id} o‘chirishda xato: {str(e)}")
+            return JsonResponse({"success": False, "message": f"Xato: {str(e)}"}, status=500)
 
 
 @method_decorator(login_required, name='dispatch')

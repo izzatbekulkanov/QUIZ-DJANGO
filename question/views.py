@@ -1,14 +1,18 @@
+import json
 import logging
 import pickle
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlencode
 import cv2
 import numpy as np
+from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q, Prefetch
-from django.http import JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse
+from django.middleware.csrf import get_token
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.views import View
@@ -23,13 +27,27 @@ from deepface import DeepFace
 import os
 
 
-
 @method_decorator(login_required, name='dispatch')
 class MainView(View):
     template_name = 'question/views/main.html'
 
     def get(self, request):
         return render(request, self.template_name)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ToggleAuthView(View):
+    def post(self, request, id):
+        try:
+            user = CustomUser.objects.get(id=id)
+            data = json.loads(request.body)
+            user.auth_is_id = data.get('auth_is_id', False)
+            user.save()
+            return JsonResponse({"success": True, "message": "Autentifikatsiya sozlamasi yangilandi"})
+        except CustomUser.DoesNotExist:
+            return JsonResponse({"success": False, "message": "Foydalanuvchi topilmadi"}, status=404)
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=500)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -44,12 +62,13 @@ class UsersView(View):
 
         users_queryset = CustomUser.objects.all()
 
-        # Qidiruv
+        # Qidiruv (to‘liq, username ham kiritilgan)
         if search_query:
             users_queryset = users_queryset.filter(
                 Q(first_name__icontains=search_query) |
                 Q(second_name__icontains=search_query) |
-                Q(phone_number__contains=search_query) |
+                Q(username__icontains=search_query) |  # ✅ Username bo‘yicha qidiruv
+                Q(phone_number__icontains=search_query) |
                 Q(address__icontains=search_query)
             )
 
@@ -63,15 +82,15 @@ class UsersView(View):
         elif filter_type == 'group' and group_name:
             users_queryset = users_queryset.filter(group_name=group_name)
 
-        # Familiya va akademik guruh bo'yicha saralash
+        # Saralash
         users_queryset = users_queryset.order_by('second_name', 'group_name')
 
-        # Guruhlar ro'yxati A-Z tartibida
+        # Guruhlar ro‘yxati
         groups = CustomUser.objects.filter(group_name__isnull=False).values('group_name').distinct().order_by(
             'group_name')
 
         # Pagination
-        paginator = Paginator(users_queryset, 50)  # Har sahifada 50 foydalanuvchi
+        paginator = Paginator(users_queryset, 50)
         page_number = request.GET.get('page')
         users = paginator.get_page(page_number)
 
@@ -101,8 +120,6 @@ class UsersView(View):
     def delete(self, request, id=None):
         try:
             user = CustomUser.objects.get(id=id)
-            print(f"[INFO] Foydalanuvchi o'chirilmoqda: {user.username} (ID: {id})")
-
             # Bog'liqliklarni tekshirish
             created_tests = Test.objects.filter(created_by=user).count()
             test_assignments = StudentTestAssignment.objects.filter(teacher=user).count()
@@ -110,7 +127,7 @@ class UsersView(View):
             user_logs = Log.objects.filter(user=user).count()
 
             if created_tests > 0 or test_assignments > 0 or student_tests > 0:
-                error_message = "Bu foydalanuvchini o'chirib bo'lmaydi, chunki u quyidagi ma'lumotlarga bog'langan: "
+                error_message = "Bu foydalanuvchini o'chirib bo'lmaydi: "
                 if created_tests > 0:
                     error_message += f"{created_tests} ta test yaratgan; "
                 if test_assignments > 0:
@@ -119,35 +136,29 @@ class UsersView(View):
                     error_message += f"{student_tests} ta test sinovida ishtirok etgan."
                 if user_logs > 0:
                     error_message += f"{user_logs} ta log yozuvi mavjud."
-                print(f"[WARNING] Foydalanuvchi o'chirilmadi, bog'liqliklar mavjud: {error_message}")
                 return JsonResponse({
                     "success": False,
                     "message": error_message
                 }, status=400)
 
-            # Agar bog'liqlik bo'lmasa, o'chirish
             user.delete()
-            print(f"[INFO] Foydalanuvchi muvaffaqiyatli o'chirildi: {user.username} (ID: {id})")
             return JsonResponse({
                 "success": True,
                 "message": "Foydalanuvchi muvaffaqiyatli o'chirildi!"
             })
 
         except CustomUser.DoesNotExist:
-            print(f"[ERROR] Foydalanuvchi topilmadi: ID {id}")
             return JsonResponse({
                 "success": False,
                 "message": "Foydalanuvchi topilmadi!"
             }, status=404)
         except Exception as e:
-            print(f"[ERROR] Foydalanuvchi o'chirishda xato: {str(e)}")
             return JsonResponse({
                 "success": False,
                 "message": f"Xatolik yuz berdi: {str(e)}"
             }, status=500)
 
 
-logger = logging.getLogger(__name__)
 try:
     import onnxruntime
 
@@ -156,100 +167,168 @@ except ImportError as e:
     raise ImportError(
         f"onnxruntime o'rnatilmagan yoki Python 3.12.10 bilan mos kelmaydi. `pip install onnxruntime==1.17.3` ni ishlatib ko'ring. Xato: {str(e)}")
 
+User = get_user_model()
 
 
-# Logging sozlamalari
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+class EncodingView(LoginRequiredMixin, View):
+    template_name = 'question/views/encoding.html'
+    login_url = '/login/'
 
-
-class GenerateFaceEncodingsView(View):
     def get(self, request):
+        stats = [
+            {'count': CustomUser.objects.filter(is_student=True, face_encoding__isnull=False).count(),
+             'label': 'Encoding yaratilgan talabalar'},
+            {'count': CustomUser.objects.filter(is_student=True, face_encoding__isnull=True).count(),
+             'label': 'Encoding yaratilmagan talabalar'},
+            {'count': CustomUser.objects.filter(is_teacher=True, face_encoding__isnull=False).count(),
+             'label': 'Encoding yaratilgan o‘qituvchilar'},
+            {'count': CustomUser.objects.filter(is_teacher=True, face_encoding__isnull=True).count(),
+             'label': 'Encoding yaratilmagan o‘qituvchilar'},
+            {'count': CustomUser.objects.filter(face_encoding__isnull=False).count(),
+             'label': 'Encoding yaratilgan foydalanuvchilar'},
+            {'count': CustomUser.objects.filter(face_encoding__isnull=True).count(),
+             'label': 'Encoding yaratilmagan foydalanuvchilar'},
+        ]
+        # Faqat talabalarga oid guruh nomlari
+        groups = CustomUser.objects.filter(
+            is_student=True,
+            group_name__isnull=False
+        ).values_list('group_name', flat=True).distinct().order_by('group_name')
+
+        context = {
+            'stats': stats,
+            'groups': groups,
+            'csrf_token': get_token(request),
+        }
+        return render(request, self.template_name, context)
+
+
+def process_user(user):
+    try:
+        if not hasattr(user.profile_picture, 'file') or not user.profile_picture:
+            print(f"[XATO] {user.username} uchun rasm fayli yo‘q")
+            return None, f"{user.username} uchun rasm yo‘q"
+
+        image_path = user.profile_picture.path
+        if not os.path.exists(image_path):
+            print(f"[XATO] Rasm topilmadi: {user.username} - {image_path}")
+            return None, f"Rasm topilmadi: {user.username}"
+
+        embedding = DeepFace.represent(img_path=image_path, model_name="ArcFace", enforce_detection=True)[0][
+            "embedding"]
+        if len(embedding) != 512:
+            print(f"[XATO] Noto‘g‘ri embedding uzunligi: {user.username} - kutilgan 512, olingan {len(embedding)}")
+            return None, f"Noto‘g‘ri embedding uzunligi: {user.username}"
+
+        return {
+            "user": user,
+            "encoding": pickle.dumps(embedding),
+        }, None
+    except Exception as e:
+        print(f"[XATO] {user.username} uchun xato: {str(e)}")
+        return None, f"{user.username} uchun xato: {str(e)}"
+
+
+class GenerateEncodingsView(LoginRequiredMixin, View):
+    login_url = '/login/'
+
+    def get(self, request, user_id=None, group_name=None, *args, **kwargs):
+        user_type = kwargs.get('user_type')
+
+        def stream():
+            try:
+                print("[INFO] Encoding yaratish boshlandi...")
+                filters = {'profile_picture__isnull': False, 'face_encoding__isnull': True}
+                if user_id:
+                    filters['id'] = user_id
+                    log_msg = f"Foydalanuvchi {user_id}"
+                elif group_name:
+                    filters['is_student'] = True
+                    filters['group_name'] = group_name
+                    log_msg = f"Guruh '{group_name}' talabalari"
+                elif user_type == 'student':
+                    filters['is_student'] = True
+                    log_msg = "Talabalar"
+                elif user_type == 'teacher':
+                    filters['is_teacher'] = True
+                    log_msg = "O‘qituvchilar"
+                else:
+                    log_msg = "Barcha foydalanuvchilar"
+
+                users = User.objects.filter(**filters)
+                total_count = users.count()
+                total_processed = 0
+                print(f"[INFO] Jami {total_count} foydalanuvchi topildi: {log_msg}")
+
+                if total_count == 0:
+                    yield f'data: {{"status": "Encoding kerak bo‘lgan {log_msg.lower()} topilmadi", "progress": 100}}\n\n'
+                    return
+
+                for user in users:
+                    result, error = process_user(user)
+                    if error or not result:
+                        print(f"[XATO] O‘tkazib yuborildi: {error}")
+                        yield f'data: {{"status": "{error}", "progress": {round((total_processed + skipped) / total_count * 100)}}}\n\n'
+                        continue
+
+                    with transaction.atomic():
+                        # FaceEncoding instansini yaratish yoki yangilash
+                        FaceEncoding.objects.update_or_create(
+                            user=user,
+                            defaults={
+                                "encoding": result["encoding"],
+                                "encoding_version": "ArcFace",
+                                "image_resolution": "112x112",
+                                "confidence_score": 0.9,
+                            }
+                        )
+
+                    total_processed += 1
+                    progress = round((total_processed + skipped) / total_count * 100) if total_count else 100
+                    yield f'data: {{"status": "{total_processed}/{total_count} {log_msg.lower()} uchun encoding yaratildi", "progress": {progress}}}\n\n'
+
+                status = "success" if skipped == 0 else "partial_success"
+                yield f'data: {{"status": "✅ Yakunlandi. {total_processed}/{total_count} {log_msg.lower()} uchun encoding yaratildi, {skipped} o‘tkazib yuborildi", "progress": 100}}\n\n'
+            except Exception as e:
+                print(f"[XATO] Umumiy xato: {str(e)}")
+                yield f'data: {{"status": "❌ Xato: {str(e)}", "progress": 100}}\n\n'
+
+        total_processed = 0
+        skipped = 0
+        return StreamingHttpResponse(stream(), content_type='text/event-stream')
+
+
+class DeleteAllEncodingsView(LoginRequiredMixin, View):
+    login_url = '/login/'
+
+    def delete(self, request):
         try:
-            logger.info("[INFO] Foydalanuvchilarni olish boshlandi...")
-            users = list(CustomUser.objects.filter(
-                profile_picture__isnull=False
-            ).exclude(face_encoding__isnull=False))
-            total_users = len(users)
-            skipped = 0
-            logger.info(f"[INFO] Jami {total_users} foydalanuvchi topildi")
+            with transaction.atomic():
+                total_count = FaceEncoding.objects.count()
+                FaceEncoding.objects.all().delete()
+            print(f"[INFO] Jami {total_count} encoding o‘chirildi")
+            return JsonResponse({'success': True, 'message': f'Jami {total_count} encoding o‘chirildi'})
         except Exception as e:
-            logger.error(f"[ERROR] Foydalanuvchilarni olishda xato: {str(e)}")
-            return JsonResponse({"status": "error", "message": str(e)})
+            print(f"[XATO] Barcha encodinglarni o‘chirishda xato: {str(e)}")
+            return JsonResponse({'success': False, 'message': f'Xato: {str(e)}'}, status=500)
 
-        if total_users == 0:
-            return JsonResponse({
-                "status": "success",
-                "message": "Encoding kerak bo'lgan foydalanuvchi topilmadi.",
-                "total_processed": 0,
-                "skipped": 0
-            })
 
-        def process_user(user):
-            try:
-                if not hasattr(user.profile_picture, 'file') or not user.profile_picture:
-                    error_msg = f"[ERROR] {user.username} uchun profile_picture fayli yo‘q"
-                    logger.error(error_msg)
-                    return None, error_msg
+class DeleteFaceEncodingView(LoginRequiredMixin, View):
+    login_url = '/login/'
 
-                image_path = user.profile_picture.path
-                if not os.path.exists(image_path):
-                    error_msg = f"[ERROR] Rasm topilmadi: {user.username} - {image_path}"
-                    logger.error(error_msg)
-                    return None, error_msg
+    def delete(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+            FaceEncoding.objects.filter(user=user).delete()
+            print(f"[INFO] Foydalanuvchi {user_id} uchun encoding o‘chirildi")
+            return JsonResponse({'success': True, 'message': 'Yuz encodingi o‘chirildi'})
+        except User.DoesNotExist:
+            print(f"[XATO] Foydalanuvchi {user_id} topilmadi")
+            return JsonResponse({'success': False, 'message': 'Foydalanuvchi topilmadi'}, status=404)
+        except Exception as e:
+            print(f"[XATO] Encoding o‘chirishda xato: {str(e)}")
+            return JsonResponse({'success': False, 'message': f'Xato: {str(e)}'}, status=500)
 
-                # DeepFace yordamida yuz embeddingini olish
-                embedding = DeepFace.represent(img_path=image_path, model_name="ArcFace", enforce_detection=True)[0]["embedding"]
-                if len(embedding) != 512:  # ArcFace 512 o‘lchamli embedding qaytaradi
-                    error_msg = f"[ERROR] Noto‘g‘ri embedding uzunligi: {user.username} - kutilgan 512, olingan {len(embedding)}"
-                    logger.error(error_msg)
-                    return None, error_msg
-
-                return {
-                    "user": user,
-                    "encoding": pickle.dumps(embedding),
-                    "features": pickle.dumps({'confidence': 0.9})  # DeepFace confidence score qaytarmaydi, standart qiymat
-                }, None
-            except Exception as e:
-                error_msg = f"[ERROR] {user.username} uchun xato: {str(e)}"
-                logger.error(error_msg)
-                return None, error_msg
-
-        def save_encoding(data):
-            try:
-                with transaction.atomic():
-                    FaceEncoding.objects.update_or_create(
-                        user=data['user'],
-                        defaults={
-                            "encoding": data['encoding'],
-                            "facial_features": data['features'],
-                            "encoding_version": 'deepface_arcface',
-                            "image_resolution": '112x112',
-                            "confidence_score": pickle.loads(data['features']).get('confidence', 0.9)
-                        }
-                    )
-                logger.info(f"[INFO] {data['user'].username} uchun encoding saqlandi")
-                return True
-            except Exception as e:
-                error_msg = f"[ERROR] {data['user'].username} saqlashda xato: {str(e)}"
-                logger.error(error_msg)
-                return False
-
-        errors = []
-        for user in users:
-            result, error = process_user(user)
-            if error or not result or not save_encoding(result):
-                skipped += 1
-                if error:
-                    errors.append(error)
-
-        return JsonResponse({
-            "status": "success" if skipped == 0 else "partial_success",
-            "message": f"Yuz encodinglari yaratildi. {skipped} foydalanuvchi uchun xatolik.",
-            "total_processed": total_users,
-            "skipped": skipped,
-            "errors": errors
-        })
 
 @method_decorator(login_required, name='dispatch')
 class AddUserView(View):

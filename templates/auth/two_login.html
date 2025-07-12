@@ -1,0 +1,94 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Test Tizimi - Kirish</title>
+  <meta name="description" content="Test Tizimi Kirish Sahifasi">
+  <meta name="author" content="pixelcave">
+  <meta name="robots" content="noindex, nofollow">
+  <meta property="og:title" content="Test Tizimi - Kirish">
+  <meta property="og:site_name" content="Test Tizimi">
+  <meta property="og:description" content="Test Tizimi Kirish Sahifasi">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <link rel="shortcut icon" href="{% static 'assets/media/favicons/favicon.png' %}">
+  <link rel="icon" type="image/png" sizes="192x192" href="{% static 'assets/media/favicons/favicon-192x192.png' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/media/favicons/apple-touch-icon-180x180.png' %}">
+  <link rel="stylesheet" id="css-main" href="{% static 'assets/css/oneui.min.css' %}">
+</head>
+<body>
+<div id="page-container">
+  <main id="main-container">
+    <div class="hero-static d-flex align-items-center">
+      <div class="content">
+        <div class="row justify-content-center push">
+          <div class="col-md-10 col-lg-8 col-xl-6"> <!-- Kattaroq konteyner -->
+            <div class="block block-rounded mb-0 shadow-sm">
+              <div class="block-header block-header-default text-center">
+                <h3 class="block-title w-100">Tizimga kirish</h3>
+              </div>
+              <div class="block-content">
+                <div class="p-sm-3 px-lg-4 px-xxl-5 py-lg-5">
+                  <h1 class="h2 mb-3 text-center">Test Tizimi</h1>
+                  <p class="fw-medium text-muted text-center mb-4">
+                    Xush kelibsiz, iltimos ma'lumotlaringizni tekshiring.
+                  </p>
+
+                  <div class="row justify-content-center align-items-center mb-4 text-center text-md-start">
+                    <div class="col-12 col-md-4 mb-3 mb-md-0">
+                      {% if user_data.profile_picture %}
+                        <img src="{{ user_data.profile_picture.url }}" alt="Profil rasmi"
+                             class="img-thumbnail rounded-circle mx-auto d-block" style="max-width: 150px;">
+                      {% else %}
+                        <img src="{% static 'assets/media/avatars/avatar10.jpg' %}" alt="Default profil rasmi"
+                             class="img-thumbnail rounded-circle mx-auto d-block" style="max-width: 150px;">
+                      {% endif %}
+                    </div>
+                    <div class="col-12 col-md-8">
+                      <h4 class="mb-2">{{ user_data.full_name }}</h4>
+                      <p class="mb-1"><strong>Tug‘ilgan sana:</strong> {{ user_data.date_of_birth|date:"d-m-Y" }}</p>
+                      {% if user_data.group_name %}
+                        <p class="mb-1"><strong>Akademik guruhi:</strong> {{ user_data.group_name }}</p>
+                      {% else %}
+                        <span class="btn btn-sm btn-alt-info">
+                          Akademik guruhga birikmagan
+                        </span>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  {% if error %}
+                    <p class="text-danger text-center">{{ error }}</p>
+                  {% endif %}
+
+                  <div class="d-flex flex-column flex-md-row gap-2 mb-3">
+                    <a href="{% url 'dashboard' %}" class="btn btn-alt-primary w-100">
+                      <i class="fa fa-fw fa-sign-in-alt me-1 opacity-50"></i> Kirish
+                    </a>
+                    <a href="{% url 'logout' %}" class="btn btn-alt-danger w-100">
+                      <i class="fa fa-fw fa-sign-out-alt me-1 opacity-50"></i> Chiqish
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fs-sm text-muted text-center mt-4">
+          <strong>version 1.0</strong> © <span data-toggle="year-copy"></span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="{% static 'assets/js/oneui.app.min.js' %}"></script>
+<script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/jquery-validation/jquery.validate.min.js' %}"></script>
+<script src="{% static 'assets/js/pages/op_auth_signin.min.js' %}"></script>
+
+</body>
+</html>

@@ -2,84 +2,23 @@
 {% load static %}
 
 {% block style %}
-<style>
-  /* Filtrlash formasini responsive qilish */
-  .filter-form .row {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .filter-form .col-md-4,
-  .filter-form .col-md-3 {
-    flex: 1 1 100%;
-  }
-  @media (min-width: 768px) {
-    .filter-form .col-md-4 {
-      flex: 1 1 33.33%;
-    }
-    .filter-form .col-md-3 {
-      flex: 1 1 25%;
-    }
-  }
-
-  /* Jadvalni kichik ekranlarda moslashuvchan qilish */
-  .table-responsive {
-    overflow-x: auto;
-  }
-  .table th, .table td {
-    white-space: nowrap; /* Matnni bir qatorga joylashtirish */
-  }
-  .table td.description {
-    white-space: normal; /* Ta'rif uchun ko‘p qatorli matn */
-    max-width: 200px;
-  }
-
-  /* Harakatlar tugmalarini responsive qilish */
-  .action-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    justify-content: center;
-  }
-  .action-buttons .btn {
-    flex: 0 0 auto;
-    padding: 6px 10px;
-    font-size: 0.875rem;
-  }
-  @media (max-width: 576px) {
-    .action-buttons {
-      flex-direction: column;
-      align-items: center;
-    }
-    .action-buttons .btn {
-      width: 100%;
-      text-align: center;
-    }
-  }
-
-  /* Paginationni kichik ekranlarda moslashtirish */
-  .pagination .page-link {
-    padding: 8px 12px;
-    font-size: 0.875rem;
-  }
-</style>
+<!-- No custom styles -->
 {% endblock style %}
 
 {% block content %}
-<main id="main-container">
+<main id="main-container" class="container-fluid px-0">
   <!-- Hero -->
-  <div class="bg-image overflow-hidden" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
-    <div class="bg-primary-dark-op">
-      <div class="content content-full">
-        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
-          <div class="flex-grow-1">
-            <h1 class="fw-semibold text-white mb-0">Savollar</h1>
-            <h2 class="h4 fw-normal text-white-75 mb-0">Savollar ro'yhati</h2>
-          </div>
-          <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
-            <a class="btn btn-primary px-4 py-2" href="{% url 'add-question' %}">
-              <i class="fa fa-plus me-1 opacity-50"></i> Savollar qo'shish
-            </a>
-          </div>
+  <div class="bg-primary bg-opacity-75 py-4" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}'); background-size: cover; background-position: center;">
+    <div class="container">
+      <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center my-4 text-center text-sm-start">
+        <div class="flex-grow-1">
+          <h1 class="fw-semibold text-white mb-0">Savollar</h1>
+          <h2 class="h4 fw-normal text-white-75 mb-0">Savollar ro'yhati</h2>
+        </div>
+        <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
+          <a class="btn btn-primary px-4 py-2" href="{% url 'add-question' %}">
+            <i class="fa fa-plus me-1 opacity-50"></i> Savollar qo'shish
+          </a>
         </div>
       </div>
     </div>
@@ -87,10 +26,10 @@
   <!-- END Hero -->
 
   <!-- Page Content -->
-  <div class="content">
+  <div class="container my-4">
     <!-- Filters -->
     <form method="get" class="mb-4 filter-form">
-      <div class="row">
+      <div class="row g-3 align-items-center">
         <!-- Category Filter -->
         <div class="col-md-3">
           <select class="form-select" name="category" aria-label="Category Filter">
@@ -112,7 +51,7 @@
         <!-- Submit Button -->
         <div class="col-md-3">
           <button type="submit" class="btn btn-primary w-100">
-            <i class="fa fa-filter"></i> Filterlash
+            <i class="fa fa-filter me-1"></i> Filterlash
           </button>
         </div>
       </div>
@@ -120,7 +59,7 @@
 
     <!-- Tests Table -->
     <div class="table-responsive">
-      <table class="table table-bordered table-striped table-vcenter">
+      <table class="table table-bordered table-striped table-hover table-vcenter">
         <thead>
           <tr>
             <th>#</th>
@@ -139,7 +78,7 @@
             <td>{{ forloop.counter }}</td>
             <td>{{ test.name }}</td>
             <td>{{ test.category.name }}</td>
-            <td class="description">
+            <td>
               {% if test.description %}
                 {{ test.description|truncatewords:10 }}
               {% else %}
@@ -150,20 +89,16 @@
             <td>{{ test.student_count }}</td>
             <td>{{ test.created_at|date:"Y-m-d H:i" }}</td>
             <td class="text-center">
-              <div class="action-buttons">
-                <!-- Edit Button -->
+              <div class="btn-group">
                 <a href="{% url 'edit-test' test.id %}" class="btn btn-sm btn-primary" title="Tahrirlash">
                   <i class="fa fa-pencil-alt"></i>
                 </a>
-                <!-- Delete Button -->
                 <button class="btn btn-sm btn-danger" title="O'chirish" onclick="deleteTest({{ test.id }})">
                   <i class="fa fa-trash"></i>
                 </button>
-                <!-- Add Questions Button -->
                 <a href="{% url 'add-question-test' test.id %}" class="btn btn-sm btn-success" title="Savol qo'shish">
                   <i class="fa fa-plus"></i>
                 </a>
-                <!-- Assign Students Button -->
                 <a href="{% url 'assign-students-to-test' test.id %}" class="btn btn-sm btn-info" title="Talabalarni biriktirish">
                   <i class="fa fa-users"></i>
                 </a>
@@ -187,7 +122,7 @@
         {% if tests.has_previous %}
         <li class="page-item">
           <a class="page-link" href="?page={{ tests.previous_page_number }}{% if filters.category %}&category={{ filters.category }}{% endif %}{% if filters.search %}&search={{ filters.search }}{% endif %}" aria-label="Previous">
-            «
+            <span aria-hidden="true">&laquo;</span>
           </a>
         </li>
         {% endif %}
@@ -203,7 +138,7 @@
         {% if tests.has_next %}
         <li class="page-item">
           <a class="page-link" href="?page={{ tests.next_page_number }}{% if filters.category %}&category={{ filters.category }}{% endif %}{% if filters.search %}&search={{ filters.search }}{% endif %}" aria-label="Next">
-            »
+            <span aria-hidden="true">&raquo;</span>
           </a>
         </li>
         {% endif %}
@@ -224,45 +159,28 @@
       text: "Ushbu testni o‘chirmoqchimisiz?",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#0d6efd',
+      cancelButtonColor: '#dc3545',
       confirmButtonText: 'Ha, o‘chirish!',
-      cancelButtonText: 'Bekor qilish',
+      cancelButtonText: 'Bekor qilish'
     }).then((result) => {
       if (result.isConfirmed) {
         fetch(`/question/question/delete/${testId}/`, {
           method: 'POST',
           headers: {
-            'X-Requested-With': 'XMLHttpRequest',
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ action: 'delete' })
         })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP xatosi: ${response.status}`);
-          }
-          return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-          if (data.success) {
-            Swal.fire({
-              title: 'Muvaffaqiyatli!',
-              text: data.message,
-              icon: 'success',
-              confirmButtonText: 'OK'
-            }).then(() => {
-              window.location.reload();
-            });
-          } else {
-            Swal.fire({
-              title: 'Xatolik!',
-              text: data.message || "Testni o'chirishda xatolik yuz berdi.",
-              icon: 'error',
-              confirmButtonText: 'OK'
-            });
-          }
+          Swal.fire({
+            title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
+            text: data.message || "Testni o'chirishda xatolik yuz berdi.",
+            icon: data.success ? 'success' : 'error',
+            confirmButtonText: 'OK'
+          }).then(() => data.success && window.location.reload());
         })
         .catch(error => {
           Swal.fire({

@@ -2,127 +2,147 @@
 {% load static %}
 
 {% block style %}
-
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  .content { max-width: 1000px; margin: 0 auto; padding: 0.5rem; }
+  .font-roboto { font-family: 'Roboto', sans-serif; }
+  .breadcrumb { font-size: 0.75rem; padding: 0.3rem 0; }
+  .table-sm th, .table-sm td { padding: 0.3rem; font-size: 0.75rem; vertical-align: middle; text-align: center; }
+  .table-sm .btn { font-size: 0.75rem; padding: 0.2rem 0.5rem; }
+  .form-select-sm, .form-control-sm { font-size: 0.75rem; min-width: 150px; max-width: 200px; padding: 0.2rem; }
+  .btn-sm { padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 0.25rem; }
+  .filter-form { gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+  .no-data-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; }
+  .no-data-img { width: 80px; height: 80px; object-fit: cover; margin-bottom: 0.5rem; }
+  .no-data-text { font-size: 0.8rem; color: #6c757d; }
+  .pagination-container { gap: 0.3rem; }
+  .btn-primary-custom { transition: background-color 0.2s; }
+  .btn-primary-custom.btn-clicked { background-color: #005BBB; }
+  @media (max-width: 767.98px) {
+    .filter-form { flex-direction: column; align-items: stretch; }
+    .form-select-sm, .form-control-sm { max-width: 100%; }
+    .pagination-container { justify-content: center; }
+  }
+</style>
 {% endblock style %}
 
 {% block content %}
 <main id="main-container" class="font-roboto">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="bg-light border-bottom mb-4">
-        <div class="content py-2">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item">
-                    <a href="{% url 'dashboard' %}"><i class="fa fa-home"></i> Bosh sahifa</a>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page">Natijalar</li>
-            </ol>
-        </div>
-    </nav>
-    <!-- END Breadcrumb -->
-    <div class="content">
-        <h2 class="mb-4">Mening Natijalarim</h2>
-        <!-- Filtr shakli -->
-        <div class="d-flex align-items-center mb-4 filter-form">
-            <form class="d-flex align-items-center gap-3" method="get" action="{% url 'all_results' %}">
-                <select name="category" class="form-select">
-                    <option value="">Kategoriya tanlang</option>
-                    {% for category in categories %}
-                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" == request.GET.category %}selected{% endif %}>{{ category.name }}</option>
-                    {% endfor %}
-                </select>
-                <button type="submit" class="btn btn-primary">
-                    Filtrlash
-                </button>
-            </form>
-        </div>
-
-        <!-- Natijalar jadvali -->
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-primary text-center">
-                    <tr>
-                        <th>#</th>
-                        <th>Kategoriya</th>
-                        <th>Test</th>
-                        <th>Boshlash vaqti</th>
-                        <th>Yakunlash vaqti</th>
-                        <th>Baho</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if results %}
-                        {% for result in results %}
-                        <tr>
-                            <td class="text-center">{{ forloop.counter }}</td>
-                            <td>{{ result.assignment.category.name }}</td>
-                            <td>{{ result.assignment.test.name }}</td>
-                            <td class="text-center">{{ result.start_time|date:"Y-m-d H:i" }}</td>
-                            <td class="text-center">{{ result.end_time|date:"Y-m-d H:i" }}</td>
-                            <td class="text-center">{{ result.score|floatformat:2 }}%</td>
-                        </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="6" class="text-center">
-                                <div class="no-data-container">
-                                    <img src="{% static 'img/no-data.webp' %}" alt="No Data" class="no-data-img">
-                                    <p class="no-data-text">Hozircha natijalar mavjud emas</p>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Paginatsiya -->
-        <div class="d-flex justify-content-center flex-wrap gap-2 mt-4">
-            {% if results.has_previous %}
-                <a
-                    href="?page=1{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"
-                    class="btn btn-primary btn-sm"
-                >
-                    Birinchi
-                </a>
-                <a
-                    href="?page={{ results.previous_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"
-                    class="btn btn-primary btn-sm"
-                >
-                    Oldingi
-                </a>
-            {% endif %}
-            <span class="btn btn-primary btn-sm disabled">
-                {{ results.number }} / {{ results.paginator.num_pages }}
-            </span>
-            {% if results.has_next %}
-                <a
-                    href="?page={{ results.next_page_number }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"
-                    class="btn btn-primary btn-sm"
-                >
-                    Keyingisi
-                </a>
-                <a
-                    href="?page={{ results.paginator.num_pages }}{% if request.GET.category %}&category={{ request.GET.category }}{% endif %}"
-                    class="btn btn-primary btn-sm"
-                >
-                    Oxirgi
-                </a>
-            {% endif %}
-        </div>
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="bg-light border-bottom mb-3">
+    <div class="content py-1">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+          <a href="{% url 'dashboard' %}"><i class="fa fa-home me-1"></i> Bosh sahifa</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">Natijalar</li>
+      </ol>
     </div>
+  </nav>
+
+  <div class="content">
+    <h2 class="mb-3" style="font-size: 1.2rem;">Mening Natijalarim</h2>
+    <!-- Filtr shakli -->
+    <div class="d-flex filter-form mb-3">
+      <form class="d-flex gap-2" method="get" action="{% url 'all_results' %}">
+        <input type="text" name="first_name" value="{{ first_name }}" class="form-control form-control-sm" placeholder="Ism bo‘yicha qidirish">
+        <input type="text" name="second_name" value="{{ second_name }}" class="form-control form-control-sm" placeholder="Familiya bo‘yicha qidirish">
+        <select name="category" class="form-select form-select-sm">
+          <option value="">Kategoriya tanlang</option>
+          {% for category in categories %}
+            <option value="{{ category.id }}" {% if category.id|stringformat:"s" == category_id %}selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm btn-primary-custom">
+          <i class="fa fa-filter me-1"></i> Filtrlash
+        </button>
+      </form>
+    </div>
+
+    <!-- Natijalar jadvali -->
+    <div class="table-responsive">
+      <table class="table table-sm table-striped table-bordered align-middle">
+        <thead class="table-primary">
+          <tr>
+            <th style="width: 40px;">#</th>
+            <th>Kategoriya</th>
+            <th>Test</th>
+            <th>Boshlash vaqti</th>
+            <th>Yakunlash vaqti</th>
+            <th>Davomiylik</th>
+            <th>Baho</th>
+            <th>Harakat</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if results %}
+            {% for result in results %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ result.assignment.category.name }}</td>
+                <td>{{ result.assignment.test.name }}</td>
+                <td>{{ result.start_time|date:"Y-m-d H:i:s" }}</td>
+                <td>{{ result.end_time|date:"Y-m-d H:i:s" }}</td>
+                <td>{{ result.get_duration_display }}</td>
+                <td>{{ result.score|floatformat:2 }}%</td>
+                <td>
+                  <a href="{% url 'view_result' result.id %}" class="btn btn-sm btn-info btn-primary-custom" title="Ko‘rish">
+                    <i class="fa fa-eye"></i>
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="8" class="text-center">
+                <div class="no-data-container">
+                  <img src="{% static 'img/no-data.webp' %}" alt="No Data" class="no-data-img">
+                  <p class="no-data-text">Hozircha natijalar mavjud emas</p>
+                </div>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginatsiya -->
+    <div class="d-flex pagination-container justify-content-center flex-wrap mt-3">
+      {% if results.has_previous %}
+        <a href="?page=1{% if first_name %}&first_name={{ first_name }}{% endif %}{% if second_name %}&second_name={{ second_name }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}" class="btn btn-primary btn-sm btn-primary-custom">
+          Birinchi
+        </a>
+        <a href="?page={{ results.previous_page_number }}{% if first_name %}&first_name={{ first_name }}{% endif %}{% if second_name %}&second_name={{ second_name }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}" class="btn btn-primary btn-sm btn-primary-custom">
+          Oldingi
+        </a>
+      {% endif %}
+      <span class="btn btn-primary btn-sm disabled">
+        {{ results.number }} / {{ results.paginator.num_pages }}
+      </span>
+      {% if results.has_next %}
+        <a href="?page={{ results.next_page_number }}{% if first_name %}&first_name={{ first_name }}{% endif %}{% if second_name %}&second_name={{ second_name }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}" class="btn btn-primary btn-sm btn-primary-custom">
+          Keyingisi
+        </a>
+        <a href="?page={{ results.paginator.num_pages }}{% if first_name %}&first_name={{ first_name }}{% endif %}{% if second_name %}&second_name={{ second_name }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}" class="btn btn-primary btn-sm btn-primary-custom">
+          Oxirgi
+        </a>
+      {% endif %}
+    </div>
+  </div>
 </main>
 {% endblock content %}
 
 {% block script %}
 <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
 <script>
-    document.querySelectorAll('.btn-primary').forEach(btn => {
-        btn.addEventListener('click', function() {
-            this.classList.add('btn-clicked');
-            setTimeout(() => {
-                this.classList.remove('btn-clicked');
-            }, 100);
-        });
+  document.querySelectorAll('.btn-primary-custom').forEach(btn => {
+    btn.addEventListener('click', function() {
+      this.classList.add('btn-clicked');
+      setTimeout(() => {
+        this.classList.remove('btn-clicked');
+      }, 100);
     });
+  });
 </script>
 {% endblock script %}
