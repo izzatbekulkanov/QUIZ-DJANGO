@@ -188,7 +188,7 @@ REST_FRAMEWORK = {
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'account.backends.FaceAuthBackend',
+    # 'account.backends.FaceAuthBackend',
 ]
 
 SIMPLE_JWT = {
