@@ -14,45 +14,51 @@
             min-height: 100vh;
         }
         .left-panel {
-            width: 200px;
-            padding: 8px;
+            width: 300px;
+            padding: 12px;
         }
         .right-panel {
-            width: 180px;
-            padding: 8px;
-            gap: 4px;
+            width: 250px;
+            padding: 12px;
+            gap: 6px;
         }
         .center-content {
-            margin-left: 200px;
-            margin-right: 180px;
-            padding: 8px;
+            margin-left: 300px;
+            margin-right: 250px;
+            padding: 12px;
         }
         .question-card {
-            padding: 8px;
-            margin-bottom: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            user-select: none;
         }
         .question-card img {
-            max-height: 200px;
+            max-height: 250px;
         }
         .answer-item {
-            padding: 6px;
-            margin-bottom: 4px;
+            padding: 8px;
+            margin-bottom: 6px;
+            user-select: none;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .answer-item:hover {
+            background-color: #e6f3ff;
+            transform: scale(1.02);
         }
         .question-number {
-            width: 32px;
-            height: 32px;
-            font-size: 0.85rem;
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
         }
         .time-display {
-            padding: 6px 10px;
-            font-size: 1.25rem;
+            padding: 8px 12px;
+            font-size: 1.5rem;
             font-weight: 600;
         }
         .finish-button {
-            padding: 6px;
-            font-size: 0.9rem;
+            padding: 8px;
+            font-size: 1rem;
         }
-        /* iOS 16 uslubidagi dialog oynasi */
         .ios-dialog {
             display: none;
             position: fixed;
@@ -62,7 +68,7 @@
             background: rgba(255, 255, 255, 0.95);
             border-radius: 13px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-            width: 280px;
+            width: 300px;
             padding: 20px;
             text-align: center;
             z-index: 1000;
@@ -79,14 +85,22 @@
             z-index: 999;
         }
         .ios-dialog h3 {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 600;
             margin-bottom: 10px;
         }
         .ios-dialog p {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #333;
             margin-bottom: 15px;
+        }
+        .ios-dialog input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
         }
         .ios-dialog button {
             width: 100%;
@@ -95,48 +109,45 @@
             border-radius: 8px;
             font-size: 1rem;
             font-weight: 500;
-        }
-        .ios-dialog .confirm-btn {
             background: #007AFF;
             color: white;
-        }
-        .ios-dialog .cancel-btn {
-            background: #E5E5EA;
-            color: #000;
         }
     </style>
 </head>
 <body class="font-inter">
-    <!-- iOS uslubidagi dialog oynasi -->
+    <!-- iOS uslubidagi dialog oynalari -->
     <div class="ios-dialog-overlay" id="dialog-overlay"></div>
     <div class="ios-dialog" id="finish-dialog">
         <h3>Testni tugatishni xohlaysizmi?</h3>
         <p>Test yakunlanganidan so'ng natija qayta o'zgartirilmaydi.</p>
-        <button class="confirm-btn" onclick="confirmFinish()">Ha, yakunlash</button>
-        <button class="cancel-btn" onclick="closeDialog('finish-dialog')">Bekor qilish</button>
+        <button onclick="confirmFinish()">Ha, yakunlash</button>
     </div>
     <div class="ios-dialog" id="unanswered-dialog">
         <h3>Diqqat!</h3>
         <p id="unanswered-message"></p>
-        <button class="confirm-btn" onclick="confirmFinish()">Davom etish</button>
-        <button class="cancel-btn" onclick="closeDialog('unanswered-dialog')">Ortga qaytish</button>
+        <button onclick="confirmFinish()">Davom etish</button>
     </div>
     <div class="ios-dialog" id="leave-dialog">
         <h3>Sahifadan chiqmoqchimisiz?</h3>
         <p>Agar boshqa sahifaga o'tishni amalga oshirmoqchi bo'lsangiz, testingiz yakunlanadi.</p>
-        <button class="confirm-btn" onclick="confirmFinish()">Ha, chiqish</button>
-        <button class="cancel-btn" onclick="closeDialog('leave-dialog')">Ortga qaytish</button>
+        <button onclick="confirmFinish()">Ha, chiqish</button>
+    </div>
+    <div class="ios-dialog" id="password-dialog">
+        <h3>Parolni kiriting</h3>
+        <p id="password-message">Boshqa oynaga o'tish uchun parolni kiriting.</p>
+        <input type="password" id="password-input" placeholder="Parol" autocomplete="off">
+        <button onclick="checkPassword()">Tasdiqlash</button>
     </div>
 
     <main id="main-container" class="flex bg-gray-100" v-cloak>
         <!-- Chap panel: Foydalanuvchi ma'lumotlari va Yakunlash tugmasi -->
         <div class="fixed top-0 bottom-0 left-panel bg-white shadow-lg flex flex-col justify-between">
             <div class="text-center">
-                <h5 class="text-base font-semibold text-gray-800">{{ user.first_name }} {{ user.second_name }}</h5>
-                <p class="text-sm text-gray-600 mt-1">{{ assignment.test.name }}</p>
-                <p class="text-sm text-gray-600">{{ assignment.category.name }}</p>
-                <p class="text-sm text-gray-600">[[ questions.length ]] savol</p>
-                <p class="text-base font-semibold text-indigo-600 bg-gray-200 time-display rounded-full mt-2">
+                <h5 class="text-lg font-semibold text-gray-800">{{ user.first_name }} {{ user.second_name }}</h5>
+                <p class="text-base text-gray-600 mt-1">{{ assignment.test.name }}</p>
+                <p class="text-base text-gray-600">{{ assignment.category.name }}</p>
+                <p class="text-base text-gray-600">[[ questions.length ]] savol</p>
+                <p class="text-lg font-semibold text-indigo-600 bg-gray-200 time-display rounded-full mt-2">
                     [[ formattedTime ]]
                 </p>
             </div>
@@ -147,7 +158,7 @@
             </button>
         </div>
 
-        <!-- O'ng panel: Savollar raqamlari (gorizontal, 4 ta bir qatorda) -->
+        <!-- O'ng panel: Savollar raqamlari -->
         <div class="fixed top-0 right-0 right-panel bg-white shadow-lg flex flex-wrap overflow-x-auto">
             <span
                 v-for="(question, index) in questions"
@@ -171,7 +182,7 @@
                 :key="question.id"
                 :id="'question-' + question.id"
                 class="question-card bg-white rounded-lg shadow-md">
-                <h5 class="text-base font-semibold text-gray-800 text-center mb-2">
+                <h5 class="text-lg font-semibold text-gray-800 text-center mb-2">
                     Savol [[ index + 1 ]]: <span v-html="question.text"></span>
                 </h5>
                 <img v-if="question.image" :src="question.image" alt="Question Image" class="mx-auto mb-2 max-h-60 w-auto rounded-lg shadow-sm">
@@ -180,7 +191,7 @@
                         v-for="answer in question.answers"
                         :key="answer.id"
                         :class="[
-                            'answer-item flex items-center rounded-md border border-gray-200 hover:bg-gray-50 cursor-pointer transition-all',
+                            'answer-item flex items-center rounded-md border border-gray-200 cursor-pointer transition-all',
                             answer.selected ? 'border-green-500 bg-green-50' : ''
                         ]"
                         @click="selectAnswer(question.id, answer.id)">
@@ -193,7 +204,7 @@
                                 class="h-4 w-4 text-green-500 cursor-pointer mr-2"
                                 :checked="answer.selected"
                                 @change="selectAnswer(question.id, answer.id)">
-                            <span class="text-gray-700 flex-1 text-sm">[[ answer.text ]]</span>
+                            <span class="text-gray-700 flex-1 text-base">[[ answer.text ]]</span>
                         </label>
                     </li>
                 </ul>
@@ -203,7 +214,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
     <script>
-    let vueApp = null; // Vue ilovasini global saqlash uchun
+    let vueApp = null;
 
     const { createApp } = Vue;
 
@@ -215,6 +226,8 @@
                 currentQuestionIndex: parseInt(localStorage.getItem('currentQuestionIndex')) || 0,
                 remainingTime: {{ remaining_time }},
                 isTestRunning: true,
+                isPasswordDialogTriggered: localStorage.getItem('passwordDialogTriggered') === 'true',
+                hasShownViolationAlert: localStorage.getItem('hasShownViolationAlert') === 'true',
             };
         },
         computed: {
@@ -255,10 +268,10 @@
             finishTest() {
                 const unansweredQuestions = this.questions.filter(q => !q.answers.some(a => a.selected));
                 if (unansweredQuestions.length > 0) {
-                    document.getElementById('unanswered-message').textContent = `Siz ${unansweredQuestions.length} ta savolga javob bermadingiz. Barchasini to'ldirganingizga ishonch hosil qiling.`;
+                    document.getElementById('unanswered-message').textContent = `Siz ${unansweredQuestions.length} ta savolga javob bermadingiz. Davom etishni xohlaysizmi?`;
                     showDialog('unanswered-dialog');
                 } else {
-                    showDialog('finish-dialog');
+                    this.submitTest();
                 }
             },
             submitTest() {
@@ -270,33 +283,134 @@
                 })
                 .then(response => response.json())
                 .then(data => {
+                    this.isTestRunning = false;
+                    localStorage.setItem('passwordDialogTriggered', 'false');
+                    localStorage.setItem('hasShownViolationAlert', 'false');
                     if (data.success) {
-                        this.isTestRunning = false;
-                        showDialog('unanswered-dialog', data.message, () => {
-                            window.location.href = data.redirect_url;
-                        });
+                        window.location.href = data.redirect_url;
                     } else {
                         showDialog('unanswered-dialog', data.message);
                     }
                 })
-                .catch(() => showDialog('unanswered-dialog', "Xatolik: Testni tugatishda muammo yuz berdi."));
+                .catch(() => {
+                    showDialog('unanswered-dialog', "Xatolik: Testni tugatishda muammo yuz berdi.");
+                });
             }
         },
         mounted() {
+            // To'liq ekran rejimini yoqish
+            document.documentElement.requestFullscreen().catch(err => console.error('Fullscreen error:', err));
+
+            // Vaqtni yangilash
             this.timerInterval = setInterval(() => {
                 if (this.remainingTime > 0) {
                     this.remainingTime--;
                 } else {
                     clearInterval(this.timerInterval);
-                    showDialog('unanswered-dialog', 'Vaqt tugadi! Test avtomatik yakunlandi.', () => this.submitTest());
+                    this.submitTest();
                 }
             }, 1000);
             this.scrollToQuestion(this.currentQuestionIndex);
 
+            // Matnni belgilash va nusxalashni bloklash
+            document.addEventListener('copy', e => e.preventDefault());
+            document.addEventListener('cut', e => e.preventDefault());
+            document.addEventListener('selectstart', e => e.preventDefault());
+
+            // Alt+Tab, Windows+Tab, Alt+U, F11, Esc, Ctrl+F5, F12, Ctrl+Shift+I ni aniqlash
+            let isAltPressed = false;
+            let isMetaPressed = false;
+            let isCtrlPressed = false;
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Alt') {
+                    isAltPressed = true;
+                } else if (e.key === 'Meta') {
+                    isMetaPressed = true;
+                } else if (e.key === 'Control') {
+                    isCtrlPressed = true;
+                } else if ((isAltPressed && e.key === 'Tab') || (isMetaPressed && e.key === 'Tab')) {
+                    e.preventDefault();
+                    if (!this.isPasswordDialogTriggered && !this.hasShownViolationAlert) {
+                        alert('Siz noqonuniy amallar ketma-ketligini bajardingiz.');
+                        this.hasShownViolationAlert = true;
+                        localStorage.setItem('hasShownViolationAlert', 'true');
+                    }
+                    this.isPasswordDialogTriggered = true;
+                    localStorage.setItem('passwordDialogTriggered', 'true');
+                    showDialog('password-dialog', 'Boshqa oynaga o\'tish uchun parolni kiriting.');
+                } else if (isAltPressed && e.key.toLowerCase() === 'u') {
+                    e.preventDefault();
+                    document.documentElement.requestFullscreen().catch(err => console.error('Fullscreen error:', err));
+                } else if (e.key === 'F11' || e.key === 'Escape') {
+                    e.preventDefault();
+                    if (!this.isPasswordDialogTriggered && !this.hasShownViolationAlert) {
+                        alert('Siz noqonuniy amallar ketma-ketligini bajardingiz.');
+                        this.hasShownViolationAlert = true;
+                        localStorage.setItem('hasShownViolationAlert', 'true');
+                    }
+                    this.isPasswordDialogTriggered = true;
+                    localStorage.setItem('passwordDialogTriggered', 'true');
+                    showDialog('password-dialog', 'Sahifani kichraytirish uchun parolni kiriting.');
+                } else if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+                    e.preventDefault();
+                    if (!this.isPasswordDialogTriggered && !this.hasShownViolationAlert) {
+                        alert('Siz noqonuniy amallar ketma-ketligini bajardingiz.');
+                        this.hasShownViolationAlert = true;
+                        localStorage.setItem('hasShownViolationAlert', 'true');
+                    }
+                    this.isPasswordDialogTriggered = true;
+                    localStorage.setItem('passwordDialogTriggered', 'true');
+                    showDialog('password-dialog', 'DevTools ochish taqiqlangan. Parolni kiriting.');
+                } else if (isCtrlPressed && e.key === 'F5') {
+                    e.preventDefault();
+                    if (!this.isPasswordDialogTriggered && !this.hasShownViolationAlert) {
+                        alert('Siz noqonuniy amallar ketma-ketligini bajardingiz.');
+                        this.hasShownViolationAlert = true;
+                        localStorage.setItem('hasShownViolationAlert', 'true');
+                    }
+                    this.isPasswordDialogTriggered = true;
+                    localStorage.setItem('passwordDialogTriggered', 'true');
+                    showDialog('password-dialog', 'Sahifani yangilash uchun parolni kiriting.');
+                }
+            });
+            document.addEventListener('keyup', e => {
+                if (e.key === 'Alt') isAltPressed = false;
+                if (e.key === 'Meta') isMetaPressed = false;
+                if (e.key === 'Control') isCtrlPressed = false;
+            });
+
+            // Sahifa focusni yo'qotganda parol so'rash
+            window.addEventListener('blur', () => {
+                if (this.isTestRunning && !this.isPasswordDialogTriggered) {
+                    if (!this.hasShownViolationAlert) {
+                        alert('Siz noqonuniy amallar ketma-ketligini bajardingiz.');
+                        this.hasShownViolationAlert = true;
+                        localStorage.setItem('hasShownViolationAlert', 'true');
+                    }
+                    this.isPasswordDialogTriggered = true;
+                    localStorage.setItem('passwordDialogTriggered', 'true');
+                    showDialog('password-dialog', 'Sahifaga qaytish uchun parolni kiriting.');
+                }
+            });
+
+            // Fullscreen o'zgarishini aniqlash
+            document.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement && this.isTestRunning && !this.isPasswordDialogTriggered) {
+                    if (!this.hasShownViolationAlert) {
+                        alert('Siz noqonuniy amallar ketma-ketligini bajardingiz.');
+                        this.hasShownViolationAlert = true;
+                        localStorage.setItem('hasShownViolationAlert', 'true');
+                    }
+                    this.isPasswordDialogTriggered = true;
+                    localStorage.setItem('passwordDialogTriggered', 'true');
+                    showDialog('password-dialog', 'Sahifani kichraytirish uchun parolni kiriting.');
+                }
+            });
+
             // Sahifadan chiqishni aniqlash
             window.onbeforeunload = () => {
-                if (this.isTestRunning) {
-                    showDialog('leave-dialog');
+                if (this.isTestRunning && this.isPasswordDialogTriggered) {
+                    localStorage.setItem('passwordDialogTriggered', 'true');
                     return "Test davomida sahifadan chiqish tavsiya etilmaydi.";
                 }
                 return null;
@@ -304,10 +418,12 @@
         },
         beforeUnmount() {
             clearInterval(this.timerInterval);
+            localStorage.setItem('passwordDialogTriggered', 'false');
+            localStorage.setItem('hasShownViolationAlert', 'false');
         }
     }).mount('#main-container');
 
-    function showDialog(dialogId, message = null, callback = null) {
+    function showDialog(dialogId, message = null) {
         const dialog = document.getElementById(dialogId);
         const overlay = document.getElementById('dialog-overlay');
         if (message) {
@@ -316,12 +432,6 @@
         }
         dialog.style.display = 'block';
         overlay.style.display = 'block';
-        if (callback) {
-            dialog.querySelector('.confirm-btn').onclick = () => {
-                callback();
-                closeDialog(dialogId);
-            };
-        }
     }
 
     function closeDialog(dialogId) {
@@ -335,7 +445,24 @@
         closeDialog('finish-dialog');
         closeDialog('unanswered-dialog');
         closeDialog('leave-dialog');
-        vueApp.submitTest(); // Global saqlangan vueApp orqali submitTest chaqiriladi
+        vueApp.submitTest();
+    }
+
+    function checkPassword() {
+        const passwordInput = document.getElementById('password-input');
+        if (passwordInput.value === '1213') {
+            vueApp.isPasswordDialogTriggered = false;
+            vueApp.hasShownViolationAlert = false;
+            localStorage.setItem('passwordDialogTriggered', 'false');
+            localStorage.setItem('hasShownViolationAlert', 'false');
+            document.exitFullscreen().catch(err => console.error('Exit fullscreen error:', err));
+            closeDialog('password-dialog');
+            passwordInput.value = '';
+        } else {
+            alert('Noto\'g\'ri parol! Iltimos, qaytadan urinib ko\'ring.');
+            passwordInput.value = '';
+            document.documentElement.requestFullscreen().catch(err => console.error('Fullscreen error:', err));
+        }
     }
     </script>
 </body>

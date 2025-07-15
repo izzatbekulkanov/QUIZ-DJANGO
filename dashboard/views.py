@@ -24,27 +24,15 @@ class DashboardView(View):
 
         # Talaba sifatida bog‘langan topshiriqlar
         user_assignments = list(teacher_assignments)
-        assigned_tests = (
-            Test.objects
-            .filter(students=user)
-            .select_related('category')
-        )
 
-        for test in assigned_tests:
-            assignment, _ = StudentTestAssignment.objects.get_or_create(
-                test=test,
-                teacher=user,
-                defaults={
-                    'category': test.category,
-                    'is_active': True,
-                    'start_time': timezone.now(),
-                    'end_time': timezone.now() + timezone.timedelta(days=7),
-                    'duration': 60,
-                    'attempts': 3,  # Maksimal urinishlar
-                }
-            )
-            if assignment.is_active and assignment.end_time >= timezone.now():
-                user_assignments.append(assignment)
+        # Talaba uchun faqat admin tomonidan yaratilgan topshiriqlarni olish
+        if user.is_student:
+            student_assignments = StudentTestAssignment.objects.filter(
+                test__students=user,
+                is_active=True,
+                end_time__gte=timezone.now()
+            ).select_related('test', 'category')
+            user_assignments.extend(student_assignments)
 
         # Id bo‘yicha unikal qilamiz
         user_assignments = {a.id: a for a in user_assignments}.values()
@@ -61,9 +49,11 @@ class DashboardView(View):
                     'start_time': a.start_time,
                     'end_time': a.end_time,
                     'duration': a.duration,
+                    'total_questions': a.total_questions,  # Admin tomonidan belgilangan savollar soni
                     'is_active': a.is_active,
                     'status': a.status,
-                    'attempts': StudentTest.objects.filter(assignment=a, student=user).count(),  # Foydalanuvchi urinishlari
+                    'attempts': StudentTest.objects.filter(assignment=a, student=user).count(),
+                    # Foydalanuvchi urinishlari
                     'max_attempts': a.attempts  # Maksimal urinishlar
                 } for a in user_assignments
             ]
@@ -71,11 +61,12 @@ class DashboardView(View):
         return render(request, 'dashboard/views/main.html', context)
 
 
-
-
 @method_decorator(login_required, name='dispatch')
 class CheckUnfinishedTestView(View):
     def get(self, request, assignment_id):
+        # Topshiriqni olish
+        assignment = get_object_or_404(StudentTestAssignment, id=assignment_id)
+
         # Foydalanuvchiga tegishli test holatini tekshirish
         test_exists = StudentTest.objects.filter(
             student=request.user,
@@ -88,16 +79,41 @@ class CheckUnfinishedTestView(View):
             completed=False
         ).exists()
 
+        # Urinishlar sonini tekshirish
+        attempts_count = StudentTest.objects.filter(
+            student=request.user,
+            assignment_id=assignment_id
+        ).count()
+
+        # Agar urinishlar soni maksimaldan oshsa
+        if attempts_count >= assignment.attempts:
+            return JsonResponse({
+                'never_started': False,
+                'unfinished': False,
+                'attempts_exceeded': True
+            })
+
         # Agar test umuman boshlanmagan bo'lsa
         if not test_exists:
-            return JsonResponse({'never_started': True, 'unfinished': False})
+            return JsonResponse({
+                'never_started': True,
+                'unfinished': False,
+                'attempts_exceeded': False
+            })
         # Agar test boshlangan, lekin yakunlanmagan bo'lsa
         elif unfinished_test:
-            return JsonResponse({'never_started': False, 'unfinished': True})
+            return JsonResponse({
+                'never_started': False,
+                'unfinished': True,
+                'attempts_exceeded': False
+            })
         # Agar test yakunlangan bo'lsa
         else:
-            return JsonResponse({'never_started': False, 'unfinished': False})
-
+            return JsonResponse({
+                'never_started': False,
+                'unfinished': False,
+                'attempts_exceeded': False
+            })
 @login_required
 def all_results(request):
     user = request.user

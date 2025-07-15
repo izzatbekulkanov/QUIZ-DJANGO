@@ -1,41 +1,56 @@
-
 {% extends 'question/main.html' %}
 {% load static %}
 
 {% block style %}
 <style>
-  .content { max-width: 1200px; margin: 0 auto; }
-  .filter-group { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-  .filter-group .form-select { width: auto; min-width: 150px; font-size: 0.8rem; }
-  .input-group-sm .form-control { font-size: 0.8rem; }
-  .block-rounded { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); border-radius: 8px; }
-  .table-sm th, .table-sm td { padding: 0.3rem; font-size: 0.75rem; vertical-align: middle; }
-  .table-sm img { width: 30px; height: 30px; object-fit: cover; }
-  .btn-sm { padding: 0.2rem 0.4rem; font-size: 0.75rem; }
-  .badge { font-size: 0.7rem; }
-  .pagination-sm .page-link { font-size: 0.75rem; padding: 0.2rem 0.5rem; }
-  .block-link-shadow:hover { transform: translateY(-2px); transition: transform 0.2s ease; }
-  .auth-toggle { cursor: pointer; }
-  .bg-image { background-size: cover; background-position: center; }
-  .bg-primary-dark-op { background-color: rgba(0, 0, 0, 0.7); padding: 1rem; }
-  .card-icon { position: absolute; top: 8px; right: 8px; cursor: pointer; color: #6c757d; font-size: 0.9rem; }
-  .card-icon:hover { color: #007bff; }
-  .progress-bar { transition: width 0.3s ease-in-out; }
-  .btn-group { gap: 0.5rem; flex-wrap: wrap; }
-  @media (max-width: 767.98px) {
-    .btn-group { flex-direction: column; align-items: stretch; }
-    .form-select-sm, .input-group { max-width: 100%; }
+  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
+  .bg-image {
+    background-size: cover;
+    background-position: center;
+  }
+  .bg-primary-dark-op {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 1rem;
+  }
+  .btn-primary {
+    background: linear-gradient(90deg, #007bff, #00c4ff);
+    border: none;
+  }
+  .btn-primary:hover {
+    background: linear-gradient(90deg, #0056b3, #0096cc);
+  }
+  .btn-danger {
+    background: linear-gradient(90deg, #dc3545, #ff6b6b);
+    border: none;
+  }
+  .btn-danger:hover {
+    background: linear-gradient(90deg, #b02a37, #cc5252);
+  }
+  .card-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    cursor: pointer;
+    color: #6c757d;
+    font-size: 0.9rem;
+  }
+  .card-icon:hover {
+    color: #007bff;
   }
 </style>
 {% endblock style %}
 
 {% block content %}
 <main id="main-container">
+  <!-- CSRF Token -->
+
+  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+
   <!-- Hero -->
   <div class="bg-image overflow-hidden"
        style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
     <div class="bg-primary-dark-op">
-      <div class="content content-full">
+      <div class="container">
         <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-3 mb-2 text-center text-sm-start">
           <div class="flex-grow-1">
             <h1 class="fw-semibold text-white mb-0">Yuz encodinglarini boshqarish</h1>
@@ -51,79 +66,81 @@
   </div>
 
   <!-- Page Content -->
-  <div class="content py-3">
+  <div class="container py-3">
     <!-- Quick Overview -->
-    <div class="row g-3">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3">
       {% for stat in stats %}
-        <div class="col-6 col-lg-3">
-          <a class="block block-rounded block-link-shadow text-center position-relative" href="javascript:void(0)">
-            <div class="block-content block-content-full">
+        <div class="col">
+          <div class="card text-center position-relative shadow-sm">
+            <div class="card-body">
               <i class="fa fa-eye card-icon" title="Ma'lumotlarni ko‘rish"></i>
-              <div class="fs-2 fw-semibold text-dark">{{ stat.count }}</div>
+              <h4 class="card-title fw-bold text-dark">{{ stat.count }}</h4>
+              <p class="text-muted mb-0">{{ stat.label }}</p>
             </div>
-            <div class="block-content py-2 bg-body-light">
-              <p class="fw-medium fs-sm text-muted mb-0">{{ stat.label }}</p>
-            </div>
-          </a>
+          </div>
         </div>
       {% endfor %}
     </div>
 
     <!-- Encoding Actions -->
-    <div class="block block-rounded bg-white shadow-sm">
-      <div class="block-header block-header-default d-flex justify-content-between align-items-center">
-        <h3 class="block-title mb-0">Encoding boshqaruvi</h3>
-        <div class="d-flex btn-group">
-          <button class="btn btn-sm btn-primary" onclick="generateEncodings('student', 'Talabalar')" aria-label="Talabalar encodinglarini yaratish">
+    <div class="card shadow-sm mt-4">
+      <div class="card-header bg-primary text-white">
+        <h3 class="h5 mb-0">Encoding boshqaruvi</h3>
+      </div>
+      <div class="card-body">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <button class="btn btn-primary btn-sm" onclick="generateEncodings('student', 'Talabalar')" aria-label="Talabalar encodinglarini yaratish">
             <i class="fa fa-user-graduate me-1"></i> Talabalar
           </button>
-          <button class="btn btn-sm btn-primary" onclick="generateEncodings('teacher', 'Hodimlar')" aria-label="Hodimlar encodinglarini yaratish">
+          <button class="btn btn-primary btn-sm" onclick="generateEncodings('teacher', 'Hodimlar')" aria-label="Hodimlar encodinglarini yaratish">
             <i class="fa fa-chalkboard-teacher me-1"></i> Hodimlar
           </button>
-          <div class="input-group input-group-sm">
+          <div class="input-group input-group-sm" style="max-width: 300px;">
             <select class="form-select form-select-sm" id="group-select" aria-label="Guruh tanlash">
               <option value="">Guruh tanlang</option>
-              <!-- Groups will be populated dynamically -->
+              {% for group in groups %}
+                <option value="{{ group.group_name }}">{{ group.group_name }}</option>
+              {% endfor %}
             </select>
-            <button class="btn btn-sm btn-primary" onclick="generateGroupEncodings()" aria-label="Guruh bo‘yicha encoding yaratish">
+            <button class="btn btn-primary btn-sm" onclick="generateGroupEncodings()" aria-label="Guruh bo‘yicha encoding yaratish">
               <i class="fa fa-users me-1"></i> Guruh
             </button>
           </div>
-          <button class="btn btn-sm btn-danger" onclick="deleteAllEncodings()" aria-label="Barcha encodinglarni o‘chirish">
+          <button class="btn btn-danger btn-sm" onclick="deleteAllEncodings()" aria-label="Barcha encodinglarni o‘chirish">
             <i class="fa fa-trash me-1"></i> O‘chirish
           </button>
         </div>
-      </div>
-      <div class="block-content">
-        <div id="error-alert" class="alert alert-danger d-none mt-2" role="alert"></div>
+        <div id="error-alert" class="alert alert-danger d-none" role="alert"></div>
       </div>
     </div>
 
     <!-- Encodings Table -->
-    <div class="block block-rounded bg-white shadow-sm">
-      <div class="block-header block-header-default">
-        <h3 class="block-title mb-0">Encodinglar ro‘yxati</h3>
+    <div class="card shadow-sm mt-4">
+      <div class="card-header bg-primary text-white">
+        <h3 class="h5 mb-0">Encodinglar ro‘yxati</h3>
       </div>
-      <div class="block-content">
+      <div class="card-body">
         <form method="GET" class="mb-3">
-          <div class="d-flex filter-group">
-            <div class="input-group input-group-sm flex-grow-1 me-2">
+          <div class="d-flex flex-wrap gap-2">
+            <div class="input-group input-group-sm flex-grow-1" style="max-width: 300px;">
               <input type="text" name="search" id="search" value="{{ search_query }}" class="form-control"
                      placeholder="Foydalanuvchi qidirish..." aria-label="Foydalanuvchi qidirish">
-              <button class="btn btn-light" type="submit" aria-label="Qidirish"><i class="fa fa-search"></i></button>
+              <button class="btn btn-outline-secondary" type="submit" aria-label="Qidirish">
+                <i class="fa fa-search"></i>
+              </button>
             </div>
-            <select class="form-select form-select-sm" name="filter_type" id="filter_type" onchange="this.form.submit()" aria-label="Filtr turi">
+            <select class="form-select form-select-sm" name="filter_type" id="filter_type" onchange="this.form.submit()" aria-label="Filtr turi" style="max-width: 150px;">
               <option value="" {% if not filter_type %}selected{% endif %}>Hammasi</option>
               <option value="student" {% if filter_type == 'student' %}selected{% endif %}>Talaba</option>
               <option value="teacher" {% if filter_type == 'teacher' %}selected{% endif %}>Hodim</option>
               <option value="group" {% if filter_type == 'group' %}selected{% endif %}>Guruh bo'yicha</option>
             </select>
             {% if filter_type == 'group' %}
-              <select class="form-select form-select-sm ms-2" name="group_id" id="group_id" onchange="this.form.submit()" aria-label="Guruh tanlash">
+              <select class="form-select form-select-sm" name="group_id" id="group_id" onchange="this.form.submit()" aria-label="Guruh tanlash" style="max-width: 150px;">
                 <option value="" {% if not group_id %}selected{% endif %}>Barcha guruhlar</option>
                 {% for group in groups %}
-                  <option value="{{ group.id }}"
-                          {% if group_id == group.id %}selected{% endif %}>{{ group.group_name }}</option>
+                  <option value="{{ group.group_name }}"
+                          {% if group_id == group.group_name %}selected{% endif %}>{{ group.group_name }}</option>
                 {% endfor %}
               </select>
             {% endif %}
@@ -164,7 +181,7 @@
                   </td>
                   <td>
                     <img src="{% if encoding.user.profile_picture %}{{ encoding.user.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
-                         alt="Avatar" class="rounded-circle">
+                         alt="Avatar" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover;">
                   </td>
                   <td>
                     {% if encoding.has_encoding %}
@@ -174,11 +191,11 @@
                     {% endif %}
                   </td>
                   <td>
-                    <button onclick="generateSingleEncoding('{{ encoding.user.id }}')" class="btn btn-sm btn-alt-primary" data-bs-toggle="tooltip"
+                    <button onclick="generateSingleEncoding('{{ encoding.user.id }}')" class="btn btn-sm btn-primary" data-bs-toggle="tooltip"
                             title="Encoding yaratish" aria-label="Encoding yaratish">
                       <i class="fa fa-camera"></i>
                     </button>
-                    <button onclick="deleteEncoding('{{ encoding.user.id }}')" class="btn btn-sm btn-alt-danger"
+                    <button onclick="deleteEncoding('{{ encoding.user.id }}')" class="btn btn-sm btn-danger"
                             data-bs-toggle="tooltip" title="Encoding o‘chirish" aria-label="Encoding o‘chirish">
                       <i class="fa fa-times"></i>
                     </button>
@@ -202,8 +219,8 @@
                 </li>
               {% endif %}
               {% if current > 3 %}
-                <li class="page-item"><a class="page-link"
-                                         href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if group_id %}&group_id={{ group_id }}{% endif %}" aria-label="Birinchi sahifa">1</a>
+                <li class="page-item">
+                  <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if group_id %}&group_id={{ group_id }}{% endif %}" aria-label="Birinchi sahifa">1</a>
                 </li>
                 {% if current > 4 %}
                   <li class="page-item disabled"><span class="page-link">...</span></li>
@@ -220,7 +237,8 @@
                 {% if current < total|add:'-3' %}
                   <li class="page-item disabled"><span class="page-link">...</span></li>
                 {% endif %}
-                <li class="page-item"><a class="page-link" href="?page={{ total }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if group_id %}&group_id={{ group_id }}{% endif %}" aria-label="Oxirgi sahifa">{{ total }}</a>
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ total }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if group_id %}&group_id={{ group_id }}{% endif %}" aria-label="Oxirgi sahifa">{{ total }}</a>
                 </li>
               {% endif %}
               {% if encodings.has_next %}
@@ -242,7 +260,7 @@
             <h5 class="modal-title" id="importModalLabel">Yuz encodinglarini yaratish</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="block-content">
+          <div class="modal-body">
             <p id="importStatus" class="mb-3">Yuklanmoqda...</p>
             <div class="progress" role="progressbar" aria-label="Yuklash jarayoni">
               <div id="importProgress" class="progress-bar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
@@ -260,7 +278,7 @@
 <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
 <script>
   function getCsrfToken() {
-    const token = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    const token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
     if (!token) {
       Swal.fire({
         title: 'Xato!',
@@ -285,7 +303,7 @@
         select.innerHTML = '<option value="">Guruh tanlang</option>';
         data.forEach(group => {
           const option = document.createElement('option');
-          option.value = group.id;
+          option.value = group.name;
           option.textContent = group.name;
           select.appendChild(option);
         });
@@ -297,7 +315,6 @@
       });
   }
 
-  // Load groups when the page loads
   document.addEventListener('DOMContentLoaded', loadGroups);
 
   function generateEncodings(type, label) {
@@ -346,10 +363,8 @@
   }
 
   function generateGroupEncodings() {
-    const groupId = document.getElementById('group-select').value;
-    const groupName = document.getElementById('group-select').options[document.getElementById('group-select').selectedIndex].text;
-    console.log('Selected groupId:', groupId, 'GroupName:', groupName); // Debug log
-    if (!groupId) {
+    const groupName = document.getElementById('group-select').value;
+    if (!groupName) {
       document.getElementById('error-alert').classList.remove('d-none');
       document.getElementById('error-alert').innerText = 'Iltimos, guruh tanlang!';
       return;
@@ -363,7 +378,7 @@
     progressElement.innerText = '0%';
     progressElement.setAttribute('aria-valuenow', 0);
 
-    const source = new EventSource(`/question/generate_group_encodings/${groupId}/`);
+    const source = new EventSource(`/question/generate_group_encodings/${encodeURIComponent(groupName)}/`);
     source.onmessage = function(event) {
       const data = JSON.parse(event.data);
       statusElement.innerText = data.status;
@@ -407,8 +422,8 @@
       text: 'Foydalanuvchi uchun yuz encodingi yaratiladi',
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#0d6efd',
+      cancelButtonColor: '#dc3545',
       confirmButtonText: 'Ha, yaratish!',
       cancelButtonText: 'Bekor',
     }).then((result) => {
@@ -468,8 +483,8 @@
       text: 'Foydalanuvchi encodingi o‘chiriladi',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#0d6efd',
+      cancelButtonColor: '#dc3545',
       confirmButtonText: 'Ha, o‘chirish!',
       cancelButtonText: 'Bekor',
     }).then((result) => {
@@ -511,8 +526,8 @@
       text: 'Barcha yuz encodinglari o‘chiriladi',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
+      confirmButtonColor: '#0d6efd',
+      cancelButtonColor: '#dc3545',
       confirmButtonText: 'Ha, o‘chirish!',
       cancelButtonText: 'Bekor',
     }).then((result) => {
@@ -527,7 +542,7 @@
           .then((response) => response.json())
           .then((data) => {
             Swal.fire({
-              title: group_id ? 'Muvaffaqiyat!' : 'Xato!',
+              title: data.success ? 'Muvaffaqiyat!' : 'Xato!',
               text: data.message,
               icon: data.success ? 'success' : 'error',
               confirmButtonText: 'OK',

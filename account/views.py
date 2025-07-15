@@ -90,43 +90,63 @@ class TwoLoginView(LoginRequiredMixin, View):
         return render(request, 'auth/two_login.html', {'user_data': user})
 
 
+CustomUser = get_user_model()
+
 class IdLoginView(View):
     template_name = 'auth/id_login.html'
     default_password = 'namdpi451'
     default_redirect = '/account/two-login/'
 
     def get(self, request):
+        print(f"[DEBUG] GET request received for IdLoginView")
+        print(f"[DEBUG] Rendering template: {self.template_name}")
         return render(request, self.template_name)
 
     def post(self, request):
+        print(f"[DEBUG] POST request received for IdLoginView")
         id_number = request.POST.get('id_number', '').strip()
+        print(f"[DEBUG] Received id_number: '{id_number}'")
 
         # ✅ Boshlang'ich tekshiruvlar
-        if len(id_number) != 10 or not id_number.isdigit():
-            return self._error_response(request, "ID raqam noto‘g‘ri yoki to‘liq emas.")
+        print(f"[DEBUG] Checking id_number length and format: len={len(id_number)}, isdigit={id_number.isdigit()}")
+        if len(id_number) != 12 or not id_number.isdigit():  # Updated to 12 digits
+            error_message = "ID raqam noto‘g‘ri yoki to‘liq emas."
+            print(f"[DEBUG] Validation failed: {error_message}")
+            return self._error_response(request, error_message)
 
         # ✅ Foydalanuvchini olish va ruxsat tekshiruvi
+        print(f"[DEBUG] Querying CustomUser with username: {id_number}")
         try:
             id_user = CustomUser.objects.get(username=id_number)
+            print(f"[DEBUG] User found: {id_user.username}, auth_is_id={id_user.auth_is_id}")
             if not id_user.auth_is_id:
-                return self._error_response(request, "Administrator tomonidan ruxsat berilmagan.")
+                error_message = "Administrator tomonidan ruxsat berilmagan."
+                print(f"[DEBUG] Authorization check failed: {error_message}")
+                return self._error_response(request, error_message)
         except CustomUser.DoesNotExist:
-            return self._error_response(request, "Foydalanuvchi topilmadi.")
+            error_message = "Foydalanuvchi topilmadi."
+            print(f"[DEBUG] User not found: {error_message}")
+            return self._error_response(request, error_message)
 
         # ✅ Autentifikatsiya qilish
+        print(f"[DEBUG] Attempting authentication with username={id_number}, password={self.default_password}")
         user = authenticate(request, username=id_number, password=self.default_password)
         if user is None:
-            return self._error_response(request, "Foydalanuvchi topilmadi yoki parol noto‘g‘ri.")
+            error_message = "Foydalanuvchi topilmadi yoki parol noto‘g‘ri."
+            print(f"[DEBUG] Authentication failed: {error_message}")
+            return self._error_response(request, error_message)
 
         # ✅ Tizimga kiritish
+        print(f"[DEBUG] Authentication successful for user: {user.username}")
         login(request, user)
         next_url = request.GET.get('next', self.default_redirect)
+        print(f"[DEBUG] Redirecting to: {next_url}")
         return redirect(next_url)
 
     def _error_response(self, request, message):
+        print(f"[DEBUG] Error response triggered: {message}")
         messages.error(request, message)
         return render(request, self.template_name, {'error': message})
-
 
 class RegisterView(View):
     template_name = 'auth/register.html'

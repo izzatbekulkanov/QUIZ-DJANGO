@@ -3,8 +3,7 @@ import logging
 import pickle
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlencode
-import cv2
-import numpy as np
+from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ValidationError
@@ -161,43 +160,81 @@ class UsersView(View):
 
 try:
     import onnxruntime
-
     print(f"[INFO] onnxruntime versiyasi: {onnxruntime.__version__}")
 except ImportError as e:
     raise ImportError(
-        f"onnxruntime o'rnatilmagan yoki Python 3.12.10 bilan mos kelmaydi. `pip install onnxruntime==1.17.3` ni ishlatib ko'ring. Xato: {str(e)}")
+        f"onnxruntime o'rnatilmagan yoki Python 3.12.10 bilan mos kelmaydi. `pip install onnxruntime==1.17.3` ni ishlatib ko'ring. Xato: {str(e)}"
+    )
 
 User = get_user_model()
-
 
 class EncodingView(LoginRequiredMixin, View):
     template_name = 'question/views/encoding.html'
     login_url = '/login/'
 
     def get(self, request):
+        # Statistik ma'lumotlar
         stats = [
-            {'count': CustomUser.objects.filter(is_student=True, face_encoding__isnull=False).count(),
+            {'count': User.objects.filter(is_student=True, face_encoding__isnull=False).count(),
              'label': 'Encoding yaratilgan talabalar'},
-            {'count': CustomUser.objects.filter(is_student=True, face_encoding__isnull=True).count(),
+            {'count': User.objects.filter(is_student=True, face_encoding__isnull=True).count(),
              'label': 'Encoding yaratilmagan talabalar'},
-            {'count': CustomUser.objects.filter(is_teacher=True, face_encoding__isnull=False).count(),
+            {'count': User.objects.filter(is_teacher=True, face_encoding__isnull=False).count(),
              'label': 'Encoding yaratilgan o‘qituvchilar'},
-            {'count': CustomUser.objects.filter(is_teacher=True, face_encoding__isnull=True).count(),
+            {'count': User.objects.filter(is_teacher=True, face_encoding__isnull=True).count(),
              'label': 'Encoding yaratilmagan o‘qituvchilar'},
-            {'count': CustomUser.objects.filter(face_encoding__isnull=False).count(),
+            {'count': User.objects.filter(face_encoding__isnull=False).count(),
              'label': 'Encoding yaratilgan foydalanuvchilar'},
-            {'count': CustomUser.objects.filter(face_encoding__isnull=True).count(),
+            {'count': User.objects.filter(face_encoding__isnull=True).count(),
              'label': 'Encoding yaratilmagan foydalanuvchilar'},
         ]
-        # Faqat talabalarga oid guruh nomlari
-        groups = CustomUser.objects.filter(
+
+        # Guruhlar
+        groups = User.objects.filter(
             is_student=True,
             group_name__isnull=False
-        ).values_list('group_name', flat=True).distinct().order_by('group_name')
+        ).values('group_name').distinct().order_by('group_name')
+
+        # Foydalanuvchilar va ularning encoding ma'lumotlari
+        search_query = request.GET.get('search', '')
+        filter_type = request.GET.get('filter_type', '')
+        group_id = request.GET.get('group_id', '')
+
+        users = User.objects.all()
+        if search_query:
+            users = users.filter(
+                models.Q(username__icontains=search_query) |
+                models.Q(first_name__icontains=search_query) |
+                models.Q(second_name__icontains=search_query)
+            )
+        if filter_type == 'student':
+            users = users.filter(is_student=True)
+        elif filter_type == 'teacher':
+            users = users.filter(is_teacher=True)
+        elif filter_type == 'group' and group_id:
+            users = users.filter(group_name=group_id, is_student=True)
+
+        # Encoding ma'lumotlari bilan birga foydalanuvchilarni formatlash
+        encodings = [
+            {
+                'user': user,
+                'has_encoding': hasattr(user, 'face_encoding') and user.face_encoding is not None
+            }
+            for user in users
+        ]
+
+        # Pagination
+        paginator = Paginator(encodings, 50)  # Har bir sahifada 10 ta element
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
 
         context = {
             'stats': stats,
             'groups': groups,
+            'encodings': page_obj,
+            'search_query': search_query,
+            'filter_type': filter_type,
+            'group_id': group_id,
             'csrf_token': get_token(request),
         }
         return render(request, self.template_name, context)

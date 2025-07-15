@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import JsonResponse, HttpResponse
+from django.middleware.csrf import get_token
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -100,20 +101,30 @@ class AddQuestionView(View):
 @method_decorator(login_required, name='dispatch')
 class DeleteTestView(View):
     def post(self, request, test_id):
+        print(f"[DEBUG] POST request received for DeleteTestView with test_id: {test_id}")
+        print(f"[DEBUG] User: {request.user}, Is superuser: {request.user.is_superuser}")
+        print(f"[DEBUG] CSRF token from header: {request.META.get('HTTP_X_CSRFTOKEN', 'Not provided')}")
+        print(f"[DEBUG] Expected CSRF token: {get_token(request)}")
+
         if request.user.is_superuser:  # Only admins can delete tests
-            test = get_object_or_404(Test.objects.annotate( question_count=Count('questions')), id=test_id)
+            print(f"[DEBUG] User is superuser, proceeding with test deletion")
+            test = get_object_or_404(Test.objects.annotate(question_count=Count('questions')), id=test_id)
+            print(f"[DEBUG] Test found: {test}, Question count: {test.question_count}")
 
             # Check if there are related questions or results
             if test.question_count == 0:
+                print(f"[DEBUG] No related questions, deleting test: {test}")
                 test.delete()
+                print(f"[DEBUG] Test deleted successfully")
                 return JsonResponse({"success": True, "message": "Test muvaffaqiyatli o‘chirildi!"})
             else:
+                print(f"[DEBUG] Test has {test.question_count} related questions, cannot delete")
                 return JsonResponse({
                     "success": False,
                     "message": "Testga bog‘langan savollar yoki natijalar mavjudligi sabab o‘chirib bo‘lmaydi."
                 })
+        print(f"[DEBUG] User is not superuser, access denied")
         return JsonResponse({"success": False, "message": "Ruxsat etilmagan amal!"})
-
 
 @method_decorator(login_required, name='dispatch')
 class EditTestView(View):

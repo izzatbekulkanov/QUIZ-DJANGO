@@ -3,32 +3,104 @@
 
 {% block style %}
 <link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
+<style>
+  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
+  .bg-image {
+    background-size: cover;
+    background-position: center;
+  }
+  .bg-primary-dark-op {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 1rem;
+  }
+  .btn-primary, .btn-success, .btn-warning {
+    background: linear-gradient(90deg, #007bff, #00c4ff);
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .btn-primary:hover, .btn-success:hover, .btn-warning:hover {
+    background: linear-gradient(90deg, #0056b3, #0096cc);
+    border: none;
+  }
+  .btn-outline-secondary {
+    border-color: #e9ecef;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .btn-outline-secondary:hover {
+    background: linear-gradient(90deg, #6c757d, #adb5bd);
+    color: #fff;
+    border: none;
+  }
+  .form-control {
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  }
+  .form-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #34495e;
+  }
+  .table {
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .table th, .table td {
+    vertical-align: middle;
+  }
+  .badge.bg-success {
+    background: linear-gradient(90deg, #28a745, #4caf50);
+  }
+  .badge.bg-warning {
+    background: linear-gradient(90deg, #ff9800, #ffb300);
+  }
+  .badge.bg-secondary {
+    background: linear-gradient(90deg, #6c757d, #adb5bd);
+  }
+</style>
 {% endblock style %}
 
 {% block content %}
-<main id="main-container" class="container-fluid px-0">
+<main id="main-container">
+  <!-- CSRF Token -->
+  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+
   <!-- Hero -->
-  <div class="bg-primary bg-opacity-75 py-4" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}'); background-size: cover; background-position: center;">
-    <div class="container">
-      <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center my-4 text-center text-sm-start">
-        <div class="flex-grow-1">
-          <h1 class="fw-semibold text-white mb-0">Topshiriqlar</h1>
-          <h2 class="h4 fw-normal text-white-75 mb-0">Topshiriq tafsilotlari</h2>
-        </div>
-        <div class="mt-3 mt-sm-0">
-          <a href="{% url 'assign-test' %}" class="btn btn-outline-secondary">
-            <i class="fa fa-arrow-left me-1"></i> Ortga
-          </a>
+  <div class="bg-image overflow-hidden"
+       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+    <div class="bg-primary-dark-op">
+      <div class="container">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-3 mb-2 text-center text-sm-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-0">Topshiriqlar</h1>
+            <h2 class="h4 fw-normal text-white-75 mb-0">Topshiriq tafsilotlari</h2>
+          </div>
+          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
+            <a class="btn btn-light btn-sm" href="{% url 'assign-test' %}">
+              <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
+            </a>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Page Content -->
-  <div class="container my-4">
+  <div class="container py-3">
     <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h3 class="h5 mb-0">Test Topshiriq Tafsilotlari</h3>
+      </div>
       <div class="card-body p-4">
-        <h2 class="card-title mb-4">Test Topshiriq Tafsilotlari</h2>
         <div class="row g-3 mb-4">
           <div class="col-md-6">
             <h5><strong>O‘qituvchi:</strong> {{ assignment.teacher.username }}</h5>
@@ -77,26 +149,26 @@
         <h3 class="card-title mb-3">Testni Bajargan Talabalar</h3>
         <form method="get" class="row g-3 mb-4">
           <div class="col-md-3">
-            <label for="group_name" class="form-label">Guruh nomi</label>
+            <label for="group_name" class="form-label"><i class="fa fa-users me-2"></i>Guruh nomi</label>
             <input type="text" id="group_name" name="group_name" class="form-control" placeholder="Guruh nomi kiriting" value="{{ filters.group_name }}">
           </div>
           <div class="col-md-3">
-            <label for="username" class="form-label">Foydalanuvchi nomi</label>
+            <label for="username" class="form-label"><i class="fa fa-user me-2"></i>Foydalanuvchi nomi</label>
             <input type="text" id="username" name="username" class="form-control" placeholder="Foydalanuvchi nomi kiriting" value="{{ filters.username }}">
           </div>
           <div class="col-md-3">
-            <label for="first_name" class="form-label">Ism</label>
+            <label for="first_name" class="form-label"><i class="fa fa-id-card me-2"></i>Ism</label>
             <input type="text" id="first_name" name="first_name" class="form-control" placeholder="Ism kiriting" value="{{ filters.first_name }}">
           </div>
           <div class="col-md-3">
-            <label for="full_name" class="form-label">To‘liq ism</label>
+            <label for="full_name" class="form-label"><i class="fa fa-id-card-alt me-2"></i>To‘liq ism</label>
             <input type="text" id="full_name" name="full_name" class="form-control" placeholder="To‘liq ism kiriting" value="{{ filters.full_name }}">
           </div>
           <div class="col-md-12 text-end">
-            <button type="submit" class="btn btn-primary">Filtr</button>
-            <a href="{% url 'view-assign-test' assignment.id %}" class="btn btn-outline-secondary">Tozalash</a>
+            <button type="submit" class="btn btn-primary"><i class="fa fa-filter me-1"></i>Filtr</button>
+            <a href="{% url 'view-assign-test' assignment.id %}" class="btn btn-outline-primary"><i class="fa fa-times me-1"></i>Tozalash</a>
             <a href="{% url 'export-assign-test' assignment.id %}?{% if request.GET %}{{ request.GET.urlencode }}{% endif %}" class="btn btn-success">
-              <i class="fa fa-download me-1"></i> Excelga eksport qilish
+              <i class="fa fa-download me-1"></i>Excelga eksport qilish
             </a>
           </div>
         </form>
@@ -141,10 +213,10 @@
 
         <div class="text-end mt-4">
           <a href="{% url 'edit-assign-test' assignment.id %}" class="btn btn-warning me-2">
-            <i class="fa fa-edit me-1"></i> Tahrirlash
+            <i class="fa fa-edit me-1"></i>Tahrirlash
           </a>
-          <a href="{% url 'assign-test' %}" class="btn btn-outline-secondary">
-            <i class="fa fa-arrow-left me-1"></i> Ortga
+          <a href="{% url 'assign-test' %}" class="btn btn-outline-success">
+            <i class="fa fa-arrow-left me-1"></i>Ortga
           </a>
         </div>
       </div>

@@ -4,32 +4,118 @@
 {% block style %}
 <link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
+  .bg-image {
+    background-size: cover;
+    background-position: center;
+  }
+  .bg-primary-dark-op {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 1rem;
+  }
+  .btn-primary, .btn-info, .btn-warning {
+    background: linear-gradient(90deg, #007bff, #00c4ff);
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .btn-primary:hover, .btn-info:hover, .btn-warning:hover {
+    background: linear-gradient(90deg, #0056b3, #0096cc);
+    border: none;
+  }
+  .btn-danger {
+    background: linear-gradient(90deg, #dc3545, #ff6b6b);
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .btn-danger:hover {
+    background: linear-gradient(90deg, #b02a37, #cc5252);
+    border: none;
+  }
+  .btn-outline-secondary {
+    border-color: #e9ecef;
+    color: #495057;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .btn-outline-secondary:hover {
+    background: linear-gradient(90deg, #6c757d, #adb5bd);
+    color: #fff;
+    border: none;
+  }
+  .form-control, .form-select {
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  }
+  .form-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #34495e;
+  }
+  .table {
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .table th, .table td {
+    vertical-align: middle;
+  }
+  .pagination .page-link {
+    border-radius: 6px;
+    margin: 0 3px;
+    color: #007bff;
+  }
+  .pagination .page-link:hover {
+    background: linear-gradient(90deg, #007bff, #00c4ff);
+    color: #fff;
+  }
+  .pagination .page-item.active .page-link {
+    background: linear-gradient(90deg, #007bff, #00c4ff);
+    border-color: #007bff;
+    color: #fff;
+  }
+</style>
 {% endblock style %}
 
 {% block content %}
-<main id="main-container" class="container-fluid px-0">
+<main id="main-container">
+  <!-- CSRF Token -->
+  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+
   <!-- Hero -->
-  <div class="bg-primary bg-opacity-75 py-4" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}'); background-size: cover; background-position: center;">
-    <div class="container">
-      <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center my-4 text-center text-sm-start">
-        <div class="flex-grow-1">
-          <h1 class="fw-semibold text-white mb-0">Topshiriqlar</h1>
-          <h2 class="h4 fw-normal text-white-75 mb-0">Topshiriqlar Ro'yxati</h2>
-        </div>
-        <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
-          <a class="btn btn-info" href="{% url 'add-assign-test' %}">
-            <i class="fa fa-plus me-1 opacity-50"></i> Topshiriq qo'shish
-          </a>
+  <div class="bg-image overflow-hidden"
+       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+    <div class="bg-primary-dark-op">
+      <div class="container">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-3 mb-2 text-center text-sm-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-0">Topshiriqlar</h1>
+            <h2 class="h4 fw-normal text-white-75 mb-0">Topshiriqlar Ro'yxati</h2>
+          </div>
+          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
+            <a class="btn btn-light btn-sm" href="{% url 'add-assign-test' %}">
+              <i class="fa fa-plus me-1 opacity-50"></i> Topshiriq qo'shish
+            </a>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Page Content -->
-  <div class="container my-4">
+  <div class="container py-3">
     <div class="card shadow-sm">
-      <div class="card-header">
-        <h3 class="card-title">Taqdim etilgan testlar</h3>
+      <div class="card-header bg-primary text-white">
+        <h3 class="h5 mb-0">Taqdim etilgan testlar</h3>
       </div>
       <div class="card-body">
         <!-- Filter Form -->

@@ -4,39 +4,131 @@
 {% block style %}
 <link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
 <style>
-  /* Minimal styles for drag-and-drop visual feedback */
+  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
+  .bg-image {
+    background-size: cover;
+    background-position: center;
+  }
+  .bg-primary-dark-op {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 1rem;
+  }
+  .btn-primary, .btn-success, .btn-info, .btn-warning {
+    background: linear-gradient(90deg, #007bff, #00c4ff);
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .btn-primary:hover, .btn-success:hover, .btn-info:hover, .btn-warning:hover {
+    background: linear-gradient(90deg, #0056b3, #0096cc);
+    border: none;
+  }
+  .btn-danger {
+    background: linear-gradient(90deg, #dc3545, #ff6b6b);
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .btn-danger:hover {
+    background: linear-gradient(90deg, #b02a37, #cc5252);
+    border: none;
+  }
+  .btn-outline-light {
+    border-color: #e9ecef;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .btn-outline-light:hover {
+    background: linear-gradient(90deg, #6c757d, #adb5bd);
+    color: #fff;
+    border: none;
+  }
+  .form-control, .form-select {
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  }
+  .form-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #34495e;
+  }
+  .upload-container {
+    border: 2px dashed #dee2e6;
+    border-radius: 6px;
+    transition: all 0.3s;
+  }
   .upload-container.dragover {
     background-color: #e9ecef;
-    border-color: #0d6efd;
+    border-color: #007bff;
   }
   .upload-container.success {
     border-color: #28a745;
+  }
+  .nav-tabs .nav-link {
+    color: #34495e;
+    font-weight: 500;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 15px;
+    margin-right: 5px;
+  }
+  .nav-tabs .nav-link.active {
+    color: #007bff;
+    border-bottom: 2px solid #007bff;
+    background: #f8f9fa;
+  }
+  .nav-tabs .nav-link:hover {
+    color: #007bff;
+    border-bottom: 2px solid #007bff;
+  }
+  .is-invalid ~ .invalid-feedback {
+    display: block;
+    font-size: 0.8rem;
+    color: #dc3545;
+  }
+  .list-group-item {
+    border-radius: 6px;
+    margin-bottom: 8px;
   }
 </style>
 {% endblock style %}
 
 {% block content %}
-<main id="main-container" class="container-fluid px-0">
+<main id="main-container">
+  <!-- CSRF Token -->
+  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+
   <!-- Hero -->
-  <div class="bg-primary bg-opacity-75 py-4" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}'); background-size: cover; background-position: center;">
-    <div class="container">
-      <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center my-4 text-center text-sm-start">
-        <div class="flex-grow-1">
-          <h1 class="fw-semibold text-white mb-0">{{ test.name }} (Talabalar: {{ student_count }})</h1>
-          <h2 class="h5 fw-normal text-white-75 mb-0"><code><i>{{ test.name }}</i></code> ga savollar biriktirish</h2>
-        </div>
-        <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
-          <a class="btn btn-outline-light btn-sm" href="{% url 'question' %}">
-            <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
-          </a>
+  <div class="bg-image overflow-hidden"
+       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+    <div class="bg-primary-dark-op">
+      <div class="container">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-3 mb-2 text-center text-sm-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-0">{{ test.name }} (Talabalar: {{ student_count }})</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0"><code><i>{{ test.name }}</i></code> ga savollar biriktirish</h2>
+          </div>
+          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
+            <a class="btn btn-light btn-sm" href="{% url 'question' %}">
+              <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
+            </a>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  <!-- END Hero -->
 
   <!-- Page Content -->
-  <div class="container my-4">
+  <div class="container py-3">
     <div class="card shadow-sm">
       <div class="card-header">
         <ul class="nav nav-tabs nav-tabs-alt" role="tablist">
@@ -60,6 +152,7 @@
             <div class="mb-3">
               <label class="form-label" for="id_text">Savol matni</label>
               {{ form.text }}
+              <div class="invalid-feedback">Savol matnini kiritish majburiy.</div>
             </div>
             <div id="answers-section" class="mb-3">
               <label class="form-label">Variantlar</label>
@@ -79,7 +172,7 @@
               <i class="fa fa-plus"></i> Yangi variant qo‘shish
             </button>
             <div class="text-end">
-              <button type="submit" class="btn btn-primary btn-sm">
+              <button type="button" class="btn btn-primary btn-sm" id="submit-question">
                 <i class="fa fa-save me-1"></i> Saqlash
               </button>
             </div>
@@ -98,12 +191,13 @@
                 <p class="mb-0 text-muted small">Faqat .xlsx formatidagi fayllar qabul qilinadi (maksimal 10MB)</p>
                 <p class="mt-2 mb-0 text-primary fw-semibold d-none" id="file-name">Tanlangan fayl: <span></span></p>
               </div>
+              <div class="invalid-feedback">Faylni yuklash majburiy.</div>
             </div>
             <div class="btn-group">
               <a href="{% url 'download-template' %}" class="btn btn-outline-secondary btn-sm">
                 <i class="fa fa-download me-1"></i> Shablonni yuklab olish
               </a>
-              <button type="submit" class="btn btn-primary btn-sm" disabled id="submit-button">
+              <button type="button" class="btn btn-primary btn-sm" disabled id="submit-button">
                 <i class="fa fa-upload me-1"></i> Import Qilish
               </button>
             </div>
@@ -219,7 +313,7 @@
       document.querySelectorAll('.is-correct-checkbox').forEach((checkbox, index) => {
         const hiddenInput = checkbox.nextElementSibling;
         if (hiddenInput?.tagName === 'INPUT' && hiddenInput.type === 'hidden') {
-          checkbox.id = `is-correct-${index}`; // Ensure unique ID
+          checkbox.id = `is-correct-${index}`;
           checkbox.removeEventListener('change', updateHiddenInput);
           checkbox.addEventListener('change', updateHiddenInput);
         }
@@ -257,7 +351,7 @@
 
     // Remove answer
     document.getElementById('answers-section').addEventListener('click', e => {
-      if (e.target.closest('.remove-answer')) {
+      if (e.target.closest('.remove-answer') && document.querySelectorAll('.answer-item').length > 1) {
         e.target.closest('.answer-item').remove();
       }
     });
@@ -307,10 +401,84 @@
       }
     });
 
-    // Import form submission
-    document.getElementById('import-form').addEventListener('submit', async e => {
+    // Question form submission
+    document.getElementById('submit-question').addEventListener('click', async e => {
       e.preventDefault();
-      const formData = new FormData(e.target);
+      const form = document.getElementById('question-form');
+      let isValid = true;
+
+      // Inputlarni validatsiya qilish
+      form.querySelectorAll('input[required], textarea[required]').forEach(input => {
+        if (!input.value) {
+          input.classList.add('is-invalid');
+          isValid = false;
+        } else {
+          input.classList.remove('is-invalid');
+        }
+      });
+
+      // Kamida bitta to'g'ri javob borligini tekshirish
+      const correctAnswers = form.querySelectorAll('.is-correct-checkbox:checked').length;
+      if (correctAnswers === 0) {
+        Swal.fire('Xatolik!', 'Kamida bitta to‘g‘ri javob tanlanishi kerak.', 'warning');
+        return;
+      }
+
+      if (isValid) {
+        Swal.fire({
+          title: 'Tasdiqlaysizmi?',
+          text: 'Savolni saqlamoqchimisiz?',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#007bff',
+          cancelButtonColor: '#dc3545',
+          confirmButtonText: 'Ha, saqlash!',
+          cancelButtonText: 'Bekor qilish'
+        }).then(async result => {
+          if (result.isConfirmed) {
+            try {
+              const formData = new FormData(form);
+              const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                  'X-Requested-With': 'XMLHttpRequest'
+                }
+              });
+              const data = await response.json();
+              Swal.fire({
+                title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
+                text: data.message || 'Savolni saqlashda xatolik yuz berdi.',
+                icon: data.success ? 'success' : 'error',
+                confirmButtonText: 'OK'
+              }).then(() => {
+                if (data.success) {
+                  form.reset();
+                  initializeCheckboxes();
+                  window.location.reload();
+                }
+              });
+            } catch (error) {
+              Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
+              console.error('Error:', error);
+            }
+          }
+        });
+      } else {
+        Swal.fire('Xatolik!', 'Iltimos, barcha majburiy maydonlarni to‘ldiring.', 'warning');
+      }
+    });
+
+    // Import form submission
+    document.getElementById('submit-button').addEventListener('click', async e => {
+      e.preventDefault();
+      const form = document.getElementById('import-form');
+      if (!fileInput.files.length) {
+        fileInput.classList.add('is-invalid');
+        return;
+      } else {
+        fileInput.classList.remove('is-invalid');
+      }
 
       Swal.fire({
         title: 'Yuklanmoqda...',
@@ -320,9 +488,13 @@
       });
 
       try {
+        const formData = new FormData(form);
         const response = await fetch("{% url 'import-questions' test.id %}", {
           method: 'POST',
-          body: formData
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          }
         });
         const data = await response.json();
         Swal.close();
@@ -361,7 +533,7 @@
         text: 'Savollarni saqlamoqchimisiz?',
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#0d6efd',
+        confirmButtonColor: '#007bff',
         cancelButtonColor: '#dc3545',
         confirmButtonText: 'Ha, saqlash!',
         cancelButtonText: 'Bekor qilish'
@@ -372,7 +544,8 @@
               method: 'POST',
               headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
               }
             });
             const data = await response.json();

@@ -4,36 +4,97 @@
 {% block style %}
 <link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
+  .bg-image {
+    background-size: cover;
+    background-position: center;
+  }
+  .bg-primary-dark-op {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 1rem;
+  }
+  .btn-primary {
+    background: linear-gradient(90deg, #007bff, #00c4ff);
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .btn-primary:hover {
+    background: linear-gradient(90deg, #0056b3, #0096cc);
+    border: none;
+  }
+  .btn-outline-secondary {
+    border-color: #e9ecef;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .btn-outline-secondary:hover {
+    background: linear-gradient(90deg, #6c757d, #adb5bd);
+    color: #fff;
+    border: none;
+  }
+  .form-control, .form-select {
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  }
+  .form-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #34495e;
+  }
+  .is-invalid ~ .invalid-feedback {
+    display: block;
+    font-size: 0.8rem;
+    color: #dc3545;
+  }
+</style>
 {% endblock style %}
 
 {% block content %}
-<main id="main-container" class="container-fluid px-0">
+<main id="main-container">
+  <!-- CSRF Token -->
+  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+
   <!-- Hero -->
-  <div class="bg-primary bg-opacity-75 py-4" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}'); background-size: cover; background-position: center;">
-    <div class="container">
-      <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center my-4 text-center text-sm-start">
-        <div class="flex-grow-1">
-          <h1 class="fw-semibold text-white mb-0">Topshiriqlar</h1>
-          <h2 class="h4 fw-normal text-white-75 mb-0">Topshiriqni tahrirlash</h2>
-        </div>
-        <div class="mt-3 mt-sm-0">
-          <a href="{% url 'assign-test' %}" class="btn btn-outline-secondary">
-            <i class="fa fa-arrow-left me-1"></i> Ortga
-          </a>
+  <div class="bg-image overflow-hidden"
+       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+    <div class="bg-primary-dark-op">
+      <div class="container">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-3 mb-2 text-center text-sm-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-0">Topshiriqlar</h1>
+            <h2 class="h4 fw-normal text-white-75 mb-0">Topshiriqni tahrirlash</h2>
+          </div>
+          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
+            <a class="btn btn-light btn-sm" href="{% url 'assign-test' %}">
+              <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
+            </a>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Page Content -->
-  <div class="container my-4">
+  <div class="container py-3">
     <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h3 class="h5 mb-0">Test Topshiriqni Tahrirlash</h3>
+      </div>
       <div class="card-body p-4">
-        <h2 class="card-title mb-4">Test Topshiriqni Tahrirlash</h2>
         <form id="edit-assignment-form" method="post">
           {% csrf_token %}
           <div class="mb-3">
-            <label for="category_id" class="form-label">Kategoriya</label>
+            <label for="category_id" class="form-label"><i class="fa fa-folder-open me-2"></i>Kategoriya</label>
             <select id="category_id" name="category_id" class="form-select" required data-url="{% url 'category-tests' %}">
               <option value="" disabled>Kategoriya tanlang</option>
               {% for category in categories %}
@@ -42,40 +103,47 @@
                 </option>
               {% endfor %}
             </select>
+            <div class="invalid-feedback">Kategoriya tanlash majburiy.</div>
           </div>
           <div class="mb-3">
-            <label for="test_id" class="form-label">Test</label>
+            <label for="test_id" class="form-label"><i class="fa fa-file-text me-2"></i>Test</label>
             <select id="test_id" name="test_id" class="form-select" required>
               <option value="" disabled>Avval kategoriya tanlang</option>
               <option value="{{ filters.test_id }}" selected>{{ assignment.test.name }}</option>
             </select>
+            <div class="invalid-feedback">Test tanlash majburiy.</div>
           </div>
           <div class="mb-3">
-            <label for="total_questions" class="form-label">Savollar soni</label>
+            <label for="total_questions" class="form-label"><i class="fa fa-question-circle me-2"></i>Savollar soni</label>
             <input type="number" id="total_questions" name="total_questions" class="form-control" required min="1" value="{{ filters.total_questions }}">
+            <div class="invalid-feedback">Savollar soni 1 dan kam bo‘lishi mumkin emas.</div>
           </div>
           <div class="row g-3 mb-3">
             <div class="col-md-6">
-              <label for="start_time" class="form-label">Boshlanish vaqti</label>
+              <label for="start_time" class="form-label"><i class="fa fa-clock me-2"></i>Boshlanish vaqti</label>
               <input type="text" id="start_time" name="start_time" class="form-control" required placeholder="YYYY-MM-DD HH:mm" value="{{ filters.start_time }}">
+              <div class="invalid-feedback">Boshlanish vaqti kiritilishi shart.</div>
             </div>
             <div class="col-md-6">
-              <label for="end_time" class="form-label">Tugash vaqti</label>
+              <label for="end_time" class="form-label"><i class="fa fa-clock me-2"></i>Tugash vaqti</label>
               <input type="text" id="end_time" name="end_time" class="form-control" required placeholder="YYYY-MM-DD HH:mm" value="{{ filters.end_time }}">
+              <div class="invalid-feedback">Tugash vaqti kiritilishi shart.</div>
             </div>
           </div>
           <div class="row g-3 mb-3">
             <div class="col-md-6">
-              <label for="duration" class="form-label">Davomiylik (daqiqa)</label>
+              <label for="duration" class="form-label"><i class="fa fa-hourglass me-2"></i>Davomiylik (daqiqa)</label>
               <input type="number" id="duration" name="duration" class="form-control" required min="1" value="{{ filters.duration }}">
+              <div class="invalid-feedback">Davomiylik 1 daqiqadan kam bo‘lishi mumkin emas.</div>
             </div>
             <div class="col-md-6">
-              <label for="max_attempts" class="form-label">Maksimal urinishlar soni</label>
+              <label for="max_attempts" class="form-label"><i class="fa fa-redo me-2"></i>Maksimal urinishlar soni</label>
               <input type="number" id="max_attempts" name="max_attempts" class="form-control" required min="1" value="{{ filters.max_attempts }}">
+              <div class="invalid-feedback">Urinishlar soni 1 dan kam bo‘lishi mumkin emas.</div>
             </div>
           </div>
           <div class="text-end">
-            <button type="submit" class="btn btn-primary">Saqlash</button>
+            <button type="button" class="btn btn-primary" id="submit-assignment">Saqlash</button>
           </div>
         </form>
       </div>
@@ -98,6 +166,7 @@
     const durationInput = document.getElementById('duration');
     const maxAttemptsInput = document.getElementById('max_attempts');
     const form = document.getElementById('edit-assignment-form');
+    const submitButton = document.getElementById('submit-assignment');
 
     let maxQuestions = 0;
 
@@ -139,34 +208,7 @@
     testSelect.addEventListener('change', async () => {
       const testId = testSelect.value;
       if (testId) {
-        try {
-          const response = await fetch(`/question/test-questions-count/?test_id=${testId}`);
-          const data = await response.json();
-          if (data.success) {
-            maxQuestions = data.total_questions;
-            Swal.fire({
-              title: 'Muvaffaqiyatli',
-              text: `Ushbu test uchun jami ${maxQuestions} ta savol mavjud.`,
-              icon: 'success',
-              confirmButtonText: 'OK'
-            });
-          } else {
-            Swal.fire({
-              title: 'Xatolik',
-              text: data.message || 'Savollar sonini olishda muammo yuz berdi.',
-              icon: 'error',
-              confirmButtonText: 'OK'
-            });
-          }
-        } catch (error) {
-          Swal.fire({
-            title: 'Xatolik',
-            text: 'Server bilan bog‘lanishda muammo.',
-            icon: 'error',
-            confirmButtonText: 'OK'
-          });
-          console.error('Error:', error);
-        }
+        await fetchQuestionCount(testId);
       } else {
         maxQuestions = 0;
         Swal.fire({
@@ -221,13 +263,26 @@
     });
 
     // Form submission with validation
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
+    submitButton.addEventListener('click', async () => {
+      let isValid = true;
+
+      // Inputlarni validatsiya qilish
+      form.querySelectorAll('input[required], select[required]').forEach(input => {
+        if (!input.value) {
+          input.classList.add('is-invalid');
+          isValid = false;
+        } else {
+          input.classList.remove('is-invalid');
+        }
+      });
+
       const startTime = new Date(startTimeInput.value);
       const endTime = new Date(endTimeInput.value);
       const now = new Date();
 
       if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+        startTimeInput.classList.add('is-invalid');
+        endTimeInput.classList.add('is-invalid');
         Swal.fire({
           title: 'Xatolik',
           text: 'Boshlanish yoki tugash vaqti noto‘g‘ri formatda kiritilgan.',
@@ -238,6 +293,8 @@
       }
 
       if (startTime >= endTime) {
+        startTimeInput.classList.add('is-invalid');
+        endTimeInput.classList.add('is-invalid');
         Swal.fire({
           title: 'Xatolik',
           text: 'Boshlanish vaqti tugash vaqtidan keyin bo‘lishi mumkin emas.',
@@ -248,6 +305,7 @@
       }
 
       if (endTime <= now) {
+        endTimeInput.classList.add('is-invalid');
         Swal.fire({
           title: 'Xatolik',
           text: 'Tugash vaqti hozirgi vaqtdan oldin bo‘lishi mumkin emas.',
@@ -257,38 +315,63 @@
         return;
       }
 
-      try {
-        const formData = new FormData(form);
-        const response = await fetch(form.action, {
-          method: 'POST',
-          body: formData
+      if (isValid) {
+        Swal.fire({
+          title: 'Tasdiqlaysizmi?',
+          text: 'Topshiriqni tahrirlamoqchimisiz?',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#007bff',
+          cancelButtonColor: '#dc3545',
+          confirmButtonText: 'Ha, saqlash!',
+          cancelButtonText: 'Bekor qilish'
+        }).then(async result => {
+          if (result.isConfirmed) {
+            try {
+              const formData = new FormData(form);
+              const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                  'X-Requested-With': 'XMLHttpRequest'
+                }
+              });
+              const data = await response.json();
+              if (data.success) {
+                Swal.fire({
+                  title: 'Muvaffaqiyatli!',
+                  text: data.message,
+                  icon: 'success',
+                  confirmButtonText: 'OK'
+                }).then(() => {
+                  window.location.href = '{% url 'assign-test' %}';
+                });
+              } else {
+                Swal.fire({
+                  title: 'Xatolik!',
+                  text: data.message || 'Topshiriqni tahrirlashda xato yuz berdi.',
+                  icon: 'error',
+                  confirmButtonText: 'OK'
+                });
+              }
+            } catch (error) {
+              Swal.fire({
+                title: 'Xatolik!',
+                text: 'Server bilan bog‘lanishda muammo.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+              });
+              console.error('Error:', error);
+            }
+          }
         });
-        const data = await response.json();
-        if (data.success) {
-          Swal.fire({
-            title: 'Muvaffaqiyatli!',
-            text: data.message,
-            icon: 'success',
-            confirmButtonText: 'OK'
-          }).then(() => {
-            window.location.href = '{% url 'assign-test' %}';
-          });
-        } else {
-          Swal.fire({
-            title: 'Xatolik!',
-            text: data.message || 'Topshiriqni tahrirlashda xato yuz berdi.',
-            icon: 'error',
-            confirmButtonText: 'OK'
-          });
-        }
-      } catch (error) {
+      } else {
         Swal.fire({
           title: 'Xatolik!',
-          text: 'Server bilan bog‘lanishda muammo.',
-          icon: 'error',
+          text: 'Iltimos, barcha majburiy maydonlarni to‘ldiring.',
+          icon: 'warning',
           confirmButtonText: 'OK'
         });
-        console.error('Error:', error);
       }
     });
 

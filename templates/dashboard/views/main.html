@@ -122,6 +122,7 @@
                 <div class="card-body">
                   <h5 class="card-title" style="font-size: 0.9rem;">{{ assignment.test.name }}</h5>
                   <p class="card-text"><strong>Kategoriya:</strong> {{ assignment.category.name }}</p>
+                  <p class="card-text"><strong>Savollar soni:</strong> {{ assignment.total_questions }}</p>
                   <p class="card-text"><strong>Vaqt:</strong> {{ assignment.start_time|date:"Y-m-d H:i" }} – {{ assignment.end_time|date:"Y-m-d H:i" }}</p>
                   <p class="card-text"><strong>Davomiylik:</strong> {{ assignment.duration }} daq</p>
                   <p class="card-text"><strong>Urinishlar:</strong> {{ assignment.attempts }} / {{ assignment.max_attempts }}</p>

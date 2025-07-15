@@ -2,23 +2,61 @@
 {% load static %}
 
 {% block style %}
-<!-- No custom styles -->
+<style>
+  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
+  .bg-image {
+    background-size: cover;
+    background-position: center;
+  }
+  .bg-primary-dark-op {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 1rem;
+  }
+  .btn-primary, .btn-outline-primary {
+    background: linear-gradient(90deg, #007bff, #00c4ff);
+    border: none;
+  }
+  .btn-primary:hover, .btn-outline-primary:hover {
+    background: linear-gradient(90deg, #0056b3, #0096cc);
+    border: none;
+  }
+  .btn-danger, .btn-outline-danger {
+    background: linear-gradient(90deg, #dc3545, #ff6b6b);
+    border: none;
+  }
+  .btn-danger:hover, .btn-outline-danger:hover {
+    background: linear-gradient(90deg, #b02a37, #cc5252);
+    border: none;
+  }
+</style>
 {% endblock style %}
 
 {% block content %}
-<main id="main-container" class="container-fluid px-0">
-  <div class="bg-primary bg-opacity-75 py-4" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}'); background-size: cover; background-position: center;">
-    <div class="container">
-      <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center my-3 text-center text-sm-start">
-        <h1 class="fw-semibold text-white mb-0">Kategoriyalar</h1>
-        <a class="btn btn-primary btn-sm mt-2 mt-sm-0" href="{% url 'add-category' %}">
-          <i class="fa fa-plus me-1"></i> Qo‘shish
-        </a>
+<main id="main-container">
+  <!-- CSRF Token -->
+  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+
+  <!-- Hero -->
+  <div class="bg-image overflow-hidden"
+       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+    <div class="bg-primary-dark-op">
+      <div class="container">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-3 mb-2 text-center text-sm-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-0">Kategoriyalar</h1>
+          </div>
+          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
+            <a class="btn btn-light btn-sm" href="{% url 'add-category' %}">
+              <i class="fa fa-plus me-1"></i> Qo‘shish
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="container my-4">
+  <!-- Page Content -->
+  <div class="container py-3">
     <div class="row g-3">
       {% for category in categories %}
         <div class="col-sm-6 col-lg-4">
@@ -30,10 +68,10 @@
               <p class="card-text text-muted small mb-2">{{ category.description|default:"Tavsif yo‘q" }}</p>
               <p class="card-text text-muted small mb-3">Savollar: {{ category.tests.count }}</p>
               <div class="mt-auto d-flex gap-2">
-                <a href="{% url 'edit-category' category.id %}" class="btn btn-outline-primary btn-sm w-50">
+                <a href="{% url 'edit-category' category.id %}" class="btn btn-primary btn-sm w-50">
                   <i class="fa fa-edit me-1"></i> Tahrirlash
                 </a>
-                <button class="btn btn-outline-danger btn-sm w-50" onclick="deleteCategory({{ category.id }})">
+                <button class="btn btn-danger btn-sm w-50" onclick="deleteCategory({{ category.id }})">
                   <i class="fa fa-trash me-1"></i> O‘chirish
                 </button>
               </div>
@@ -57,8 +95,16 @@
 <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
 <script>
   const getCSRFToken = () => {
-    const token = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken=')).split('=')[1];
-    if (!token) Swal.fire({ title: 'Xato!', text: 'CSRF token topilmadi', icon: 'error', confirmButtonText: 'OK' });
+    const token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+    if (!token) {
+      Swal.fire({
+        title: 'Xato!',
+        text: 'CSRF token topilmadi',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      return null;
+    }
     return token;
   };
 
@@ -71,7 +117,7 @@
       text: 'Kategoriya butunlay o‘chiriladi',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#0d6efd',
+      confirmButtonColor: '#007bff',
       cancelButtonColor: '#dc3545',
       confirmButtonText: 'O‘chirish',
       cancelButtonText: 'Bekor'
@@ -79,7 +125,10 @@
       if (result.isConfirmed) {
         fetch(`/question/categories/delete/${categoryId}/`, {
           method: 'DELETE',
-          headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+          }
         })
           .then(res => res.json())
           .then(data => {
@@ -91,7 +140,12 @@
             }).then(() => data.success && window.location.reload());
           })
           .catch(() => {
-            Swal.fire({ title: 'Xato!', text: 'Server bilan bog‘lanishda xato', icon: 'error', confirmButtonText: 'OK' });
+            Swal.fire({
+              title: 'Xato!',
+              text: 'Server bilan bog‘lanishda xato',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
           });
       }
     });

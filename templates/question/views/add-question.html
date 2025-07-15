@@ -2,35 +2,93 @@
 {% load static %}
 
 {% block style %}
-<!-- No custom styles -->
+<style>
+  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
+  .bg-image {
+    background-size: cover;
+    background-position: center;
+  }
+  .bg-primary-dark-op {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 1rem;
+  }
+  .btn-primary {
+    background: linear-gradient(90deg, #007bff, #00c4ff);
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .btn-primary:hover {
+    background: linear-gradient(90deg, #0056b3, #0096cc);
+    border: none;
+  }
+  .btn-outline-secondary {
+    border-color: #e9ecef;
+    color: #fff;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .btn-outline-secondary:hover {
+    background: linear-gradient(90deg, #6c757d, #adb5bd);
+    color: #fff;
+    border: none;
+  }
+  .form-control, .form-select {
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  }
+  .form-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #34495e;
+  }
+  .is-invalid ~ .invalid-feedback {
+    display: block;
+    font-size: 0.8rem;
+    color: #dc3545;
+  }
+</style>
 {% endblock style %}
 
 {% block content %}
-<main id="main-container" class="container-fluid px-0">
+<main id="main-container">
+  <!-- CSRF Token -->
+  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+
   <!-- Hero -->
-  <div class="bg-primary bg-opacity-75 py-4" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}'); background-size: cover; background-position: center;">
-    <div class="container">
-      <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center my-4 text-center text-sm-start">
-        <div class="flex-grow-1">
-          <h1 class="fw-semibold text-white mb-0">Savollar</h1>
-          <h2 class="h4 fw-normal text-white-75 mb-0">Savollar qo'shish</h2>
-        </div>
-        <div class="mt-3 mt-sm-0">
-          <a href="javascript:history.back()" class="btn btn-outline-secondary">
-            <i class="fa fa-arrow-left me-1"></i> Ortga
-          </a>
+  <div class="bg-image overflow-hidden"
+       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+    <div class="bg-primary-dark-op">
+      <div class="container">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-3 mb-2 text-center text-sm-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-0">Savollar</h1>
+            <h2 class="h4 fw-normal text-white-75 mb-0">Savollar qo'shish</h2>
+          </div>
+          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
+            <a class="btn btn-light btn-sm" href="javascript:history.back()">
+              <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
+            </a>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  <!-- END Hero -->
 
   <!-- Page Content -->
-  <div class="container my-4">
-    <!-- Add Test Form -->
+  <div class="container py-3">
     <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h3 class="h5 mb-0"><i class="fa fa-plus me-2"></i>Yangi Test Yaratish</h3>
+      </div>
       <div class="card-body p-4">
-        <h3 class="card-title mb-4"><i class="fa fa-plus me-2"></i>Yangi Test Yaratish</h3>
         <form id="addTestForm" method="POST" action="{% url 'add-question' %}">
           {% csrf_token %}
           <!-- Category Dropdown -->
@@ -42,11 +100,13 @@
               <option value="{{ category.id }}">{{ category.name }}</option>
               {% endfor %}
             </select>
+            <div class="invalid-feedback">Kategoriya tanlash majburiy.</div>
           </div>
           <!-- Test Name -->
           <div class="mb-3">
             <label class="form-label" for="test-name"><i class="fa fa-file-text me-2"></i>Test Nomi</label>
             <input type="text" class="form-control" id="test-name" name="name" placeholder="Test nomini kiriting" required>
+            <div class="invalid-feedback">Test nomini kiritish majburiy.</div>
           </div>
           <!-- Test Description -->
           <div class="mb-3">
@@ -55,7 +115,7 @@
           </div>
           <!-- Submit Button -->
           <div class="text-end">
-            <button type="submit" class="btn btn-primary">
+            <button type="button" id="submitButton" class="btn btn-primary">
               <i class="fa fa-save me-1"></i> Saqlash
             </button>
           </div>
@@ -69,50 +129,74 @@
 {% block script %}
 <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
 <script>
-  document.getElementById('addTestForm').addEventListener('submit', function (e) {
+  document.getElementById('submitButton').addEventListener('click', function (e) {
     e.preventDefault();
-    const form = this;
-    Swal.fire({
-      title: 'Tasdiqlaysizmi?',
-      text: "Yangi testni qo'shmoqchimisiz?",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#0d6efd',
-      cancelButtonColor: '#dc3545',
-      confirmButtonText: 'Ha, qo‘shish!',
-      cancelButtonText: 'Bekor qilish'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const formData = new FormData(form);
-        fetch(form.action, {
-          method: 'POST',
-          body: formData
-        })
-          .then(response => response.json())
-          .then(data => {
-            Swal.fire({
-              title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
-              text: data.message || 'Maʼlumotni saqlashda xatolik yuz berdi.',
-              icon: data.success ? 'success' : 'error',
-              confirmButtonText: 'OK'
-            }).then(() => {
-              if (data.success) {
-                form.reset();
-                window.location.href = '{% url "question" %}';
-              }
-            });
-          })
-          .catch(error => {
-            Swal.fire({
-              title: 'Xatolik!',
-              text: 'Server bilan bog‘lanishda xatolik yuz berdi.',
-              icon: 'error',
-              confirmButtonText: 'OK'
-            });
-            console.error('Error:', error);
-          });
+    const form = document.getElementById('addTestForm');
+    let isValid = true;
+
+    // Inputlarni validatsiya qilish
+    form.querySelectorAll('input[required], select[required]').forEach((input) => {
+      if (!input.value) {
+        input.classList.add('is-invalid');
+        isValid = false;
+      } else {
+        input.classList.remove('is-invalid');
       }
     });
+
+    if (isValid) {
+      Swal.fire({
+        title: 'Tasdiqlaysizmi?',
+        text: "Yangi testni qo'shmoqchimisiz?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#007bff',
+        cancelButtonColor: '#dc3545',
+        confirmButtonText: 'Ha, qo‘shish!',
+        cancelButtonText: 'Bekor qilish'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const formData = new FormData(form);
+          fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          })
+            .then(response => response.json())
+            .then(data => {
+              Swal.fire({
+                title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
+                text: data.message || 'Maʼlumotni saqlashda xatolik yuz berdi.',
+                icon: data.success ? 'success' : 'error',
+                confirmButtonText: 'OK'
+              }).then(() => {
+                if (data.success) {
+                  form.reset();
+                  window.location.href = '{% url "question" %}';
+                }
+              });
+            })
+            .catch(error => {
+              Swal.fire({
+                title: 'Xatolik!',
+                text: 'Server bilan bog‘lanishda xatolik yuz berdi.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+              });
+              console.error('Error:', error);
+            });
+        }
+      });
+    } else {
+      Swal.fire({
+        title: 'Xatolik!',
+        text: 'Iltimos, barcha majburiy maydonlarni to‘ldiring.',
+        icon: 'warning',
+        confirmButtonText: 'OK'
+      });
+    }
   });
 </script>
 {% endblock script %}

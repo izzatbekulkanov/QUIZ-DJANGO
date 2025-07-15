@@ -2,23 +2,99 @@
 {% load static %}
 
 {% block style %}
-<!-- No custom styles -->
+<style>
+  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
+  .bg-image {
+    background-size: cover;
+    background-position: center;
+  }
+  .bg-primary-dark-op {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 1rem;
+  }
+  .btn-primary, .btn-success {
+    background: linear-gradient(90deg, #007bff, #00c4ff);
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .btn-primary:hover, .btn-success:hover {
+    background: linear-gradient(90deg, #0056b3, #0096cc);
+    border: none;
+  }
+  .btn-danger {
+    background: linear-gradient(90deg, #dc3545, #ff6b6b);
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .btn-danger:hover {
+    background: linear-gradient(90deg, #b02a37, #cc5252);
+    border: none;
+  }
+  .form-control, .form-select {
+    border-radius: 6px;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+  }
+  .form-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #34495e;
+  }
+  .table {
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .table th, .table td {
+    vertical-align: middle;
+  }
+  .pagination .page-link {
+    border-radius: 6px;
+    margin: 0 3px;
+    color: #007bff;
+  }
+  .pagination .page-link:hover {
+    background: linear-gradient(90deg, #007bff, #00c4ff);
+    color: #fff;
+  }
+  .pagination .page-item.active .page-link {
+    background: linear-gradient(90deg, #007bff, #00c4ff);
+    border-color: #007bff;
+    color: #fff;
+  }
+  .rounded-circle {
+    border: 2px solid #e9ecef;
+  }
+</style>
 {% endblock style %}
 
 {% block content %}
-<main id="main-container" class="container-fluid px-0">
+<main id="main-container">
+  <!-- CSRF Token -->
+  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+
   <!-- Hero -->
-  <div class="bg-primary bg-opacity-75 py-4" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}'); background-size: cover; background-position: center;">
-    <div class="container">
-      <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center my-4 text-center text-sm-start">
-        <div class="flex-grow-1">
-          <h1 class="fw-semibold text-white mb-0">{{ test.name }}</h1>
-          <h2 class="h4 fw-normal text-white-75 mb-0">Talabalarni biriktirish</h2>
-        </div>
-        <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
-          <a class="btn btn-primary px-4 py-2" href="{% url 'question' %}">
-            <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
-          </a>
+  <div class="bg-image overflow-hidden"
+       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+    <div class="bg-primary-dark-op">
+      <div class="container">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-3 mb-2 text-center text-sm-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-0">{{ test.name }}</h1>
+            <h2 class="h4 fw-normal text-white-75 mb-0">Talabalarni biriktirish</h2>
+          </div>
+          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
+            <a class="btn btn-light btn-sm" href="{% url 'question' %}">
+              <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
+            </a>
+          </div>
         </div>
       </div>
     </div>
