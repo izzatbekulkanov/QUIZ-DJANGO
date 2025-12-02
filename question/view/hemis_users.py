@@ -14,130 +14,265 @@ from question.models import SystemSetting
 logger = logging.getLogger(__name__)
 User = get_user_model()
 
+
 class BaseHemisImportView(View):
-    endpoint = None
-    id_field = None
-    role_field = None
-    model_fields = {}
-    group_filter = None
+    endpoint = None          # masalan: 'student-list'
+    id_field = None          # masalan: 'student_id_number' yoki 'employee_id_number'
+    role_field = None        # 'is_student' yoki 'is_teacher'
+    model_fields = {}        # CustomUser field -> HEMIS field map
+    group_filter = None      # faqat guruh bo‘yicha filterda ishlatiladi (students by group)
+
+    # Necha kishidan keyin progress yuborish (SSE)
+    PROGRESS_EVERY = 10
+
+    # Rasmlarni mavjud userlar uchun ham yuklash-yo‘qligi
+    DOWNLOAD_IMAGE_FOR_EXISTING = False
 
     def get(self, request):
+
         def stream():
+            print("=== [START] HEMIS import boshlandi ===")
+
+            # Sozlamalar
             setting = SystemSetting.objects.filter(is_active=True).first()
             if not setting or not setting.hemis_url or not setting.hemis_api_key:
-                yield f'data: {{"status": "HEMIS sozlamalari topilmadi", "progress": 0}}\n\n'
+                print("[XATO] HEMIS sozlamalari topilmadi!")
+                yield 'data: {"status": "HEMIS sozlamalari topilmadi", "progress": 0}\n\n'
                 return
 
+            print(f"[INFO] HEMIS URL: {setting.hemis_url}")
+            print(f"[INFO] Import turi: {self.role_field}")
+
             base_url = setting.hemis_url.rstrip('/') + f'/rest/v1/data/{self.endpoint}'
-            headers = {'accept': 'application/json', 'Authorization': f'Bearer {setting.hemis_api_key}'}
+
+            # 1️⃣ Bitta Session ishlatamiz — TCP connection qayta-qayta ochilmaydi
+            session = requests.Session()
+            session.headers.update({
+                'accept': 'application/json',
+                'Authorization': f'Bearer {setting.hemis_api_key}',
+            })
+
+            # Jami sonni olish
             params = {'page': 1, 'limit': 1}
             if self.group_filter:
                 params['_group'] = self.group_filter
 
             try:
-                r = requests.get(base_url, headers=headers, params=params, timeout=10)
+                print("[INFO] Jami elementlar soni olinmoqda...")
+                r = session.get(base_url, params=params, timeout=10)
+                print(f"[DEBUG] API status: {r.status_code}")
+
                 if r.status_code != 200:
+                    print(f"[XATO] API xato status: {r.status_code}")
                     yield f'data: {{"status": "API xato: {r.status_code}", "progress": 0}}\n\n'
                     return
+
                 total_count = r.json().get('data', {}).get('pagination', {}).get('totalCount', 0)
+                print(f"[INFO] Jami topildi: {total_count} ta")
+
                 if total_count == 0:
-                    yield f'data: {{"status": "Ma\'lumot topilmadi", "progress": 0}}\n\n'
+                    print("[INFO] Ma’lumot topilmadi")
+                    yield 'data: {"status": "Ma\'lumot topilmadi", "progress": 0}\n\n'
                     return
             except Exception as e:
+                print(f"[XATO] Pagination olishda xato: {e}")
                 yield f'data: {{"status": "Parsing xatosi: {str(e)}", "progress": 0}}\n\n'
                 return
 
+            # -------- ASOSIY PAGINATION LOOP --------
             page = 1
             limit = 500
             total_processed = 0
             to_create = []
             to_update = []
 
+            # bulk_update uchun maydonlar ro‘yxatini oldindan tayyorlab qo‘yamiz
+            base_update_fields = list(self.model_fields.keys()) + [
+                'date_of_birth',
+                'gender',
+                'nationality',
+                self.role_field,
+                'profile_picture',
+            ]
+
             while True:
                 try:
+                    print(f"\n=== [PAGE] {page} yuklanmoqda... ===")
+
                     params = {'page': page, 'limit': limit}
                     if self.group_filter:
                         params['_group'] = self.group_filter
-                    response = requests.get(base_url, headers=headers, params=params, timeout=10)
+
+                    response = session.get(base_url, params=params, timeout=10)
+                    print(f"[DEBUG] Sahifa {page} status: {response.status_code}")
+
                     if response.status_code != 200:
-                        yield f'data: {{"status": "Sahifa {page} xatosi: {response.status_code}", "progress": {round(total_processed / total_count * 100)}}}\n\n'
+                        print(f"[XATO] Sahifa {page} xatosi: {response.status_code}")
+                        yield (
+                            f'data: {{"status": "Sahifa {page} xatosi", '
+                            f'"progress": {round(total_processed / total_count * 100)}}}\n\n'
+                        )
                         return
 
-                    items = response.json().get('data', {}).get('items', [])
+                    data = response.json().get('data', {})
+                    items = data.get('items', [])
+                    print(f"[INFO] {len(items)} ta obyekt olindi")
+
                     if not items:
+                        print("[INFO] Boshqa sahifa yo'q. Import tugadi.")
                         break
 
-                    ids = []
-                    for item in items:
-                        id_field = item.get('student_id_number') if self.role_field == 'is_student' else item.get('employee_id_number')
-                        if id_field:
-                            ids.append(id_field)
+                    # -------- HODIMLAR UCHUN DEBUG --------
+                    if self.role_field == "is_teacher":
+                        print(f"--- [STAFF DEBUG] {len(items)} ta xodim yuklandi ---")
+                        for item in items[:3]:
+                            print(f"   Xodim ID: {item.get('employee_id_number')}, FIO: {item.get('full_name')}")
 
-                    existing_users = {u.username: u for u in User.objects.filter(username__in=ids).only('username', 'student_id_number', *self.model_fields.keys())}
+                    # 🚨 HEMIS xodimni bir nechta bo‘limda yuborishi mumkin
+                    # shu sababli sahifa ichida username (ID) bo‘yicha birlashtiramiz
+                    merged_by_username = {}
 
                     for item in items:
-                        id_field = item.get('student_id_number') if self.role_field == 'is_student' else item.get('employee_id_number')
-                        if not id_field:
+                        raw_id = (
+                            item.get('student_id_number')
+                            if self.role_field == 'is_student'
+                            else item.get('employee_id_number')
+                        )
+                        if raw_id is None:
                             continue
 
+                        username = str(raw_id).strip()
+                        if not username:
+                            continue
+
+                        # Agar bu username birinchi marta kelsa — to‘liq itemni saqlaymiz
+                        if username not in merged_by_username:
+                            merged_by_username[username] = item
+                        else:
+                            # Agar xodim bo'lsa, masalan bo‘lim nomlarini birlashtirish mumkin
+                            # Hozircha oddiy: avvalgi va yangi itemlarni ustunlar bo‘yicha merge qilish.
+                            existing = merged_by_username[username]
+
+                            # Agar model_fields ichida department / company_name bo‘lsa,
+                            # bo‘lim nomlarini birlashtirishni xohlasang shu yerga yozishing mumkin.
+                            # Hozir oddiy qilib: agar oldingi bo‘sh bo‘lsa, yangisini qo‘yib ketamiz.
+                            for k in self.model_fields.values():
+                                old_val = existing.get(k)
+                                new_val = item.get(k)
+                                if not old_val and new_val:
+                                    existing[k] = new_val
+
+                    # Endi faqat noyob username'lar bo‘yicha ishlaymiz
+                    unique_items = list(merged_by_username.items())  # [(username, item), ...]
+
+                    print(f"[DEBUG] Sahifa ichida {len(unique_items)} ta noyob username aniqlandi")
+
+                    # DBdan mavjud userlarni olish (username bo‘yicha)
+                    usernames = [u for u, _ in unique_items]
+                    existing_users = User.objects.in_bulk(usernames, field_name='username')
+                    print(f"[DEBUG] DB'dan {len(existing_users)} ta mavjud user topildi")
+
+                    # -------- ITEMLARNI QAYTA ISHLASH --------
+                    for username, item in unique_items:
+                        # Tug‘ilgan sana
+                        raw_birth = item.get('birth_date')
                         birth_date = (
-                            datetime.datetime.utcfromtimestamp(item.get('birth_date')).date()
-                            if isinstance(item.get('birth_date'), int) and item.get('birth_date') > 0
+                            datetime.datetime.utcfromtimestamp(raw_birth).date()
+                            if isinstance(raw_birth, int) and raw_birth > 0
                             else None
                         )
 
-                        defaults = {
-                            'student_id_number': item.get('student_id_number', '') if self.role_field == 'is_teacher' else id_field
-                        }
-                        for k, v in self.model_fields.items():
-                            value = item.get(v)
-                            defaults[k] = value.get('name', '') if isinstance(value, dict) else value if value is not None else ''
+                        # Foydalanuvchi uchun default ma'lumotlar
+                        defaults = {}
+                        for field_name, hemis_key in self.model_fields.items():
+                            val = item.get(hemis_key)
+                            defaults[field_name] = (
+                                val.get('name', '') if isinstance(val, dict) else (val or '')
+                            )
+
                         defaults.update({
                             'date_of_birth': birth_date,
                             'gender': item.get('gender', {}).get('code', ''),
                             'nationality': item.get('citizenship', {}).get('name', 'O‘zbekiston'),
-                            self.role_field: True
+                            self.role_field: True,
                         })
 
-                        if id_field in existing_users:
-                            user = existing_users[id_field]
+                        if self.role_field == "is_teacher":
+                            print(f"[STAFF] ID: {username} → {defaults.get('full_name')}")
+
+                        is_new = username not in existing_users
+
+                        # Mavjud user bo'lsa — update
+                        if not is_new:
+                            user = existing_users[username]
                             for k, v in defaults.items():
                                 setattr(user, k, v)
                             to_update.append(user)
                         else:
-                            user = User(username=id_field, **defaults)
-                            user.set_password('namdpi451')  # TODO: Secure password
+                            user = User(username=username, **defaults)
+                            user.set_password('namdpi451')
                             to_create.append(user)
 
+                        # RASM yuklash
                         image_url = item.get('image')
                         if image_url and image_url.startswith('http'):
-                            try:
-                                img_response = requests.get(image_url, timeout=5)
-                                if img_response.status_code == 200:
-                                    file_name = os.path.basename(image_url.split('?')[0])
-                                    user.profile_picture.save(file_name, ContentFile(img_response.content), save=False)
-                            except Exception:
-                                pass
+                            if is_new or self.DOWNLOAD_IMAGE_FOR_EXISTING:
+                                try:
+                                    img_response = session.get(image_url, timeout=3)
+                                    if img_response.status_code == 200:
+                                        file_name = os.path.basename(image_url.split('?')[0]) or f"{username}.jpg"
+                                        user.profile_picture.save(
+                                            file_name,
+                                            ContentFile(img_response.content),
+                                            save=False,
+                                        )
+                                except Exception as e:
+                                    print(f"[RASM XATO] {e}")
 
                         total_processed += 1
-                        yield f'data: {{"status": "{total_processed} ta import qilindi", "progress": {round(total_processed / total_count * 100)}}}\n\n'
 
+                        # Har foydalanuvchida emas, N-chi foydalanuvchida progress yuboramiz
+                        if total_processed % self.PROGRESS_EVERY == 0:
+                            yield (
+                                f'data: {{"status": "{total_processed} ta import qilindi", '
+                                f'"progress": {round(total_processed / total_count * 100)}}}\n\n'
+                            )
+
+                    # -------- BULK OPERATION --------
                     with transaction.atomic():
                         if to_create:
+                            print(f"[DB] {len(to_create)} ta yangi user yaratish uchun tayyor")
                             User.objects.bulk_create(to_create, batch_size=500)
+                            print(f"[DB] {len(to_create)} ta yangi user yaratildi")
                             to_create = []
+
                         if to_update:
-                            User.objects.bulk_update(to_update, fields=list(defaults.keys()), batch_size=500)
+                            print(f"[DB] {len(to_update)} ta user yangilash uchun tayyor")
+                            User.objects.bulk_update(
+                                to_update,
+                                fields=base_update_fields,
+                                batch_size=500,
+                            )
+                            print(f"[DB] {len(to_update)} ta user yangilandi")
                             to_update = []
 
                     page += 1
                     time.sleep(0.01)
 
                 except Exception as e:
-                    yield f'data: {{"status": "Sahifa {page} xatosi: {str(e)}", "progress": {round(total_processed / total_count * 100)}}}\n\n'
+                    print(f"[XATO] Sahifa {page} xatosi: {e}")
+                    traceback.print_exc()
+                    yield (
+                        f'data: {{"status": "Sahifa {page} xatosi: {str(e)}", '
+                        f'"progress": {round(total_processed / total_count * 100)}}}\n\n'
+                    )
                     break
 
-            yield f'data: {{"status": "Yakunlandi: {total_processed} ta", "progress": 100}}\n\n'
+            print("=== [YAKUNLANDI] Import tugadi ===")
+            yield (
+                f'data: {{"status": "Yakunlandi: {total_processed} ta", '
+                f'"progress": 100}}\n\n'
+            )
 
         return StreamingHttpResponse(stream(), content_type='text/event-stream')
 
@@ -157,6 +292,7 @@ class ImportStudentsFromHemisStreamView(BaseHemisImportView):
         'education_year': 'educationYear'
     }
 
+
 class ImportStaffFromHemisStreamView(BaseHemisImportView):
     endpoint = 'employee-list?type=all'
     id_field = 'employee_id_number'
@@ -167,7 +303,7 @@ class ImportStaffFromHemisStreamView(BaseHemisImportView):
         'second_name': 'second_name',
         'job_title': 'staffPosition',
         'company_name': 'department',
-        'student_id_number': 'student_id_number'  # employee uchun student_id_number saqlanadi
+        'student_id_number': 'student_id_number'
     }
 
 class ImportStudentsByGroupStreamView(BaseHemisImportView):

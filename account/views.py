@@ -5,11 +5,11 @@ import logging
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, logout, login, get_user_model
+from django.contrib.auth import authenticate, logout, login, get_user_model, get_backends
 from django.http import JsonResponse
 from django.views import View
 from account.models import CustomUser, FaceEncoding
-
+from django.conf import settings
 
 class LoginView(View):
     def get(self, request):
@@ -34,49 +34,80 @@ logger = logging.getLogger(__name__)
 
 class FaceLoginView(View):
     def get(self, request):
+        print("\n[FACE-LOGIN] === GET /account/face-login/ ===")
         return render(request, 'auth/face_login.html')
 
     def post(self, request):
+        print("\n[FACE-LOGIN] === POST /account/face-login/ ===")
+
         try:
-            data = json.loads(request.body) if request.body else {}
+            # AUTHENTICATION_BACKENDS’ni ko‘ramiz
+            print("[FACE-LOGIN] AUTHENTICATION_BACKENDS:", getattr(settings, "AUTHENTICATION_BACKENDS", None))
+
+            backend_instances = get_backends()
+            print("[FACE-LOGIN] Ro‘yxatdagi backend klasslari:")
+            for b in backend_instances:
+                print("   -", b.__class__.__module__, ".", b.__class__.__name__)
+
+            body = request.body.decode('utf-8') if request.body else ''
+            print(f"[FACE-LOGIN] request.body uzunligi: {len(body)}")
+
+            data = json.loads(body) if body else {}
             images = data.get('images', [])
+
+            print(f"[FACE-LOGIN] Kelgan rasm soni: {len(images)}")
+            if images:
+                print(f"[FACE-LOGIN] Birinchi rasm length: {len(images[0])}")
+
             if not images:
+                print("[FACE-LOGIN] ❌ images bo‘sh, JSON’da 'images' yo‘q yoki bo‘sh massiv.")
                 return JsonResponse({
                     'success': False,
                     'error': 'Rasm talab qilinadi',
                     'action': 'retry'
                 })
 
+            print("[FACE-LOGIN] authenticate() chaqirilmoqda...")
             user = authenticate(request, images=images)
+
+            print("[FACE-LOGIN] authenticate() natijasi:", user)
             if user:
+                print(f"[FACE-LOGIN] ✅ Autentifikatsiya muvaffaqiyatli: {user.username}")
+                similarity_score = getattr(user, "_face_similarity_score", 0.0)
+                print(f"[FACE-LOGIN] similarity_score: {similarity_score}")
+
                 login(request, user, backend='account.backends.FaceAuthBackend')
                 request.session.save()
                 request.session.modified = True
+
                 next_url = request.GET.get('next', '/account/two-login/')
+                print(f"[FACE-LOGIN] Redirect qilinadigan URL: {next_url}")
+
                 return JsonResponse({
                     'success': True,
                     'full_name': user.full_name or 'Ism mavjud emas',
-                    'group_name': user.group_name or '',
+                    'group_name': getattr(user, 'group_name', '') or '',
                     'redirect_url': next_url,
-                    'similarity_score': 0.0,
+                    'similarity_score': similarity_score,
                     'action': 'stop_camera'
                 })
 
+            print("[FACE-LOGIN] ❌ authenticate() None qaytardi – hech bir backend user topmadi.")
             return JsonResponse({
                 'success': False,
                 'error': 'Yuz ma’lumotlari mos kelmadi',
                 'action': 'retry'
             })
 
-        except json.JSONDecodeError:
-            logger.error("[ERROR] JSON dekodlash xatosi")
+        except json.JSONDecodeError as e:
+            print("[FACE-LOGIN] ❌ JSON dekodlash xatosi:", str(e))
             return JsonResponse({
                 'success': False,
                 'error': 'Noto‘g‘ri ma’lumot formati',
                 'action': 'retry'
             })
         except Exception as e:
-            logger.error(f"[ERROR] Umumiy xato: {str(e)}")
+            print("[FACE-LOGIN] ❌ Umumiy xato:", str(e))
             return JsonResponse({
                 'success': False,
                 'error': f'Xato: {str(e)}',
@@ -89,8 +120,6 @@ class TwoLoginView(LoginRequiredMixin, View):
         user = request.user
         return render(request, 'auth/two_login.html', {'user_data': user})
 
-
-CustomUser = get_user_model()
 
 class IdLoginView(View):
     template_name = 'auth/id_login.html'

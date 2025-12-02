@@ -4,87 +4,228 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Test Tizimi - Yuz orqali kirish</title>
+    <title>Face ID - Test Tizimi</title>
+
+    <!-- Tailwind & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
     <style>
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.05); opacity: 1; }
+        /* iOS / macOS light background */
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(147,197,253,0.28), transparent 55%),
+                radial-gradient(circle at bottom right, rgba(167,243,208,0.32), transparent 55%),
+                linear-gradient(to bottom right, #f5f7fb, #eef2ff);
         }
-        .pulse { animation: pulse 1.5s infinite; }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            box-shadow:
+                0 18px 40px rgba(15, 23, 42, 0.12),
+                0 0 0 1px rgba(148, 163, 184, 0.25);
+        }
+
+        .ios-pill {
+            border-radius: 999px;
+        }
+
+        .face-frame {
+            border-radius: 24px;
+            overflow: hidden;
+            background: #f3f4f6;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+        }
+
         .face-overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 1.5rem;
-            transition: all 0.3s ease;
+            inset: 0;
+            border-radius: 24px;
+            pointer-events: none;
         }
-        .scanning { box-shadow: 0 0 20px rgba(34, 197, 94, 0.6); }
-        .animate-fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .scan-active {
+            box-shadow:
+                0 0 0 1px rgba(59, 130, 246, 0.35),
+                0 0 32px rgba(59, 130, 246, 0.35);
+        }
+
+        .scan-line {
+            position: absolute;
+            left: 12%;
+            right: 12%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, rgba(59,130,246,0.9), transparent);
+            animation: scan-line 1.8s linear infinite;
+        }
+
+        @keyframes scan-line {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .animate-fade-in { animation: fadeIn 0.22s ease-out; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .spinner-ios {
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            border-width: 2px;
+            border-style: solid;
+            border-color: rgba(148,163,184,0.55);
+            border-top-color: rgba(59,130,246,1);
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body class="bg-gradient-to-b from-gray-900 to-gray-800 min-h-screen flex items-center justify-center">
-<div id="app" class="w-full max-w-lg mx-auto p-6">
-    <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden border border-gray-700">
-        <div class="p-8 text-center text-white">
-            <h1 class="text-2xl font-semibold tracking-tight">Test Tizimi</h1>
-            <p class="text-sm opacity-60 mt-1">Yuzingizni skanlang va tizimga kiring</p>
-        </div>
-        <div class="p-8">
-            <p v-if="errorMessage" class="text-red-400 text-sm mb-4 animate-fade-in text-center">[[ errorMessage ]]</p>
-            <div class="relative mb-6 rounded-2xl overflow-hidden" :class="{ 'scanning': isScanning }">
-                <video id="video" autoplay playsinline class="w-full"></video>
-                <canvas id="detection-canvas" class="face-overlay"></canvas>
-                <div class="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center text-white text-sm"
-                     :class="{ 'hidden': !isProcessing }">
-                    <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2 pulse"></div>
-                    Skanlash...
+
+<body class="flex items-center justify-center px-4">
+
+<div id="app" class="w-full max-w-xl mx-auto py-6">
+    <div class="glass-card rounded-3xl p-6 sm:p-7 lg:p-8">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-500 to-sky-500 flex items-center justify-center text-white shadow-md">
+                    <i class="fas fa-face-smile-beam text-lg"></i>
                 </div>
-                <canvas id="capture-canvas" class="hidden"></canvas>
-            </div>
-            <div class="flex gap-3 mb-6">
-                <button class="flex-1 py-3 px-6 text-base font-medium text-white bg-green-500 bg-opacity-15 rounded-xl hover:bg-opacity-25 transition duration-300"
-                        :class="{ 'opacity-50 cursor-not-allowed': isScanning }" :disabled="isScanning" @click="startScanning">
-                    <i class="fas fa-play mr-2"></i> Skanlash
-                </button>
-                <button class="flex-1 py-3 px-6 text-base font-medium text-white bg-red-500 bg-opacity-15 rounded-xl hover:bg-opacity-25 transition duration-300"
-                        :class="{ 'opacity-50 cursor-not-allowed': !isScanning }" :disabled="!isScanning" @click="stopScanning">
-                    <i class="fas fa-stop mr-2"></i> To'xtatish
-                </button>
-            </div>
-            <div v-if="userInfo.full_name" class="text-center mb-6 animate">
-                <p class="text-base font-semibold text-white">[[ userInfo.full_name ]]</p>
-                <p class="text-sm text-gray-400">[[ userInfo.group_name ]]</p>
-            </div>
-            <form id="face-login-form" method="POST" action="{% url 'face_login' %}">
-                {% csrf_token %}
-                <input type="hidden" name="face_data" :value="faceData">
-                <div class="space-y-3 mb-6">
-{#                    <button type="submit" class="w-full py-3 px-6 bg-green-500 text-white rounded-xl text-base font-medium hover:bg-green-600 transition duration-300"#}
-{#                            :disabled="!userInfo.full_name">#}
-{#                        <i class="fas fa-sign-in-alt mr-2"></i> Kirish#}
-{#                    </button>#}
-                    <button v-if="userInfo.full_name" type="button" @click="resetUI"
-                            class="w-full py-3 px-6 bg-gray-600 text-white rounded-xl text-base font-medium hover:bg-gray-700 transition duration-300">
-                        <i class="fas fa-eraser mr-2"></i> Tozalash
-                    </button>
+                <div>
+                    <h1 class="text-[1.35rem] sm:text-[1.55rem] font-semibold text-slate-900 tracking-tight">
+                        Face ID kirish
+                    </h1>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                        Yuzingizni kameraga qarating va tizimga kiring
+                    </p>
                 </div>
-            </form>
-            <div class="text-center">
-                <a href="{% url 'login' %}" class="text-gray-400 text-sm hover:text-gray-200 transition duration-200 ">Oddiy kirish</a>
+            </div>
+            <div class="text-right text-xs text-slate-400">
+                <p class="uppercase tracking-[0.18em] text-slate-500">Test tizimi</p>
+                <p class="mt-1 text-slate-500">
+                    <span class="inline-flex items-center px-2.5 py-0.5 ios-pill bg-slate-100 text-[11px]">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1"></span>
+                        Face Auth faol
+                    </span>
+                </p>
             </div>
         </div>
-        <div class="p-4 text-center text-xs text-gray-400">
-            v1.0 © 2025
+
+        <!-- Status / Error -->
+        <div v-if="errorMessage || statusMessage" class="mb-4 space-y-2">
+            <div v-if="errorMessage" class="animate-fade-in flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-red-50 border border-red-200 text-[13px] sm:text-sm text-red-700 leading-snug">
+                <i class="fas fa-circle-exclamation text-red-500 text-sm"></i>
+                <span>[[ errorMessage ]]</span>
+            </div>
+            <div v-if="statusMessage" class="animate-fade-in flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-[13px] sm:text-sm text-emerald-700 leading-snug">
+                <i class="fas fa-check-circle text-emerald-500 text-sm"></i>
+                <span>[[ statusMessage ]]</span>
+            </div>
         </div>
+
+        <!-- Video block -->
+        <div class="face-frame mb-5 relative"
+             :class="{ 'scan-active': isScanning }">
+            <video id="video" autoplay playsinline class="w-full max-h-[320px] object-cover bg-slate-100"></video>
+            <canvas id="detection-canvas" class="face-overlay"></canvas>
+            <canvas id="capture-canvas" class="hidden"></canvas>
+
+            <!-- Scan line -->
+            <div v-if="isScanning" class="scan-line"></div>
+
+            <!-- Processing overlay -->
+            <div v-if="isProcessing"
+                 class="absolute inset-0 bg-white/70 flex flex-col items-center justify-center text-slate-700 text-[13px] sm:text-sm">
+                <div class="flex items-center gap-3">
+                    <div class="spinner-ios"></div>
+                    <div>
+                        <p class="font-medium">Kadr tahlil qilinmoqda...</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">
+                            Iltimos, kameraga qarab turing
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status line -->
+        <div class="flex items-center justify-between mb-4 text-[11px] sm:text-xs text-slate-500">
+            <div class="flex items-center gap-2">
+                <span class="inline-flex w-2 h-2 rounded-full"
+                      :class="{
+                        'bg-slate-300': !isScanning,
+                        'bg-blue-500': isScanning
+                      }"></span>
+                <span v-if="!isScanning">Skanlash hali boshlanmagan</span>
+                <span v-else-if="isProcessing">Yuz ma’lumotlari tekshirilmoqda…</span>
+                <span v-else>Skanlash aktiv, rasm olinmoqda</span>
+            </div>
+            <div class="hidden sm:flex items-center gap-1 text-slate-400">
+                <i class="fas fa-lock text-[10px]"></i>
+                <span>Ma’lumotlaringiz himoyalangan</span>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex flex-col sm:flex-row gap-3 mb-3">
+            <!-- Primary button: oqilishi oson, katta matn -->
+            <button
+                class="flex-1 inline-flex items-center justify-center py-3 sm:py-3.5 px-6 text-[0.93rem] sm:text-[0.98rem] font-semibold text-white ios-pill
+                       bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm hover:shadow-md transform hover:-translate-y-[1px] transition-all duration-200"
+                :class="{ 'opacity-60 cursor-not-allowed': isScanning }"
+                :disabled="isScanning"
+                @click="startScanning"
+            >
+                <i class="fas fa-play mr-2 text-sm"></i>
+                Skanlashni boshlash
+            </button>
+
+            <!-- Secondary button: oq fon, to‘q matn -->
+            <button
+                class="flex-1 inline-flex items-center justify-center py-3 sm:py-3.5 px-6 text-[0.93rem] sm:text-[0.98rem] font-medium text-slate-800 ios-pill
+                       bg-white hover:bg-slate-50 border border-slate-300 shadow-sm hover:shadow transition-all duration-200"
+                :class="{ 'opacity-45 cursor-not-allowed': !isScanning }"
+                :disabled="!isScanning"
+                @click="stopScanning"
+            >
+                <i class="fas fa-stop mr-2 text-sm"></i>
+                Skanlashni to‘xtatish
+            </button>
+        </div>
+
+        <!-- Bottom links -->
+        <div class="flex items-center justify-between text-[11px] sm:text-xs text-slate-400 mt-2">
+            <a href="{% url 'login' %}" class="hover:text-slate-700 transition duration-150 flex items-center gap-1.5">
+                <i class="fas fa-arrow-left text-[10px]"></i>
+                <span>Oddiy login orqali kirish</span>
+            </a>
+            <span class="text-slate-400">v1.0 • Face ID</span>
+        </div>
+
+        <!-- Hidden form (kerak bo'lsa keyin) -->
+        <form id="face-login-form" method="POST" action="{% url 'face_login' %}" class="hidden">
+            {% csrf_token %}
+            <input type="hidden" name="face_data" :value="faceData">
+        </form>
     </div>
 </div>
+
+<!-- Vue & face-api -->
 <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
 <script>
     const { createApp, ref, onMounted } = Vue;
 
@@ -94,11 +235,19 @@
             const isProcessing = ref(false);
             const isScanning = ref(false);
             const errorMessage = ref('');
-            const userInfo = ref({ full_name: '', group_name: '' });
+            const statusMessage = ref('');
             const faceData = ref('');
-            let stream = null, intervalId = null, ctx = null;
 
-            const getCookie = name => document.cookie.split(';').find(c => c.trim().startsWith(name + '='))?.split('=')[1] || null;
+            let stream = null;
+            let ctx = null;
+            let scanTimeoutId = null;
+
+            const getCookie = (name) => {
+                const value = document.cookie
+                    .split(';')
+                    .find(c => c.trim().startsWith(name + '='));
+                return value ? value.split('=')[1] : null;
+            };
             const csrfToken = getCookie('csrftoken');
 
             async function startCamera() {
@@ -109,9 +258,11 @@
                         });
                         const video = document.getElementById('video');
                         video.srcObject = stream;
+
                         video.onloadedmetadata = () => {
                             const detectionCanvas = document.getElementById('detection-canvas');
                             const captureCanvas = document.getElementById('capture-canvas');
+
                             if (detectionCanvas && captureCanvas) {
                                 detectionCanvas.width = video.videoWidth;
                                 detectionCanvas.height = video.videoHeight;
@@ -129,70 +280,100 @@
             function stopCamera() {
                 if (stream) {
                     stream.getTracks().forEach(track => track.stop());
-                    document.getElementById('video').srcObject = null;
+                    const video = document.getElementById('video');
+                    if (video) video.srcObject = null;
                     stream = null;
                 }
             }
 
-            async function detectFace() {
-                if (isProcessing.value || !isScanning.value) return;
-                isProcessing.value = true;
-                const video = document.getElementById('video');
+            function clearScanTimer() {
+                if (scanTimeoutId) {
+                    clearTimeout(scanTimeoutId);
+                    scanTimeoutId = null;
+                }
+            }
 
-                // Yuz aniqlash
-                if (ctx) {
-                    const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-                        .withFaceLandmarks();
-                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                    if (detections.length > 0) {
-                        const { x, y, width, height } = detections[0].detection.box;
-                        ctx.strokeStyle = 'rgba(34, 197, 94, 0.8)';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(x, y, width, height);
-                        // Landmarklar
-                        const landmarks = detections[0].landmarks.positions;
-                        ctx.fillStyle = 'rgba(34, 197, 94, 0.5)';
-                        landmarks.forEach(({ x, y }) => {
-                            ctx.beginPath();
-                            ctx.arc(x, y, 1, 0, 2 * Math.PI);
-                            ctx.fill();
-                        });
-                    }
+            async function runScanCycle() {
+                if (!isScanning.value) return;
+                if (isProcessing.value) {
+                    scanTimeoutId = setTimeout(runScanCycle, 500);
+                    return;
                 }
 
+                await detectAndSend();
+
+                if (isScanning.value) {
+                    scanTimeoutId = setTimeout(runScanCycle, 2500);
+                }
+            }
+
+            async function detectAndSend() {
+                const video = document.getElementById('video');
                 const captureCanvas = document.getElementById('capture-canvas');
-                captureCanvas.getContext('2d').drawImage(video, 0, 0);
-                const image = captureCanvas.toDataURL('image/jpeg', 0.6);
+
+                if (!video || !ctx || !captureCanvas) return;
+
+                isProcessing.value = true;
 
                 try {
+                    // Yuzni brauzer ichida aniqlash (faqat vizual uchun)
+                    const detections = await faceapi
+                        .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+                        .withFaceLandmarks();
+
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+                    if (detections.length > 0) {
+                        const { x, y, width, height } = detections[0].detection.box;
+                        ctx.strokeStyle = 'rgba(59,130,246,0.95)';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(x, y, width, height);
+                    }
+
+                    // Kadrni serverga yuborish
+                    captureCanvas.getContext('2d').drawImage(video, 0, 0);
+                    const image = captureCanvas.toDataURL('image/jpeg', 0.6);
+
                     const response = await fetch("{% url 'face_login' %}", {
                         method: 'POST',
-                        headers: { 'X-CSRFToken': csrfToken, 'Content-Type': 'application/json' },
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                            'Content-Type': 'application/json'
+                        },
                         body: JSON.stringify({ images: [image] }),
                         credentials: 'include'
                     });
+
                     if (!response.ok) {
-                        if (response.status === 403 || response.status === 401) throw new Error('Kirish talab qilinadi.');
+                        if (response.status === 403 || response.status === 401) {
+                            throw new Error('Kirish talab qilinadi.');
+                        }
                         throw new Error(`HTTP ${response.status}`);
                     }
+
                     const data = await response.json();
+
                     if (data.success) {
-                        userInfo.value = { full_name: data.full_name || '', group_name: data.group_name || 'Guruh yo‘q' };
+                        statusMessage.value = 'Kirish tasdiqlandi. Yo‘naltirilmoqda...';
+                        errorMessage.value = '';
                         faceData.value = image;
+
                         stopScanning();
-                        if (data.action === 'stop_camera') stopCamera();
-                        if (data.redirect_url) setTimeout(() => window.location.href = data.redirect_url, 1000);
-                    } else {
-                        errorMessage.value = data.error || 'Yuz aniqlanmadi';
-                        resetUI();
-                        if (data.action === 'retry' && isScanning.value && !intervalId) {
-                            intervalId = setInterval(detectFace, 3000);
+                        if (data.action === 'stop_camera') {
+                            stopCamera();
                         }
+                        if (data.redirect_url) {
+                            setTimeout(() => {
+                                window.location.href = data.redirect_url;
+                            }, 700);
+                        }
+                    } else {
+                        statusMessage.value = '';
+                        errorMessage.value = data.error || 'Yuz ma’lumotlari mos kelmadi. Yuzingizni kameraga yaxshiroq ko‘rsating.';
                     }
                 } catch (err) {
+                    statusMessage.value = '';
                     errorMessage.value = `Xato: ${err.message}`;
-                    resetUI();
-                    if (isScanning.value && !intervalId) intervalId = setInterval(detectFace, 3000);
                 } finally {
                     isProcessing.value = false;
                 }
@@ -200,60 +381,63 @@
 
             function startScanning() {
                 if (isScanning.value) return;
+
                 isScanning.value = true;
-                document.getElementById('detection-canvas').style.display = 'block';
-                intervalId = setInterval(detectFace, 3000);
-                detectFace();
+                errorMessage.value = '';
+                statusMessage.value = '';
+                faceData.value = '';
+
+                const detectionCanvas = document.getElementById('detection-canvas');
+                if (detectionCanvas) detectionCanvas.style.display = 'block';
+
+                clearScanTimer();
+                runScanCycle();
             }
 
             function stopScanning() {
                 if (!isScanning.value) return;
+
                 isScanning.value = false;
-                clearInterval(intervalId);
-                intervalId = null;
+                clearScanTimer();
+
                 const detectionCanvas = document.getElementById('detection-canvas');
-                detectionCanvas.style.display = 'none';
-                if (ctx) ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                resetUI();
-            }
+                if (detectionCanvas) detectionCanvas.style.display = 'none';
 
-            function resetUI() {
-                userInfo.value = { full_name: '', group_name: '' };
-                faceData.value = '';
-                errorMessage.value = '';
-            }
-
-            async function checkEncodings() {
-                try {
-                    const response = await fetch("{% url 'generate_face_encodings' %}", {
-                        method: 'GET',
-                        headers: { 'Accept': 'application/json' },
-                        credentials: 'include'
-                    });
-                    if (!response.ok) {
-                        if (response.status === 403 || response.status === 401) return;
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                    const data = await response.json();
-                    if (data.status === 'error') errorMessage.value = 'Encoding xatosi: ' + data.message;
-                } catch (err) {
-                    errorMessage.value = `Xato: ${err.message}`;
-                    console.error('Xato:', err);
+                if (ctx) {
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 }
             }
 
             onMounted(async () => {
-                await Promise.all([
-                    faceapi.nets.tinyFaceDetector.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/'),
-                    faceapi.nets.faceLandmark68Net.loadFromUri('https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/')
-                ]);
+                try {
+                    await Promise.all([
+                        faceapi.nets.tinyFaceDetector.loadFromUri(
+                            'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/'
+                        ),
+                        faceapi.nets.faceLandmark68Net.loadFromUri(
+                            'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/'
+                        )
+                    ]);
+                } catch (e) {
+                    console.error('face-api yuklash xatosi:', e);
+                    errorMessage.value = 'Yuz aniqlash modeli yuklanmadi. Internetni tekshiring.';
+                }
+
                 await startCamera();
-                await checkEncodings();
             });
 
-            return { isProcessing, isScanning, errorMessage, userInfo, faceData, startScanning, stopScanning, resetUI };
+            return {
+                isProcessing,
+                isScanning,
+                errorMessage,
+                statusMessage,
+                faceData,
+                startScanning,
+                stopScanning
+            };
         }
     }).mount('#app');
 </script>
+
 </body>
 </html>

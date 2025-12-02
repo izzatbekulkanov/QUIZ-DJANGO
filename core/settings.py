@@ -95,8 +95,8 @@ MIDDLEWARE = [
 
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://webtest.namspi.uz'
-    'https://test.ulkanov.uz'
+    "https://webtest.namspi.uz",  # Siz xohlagan domen
+    "http://webtest.namspi.uz",   # Agar HTTP orqali ham ishlasangiz
     'https://test.namspi.uz'
 ]
 
@@ -188,7 +188,7 @@ REST_FRAMEWORK = {
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    # 'account.backends.FaceAuthBackend',
+    'account.backends.FaceAuthBackend',
 ]
 
 SIMPLE_JWT = {

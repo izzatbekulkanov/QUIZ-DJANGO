@@ -114,6 +114,8 @@ class CheckUnfinishedTestView(View):
                 'unfinished': False,
                 'attempts_exceeded': False
             })
+
+
 @login_required
 def all_results(request):
     user = request.user
@@ -157,7 +159,9 @@ class ViewResultView(View):
     def get(self, request, result_id):
         try:
             result = StudentTest.objects.get(id=result_id, student=request.user)
-            questions = StudentTestQuestion.objects.filter(student_test=result).select_related('question', 'selected_answer').prefetch_related('question__answers').order_by('order')
+            questions = StudentTestQuestion.objects.filter(student_test=result).select_related('question',
+                                                                                               'selected_answer').prefetch_related(
+                'question__answers').order_by('order')
             context = {
                 'result': result,
                 'questions': questions,

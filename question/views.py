@@ -1,8 +1,7 @@
 import json
-import logging
 import pickle
-from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlencode
+import face_recognition
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -22,7 +21,6 @@ from django.views.decorators.csrf import csrf_exempt
 from account.models import CustomUser, FaceEncoding
 from logs.models import Log
 from question.models import StudentTest, Category, StudentTestQuestion, Test, StudentTestAssignment
-from deepface import DeepFace
 import os
 
 
@@ -158,14 +156,6 @@ class UsersView(View):
             }, status=500)
 
 
-try:
-    import onnxruntime
-    print(f"[INFO] onnxruntime versiyasi: {onnxruntime.__version__}")
-except ImportError as e:
-    raise ImportError(
-        f"onnxruntime o'rnatilmagan yoki Python 3.12.10 bilan mos kelmaydi. `pip install onnxruntime==1.17.3` ni ishlatib ko'ring. Xato: {str(e)}"
-    )
-
 User = get_user_model()
 
 class EncodingView(LoginRequiredMixin, View):
@@ -175,38 +165,54 @@ class EncodingView(LoginRequiredMixin, View):
     def get(self, request):
         # Statistik ma'lumotlar
         stats = [
-            {'count': User.objects.filter(is_student=True, face_encoding__isnull=False).count(),
-             'label': 'Encoding yaratilgan talabalar'},
-            {'count': User.objects.filter(is_student=True, face_encoding__isnull=True).count(),
-             'label': 'Encoding yaratilmagan talabalar'},
-            {'count': User.objects.filter(is_teacher=True, face_encoding__isnull=False).count(),
-             'label': 'Encoding yaratilgan o‘qituvchilar'},
-            {'count': User.objects.filter(is_teacher=True, face_encoding__isnull=True).count(),
-             'label': 'Encoding yaratilmagan o‘qituvchilar'},
-            {'count': User.objects.filter(face_encoding__isnull=False).count(),
-             'label': 'Encoding yaratilgan foydalanuvchilar'},
-            {'count': User.objects.filter(face_encoding__isnull=True).count(),
-             'label': 'Encoding yaratilmagan foydalanuvchilar'},
+            {
+                'count': User.objects.filter(is_student=True, face_encoding__isnull=False).count(),
+                'label': 'Encoding yaratilgan talabalar'
+            },
+            {
+                'count': User.objects.filter(is_student=True, face_encoding__isnull=True).count(),
+                'label': 'Encoding yaratilmagan talabalar'
+            },
+            {
+                'count': User.objects.filter(is_teacher=True, face_encoding__isnull=False).count(),
+                'label': 'Encoding yaratilgan o‘qituvchilar'
+            },
+            {
+                'count': User.objects.filter(is_teacher=True, face_encoding__isnull=True).count(),
+                'label': 'Encoding yaratilmagan o‘qituvchilar'
+            },
+            {
+                'count': User.objects.filter(face_encoding__isnull=False).count(),
+                'label': 'Encoding yaratilgan foydalanuvchilar'
+            },
+            {
+                'count': User.objects.filter(face_encoding__isnull=True).count(),
+                'label': 'Encoding yaratilmagan foydalanuvchilar'
+            },
         ]
 
         # Guruhlar
-        groups = User.objects.filter(
-            is_student=True,
-            group_name__isnull=False
-        ).values('group_name').distinct().order_by('group_name')
+        groups = (
+            User.objects.filter(is_student=True, group_name__isnull=False)
+            .values('group_name')
+            .distinct()
+            .order_by('group_name')
+        )
 
         # Foydalanuvchilar va ularning encoding ma'lumotlari
         search_query = request.GET.get('search', '')
         filter_type = request.GET.get('filter_type', '')
         group_id = request.GET.get('group_id', '')
 
-        users = User.objects.all()
+        users = User.objects.all().select_related('face_encoding')
+
         if search_query:
             users = users.filter(
-                models.Q(username__icontains=search_query) |
-                models.Q(first_name__icontains=search_query) |
-                models.Q(second_name__icontains=search_query)
+                models.Q(username__icontains=search_query)
+                | models.Q(first_name__icontains=search_query)
+                | models.Q(second_name__icontains=search_query)
             )
+
         if filter_type == 'student':
             users = users.filter(is_student=True)
         elif filter_type == 'teacher':
@@ -214,17 +220,20 @@ class EncodingView(LoginRequiredMixin, View):
         elif filter_type == 'group' and group_id:
             users = users.filter(group_name=group_id, is_student=True)
 
-        # Encoding ma'lumotlari bilan birga foydalanuvchilarni formatlash
-        encodings = [
-            {
-                'user': user,
-                'has_encoding': hasattr(user, 'face_encoding') and user.face_encoding is not None
-            }
-            for user in users
-        ]
+        encodings = []
+        for user in users:
+            try:
+                fe = user.face_encoding  # OneToOne reverse
+                has_encoding = bool(fe and fe.encoding)
+            except FaceEncoding.DoesNotExist:
+                has_encoding = False
 
-        # Pagination
-        paginator = Paginator(encodings, 50)  # Har bir sahifada 10 ta element
+            encodings.append({
+                'user': user,
+                'has_encoding': has_encoding
+            })
+
+        paginator = Paginator(encodings, 50)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
 
@@ -240,9 +249,10 @@ class EncodingView(LoginRequiredMixin, View):
         return render(request, self.template_name, context)
 
 
+
 def process_user(user):
     try:
-        if not hasattr(user.profile_picture, 'file') or not user.profile_picture:
+        if not user.profile_picture:
             print(f"[XATO] {user.username} uchun rasm fayli yo‘q")
             return None, f"{user.username} uchun rasm yo‘q"
 
@@ -251,31 +261,65 @@ def process_user(user):
             print(f"[XATO] Rasm topilmadi: {user.username} - {image_path}")
             return None, f"Rasm topilmadi: {user.username}"
 
-        embedding = DeepFace.represent(img_path=image_path, model_name="ArcFace", enforce_detection=True)[0][
-            "embedding"]
-        if len(embedding) != 512:
-            print(f"[XATO] Noto‘g‘ri embedding uzunligi: {user.username} - kutilgan 512, olingan {len(embedding)}")
-            return None, f"Noto‘g‘ri embedding uzunligi: {user.username}"
+        image = face_recognition.load_image_file(image_path)
+        h, w = image.shape[:2]
+        resolution = f"{w}x{h}"
+
+        face_locations = face_recognition.face_locations(image)
+        if len(face_locations) == 0:
+            print(f"[XATO] {user.username} uchun yuz topilmadi")
+            return None, f"{user.username} uchun yuz topilmadi"
+        if len(face_locations) > 1:
+            print(f"[XATO] {user.username} rasmida bir nechta yuz aniqlandi")
+            return None, f"{user.username} rasmida faqat bitta yuz bo‘lishi kerak"
+
+        encodings = face_recognition.face_encodings(image, known_face_locations=face_locations)
+        if not encodings:
+            print(f"[XATO] {user.username} uchun encoding olinmadi")
+            return None, f"{user.username} uchun encoding olinmadi"
+
+        encoding = encodings[0]
+
+        if len(encoding) != 128:
+            print(
+                f"[XATO] Noto‘g‘ri encoding uzunligi: "
+                f"{user.username} - kutilgan 128, olingan {len(encoding)}"
+            )
+            return None, (
+                f"Noto‘g‘ri encoding uzunligi: {user.username} - "
+                f"kutilgan 128, olingan {len(encoding)}"
+            )
+
+        encoding_bytes = pickle.dumps(encoding.astype("float32"))
 
         return {
             "user": user,
-            "encoding": pickle.dumps(embedding),
+            "encoding": encoding_bytes,
+            "resolution": resolution,
         }, None
+
     except Exception as e:
         print(f"[XATO] {user.username} uchun xato: {str(e)}")
         return None, f"{user.username} uchun xato: {str(e)}"
 
 
 class GenerateEncodingsView(LoginRequiredMixin, View):
-    login_url = '/login/'
+    login_url = '/account/login/'   # yoki reverse_lazy('login')
 
     def get(self, request, user_id=None, group_name=None, *args, **kwargs):
         user_type = kwargs.get('user_type')
 
         def stream():
+            total_processed = 0
+            skipped = 0
+
             try:
                 print("[INFO] Encoding yaratish boshlandi...")
-                filters = {'profile_picture__isnull': False, 'face_encoding__isnull': True}
+                filters = {
+                    'profile_picture__isnull': False,
+                    'face_encoding__isnull': True,  # faqat encoding yo‘qlarga
+                }
+
                 if user_id:
                     filters['id'] = user_id
                     log_msg = f"Foydalanuvchi {user_id}"
@@ -294,44 +338,57 @@ class GenerateEncodingsView(LoginRequiredMixin, View):
 
                 users = User.objects.filter(**filters)
                 total_count = users.count()
-                total_processed = 0
                 print(f"[INFO] Jami {total_count} foydalanuvchi topildi: {log_msg}")
 
                 if total_count == 0:
-                    yield f'data: {{"status": "Encoding kerak bo‘lgan {log_msg.lower()} topilmadi", "progress": 100}}\n\n'
+                    yield (
+                        f'data: {{"status": "Encoding kerak bo‘lgan {log_msg.lower()} topilmadi", '
+                        f'"progress": 100}}\n\n'
+                    )
                     return
 
                 for user in users:
                     result, error = process_user(user)
                     if error or not result:
+                        skipped += 1
                         print(f"[XATO] O‘tkazib yuborildi: {error}")
-                        yield f'data: {{"status": "{error}", "progress": {round((total_processed + skipped) / total_count * 100)}}}\n\n'
+                        progress = round((total_processed + skipped) / total_count * 100)
+                        yield (
+                            f'data: {{"status": "{error}", '
+                            f'"progress": {progress}}}\n\n'
+                        )
                         continue
 
                     with transaction.atomic():
-                        # FaceEncoding instansini yaratish yoki yangilash
                         FaceEncoding.objects.update_or_create(
                             user=user,
                             defaults={
                                 "encoding": result["encoding"],
-                                "encoding_version": "ArcFace",
-                                "image_resolution": "112x112",
-                                "confidence_score": 0.9,
+                                "encoding_version": "face_recognition_128",
+                                "image_resolution": result["resolution"],
+                                "confidence_score": 1.0,
                             }
                         )
 
                     total_processed += 1
-                    progress = round((total_processed + skipped) / total_count * 100) if total_count else 100
-                    yield f'data: {{"status": "{total_processed}/{total_count} {log_msg.lower()} uchun encoding yaratildi", "progress": {progress}}}\n\n'
+                    progress = round((total_processed + skipped) / total_count * 100)
+                    yield (
+                        f'data: {{"status": "{total_processed}/{total_count} '
+                        f'{log_msg.lower()} uchun encoding yaratildi", '
+                        f'"progress": {progress}}}\n\n'
+                    )
 
                 status = "success" if skipped == 0 else "partial_success"
-                yield f'data: {{"status": "✅ Yakunlandi. {total_processed}/{total_count} {log_msg.lower()} uchun encoding yaratildi, {skipped} o‘tkazib yuborildi", "progress": 100}}\n\n'
+                yield (
+                    f'data: {{"status": "✅ Yakunlandi. {total_processed}/{total_count} '
+                    f'{log_msg.lower()} uchun encoding yaratildi, {skipped} o‘tkazib yuborildi", '
+                    f'"result": "{status}", "progress": 100}}\n\n'
+                )
+
             except Exception as e:
                 print(f"[XATO] Umumiy xato: {str(e)}")
                 yield f'data: {{"status": "❌ Xato: {str(e)}", "progress": 100}}\n\n'
 
-        total_processed = 0
-        skipped = 0
         return StreamingHttpResponse(stream(), content_type='text/event-stream')
 
 
