@@ -1,27 +1,42 @@
-{% load static %}
-<footer id="page-footer" class="bg-white border-top shadow-sm">
-  <div class="content py-3">
-    <div class="row align-items-center fs-sm text-muted">
-      <!-- Chap tomon: Tizim nomi va yil -->
-      <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
-        <a href="https://yourwebsite.com" class="fw-semibold text-primary text-decoration-none" target="_blank">
-          {{ system.name }}
-        </a>
-        © <span id="year-copy"></span>. Barcha huquqlar himoyalangan.
+﻿{% load static %}
+<footer id="page-footer">
+  <div class="content py-4">
+    <div class="row g-3 align-items-start fs-sm">
+      <div class="col-md-6 text-center text-md-start">
+        <div class="fw-semibold mb-1">
+          {{ system.name|default:"Quiz Platform" }}
+          <span class="text-muted">(c) <span id="year-copy"></span></span>
+        </div>
+        <div class="text-muted">
+          {% if system and system.footer_text %}
+            {{ system.footer_text }}
+          {% else %}
+            Testlar, natijalar va shaxsiy kabinet uchun yagona platforma.
+          {% endif %}
+        </div>
       </div>
 
-      <!-- O‘ng tomon: Yaratuvchi va versiya -->
-      <div class="col-md-6 text-center text-md-end">
-        <small class="text-muted">
-          Dasturchi: <strong>Izzatbek Ulkanov</strong> | NamDPI RTTM | Versiya: <strong>1.0</strong>
-        </small>
+      <div class="col-md-6 text-center text-md-end text-muted">
+        <div class="mb-1">
+          <span class="me-2"><i class="fa fa-code opacity-75 me-1"></i> Izzatbek Ulkanov</span>
+          <span class="me-2"><i class="fa fa-tag opacity-75 me-1"></i> v1.0</span>
+        </div>
+        <div>
+          {% if system and system.contact_email %}
+            <span class="me-3"><i class="fa fa-envelope opacity-75 me-1"></i> {{ system.contact_email }}</span>
+          {% endif %}
+          {% if system and system.contact_phone %}
+            <span><i class="fa fa-phone opacity-75 me-1"></i> {{ system.contact_phone }}</span>
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>
 </footer>
 
-{% block script %}
 <script>
-  document.getElementById('year-copy').textContent = new Date().getFullYear();
+  (function () {
+    var el = document.getElementById('year-copy');
+    if (el) el.textContent = new Date().getFullYear();
+  })();
 </script>
-{% endblock script %}

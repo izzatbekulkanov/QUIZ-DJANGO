@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Detaktik Question - Admin Panel</title>
+    <title>{{ system.name|default:"Quiz Platform" }} - Panel</title>
 
     <meta name="description" content="Detaktik Question - Django asosidagi savol-javob va test platformasi.">
     <meta name="author" content="Detaktik Team">
@@ -30,46 +30,29 @@
 
     <!-- Tema CSS -->
     <link rel="stylesheet" id="css-theme" href="{% static 'assets/css/themes/amethyst.min.css' %}">
+    <!-- Glass theme overrides (scoped under body.glass-app) -->
+    <link rel="stylesheet" href="{% static 'assets/css/glass.css' %}">
     <!-- END Stylesheets -->
-    <style>
-      /* Hamburger tugmasini yaxshi ko'rinishi uchun */
-.nav-main-link {
-  padding: 10px 15px;
-  display: flex;
-  align-items: center;
-}
-
-.nav-main-link-icon {
-  margin-right: 5px;
-}
-
-/* Mobil qurilmalarda menu moslashuvchanligi */
-@media (max-width: 768px) {
-  .nav-main-link {
-    width: 100%;
-    justify-content: center;
-  }
-}
-    </style>
     {% block style %}
     {% endblock style %}
 </head>
 
-  <body>
-    <div id="page-container" class="page-header-fixed main-content-boxed">
+  <body class="glass-app">
+    <div id="page-container" class="main-content-boxed glass-shell">
+      <div class="glass-layout">
+        {% include 'dashboard/components/side_menu.html' %}
 
-        <!-- Header -->
-        {% include 'dashboard/components/header.html' %}
+        <div class="glass-main">
+          <!-- Main Container -->
+          {% block content %}
+          {% endblock content %}
+          <!-- END Main Container -->
 
-
-      <!-- Main Container -->
-      {% block content %}
-      {% endblock content %}
-      <!-- END Main Container -->
-
-            <!-- Footer -->
-        {% include 'dashboard/components/footer.html' %}
-        <!-- END Footer -->
+          <!-- Footer -->
+          {% include 'dashboard/components/footer.html' %}
+          <!-- END Footer -->
+        </div>
+      </div>
     </div>
     <!-- END Page Container -->
 

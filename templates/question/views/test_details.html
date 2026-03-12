@@ -93,7 +93,7 @@ td img {
                           </td>
                           <td>
                               {% if student_question.selected_answer %}
-                              {{ student_question.selected_answer.text }}
+                              {{ student_question.selected_answer.text|safe }}
                               {% else %}
                               <span class="text-muted">Javob berilmagan</span>
                               {% endif %}
@@ -101,7 +101,7 @@ td img {
                           <td>
                               {% for answer in student_question.question.answers.all %}
                                   {% if answer.is_correct %}
-                                  {{ answer.text }}
+                                  {{ answer.text|safe }}
                                   {% endif %}
                               {% endfor %}
                           </td>

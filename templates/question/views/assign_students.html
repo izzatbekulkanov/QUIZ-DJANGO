@@ -85,7 +85,7 @@
        style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
     <div class="bg-primary-dark-op">
       <div class="container">
-        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-3 mb-2 text-center text-sm-start">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
           <div class="flex-grow-1">
             <h1 class="fw-semibold text-white mb-0">{{ test.name }}</h1>
             <h2 class="h4 fw-normal text-white-75 mb-0">Talabalarni biriktirish</h2>
@@ -153,7 +153,13 @@
                 <td>{{ student.first_name|default:"–" }}</td>
                 <td>{{ student.second_name|default:"–" }}</td>
                 <td>{{ student.group_name|default:"–" }}</td>
-                <td>{{ student.student_id_number|default:"–" }}</td>
+                <td>
+                  {% if student.student_id_number %}
+                    {{ student.student_id_number }}
+                  {% else %}
+                    {{ student.username|default:"–" }}
+                  {% endif %}
+                </td>
                 <td>
                   <img src="{% if student.profile_picture %}{{ student.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
                        alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
@@ -223,7 +229,13 @@
                 <td>{{ student.first_name|default:"–" }}</td>
                 <td>{{ student.second_name|default:"–" }}</td>
                 <td>{{ student.group_name|default:"–" }}</td>
-                <td>{{ student.student_id_number|default:"–" }}</td>
+                <td>
+                  {% if student.student_id_number %}
+                    {{ student.student_id_number }}
+                  {% else %}
+                    {{ student.username|default:"–" }}
+                  {% endif %}
+                </td>
                 <td>
                   <img src="{% if student.profile_picture %}{{ student.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
                        alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">

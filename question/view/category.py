@@ -23,22 +23,18 @@ class CategoriesView(View):
 
     def delete(self, request, category_id):
         if not request.user.is_superuser:
-            print(f"[XATO] Foydalanuvchi {request.user.username} kategoriyani o‘chirishga ruxsati yo‘q")
             return JsonResponse({"success": False, "message": "Sizda bu amalni bajarish uchun ruxsat yo‘q!"},
                                 status=403)
 
         try:
             category = get_object_or_404(Category, id=category_id)
             if category.tests.exists():
-                print(f"[XATO] Kategoriya '{category.name}' o‘chirilmadi: bog‘liq savollar mavjud")
                 return JsonResponse({"success": False, "message": "Kategoriyada savollar mavjud, o‘chirib bo‘lmaydi"},
                                     status=400)
 
             category.delete()
-            print(f"[INFO] Kategoriya '{category.name}' o‘chirildi")
             return JsonResponse({"success": True, "message": "Kategoriya muvaffaqiyatli o‘chirildi"})
         except Exception as e:
-            print(f"[XATO] Kategoriya ID {category_id} o‘chirishda xato: {str(e)}")
             return JsonResponse({"success": False, "message": f"Xato: {str(e)}"}, status=500)
 
 
@@ -57,7 +53,7 @@ class EditCategoryView(View):
         description = request.POST.get('description')
         image = request.FILES.get('image')
 
-        # 🔒 Tekshiruv: nom kiritilganmi
+        # Tekshiruv: nom kiritilganmi
         if not name:
             message = "Kategoriya nomi kiritilishi shart!"
             if self._is_ajax(request):
@@ -100,24 +96,18 @@ class AddCategoryView(View):
         return render(request, self.template_name)
 
     def post(self, request):
-        print("📥 POST so‘rov qabul qilindi.")
 
         name = request.POST.get('name')
         description = request.POST.get('description')
         image = request.FILES.get('image')
 
-        print(f"➡️  Kiritilgan nom: {name}")
-        print(f"➡️  Tavsif: {description}")
-        print(f"➡️  Rasm: {'Yuklangan' if image else 'Yuklanmagan'}")
 
         if not name:
-            print("❌ Kategoriya nomi yo‘q!")
             return self._response(request, success=False, message="Kategoriya nomi kiritilishi shart!")
 
         try:
             # Rasm bo'lmasa — default static rasmni media'ga nusxalash
             if not image:
-                print("ℹ️  Rasm yuklanmadi, default static rasmdan foydalaniladi.")
 
                 static_default_path = os.path.join(settings.BASE_DIR, 'static', 'assets', 'images', 'question_category.png')
                 media_path = os.path.join(settings.MEDIA_ROOT, 'category_images')
@@ -128,7 +118,6 @@ class AddCategoryView(View):
                 new_image_path = os.path.join(media_path, filename)
 
                 shutil.copy(static_default_path, new_image_path)
-                print(f"✅ Default rasm nusxa olindi: {new_image_path}")
 
                 with open(new_image_path, 'rb') as f:
                     image_file = File(f)
@@ -138,19 +127,16 @@ class AddCategoryView(View):
                         description=description,
                         image=image_file,
                     )
-                    print(f"✅ Kategoriya yaratildi (default rasm): {category.name}")
             else:
                 category = Category.objects.create(
                     name=name,
                     description=description,
                     image=image,
                 )
-                print(f"✅ Kategoriya yaratildi (upload rasm): {category.name}")
 
             return self._response(request, success=True, message="Kategoriya muvaffaqiyatli qo'shildi!")
 
         except Exception as e:
-            print(f"❌ Xatolik: {str(e)}")
             return self._response(request, success=False, message=f"Xatolik yuz berdi: {str(e)}")
 
     def _response(self, request, success, message):

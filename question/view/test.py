@@ -5,6 +5,7 @@ from datetime import datetime
 
 import openpyxl
 from django.db.models import F
+from django.db import transaction
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -164,7 +165,8 @@ class AddQuestionTestView(View):
         context = {
             'form': form,
             'test': test,
-            'questions': questions
+            'questions': questions,
+            'student_count': test.students.count(),
         }
         return render(request, self.template_name, context)
 
@@ -211,6 +213,118 @@ class AddQuestionTestView(View):
 
         print(f"Form validatsiya xatoliklari: {form.errors}")  # Form validatsiyasi xatolarini tekshirish
         return JsonResponse({"success": False, "errors": form.errors})
+
+
+@method_decorator(login_required, name='dispatch')
+class QuestionDetailApiView(View):
+    def get(self, request, test_id, question_id):
+        question = get_object_or_404(Question, id=question_id, test_id=test_id)
+
+        # Basic ownership check: test creator or superuser can edit.
+        if not (request.user.is_superuser or question.test.created_by_id == request.user.id):
+            return JsonResponse({"success": False, "errors": "Ruxsat yo'q"}, status=403)
+
+        answers = list(question.answers.order_by('id').values('id', 'text', 'is_correct'))
+        return JsonResponse({
+            "success": True,
+            "question": {
+                "id": question.id,
+                "text": question.text,
+                "answers": answers,
+            }
+        })
+
+
+@method_decorator(login_required, name='dispatch')
+class QuestionUpdateApiView(View):
+    def post(self, request, test_id, question_id):
+        question = get_object_or_404(Question, id=question_id, test_id=test_id)
+
+        if not (request.user.is_superuser or question.test.created_by_id == request.user.id):
+            return JsonResponse({"success": False, "errors": "Ruxsat yo'q"}, status=403)
+
+        try:
+            payload = json.loads(request.body.decode('utf-8') or '{}')
+        except Exception:
+            return JsonResponse({"success": False, "errors": "JSON formatda xato"})
+
+        text = (payload.get('text') or '').strip()
+        answers_payload = payload.get('answers') or []
+
+        if not text:
+            return JsonResponse({"success": False, "errors": "Savol matni bo'sh bo'lmasligi kerak"})
+
+        if not isinstance(answers_payload, list) or len(answers_payload) < 2:
+            return JsonResponse({"success": False, "errors": "Kamida 2 ta variant bo'lishi kerak"})
+
+        cleaned_answers: list[dict] = []
+        for a in answers_payload:
+            if not isinstance(a, dict):
+                continue
+            a_text = (a.get('text') or '').strip()
+            if not a_text:
+                continue
+            cleaned_answers.append({
+                "id": a.get("id"),
+                "text": a_text,
+                "is_correct": bool(a.get("is_correct")),
+            })
+
+        if len(cleaned_answers) < 2:
+            return JsonResponse({"success": False, "errors": "Kamida 2 ta to'ldirilgan variant bo'lishi kerak"})
+
+        if not any(a["is_correct"] for a in cleaned_answers):
+            return JsonResponse({"success": False, "errors": "Kamida bitta to'g'ri javob belgilanmashi kerak"})
+
+        with transaction.atomic():
+            question.text = text
+            question.save(update_fields=['text'])
+
+            existing = {a.id: a for a in question.answers.all()}
+            keep_ids: set[int] = set()
+
+            for a in cleaned_answers:
+                a_id = a.get("id")
+                if a_id:
+                    try:
+                        a_id_int = int(a_id)
+                    except Exception:
+                        a_id_int = 0
+                else:
+                    a_id_int = 0
+
+                if a_id_int and a_id_int in existing:
+                    obj = existing[a_id_int]
+                    obj.text = a["text"]
+                    obj.is_correct = a["is_correct"]
+                    obj.save(update_fields=['text', 'is_correct'])
+                    keep_ids.add(obj.id)
+                else:
+                    obj = Answer.objects.create(
+                        question=question,
+                        text=a["text"],
+                        is_correct=a["is_correct"],
+                    )
+                    keep_ids.add(obj.id)
+
+            # Delete answers removed by user (if any)
+            for a_id, obj in existing.items():
+                if a_id not in keep_ids:
+                    obj.delete()
+
+        return JsonResponse({"success": True, "message": "Savol muvaffaqiyatli yangilandi!"})
+
+
+@method_decorator(login_required, name='dispatch')
+class QuestionDeleteApiView(View):
+    def post(self, request, test_id, question_id):
+        question = get_object_or_404(Question, id=question_id, test_id=test_id)
+
+        if not (request.user.is_superuser or question.test.created_by_id == request.user.id):
+            return JsonResponse({"success": False, "errors": "Ruxsat yo'q"}, status=403)
+
+        question.delete()
+        return JsonResponse({"success": True, "message": "Savol muvaffaqiyatli o'chirildi!"})
 
 @method_decorator(login_required, name='dispatch')
 class AssignTestView(View):

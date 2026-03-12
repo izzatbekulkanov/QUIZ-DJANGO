@@ -41,6 +41,7 @@ class DashboardView(View):
         context = {
             'user': user,
             'dark_mode': dark_mode,
+            'now': timezone.now(),
             'user_assignments': [
                 {
                     'id': a.id,

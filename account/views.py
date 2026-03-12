@@ -1,15 +1,12 @@
-# account/views.py
-import base64
-import json
+﻿# account/views.py
 import logging
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, logout, login, get_user_model, get_backends
+from django.contrib.auth import authenticate, logout, login
 from django.http import JsonResponse
 from django.views import View
-from account.models import CustomUser, FaceEncoding
-from django.conf import settings
+from account.models import CustomUser
 
 class LoginView(View):
     def get(self, request):
@@ -26,93 +23,11 @@ class LoginView(View):
             next_url = request.GET.get('next', '/')
             return redirect(next_url)
         else:
-            return render(request, 'auth/login.html', {'error': 'Noto‘g‘ri foydalanuvchi nomi yoki parol'})
+            return render(request, 'auth/login.html', {'error': "Noto'g'ri foydalanuvchi nomi yoki parol"})
 
 
 logger = logging.getLogger(__name__)
 
-
-class FaceLoginView(View):
-    def get(self, request):
-        print("\n[FACE-LOGIN] === GET /account/face-login/ ===")
-        return render(request, 'auth/face_login.html')
-
-    def post(self, request):
-        print("\n[FACE-LOGIN] === POST /account/face-login/ ===")
-
-        try:
-            # AUTHENTICATION_BACKENDS’ni ko‘ramiz
-            print("[FACE-LOGIN] AUTHENTICATION_BACKENDS:", getattr(settings, "AUTHENTICATION_BACKENDS", None))
-
-            backend_instances = get_backends()
-            print("[FACE-LOGIN] Ro‘yxatdagi backend klasslari:")
-            for b in backend_instances:
-                print("   -", b.__class__.__module__, ".", b.__class__.__name__)
-
-            body = request.body.decode('utf-8') if request.body else ''
-            print(f"[FACE-LOGIN] request.body uzunligi: {len(body)}")
-
-            data = json.loads(body) if body else {}
-            images = data.get('images', [])
-
-            print(f"[FACE-LOGIN] Kelgan rasm soni: {len(images)}")
-            if images:
-                print(f"[FACE-LOGIN] Birinchi rasm length: {len(images[0])}")
-
-            if not images:
-                print("[FACE-LOGIN] ❌ images bo‘sh, JSON’da 'images' yo‘q yoki bo‘sh massiv.")
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Rasm talab qilinadi',
-                    'action': 'retry'
-                })
-
-            print("[FACE-LOGIN] authenticate() chaqirilmoqda...")
-            user = authenticate(request, images=images)
-
-            print("[FACE-LOGIN] authenticate() natijasi:", user)
-            if user:
-                print(f"[FACE-LOGIN] ✅ Autentifikatsiya muvaffaqiyatli: {user.username}")
-                similarity_score = getattr(user, "_face_similarity_score", 0.0)
-                print(f"[FACE-LOGIN] similarity_score: {similarity_score}")
-
-                login(request, user, backend='account.backends.FaceAuthBackend')
-                request.session.save()
-                request.session.modified = True
-
-                next_url = request.GET.get('next', '/account/two-login/')
-                print(f"[FACE-LOGIN] Redirect qilinadigan URL: {next_url}")
-
-                return JsonResponse({
-                    'success': True,
-                    'full_name': user.full_name or 'Ism mavjud emas',
-                    'group_name': getattr(user, 'group_name', '') or '',
-                    'redirect_url': next_url,
-                    'similarity_score': similarity_score,
-                    'action': 'stop_camera'
-                })
-
-            print("[FACE-LOGIN] ❌ authenticate() None qaytardi – hech bir backend user topmadi.")
-            return JsonResponse({
-                'success': False,
-                'error': 'Yuz ma’lumotlari mos kelmadi',
-                'action': 'retry'
-            })
-
-        except json.JSONDecodeError as e:
-            print("[FACE-LOGIN] ❌ JSON dekodlash xatosi:", str(e))
-            return JsonResponse({
-                'success': False,
-                'error': 'Noto‘g‘ri ma’lumot formati',
-                'action': 'retry'
-            })
-        except Exception as e:
-            print("[FACE-LOGIN] ❌ Umumiy xato:", str(e))
-            return JsonResponse({
-                'success': False,
-                'error': f'Xato: {str(e)}',
-                'action': 'retry'
-            })
 
 
 class TwoLoginView(LoginRequiredMixin, View):
@@ -136,14 +51,14 @@ class IdLoginView(View):
         id_number = request.POST.get('id_number', '').strip()
         print(f"[DEBUG] Received id_number: '{id_number}'")
 
-        # ✅ Boshlang'ich tekshiruvlar
+        # вњ… Boshlang'ich tekshiruvlar
         print(f"[DEBUG] Checking id_number length and format: len={len(id_number)}, isdigit={id_number.isdigit()}")
         if len(id_number) != 12 or not id_number.isdigit():  # Updated to 12 digits
-            error_message = "ID raqam noto‘g‘ri yoki to‘liq emas."
+            error_message = "ID raqam noto'g'ri yoki to'liq emas."
             print(f"[DEBUG] Validation failed: {error_message}")
             return self._error_response(request, error_message)
 
-        # ✅ Foydalanuvchini olish va ruxsat tekshiruvi
+        # вњ… Foydalanuvchini olish va ruxsat tekshiruvi
         print(f"[DEBUG] Querying CustomUser with username: {id_number}")
         try:
             id_user = CustomUser.objects.get(username=id_number)
@@ -157,15 +72,15 @@ class IdLoginView(View):
             print(f"[DEBUG] User not found: {error_message}")
             return self._error_response(request, error_message)
 
-        # ✅ Autentifikatsiya qilish
+        # вњ… Autentifikatsiya qilish
         print(f"[DEBUG] Attempting authentication with username={id_number}, password={self.default_password}")
         user = authenticate(request, username=id_number, password=self.default_password)
         if user is None:
-            error_message = "Foydalanuvchi topilmadi yoki parol noto‘g‘ri."
+            error_message = "Foydalanuvchi topilmadi yoki parol noto'g'ri."
             print(f"[DEBUG] Authentication failed: {error_message}")
             return self._error_response(request, error_message)
 
-        # ✅ Tizimga kiritish
+        # вњ… Tizimga kiritish
         print(f"[DEBUG] Authentication successful for user: {user.username}")
         login(request, user)
         next_url = request.GET.get('next', self.default_redirect)
@@ -234,3 +149,4 @@ class LogoutView(View):
     def get(self, request):
         logout(request)
         return redirect('/account/login/')
+

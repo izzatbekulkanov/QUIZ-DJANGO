@@ -112,7 +112,7 @@
        style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
     <div class="bg-primary-dark-op">
       <div class="container">
-        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-3 mb-2 text-center text-sm-start">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
           <div class="flex-grow-1">
             <h1 class="fw-semibold text-white mb-0">{{ test.name }} (Talabalar: {{ student_count }})</h1>
             <h2 class="h5 fw-normal text-white-75 mb-0"><code><i>{{ test.name }}</i></code> ga savollar biriktirish</h2>
@@ -183,12 +183,12 @@
           <form method="POST" enctype="multipart/form-data" id="import-form">
             {% csrf_token %}
             <div class="mb-3">
-              <label class="form-label fw-semibold" for="import-file">Excel faylni yuklang (.xlsx)</label>
+              <label class="form-label fw-semibold" for="import-file">Excel yoki Word faylni yuklang (.xlsx, .docx, .doc)</label>
               <div class="upload-container border rounded p-3 text-center bg-light" id="upload-container">
-                <input type="file" class="form-control d-none" id="import-file" name="import_file" accept=".xlsx" required>
+                <input type="file" class="form-control d-none" id="import-file" name="import_file" accept=".xlsx,.docx,.doc" required>
                 <i class="fa fa-cloud-upload-alt fa-2x text-primary mb-2"></i>
                 <p class="mb-1 text-muted">Faylni bu yerga sudrab olib keling yoki <span class="text-primary fw-semibold">tanlash uchun bosing</span></p>
-                <p class="mb-0 text-muted small">Faqat .xlsx formatidagi fayllar qabul qilinadi (maksimal 10MB)</p>
+                <p class="mb-0 text-muted small">.xlsx, .docx, .doc formatlari qabul qilinadi (maksimal 10MB)</p>
                 <p class="mt-2 mb-0 text-primary fw-semibold d-none" id="file-name">Tanlangan fayl: <span></span></p>
               </div>
               <div class="invalid-feedback">Faylni yuklash majburiy.</div>
@@ -225,25 +225,40 @@
         </div>
       </div>
       <div class="card-body">
-        <!-- Testga tegishli savollar va faqat to‘g‘ri javoblar -->
+        <!-- Testga tegishli savollar va to‘g‘ri javoblar -->
         <h5 class="card-title mb-3">Savollar va To‘g‘ri Javoblar</h5>
         {% if questions %}
           <ul class="list-group">
             {% for question in questions %}
-              <li class="list-group-item">
-                <div class="row align-items-start">
+              <li class="list-group-item" data-question-id="{{ question.id }}">
+                <div class="row align-items-start g-2">
                   <div class="col-md-1 text-center">
                     <span class="badge bg-primary">{{ forloop.counter }}</span>
                   </div>
                   <div class="col-md-5">
                     <div class="text-primary">{{ question.text|safe }}</div>
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-md-4">
                     {% for answer in question.answers.all %}
                       {% if answer.is_correct %}
-                        <div class="text-success fw-medium">{{ answer.text }}</div>
+                        <div class="text-success fw-medium">{{ answer.text|safe }}</div>
                       {% endif %}
                     {% endfor %}
+                  </div>
+                  <div class="col-md-2 text-end">
+                    <button
+                      type="button"
+                      class="btn btn-info btn-sm edit-question-btn mb-1"
+                      data-detail-url="{% url 'question-detail' test.id question.id %}"
+                      data-update-url="{% url 'question-update' test.id question.id %}">
+                      <i class="fa fa-edit me-1"></i> Tahrirlash
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-danger btn-sm delete-question-btn"
+                      data-delete-url="{% url 'question-delete' test.id question.id %}">
+                      <i class="fa fa-trash me-1"></i> O‘chirish
+                    </button>
                   </div>
                 </div>
               </li>
@@ -257,7 +272,42 @@
       </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Edit Question Modal -->
+    <div class="modal fade" id="editQuestionModal" tabindex="-1" aria-labelledby="editQuestionModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editQuestionModalLabel">Savolni tahrirlash</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="edit-question-form">
+              <input type="hidden" id="edit-question-id" value="">
+              <div class="mb-3">
+                <label class="form-label" for="edit-question-text">Savol matni</label>
+                <textarea class="form-control" id="edit-question-text" rows="5" required></textarea>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label mb-0">Variantlar</label>
+                <button type="button" class="btn btn-success btn-sm" id="edit-add-answer">
+                  <i class="fa fa-plus"></i> Variant qo‘shish
+                </button>
+              </div>
+              <div id="edit-answers-section"></div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Bekor qilish</button>
+            <button type="button" class="btn btn-primary btn-sm" id="save-edit-question">
+              <i class="fa fa-save me-1"></i> Saqlash
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Preview Modal -->
     <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -286,6 +336,16 @@
   document.addEventListener('DOMContentLoaded', () => {
     const tabs = document.querySelectorAll('.nav-tabs .nav-link');
     const activeTab = localStorage.getItem('activeTab') || 'add-question';
+
+    function getCookie(name) {
+      const cookieValue = document.cookie
+        .split('; ')
+        .find(row => row.startsWith(`${name}=`))
+        ?.split('=')[1];
+      return cookieValue ? decodeURIComponent(cookieValue) : null;
+    }
+
+    const csrfToken = getCookie('csrftoken') || document.querySelector('#question-form input[name=csrfmiddlewaretoken]')?.value;
 
     // Set active tab
     tabs.forEach(tab => {
@@ -362,6 +422,34 @@
     const fileNameDisplay = document.getElementById('file-name');
     const submitButton = document.getElementById('submit-button');
 
+    // Edit question modal
+    const editModalEl = document.getElementById('editQuestionModal');
+    const editModal = new bootstrap.Modal(editModalEl);
+    const editQuestionIdEl = document.getElementById('edit-question-id');
+    const editQuestionTextEl = document.getElementById('edit-question-text');
+    const editAnswersSection = document.getElementById('edit-answers-section');
+
+    function createEditAnswerItem(answer = null) {
+      const wrap = document.createElement('div');
+      wrap.className = 'answer-item d-flex mb-2';
+      wrap.dataset.answerId = answer?.id ? String(answer.id) : '';
+      wrap.innerHTML = `
+        <textarea class="form-control me-2 edit-answer-text" rows="2" placeholder="Variant matni" required></textarea>
+        <div class="form-check form-switch mt-1">
+          <input type="checkbox" class="form-check-input edit-answer-correct">
+          <label class="form-check-label">To‘g‘ri</label>
+        </div>
+        <button type="button" class="btn btn-danger btn-sm ms-2 edit-remove-answer">
+          <i class="fa fa-trash"></i>
+        </button>`;
+
+      const textEl = wrap.querySelector('.edit-answer-text');
+      const correctEl = wrap.querySelector('.edit-answer-correct');
+      textEl.value = answer?.text || '';
+      correctEl.checked = !!answer?.is_correct;
+      return wrap;
+    }
+
     uploadContainer.addEventListener('click', () => fileInput.click());
 
     uploadContainer.addEventListener('dragover', e => {
@@ -377,14 +465,19 @@
       e.preventDefault();
       uploadContainer.classList.remove('dragover');
       const files = e.dataTransfer.files;
-      if (files.length > 0 && files[0].name.endsWith('.xlsx')) {
+      const allowedExt = ['.xlsx', '.docx', '.doc'];
+      const isAllowed = (name) => {
+        const lower = (name || '').toLowerCase();
+        return allowedExt.some(ext => lower.endsWith(ext));
+      };
+      if (files.length > 0 && isAllowed(files[0].name)) {
         fileInput.files = files;
         fileNameDisplay.classList.remove('d-none');
         fileNameDisplay.querySelector('span').textContent = files[0].name;
         submitButton.disabled = false;
         uploadContainer.classList.add('success');
       } else {
-        Swal.fire('Xatolik!', 'Faqat .xlsx fayllar qabul qilinadi!', 'error');
+        Swal.fire('Xatolik!', 'Faqat .xlsx, .docx yoki .doc fayllar qabul qilinadi!', 'error');
       }
     });
 
@@ -505,11 +598,12 @@
           questions.forEach((q, index) => {
             previewHtml += `
               <div class="mb-3">
-                <h6 class="fs-sm">Savol ${index + 1}: ${q.text}</h6>
+                <div class="fs-sm fw-semibold mb-1">Savol ${index + 1}:</div>
+                <div class="fs-sm mb-2">${q.text}</div>
                 ${q.image_base64 ? `<img src="data:image/png;base64,${q.image_base64}" class="img-fluid mb-2" style="max-width: 150px;">` : ''}
                 <ul class="list-unstyled">
                   ${q.answers.map((a, i) => `
-                    <li class="${a[1] ? 'text-success fw-medium' : ''} fs-sm">${i + 1}. ${a[0]}</li>
+                    <li class="${a[1] ? 'text-success fw-medium' : ''} fs-sm">${a[0]}</li>
                   `).join('')}
                 </ul>
               </div>`;
@@ -543,7 +637,7 @@
             const response = await fetch("{% url 'save-imported-questions' %}", {
               method: 'POST',
               headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
+                'X-CSRFToken': csrfToken,
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
               }
@@ -561,6 +655,180 @@
             console.error('Error:', error);
           }
         }
+      });
+    });
+
+    // Open edit modal
+    document.querySelectorAll('.edit-question-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const detailUrl = btn.dataset.detailUrl;
+        const updateUrl = btn.dataset.updateUrl;
+        if (!detailUrl || !updateUrl) return;
+
+        editModalEl.dataset.updateUrl = updateUrl;
+
+        Swal.fire({
+          title: 'Yuklanmoqda...',
+          text: 'Iltimos, kuting...',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        try {
+          const response = await fetch(detailUrl, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+          });
+          const data = await response.json();
+          Swal.close();
+
+          if (!data.success) {
+            Swal.fire('Xatolik!', data.errors || 'Savolni olishda xatolik yuz berdi.', 'error');
+            return;
+          }
+
+          const q = data.question;
+          editQuestionIdEl.value = q.id;
+          editQuestionTextEl.value = q.text || '';
+          editAnswersSection.innerHTML = '';
+
+          (q.answers || []).forEach(a => {
+            editAnswersSection.appendChild(createEditAnswerItem(a));
+          });
+
+          while (editAnswersSection.querySelectorAll('.answer-item').length < 2) {
+            editAnswersSection.appendChild(createEditAnswerItem());
+          }
+
+          editModal.show();
+        } catch (error) {
+          Swal.close();
+          Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
+          console.error('Error:', error);
+        }
+      });
+    });
+
+    // Add answer in edit modal
+    document.getElementById('edit-add-answer').addEventListener('click', () => {
+      editAnswersSection.appendChild(createEditAnswerItem());
+    });
+
+    // Remove answer in edit modal
+    editAnswersSection.addEventListener('click', e => {
+      const btn = e.target.closest('.edit-remove-answer');
+      if (!btn) return;
+      const items = editAnswersSection.querySelectorAll('.answer-item');
+      if (items.length <= 2) {
+        Swal.fire('Xatolik!', "Kamida 2 ta variant bo‘lishi kerak.", 'warning');
+        return;
+      }
+      btn.closest('.answer-item')?.remove();
+    });
+
+    // Save edited question
+    document.getElementById('save-edit-question').addEventListener('click', async () => {
+      const updateUrl = editModalEl.dataset.updateUrl;
+      if (!updateUrl) return;
+
+      const text = (editQuestionTextEl.value || '').trim();
+      const items = Array.from(editAnswersSection.querySelectorAll('.answer-item'));
+      const answers = items.map(item => {
+        const idRaw = item.dataset.answerId;
+        const textEl = item.querySelector('.edit-answer-text');
+        const correctEl = item.querySelector('.edit-answer-correct');
+        const aText = (textEl?.value || '').trim();
+        return {
+          id: idRaw ? parseInt(idRaw, 10) : null,
+          text: aText,
+          is_correct: !!correctEl?.checked
+        };
+      }).filter(a => a.text);
+
+      if (!text) {
+        Swal.fire('Xatolik!', 'Savol matnini kiriting.', 'warning');
+        return;
+      }
+      if (answers.length < 2) {
+        Swal.fire('Xatolik!', "Kamida 2 ta variant bo‘lishi kerak.", 'warning');
+        return;
+      }
+      if (!answers.some(a => a.is_correct)) {
+        Swal.fire('Xatolik!', "Kamida bitta to‘g‘ri javob tanlanishi kerak.", 'warning');
+        return;
+      }
+
+      Swal.fire({
+        title: 'Tasdiqlaysizmi?',
+        text: 'Savolni yangilamoqchimisiz?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#007bff',
+        cancelButtonColor: '#dc3545',
+        confirmButtonText: 'Ha, saqlash!',
+        cancelButtonText: 'Bekor qilish'
+      }).then(async result => {
+        if (!result.isConfirmed) return;
+
+        try {
+          const response = await fetch(updateUrl, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': csrfToken,
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ text, answers })
+          });
+          const data = await response.json();
+          if (data.success) {
+            editModal.hide();
+            Swal.fire('Muvaffaqiyatli!', data.message, 'success').then(() => window.location.reload());
+          } else {
+            Swal.fire('Xatolik!', data.errors || 'Savolni yangilashda xatolik yuz berdi.', 'error');
+          }
+        } catch (error) {
+          Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
+          console.error('Error:', error);
+        }
+      });
+    });
+
+    // Delete question
+    document.querySelectorAll('.delete-question-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const deleteUrl = btn.dataset.deleteUrl;
+        if (!deleteUrl) return;
+
+        Swal.fire({
+          title: 'Tasdiqlaysizmi?',
+          text: 'Savolni o‘chirmoqchimisiz?',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#dc3545',
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: 'Ha, o‘chirish!',
+          cancelButtonText: 'Bekor qilish'
+        }).then(async result => {
+          if (!result.isConfirmed) return;
+          try {
+            const response = await fetch(deleteUrl, {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+              }
+            });
+            const data = await response.json();
+            if (data.success) {
+              Swal.fire('Muvaffaqiyatli!', data.message, 'success').then(() => window.location.reload());
+            } else {
+              Swal.fire('Xatolik!', data.errors || 'Savolni o‘chirishda xatolik yuz berdi.', 'error');
+            }
+          } catch (error) {
+            Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
+            console.error('Error:', error);
+          }
+        });
       });
     });
   });

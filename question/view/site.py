@@ -1,18 +1,14 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.shortcuts import redirect, render
+
 from question.models import SystemSetting
 
 
 def site_settings_view(request):
-    print("🔧 Tizim sozlamalari sahifasiga so‘rov keldi:", request.method)
-
-    # Faol sozlamani olish, agar yo‘q bo‘lsa None
+    # Active setting (or None)
     setting = SystemSetting.objects.filter(is_active=True).first()
 
     if request.method == 'POST':
-        print("📥 POST so‘rovi qabul qilindi")
-
-        # Ma'lumotlarni olish
         name = request.POST.get('name', '')
         description = request.POST.get('description', '')
         contact_email = request.POST.get('contact_email', '')
@@ -26,26 +22,17 @@ def site_settings_view(request):
         logo = request.FILES.get('logo')
         favicon = request.FILES.get('favicon')
 
-        # Majburiy maydonlarni tekshirish
         if not name or not site_status:
-            print("⚠️ Majburiy maydonlar to‘ldirilmagan")
-            messages.error(request, "❌ Tizim nomi va sayt holati maydonlari to‘ldirilishi shart.")
-            return render(request, 'question/views/site-settings.html', {
-                'setting': setting
-            })
+            messages.error(request, "Tizim nomi va sayt holati maydonlari to'ldirilishi shart.")
+            return render(request, 'question/views/site-settings.html', {'setting': setting})
 
         try:
-            # Avvalgi sozlamalarni nofaol qilish
+            # Deactivate previous settings
             SystemSetting.objects.update(is_active=False)
 
-            # Mavjud sozlamani yangilash yoki yangi yaratish
-            if setting:
-                print("🔁 Mavjud sozlama yangilanmoqda")
-            else:
-                print("🆕 Yangi sozlama yaratilmoqda")
+            if not setting:
                 setting = SystemSetting()
 
-            # Ma'lumotlarni saqlash
             setting.name = name
             setting.description = description
             setting.contact_email = contact_email
@@ -59,25 +46,16 @@ def site_settings_view(request):
             setting.is_active = True
 
             if logo:
-                print("📤 Logo yangilanmoqda")
                 setting.logo = logo
             if favicon:
-                print("📤 Favicon yangilanmoqda")
                 setting.favicon = favicon
 
             setting.save()
-            print(f"✅ Sozlamalar saqlandi: {setting.name}")
-            messages.success(request, "✅ Tizim sozlamalari muvaffaqiyatli saqlandi!")
+            messages.success(request, "Tizim sozlamalari muvaffaqiyatli saqlandi!")
             return redirect('site_settings')
 
         except Exception as e:
-            print(f"❌ Xatolik yuz berdi: {e}")
-            messages.error(request, f"❌ Xatolik: {str(e)}")
-            return render(request, 'question/views/site-settings.html', {
-                'setting': setting
-            })
+            messages.error(request, f"Xatolik: {str(e)}")
+            return render(request, 'question/views/site-settings.html', {'setting': setting})
 
-    # GET so‘rovi uchun
-    return render(request, 'question/views/site-settings.html', {
-        'setting': setting
-    })
+    return render(request, 'question/views/site-settings.html', {'setting': setting})

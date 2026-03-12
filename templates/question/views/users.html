@@ -50,12 +50,12 @@
        style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
     <div class="bg-primary-dark-op">
       <div class="container">
-        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-3 mb-2 text-center text-sm-start">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
           <div class="flex-grow-1">
             <h1 class="fw-semibold text-white mb-0">Foydalanuvchilar</h1>
           </div>
           <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="{% url 'encoding' %}">
+            <a class="btn btn-light btn-sm" href="{% url 'users' %}">
               <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
             </a>
           </div>
@@ -126,9 +126,6 @@
                 <i class="fa fa-users text-info me-1"></i> Guruh bo‘yicha yuklash</a></li>
             </ul>
           </div>
-          <a class="btn btn-sm btn-warning" href="{% url 'encoding' %}" aria-label="Encoding yaratish">
-            <i class="fa fa-camera me-1"></i> Encoding yaratish
-          </a>
           <a class="btn btn-sm btn-info" href="{% url 'add-user' %}" aria-label="Yangi foydalanuvchi qo'shish">
             <i class="fa fa-plus me-1"></i> Yangi
           </a>

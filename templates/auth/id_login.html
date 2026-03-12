@@ -1,228 +1,161 @@
+{% extends 'auth/base_auth.html' %}
 {% load static %}
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Test Tizimi - Kirish</title>
-  <meta name="description" content="Test Tizimi Kirish Sahifasi">
-  <meta name="author" content="pixelcave">
-  <meta name="robots" content="noindex, nofollow">
-  <meta property="og:title" content="Test Tizimi - Kirish">
-  <meta property="og:site_name" content="Test Tizimi">
-  <meta property="og:description" content="Test Tizimi Kirish Sahifasi">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="">
-  <meta property="og:image" content="">
-  <link rel="shortcut icon" href="{% static 'assets/media/favicons/favicon.png' %}">
-  <link rel="icon" type="image/png" sizes="192x192" href="{% static 'assets/media/favicons/favicon-192x192.png' %}">
-  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/media/favicons/apple-touch-icon-180x180.png' %}">
-  <link rel="stylesheet" id="css-main" href="{% static 'assets/css/oneui.min.css' %}">
-  <style>
-      .id-input-wrapper {
-          display: flex;
-          justify-content: center;
-          gap: 0.2rem; /* Reduced gap for closer inputs */
-          margin-bottom: 1rem;
-          flex-wrap: nowrap; /* Single row on larger screens */
-      }
 
-      .id-input-box {
-          width: 2.2rem; /* Reduced width for smaller inputs */
-          height: 2.2rem; /* Reduced height for smaller inputs */
-          font-size: 1.2rem; /* Smaller font size */
-          text-align: center;
-          border-radius: 0.4rem; /* Slightly smaller border radius */
-          border: 1px solid #ced4da;
-          flex: 0 0 auto;
-      }
+{% block title %}ID orqali kirish{% endblock title %}
+{% block window_title %}ID orqali kirish{% endblock window_title %}
 
-      .id-input-box:invalid {
-          border-color: rgba(43, 131, 89, 0.37);
-      }
+{% block style %}
+<style>
+  .id-input-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
 
-      /* MOBILDA: Wrap va kichikroq inputlar */
-      @media (max-width: 576px) {
-          .id-input-wrapper {
-              flex-wrap: wrap; /* Wrap on smaller screens */
-              gap: 0.15rem; /* Even smaller gap for mobile */
-          }
+  .id-input-box {
+    width: 2.4rem;
+    height: 2.6rem;
+    font-size: 1.15rem;
+    text-align: center;
+    border-radius: 14px;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    background: rgba(255, 255, 255, 0.70);
+    box-shadow: none;
+  }
 
-          .id-input-box {
-              width: 1.8rem; /* Smaller width for mobile */
-              height: 2rem; /* Smaller height for mobile */
-              font-size: 1rem; /* Smaller font size for mobile */
-          }
+  .id-input-box:focus {
+    outline: none;
+    border-color: rgba(37, 99, 235, 0.42);
+    box-shadow: var(--glass-ring);
+  }
 
-          .btn {
-              font-size: 0.9rem;
-          }
-      }
+  .id-input-box.is-invalid {
+    border-color: rgba(220, 38, 38, 0.35);
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.10);
+  }
 
-      @media (max-width: 400px) {
-          .id-input-wrapper {
-              gap: 0.1rem; /* Minimal gap for very small screens */
-          }
+  @media (max-width: 420px) {
+    .id-input-box { width: 2.05rem; height: 2.4rem; font-size: 1.05rem; }
+  }
+</style>
+{% endblock style %}
 
-          .id-input-box {
-              width: 1.6rem; /* Minimal width for very small screens */
-              height: 1.8rem; /* Minimal height for very small screens */
-              font-size: 0.9rem; /* Minimal font size */
-          }
-
-          .btn {
-              font-size: 0.85rem;
-          }
-      }
-  </style>
-</head>
-<body>
-<div id="page-container">
-  <main id="main-container">
-    <div class="hero-static d-flex align-items-center">
-      <div class="content">
-        <div class="row justify-content-center push">
-          <div class="col-md-8 col-lg-6 col-xl-4">
-            <div class="block block-rounded mb-0">
-              <div class="block-header block-header-default">
-                <h3 class="block-title">Tizimga kirish</h3>
-                <div class="block-options">
-                  <a class="btn-block-option" href="javascript:void(0);" data-bs-toggle="modal"
-                     data-bs-target="#registerBlockedModal"
-                     title="Yangi hisob yaratish">
-                    <i class="fa fa-user-plus"></i>
-                  </a>
-                </div>
-              </div>
-              <div class="block-content">
-                <div class="p-sm-3 px-lg-4 px-xxl-5 py-lg-5">
-                  <h1 class="h2 mb-1">Test Tizimi</h1>
-                  <p class="fw-medium text-muted">
-                    Xush kelibsiz, iltimos tizimga kiring.
-                  </p>
-                  {% if error %}
-                    <div class="alert alert-danger d-inline-block rounded px-3 py-2 mt-2">
-                        <span class="badge bg-danger me-2">
-                          <i class="fa fa-exclamation-triangle"></i>
-                        </span>
-                      {{ error }}
-                    </div>
-                  {% endif %}
-                  <form id="id-login-form" method="POST" action="{% url 'id_login' %}" novalidate>
-                    {% csrf_token %}
-                    <div class="id-input-wrapper">
-                      {% for i in "0123456789ab" %} <!-- 12 inputs for 12-digit ID -->
-                        <input type="text"
-                               maxlength="1"
-                               inputmode="numeric"
-                               pattern="[0-9]"
-                               class="form-control id-input-box"
-                               name="id_digit_{{ forloop.counter }}"
-                               id="digit{{ forloop.counter }}"
-                               required>
-                      {% endfor %}
-                    </div>
-
-                    <input type="hidden" name="id_number" id="full-id">
-                    <div class="mb-4 space-y-2">
-                      <button type="submit" class="btn w-100 btn-alt-primary">
-                        <i class="fa fa-fw fa-sign-in-alt me-1 opacity-50"></i> Kirish
-                      </button>
-
-                      <a href="{% url 'face_login' %}" class="btn w-100 btn-alt-info">
-                        <i class="fa fa-fw fa-camera me-1 opacity-50"></i> Yuz orqali kirish
-                      </a>
-
-                      <!-- Asosiy login sahifasiga qaytish -->
-                      <a href="{% url 'login' %}" class="btn w-100 btn-alt-secondary">
-                        <i class="fa fa-fw fa-arrow-left me-1 opacity-50"></i> Kirish sahifasiga qaytish
-                      </a>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="fs-sm text-muted text-center">
-          <strong>version 1.0</strong> © <span data-toggle="year-copy"></span>
-        </div>
-      </div>
-    </div>
-  </main>
-</div>
-<!-- Ro'yhatdan o'tish taqiqlangan modal -->
-<div class="modal fade" id="registerBlockedModal" tabindex="-1" aria-labelledby="registerBlockedLabel"
-     aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-3 shadow">
-      <div class="modal-header border-0">
-        <h5 class="modal-title w-100 text-center" id="registerBlockedLabel">
-          <i class="fa fa-info-circle me-2 text-primary"></i> Eslatma
-        </h5>
-      </div>
-      <div class="modal-body text-center text-muted fs-5 px-4">
-        Administrator tomonidan ro'yhatdan o'tish uchun ruxsat berilmagan.
-      </div>
-      <div class="modal-footer border-0 justify-content-center">
-        <button type="button" class="btn btn-primary w-50 rounded-pill" data-bs-dismiss="modal">
-          OK
-        </button>
-      </div>
-    </div>
+{% block content %}
+  <div class="mb-2">
+    <span class="badge glass-badge">
+      <i class="fa fa-id-card me-1 opacity-75"></i>
+      ID orqali kirish
+    </span>
   </div>
-</div>
-<script src="{% static 'assets/js/oneui.app.min.js' %}"></script>
-<script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
-<script src="{% static 'assets/js/plugins/jquery-validation/jquery.validate.min.js' %}"></script>
-<script src="{% static 'assets/js/pages/op_auth_signin.min.js' %}"></script>
+
+  <h1 class="h3 mb-1">ID raqamni kiriting</h1>
+  <p class="auth-subtitle mb-4">
+    12 xonali ID raqamingizni kiriting. Har bir katakka bitta raqam.
+  </p>
+
+  {% if error %}
+    <div class="p-3 mb-3" style="border-radius: 14px; background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.16);">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa fa-triangle-exclamation" style="color: rgba(220, 38, 38, 0.92);"></i>
+        <div class="fw-semibold">{{ error }}</div>
+      </div>
+    </div>
+  {% endif %}
+
+  <form id="id-login-form" method="POST" action="{% url 'id_login' %}" novalidate>
+    {% csrf_token %}
+
+    <div class="id-input-wrapper" aria-label="12 xonali ID">
+      {% for i in "0123456789ab" %}
+        <input
+          type="text"
+          maxlength="1"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          pattern="[0-9]"
+          class="id-input-box"
+          name="id_digit_{{ forloop.counter }}"
+          id="digit{{ forloop.counter }}"
+          required>
+      {% endfor %}
+    </div>
+
+    <input type="hidden" name="id_number" id="full-id">
+
+    <div class="d-grid gap-2">
+      <button type="submit" class="btn btn-glass-primary btn-lg">
+        <i class="fa fa-sign-in-alt me-1 opacity-75"></i>
+        Kirish
+      </button>
+      <a href="{% url 'login' %}" class="btn btn-glass-secondary btn-lg">
+        <i class="fa fa-arrow-left me-1 opacity-75"></i>
+        Login sahifasiga qaytish
+      </a>
+    </div>
+  </form>
+{% endblock content %}
+
+{% block script %}
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    const inputs = document.querySelectorAll('.id-input-box');
+    const inputs = Array.from(document.querySelectorAll('.id-input-box'));
+    const form = document.getElementById('id-login-form');
+    const hidden = document.getElementById('full-id');
+
+    function fillFromString(str) {
+      const digits = (str || '').replace(/\D/g, '').slice(0, inputs.length).split('');
+      if (!digits.length) return false;
+      inputs.forEach((inp, idx) => { inp.value = digits[idx] || ''; });
+      const nextIdx = Math.min(digits.length, inputs.length - 1);
+      inputs[nextIdx].focus();
+      return digits.length === inputs.length;
+    }
 
     inputs.forEach((input, index) => {
       input.addEventListener('input', () => {
         const current = input.value;
-
-        // faqat bitta raqam
         if (!/^\d$/.test(current)) {
           input.value = '';
           return;
         }
-
-        // Faqat oldingisi to‘ldirilgan bo‘lsa keyingisiga o‘tish
-        if (index < inputs.length - 1) {
-          if (input.value && (index === 0 || inputs[index - 1].value)) {
-            inputs[index + 1].focus();
-          }
-        }
+        if (index < inputs.length - 1) inputs[index + 1].focus();
       });
 
       input.addEventListener('keydown', (e) => {
-        // Backspace: oldingiga qaytish
         if (e.key === 'Backspace' && !input.value && index > 0) {
           inputs[index - 1].focus();
         }
       });
 
+      input.addEventListener('paste', (e) => {
+        const text = (e.clipboardData || window.clipboardData).getData('text');
+        if (!text) return;
+        const ok = fillFromString(text);
+        if (ok) e.preventDefault();
+      });
+
       input.addEventListener('focus', () => {
-        // Oldingi inputlar to‘ldirilmagan bo‘lsa, fokus bermaymiz
         for (let i = 0; i < index; i++) {
-          if (!inputs[i].value) {
-            inputs[i].focus();
-            break;
-          }
+          if (!inputs[i].value) { inputs[i].focus(); break; }
         }
       });
     });
 
-    // Formani yuborishda to‘liq tekshiruv va ID yig‘ish
-    document.getElementById('id-login-form').addEventListener('submit', function(e) {
+    if (inputs[0]) inputs[0].addEventListener('paste', (e) => {
+      const text = (e.clipboardData || window.clipboardData).getData('text');
+      if (!text) return;
+      const ok = fillFromString(text);
+      if (ok) e.preventDefault();
+    });
+
+    form.addEventListener('submit', function(e) {
       let valid = true;
       const digits = [];
 
       inputs.forEach(input => {
-        if (!input.value) {
+        if (!input.value || !/^\d$/.test(input.value)) {
           input.classList.add('is-invalid');
           valid = false;
         } else {
@@ -236,10 +169,8 @@
         return;
       }
 
-      // Yig‘ilgan ID ni hidden inputga joylash
-      document.getElementById('full-id').value = digits.join('');
+      hidden.value = digits.join('');
     });
   });
 </script>
-</body>
-</html>
+{% endblock script %}

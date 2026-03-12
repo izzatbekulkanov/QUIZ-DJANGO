@@ -1,144 +1,93 @@
+{% extends 'auth/base_auth.html' %}
 {% load static %}
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Test Tizimi - Kirish</title>
-  <meta name="description" content="Test Tizimi Kirish Sahifasi">
-  <meta name="author" content="pixelcave">
-  <meta name="robots" content="noindex, nofollow">
-  <meta property="og:title" content="Test Tizimi - Kirish">
-  <meta property="og:site_name" content="Test Tizimi">
-  <meta property="og:description" content="Test Tizimi Kirish Sahifasi">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="">
-  <meta property="og:image" content="">
-  <link rel="shortcut icon" href="{% static 'assets/media/favicons/favicon.png' %}">
-  <link rel="icon" type="image/png" sizes="192x192" href="{% static 'assets/media/favicons/favicon-192x192.png' %}">
-  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/media/favicons/apple-touch-icon-180x180.png' %}">
-  <link rel="stylesheet" id="css-main" href="{% static 'assets/css/oneui.min.css' %}">
-  <style>
-      .password-toggle {
-          position: absolute;
-          right: 10px;
-          top: 50%;
-          transform: translateY(-50%);
-          cursor: pointer;
-          font-size: 1.2rem;
-      }
-  </style>
-</head>
-<body>
-<div id="page-container">
-  <main id="main-container">
-    <div class="hero-static d-flex align-items-center">
-      <div class="content">
-        <div class="row justify-content-center push">
-          <div class="col-md-8 col-lg-6 col-xl-4">
-            <div class="block block-rounded mb-0">
-              <div class="block-header block-header-default">
-                <h3 class="block-title">Tizimga kirish</h3>
-                <div class="block-options">
-                  <a class="btn-block-option" href="javascript:void(0);" data-bs-toggle="modal"
-                     data-bs-target="#registerBlockedModal"
-                     title="Yangi hisob yaratish">
-                    <i class="fa fa-user-plus"></i>
-                  </a>
-                </div>
-              </div>
-              <div class="block-content">
-                <div class="p-sm-3 px-lg-4 px-xxl-5 py-lg-5">
-                  <h1 class="h2 mb-1">Test Tizimi</h1>
-                  <p class="fw-medium text-muted">
-                    Xush kelibsiz, iltimos tizimga kiring.
-                  </p>
-                  {% if error %}
-                    <p class="text-danger">{{ error }}</p>
-                  {% endif %}
-                  <form class="js-validation-signin" method="POST" action="{% url 'login' %}">
-                    {% csrf_token %}
-                    <div class="py-3">
-                      <div class="mb-4">
-                        <input type="text" class="form-control form-control-alt form-control-lg" id="login-username"
-                               name="username" placeholder="Foydalanuvchi nomi" required>
-                      </div>
-                      <div class="mb-4 position-relative">
-                        <input type="password" class="form-control form-control-alt form-control-lg" id="login-password"
-                               name="password" placeholder="Parol" required>
-                        <span class="password-toggle" onclick="togglePassword()">🙈</span>
-                      </div>
-                      <div class="mb-4">
-                        <div class="form-check">
-                          <input class="form-check-input" type="checkbox" id="login-remember" name="remember_me">
-                          <label class="form-check-label" for="login-remember">Eslab qolish</label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="mb-4 space-y-2">
-                      <button type="submit" class="btn w-100 btn-alt-primary">
-                        <i class="fa fa-fw fa-sign-in-alt me-1 opacity-50"></i> Kirish
-                      </button>
 
-                      <a href="{% url 'face_login' %}" class="btn w-100 btn-alt-info">
-                        <i class="fa fa-fw fa-camera me-1 opacity-50"></i> Yuz orqali kirish
-                      </a>
+{% block title %}Kirish{% endblock title %}
+{% block window_title %}Kirish{% endblock window_title %}
 
-                      <a href="{% url 'id_login' %}" class="btn w-100 btn-alt-success">
-                        <i class="fa fa-fw fa-id-card me-1 opacity-50"></i> ID orqali kirish
-                      </a>
-                    </div>
+{% block style %}
+<style>
+  .pw-toggle-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+</style>
+{% endblock style %}
 
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="fs-sm text-muted text-center">
-          <strong>version 1.0</strong> © <span data-toggle="year-copy"></span>
-        </div>
-      </div>
-    </div>
-  </main>
-</div>
-<!-- Ro'yhatdan o'tish taqiqlangan modal -->
-<div class="modal fade" id="registerBlockedModal" tabindex="-1" aria-labelledby="registerBlockedLabel"
-     aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content rounded-3 shadow">
-      <div class="modal-header border-0">
-        <h5 class="modal-title w-100 text-center" id="registerBlockedLabel">
-          <i class="fa fa-info-circle me-2 text-primary"></i> Eslatma
-        </h5>
-      </div>
-      <div class="modal-body text-center text-muted fs-5 px-4">
-        Administrator tomonidan ro'yhatdan o'tish uchun ruxsat berilmagan.
-      </div>
-      <div class="modal-footer border-0 justify-content-center">
-        <button type="button" class="btn btn-primary w-50 rounded-pill" data-bs-dismiss="modal">
-          OK
-        </button>
-      </div>
-    </div>
+{% block content %}
+  <div class="mb-2">
+    <span class="badge glass-badge">
+      <i class="fa fa-user-lock me-1 opacity-75"></i>
+      Kirish
+    </span>
   </div>
-</div>
-<script src="{% static 'assets/js/oneui.app.min.js' %}"></script>
-<script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
-<script src="{% static 'assets/js/plugins/jquery-validation/jquery.validate.min.js' %}"></script>
-<script src="{% static 'assets/js/pages/op_auth_signin.min.js' %}"></script>
+
+  <h1 class="h3 mb-1">Tizimga kirish</h1>
+  <p class="auth-subtitle mb-4">Shaxsiy kabinetga kirish uchun ma'lumotlarni kiriting.</p>
+
+  {% if error %}
+    <div class="p-3 mb-3" style="border-radius: 14px; background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.16);">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa fa-triangle-exclamation" style="color: rgba(220, 38, 38, 0.92);"></i>
+        <div class="fw-semibold">{{ error }}</div>
+      </div>
+    </div>
+  {% endif %}
+
+  <form method="POST" action="{% url 'login' %}">
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label for="login-username" class="form-label fw-semibold mb-1">Foydalanuvchi nomi</label>
+      <input type="text" class="form-control form-control-lg" id="login-username" name="username" placeholder="Username yoki ID" required>
+    </div>
+
+    <div class="mb-3 position-relative">
+      <label for="login-password" class="form-label fw-semibold mb-1">Parol</label>
+      <input type="password" class="form-control form-control-lg" id="login-password" name="password" placeholder="Parol" required style="padding-right: 3.25rem;">
+      <button type="button" class="btn btn-sm btn-glass-secondary pw-toggle-btn" onclick="togglePassword()" aria-label="Parolni ko'rsatish/yashirish">
+        <i class="fa fa-eye" id="pw-icon"></i>
+      </button>
+    </div>
+
+    <div class="mb-4">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="login-remember" name="remember_me">
+        <label class="form-check-label" for="login-remember">Eslab qolish</label>
+      </div>
+    </div>
+
+    <div class="d-grid gap-2">
+      <button type="submit" class="btn btn-glass-primary btn-lg">
+        <i class="fa fa-sign-in-alt me-1 opacity-75"></i>
+        Kirish
+      </button>
+
+      <a href="{% url 'id_login' %}" class="btn btn-glass-secondary btn-lg">
+        <i class="fa fa-id-card me-1 opacity-75"></i>
+        ID orqali kirish
+      </a>
+    </div>
+  </form>
+{% endblock content %}
+
+{% block script %}
 <script>
   function togglePassword() {
     const passwordInput = document.getElementById('login-password');
-    const toggleIcon = document.querySelector('.password-toggle');
+    const icon = document.getElementById('pw-icon');
+    if (!passwordInput || !icon) return;
+
     if (passwordInput.type === 'password') {
       passwordInput.type = 'text';
-      toggleIcon.textContent = '🙉';
+      icon.classList.remove('fa-eye');
+      icon.classList.add('fa-eye-slash');
     } else {
       passwordInput.type = 'password';
-      toggleIcon.textContent = '🙈';
+      icon.classList.remove('fa-eye-slash');
+      icon.classList.add('fa-eye');
     }
   }
 </script>
-</body>
-</html>
+{% endblock script %}

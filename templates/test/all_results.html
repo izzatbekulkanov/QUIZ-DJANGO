@@ -2,147 +2,170 @@
 {% load static %}
 
 {% block style %}
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  .content { max-width: 1000px; margin: 0 auto; padding: 0.5rem; }
-  .font-roboto { font-family: 'Roboto', sans-serif; }
-  .breadcrumb { font-size: 0.75rem; padding: 0.3rem 0; }
-  .table-sm th, .table-sm td { padding: 0.3rem; font-size: 0.75rem; vertical-align: middle; text-align: center; }
-  .table-sm .btn { font-size: 0.75rem; padding: 0.2rem 0.5rem; }
-  .form-select-sm, .form-control-sm { font-size: 0.75rem; min-width: 150px; max-width: 200px; padding: 0.2rem; }
-  .btn-sm { padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 0.25rem; }
-  .filter-form { gap: 0.5rem; flex-wrap: wrap; align-items: center; }
-  .no-data-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; }
-  .no-data-img { width: 80px; height: 80px; object-fit: cover; margin-bottom: 0.5rem; }
-  .no-data-text { font-size: 0.8rem; color: #6c757d; }
-  .pagination-container { gap: 0.3rem; }
-  .btn-primary-custom { transition: background-color 0.2s; }
-  .btn-primary-custom.btn-clicked { background-color: #005BBB; }
-  @media (max-width: 767.98px) {
-    .filter-form { flex-direction: column; align-items: stretch; }
-    .form-select-sm, .form-control-sm { max-width: 100%; }
-    .pagination-container { justify-content: center; }
+  .results-meta {
+    color: rgba(2, 6, 23, 0.62);
+    font-size: 0.95rem;
   }
 </style>
 {% endblock style %}
 
 {% block content %}
-<main id="main-container" class="font-roboto">
-  <!-- Breadcrumb -->
-  <nav aria-label="breadcrumb" class="bg-light border-bottom mb-3">
-    <div class="content py-1">
-      <ol class="breadcrumb mb-0">
-        <li class="breadcrumb-item">
-          <a href="{% url 'dashboard' %}"><i class="fa fa-home me-1"></i> Bosh sahifa</a>
-        </li>
-        <li class="breadcrumb-item active" aria-current="page">Natijalar</li>
-      </ol>
-    </div>
-  </nav>
+<main id="main-container">
+  <div class="content py-4">
+    <div class="glass-window glass-reveal">
+      <div class="glass-window-bar">
+        <div class="mac-dots" aria-hidden="true">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+        </div>
+        <div class="glass-window-title">Natijalar</div>
+        <div class="glass-window-actions">
+          <a href="{% url 'dashboard' %}" class="btn btn-sm btn-glass-secondary">
+            <i class="fa fa-home me-1 opacity-75"></i>
+            Bosh sahifa
+          </a>
+          <a href="{% url 'all_results' %}" class="btn btn-sm btn-glass-secondary">
+            <i class="fa fa-undo me-1 opacity-75"></i>
+            Tozalash
+          </a>
+        </div>
+      </div>
 
-  <div class="content">
-    <h2 class="mb-3" style="font-size: 1.2rem;">Mening Natijalarim</h2>
-    <!-- Filtr shakli -->
-    <div class="d-flex filter-form mb-3">
-      <form class="d-flex gap-2" method="get" action="{% url 'all_results' %}">
-        <input type="text" name="first_name" value="{{ first_name }}" class="form-control form-control-sm" placeholder="Ism bo‘yicha qidirish">
-        <input type="text" name="second_name" value="{{ second_name }}" class="form-control form-control-sm" placeholder="Familiya bo‘yicha qidirish">
-        <select name="category" class="form-select form-select-sm">
-          <option value="">Kategoriya tanlang</option>
-          {% for category in categories %}
-            <option value="{{ category.id }}" {% if category.id|stringformat:"s" == category_id %}selected{% endif %}>{{ category.name }}</option>
-          {% endfor %}
-        </select>
-        <button type="submit" class="btn btn-primary btn-sm btn-primary-custom">
-          <i class="fa fa-filter me-1"></i> Filtrlash
-        </button>
-      </form>
-    </div>
+      <div class="glass-window-body">
+        <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+          <div class="min-w-0">
+            <span class="badge glass-badge mb-2">
+              <i class="fa fa-chart-bar me-1 opacity-75"></i>
+              Natijalar
+            </span>
+            <h1 class="h3 mb-1 text-truncate">Mening natijalarim</h1>
+            <div class="results-meta">
+              Filtrlash, ko'rish va natijalar tarixini kuzatish.
+            </div>
+          </div>
+        </div>
 
-    <!-- Natijalar jadvali -->
-    <div class="table-responsive">
-      <table class="table table-sm table-striped table-bordered align-middle">
-        <thead class="table-primary">
-          <tr>
-            <th style="width: 40px;">#</th>
-            <th>Kategoriya</th>
-            <th>Test</th>
-            <th>Boshlash vaqti</th>
-            <th>Yakunlash vaqti</th>
-            <th>Davomiylik</th>
-            <th>Baho</th>
-            <th>Harakat</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% if results %}
-            {% for result in results %}
-              <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ result.assignment.category.name }}</td>
-                <td>{{ result.assignment.test.name }}</td>
-                <td>{{ result.start_time|date:"Y-m-d H:i:s" }}</td>
-                <td>{{ result.end_time|date:"Y-m-d H:i:s" }}</td>
-                <td>{{ result.get_duration_display }}</td>
-                <td>{{ result.score|floatformat:2 }}%</td>
-                <td>
-                  <a href="{% url 'view_result' result.id %}" class="btn btn-sm btn-info btn-primary-custom" title="Ko‘rish">
-                    <i class="fa fa-eye"></i>
-                  </a>
-                </td>
-              </tr>
-            {% endfor %}
-          {% else %}
-            <tr>
-              <td colspan="8" class="text-center">
-                <div class="no-data-container">
-                  <img src="{% static 'img/no-data.webp' %}" alt="No Data" class="no-data-img">
-                  <p class="no-data-text">Hozircha natijalar mavjud emas</p>
-                </div>
-              </td>
-            </tr>
-          {% endif %}
-        </tbody>
-      </table>
-    </div>
+        <form class="glass-surface glass-surface--soft p-3" method="get" action="{% url 'all_results' %}">
+          <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-3">
+              <label class="form-label fw-semibold mb-1">Ism</label>
+              <input
+                type="text"
+                name="first_name"
+                value="{{ first_name }}"
+                class="form-control"
+                placeholder="Ism bo'yicha qidirish">
+            </div>
 
-    <!-- Paginatsiya -->
-    <div class="d-flex pagination-container justify-content-center flex-wrap mt-3">
-      {% if results.has_previous %}
-        <a href="?page=1{% if first_name %}&first_name={{ first_name }}{% endif %}{% if second_name %}&second_name={{ second_name }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}" class="btn btn-primary btn-sm btn-primary-custom">
-          Birinchi
-        </a>
-        <a href="?page={{ results.previous_page_number }}{% if first_name %}&first_name={{ first_name }}{% endif %}{% if second_name %}&second_name={{ second_name }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}" class="btn btn-primary btn-sm btn-primary-custom">
-          Oldingi
-        </a>
-      {% endif %}
-      <span class="btn btn-primary btn-sm disabled">
-        {{ results.number }} / {{ results.paginator.num_pages }}
-      </span>
-      {% if results.has_next %}
-        <a href="?page={{ results.next_page_number }}{% if first_name %}&first_name={{ first_name }}{% endif %}{% if second_name %}&second_name={{ second_name }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}" class="btn btn-primary btn-sm btn-primary-custom">
-          Keyingisi
-        </a>
-        <a href="?page={{ results.paginator.num_pages }}{% if first_name %}&first_name={{ first_name }}{% endif %}{% if second_name %}&second_name={{ second_name }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}" class="btn btn-primary btn-sm btn-primary-custom">
-          Oxirgi
-        </a>
-      {% endif %}
+            <div class="col-12 col-md-3">
+              <label class="form-label fw-semibold mb-1">Familiya</label>
+              <input
+                type="text"
+                name="second_name"
+                value="{{ second_name }}"
+                class="form-control"
+                placeholder="Familiya bo'yicha qidirish">
+            </div>
+
+            <div class="col-12 col-md-3">
+              <label class="form-label fw-semibold mb-1">Kategoriya</label>
+              <select name="category" class="form-select">
+                <option value="">Hammasi</option>
+                {% for category in categories %}
+                  <option value="{{ category.id }}" {% if category.id|stringformat:"s" == category_id %}selected{% endif %}>
+                    {{ category.name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-12 col-md-3">
+              <button type="submit" class="btn btn-glass-primary w-100">
+                <i class="fa fa-filter me-1 opacity-75"></i>
+                Filtrlash
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div class="glass-reveal" style="--delay: 80ms;">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th style="width: 58px;">#</th>
+                  <th>Kategoriya</th>
+                  <th>Test</th>
+                  <th>Boshlash</th>
+                  <th>Yakunlash</th>
+                  <th>Davomiylik</th>
+                  <th>Baho</th>
+                  <th style="width: 92px;">Harakat</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if results %}
+                  {% for result in results %}
+                    <tr>
+                      <td class="fw-semibold">{{ forloop.counter }}</td>
+                      <td>{{ result.assignment.category.name }}</td>
+                      <td class="fw-semibold">{{ result.assignment.test.name }}</td>
+                      <td class="text-muted">{{ result.start_time|date:"Y-m-d H:i:s" }}</td>
+                      <td class="text-muted">{{ result.end_time|date:"Y-m-d H:i:s" }}</td>
+                      <td>{{ result.get_duration_display }}</td>
+                      <td class="fw-semibold">{{ result.score|floatformat:2 }}%</td>
+                      <td>
+                        <a href="{% url 'view_result' result.id %}" class="btn btn-sm btn-glass-secondary" title="Ko'rish">
+                          <i class="fa fa-eye"></i>
+                        </a>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                {% else %}
+                  <tr>
+                    <td colspan="8" class="text-center py-5">
+                      <div class="d-flex flex-column align-items-center justify-content-center gap-2">
+                        <img src="{% static 'img/no-data.webp' %}" alt="No Data" style="width: 90px; height: 90px; object-fit: cover;">
+                        <div class="fw-semibold">Hozircha natijalar mavjud emas</div>
+                        <div class="text-muted">Test ishlaganingizdan so'ng natijalar shu yerda ko'rinadi.</div>
+                      </div>
+                    </td>
+                  </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {% if results %}
+          <div class="d-flex justify-content-center flex-wrap gap-2 mt-3 glass-reveal" style="--delay: 140ms;">
+            {% if results.has_previous %}
+              <a href="?page=1{% if first_name %}&first_name={{ first_name }}{% endif %}{% if second_name %}&second_name={{ second_name }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}" class="btn btn-glass-secondary">
+                Birinchi
+              </a>
+              <a href="?page={{ results.previous_page_number }}{% if first_name %}&first_name={{ first_name }}{% endif %}{% if second_name %}&second_name={{ second_name }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}" class="btn btn-glass-secondary">
+                Oldingi
+              </a>
+            {% endif %}
+
+            <span class="btn btn-glass-secondary disabled">
+              {{ results.number }} / {{ results.paginator.num_pages }}
+            </span>
+
+            {% if results.has_next %}
+              <a href="?page={{ results.next_page_number }}{% if first_name %}&first_name={{ first_name }}{% endif %}{% if second_name %}&second_name={{ second_name }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}" class="btn btn-glass-secondary">
+                Keyingisi
+              </a>
+              <a href="?page={{ results.paginator.num_pages }}{% if first_name %}&first_name={{ first_name }}{% endif %}{% if second_name %}&second_name={{ second_name }}{% endif %}{% if category_id %}&category={{ category_id }}{% endif %}" class="btn btn-glass-secondary">
+                Oxirgi
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
     </div>
   </div>
 </main>
 {% endblock content %}
-
-{% block script %}
-<script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
-<script>
-  document.querySelectorAll('.btn-primary-custom').forEach(btn => {
-    btn.addEventListener('click', function() {
-      this.classList.add('btn-clicked');
-      setTimeout(() => {
-        this.classList.remove('btn-clicked');
-      }, 100);
-    });
-  });
-</script>
-{% endblock script %}

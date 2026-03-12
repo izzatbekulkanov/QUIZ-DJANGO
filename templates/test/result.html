@@ -2,116 +2,196 @@
 {% load static %}
 
 {% block style %}
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  .content { max-width: 1000px; margin: 0 auto; padding: 0.5rem; }
-  .font-roboto { font-family: 'Roboto', sans-serif; }
-  .breadcrumb { font-size: 0.75rem; padding: 0.3rem 0; }
-  .card { box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); border-radius: 0.25rem; }
-  .card-body { padding: 0.5rem; }
-  .card-text { font-size: 0.75rem; margin-bottom: 0.3rem; }
-  .btn-sm { padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 0.25rem; }
-  .btn-primary-custom { transition: background-color 0.2s; }
-  .btn-primary-custom.btn-clicked { background-color: #005BBB; }
-  .alert-sm { font-size: 0.75rem; padding: 0.3rem; }
-  h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
-  .question-card { margin-bottom: 0.5rem; padding: 0.5rem; }
-  .answer-correct { border: 2px solid #28a745; border-radius: 0.25rem; padding: 0.3rem; display: inline-flex; align-items: center; gap: 0.3rem; }
-  .answer-incorrect { border: 2px solid #dc3545; border-radius: 0.25rem; padding: 0.3rem; display: inline-flex; align-items: center; gap: 0.3rem; }
-  .answer-list { font-size: 0.75rem; margin-top: 0.3rem; }
-  .answer-item-correct { color: #28a745; }
-  .answer-item-incorrect { color: #6c757d; }
-  .fa-check { font-size: 0.7rem; }
+  .result-rich img { max-width: 100%; height: auto; border-radius: 12px; }
+  .result-rich p { margin-bottom: 0.5rem; }
+  .answer-box { border-radius: 14px; border: 1px solid rgba(15, 23, 42, 0.10); }
+  .answer-box--ok { background: rgba(22, 163, 74, 0.08); border-color: rgba(22, 163, 74, 0.18); }
+  .answer-box--bad { background: rgba(220, 38, 38, 0.06); border-color: rgba(220, 38, 38, 0.16); }
 </style>
 {% endblock style %}
 
 {% block content %}
-<main id="main-container" class="font-roboto">
-  <!-- Breadcrumb -->
-  <nav aria-label="breadcrumb" class="bg-light border-bottom mb-3">
-    <div class="content py-1">
-      <ol class="breadcrumb mb-0">
-        <li class="breadcrumb-item">
-          <a href="{% url 'dashboard' %}"><i class="fa fa-home me-1"></i> Bosh sahifa</a>
-        </li>
-        <li class="breadcrumb-item">
-          <a href="{% url 'all_results' %}">Natijalar</a>
-        </li>
-        <li class="breadcrumb-item active" aria-current="page">Natija tafsilotlari</li>
-      </ol>
-    </div>
-  </nav>
-
-  <div class="content">
-    <h2>Natija tafsilotlari</h2>
-    {% if error %}
-      <div class="alert alert-danger alert-sm" role="alert">{{ error }}</div>
-    {% else %}
-      <!-- Umumiy natija -->
-      <div class="card mb-3">
-        <div class="card-body">
-          <p class="card-text"><strong>Test:</strong> {{ result.assignment.test.name }}</p>
-          <p class="card-text"><strong>Kategoriya:</strong> {{ result.assignment.category.name }}</p>
-          <p class="card-text"><strong>Boshlash vaqti:</strong> {{ result.start_time|date:"Y-m-d H:i:s" }}</p>
-          <p class="card-text"><strong>Yakunlash vaqti:</strong> {{ result.end_time|date:"Y-m-d H:i:s" }}</p>
-          <p class="card-text"><strong>Davomiylik:</strong> {{ result.get_duration_display }}</p>
-          <p class="card-text"><strong>Baho:</strong> {{ result.score|floatformat:2 }}%</p>
+<main id="main-container">
+  <div class="content py-4">
+    <div class="glass-surface glass-reveal p-4 mb-4">
+      <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+        <div class="min-w-0">
+          <span class="badge glass-badge mb-2">
+            <i class="fa fa-file-alt me-1 opacity-75"></i>
+            Natija
+          </span>
+          <h1 class="h3 mb-1 text-truncate">Natija tafsilotlari</h1>
+          <div class="text-muted">Savollar kesimida javoblaringiz va to'g'ri variantlar.</div>
         </div>
-        <div class="card-footer text-center">
-          <a href="{% url 'all_results' %}" class="btn btn-sm btn-primary btn-primary-custom">
-            <i class="fa fa-arrow-left me-1"></i> Ortga
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="{% url 'all_results' %}" class="btn btn-glass-secondary">
+            <i class="fa fa-arrow-left me-1 opacity-75"></i>
+            Ortga
           </a>
         </div>
       </div>
+    </div>
 
-      <!-- Savollar va javoblar -->
-      <h2 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Savollar va Javoblar</h2>
-      {% if questions %}
-        <div class="row">
-          {% for question in questions %}
-            <div class="col-12">
-              <div class="card question-card">
-                <div class="card-body">
-                  <p class="card-text"><strong>Savol:</strong> {{ question.question.text }}</p>
-                  <p class="card-text">
-                    <strong>Sizning javobingiz:</strong>
-                    <span class="{% if question.is_correct %}answer-correct{% else %}answer-incorrect{% endif %}">
-                      <i class="fa fa-check {% if question.is_correct %}text-success{% else %}text-danger{% endif %}"></i>
-                      {{ question.selected_answer.text|default:"Javob tanlanmagan" }}
-                    </span>
-                  </p>
-                  <p class="card-text"><strong>Javoblar:</strong></p>
-                  <ul class="answer-list">
-                    {% for answer in question.question.answers.all %}
-                      <li class="{% if answer.is_correct %}answer-item-correct{% else %}answer-item-incorrect{% endif %}">
-                        {{ answer.text }} {% if answer.is_correct %}(To‘g‘ri){% endif %}
-                      </li>
-                    {% endfor %}
-                  </ul>
+    {% if error %}
+      <div class="glass-surface glass-surface--soft p-4">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge glass-badge" style="background: rgba(220, 38, 38, 0.10); border-color: rgba(220, 38, 38, 0.18); color: rgba(220, 38, 38, 0.92);">
+            <i class="fa fa-exclamation-triangle me-1"></i>
+            Xatolik
+          </span>
+          <div class="fw-semibold">{{ error }}</div>
+        </div>
+      </div>
+    {% else %}
+      <div class="row g-3 mb-4 glass-reveal" style="--delay: 80ms;">
+        <div class="col-lg-8">
+          <div class="glass-surface glass-surface--soft p-4 h-100">
+            <div class="d-flex align-items-start justify-content-between gap-3">
+              <div class="min-w-0">
+                <div class="text-muted mb-1">Test</div>
+                <div class="h5 mb-1 text-truncate">{{ result.assignment.test.name }}</div>
+                <div class="text-muted text-truncate">
+                  <i class="fa fa-layer-group me-1 opacity-75"></i>
+                  {{ result.assignment.category.name }}
+                </div>
+              </div>
+
+              <div class="text-end">
+                <div class="text-muted mb-1">Baho</div>
+                <div class="h2 mb-0">{{ result.score|floatformat:2 }}%</div>
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <div class="progress" style="height: 10px; border-radius: 999px; background: rgba(2, 6, 23, 0.06);">
+                <div
+                  class="progress-bar"
+                  role="progressbar"
+                  style="width: {{ result.score|floatformat:0 }}%; background: linear-gradient(135deg, var(--glass-accent), var(--glass-accent-2)); border-radius: 999px;">
                 </div>
               </div>
             </div>
-          {% endfor %}
+
+            <div class="row g-2 mt-3">
+              <div class="col-sm-6 col-lg-4">
+                <div class="text-muted">Boshlash</div>
+                <div class="fw-semibold">{{ result.start_time|date:"Y-m-d H:i:s" }}</div>
+              </div>
+              <div class="col-sm-6 col-lg-4">
+                <div class="text-muted">Yakunlash</div>
+                <div class="fw-semibold">{{ result.end_time|date:"Y-m-d H:i:s" }}</div>
+              </div>
+              <div class="col-sm-6 col-lg-4">
+                <div class="text-muted">Davomiylik</div>
+                <div class="fw-semibold">{{ result.get_duration_display }}</div>
+              </div>
+            </div>
+          </div>
         </div>
-      {% else %}
-        <div class="alert alert-warning alert-sm" role="alert">Savollar topilmadi</div>
-      {% endif %}
+
+        <div class="col-lg-4">
+          <div class="glass-surface glass-surface--soft p-4 h-100">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div class="fw-semibold">Statistika</div>
+              <span class="badge glass-badge">
+                <i class="fa fa-hashtag me-1 opacity-75"></i>
+                ID: {{ result.id }}
+              </span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between py-2 border-bottom" style="border-color: rgba(15, 23, 42, 0.10) !important;">
+              <span class="text-muted">Savollar soni</span>
+              <span class="fw-semibold">{{ questions|length }}</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between py-2">
+              <span class="text-muted">Ko'rish</span>
+              <span class="fw-semibold">Tafsilotlar</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-reveal" style="--delay: 140ms;">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h2 class="h5 mb-0">Savollar va javoblar</h2>
+          <div class="text-muted fs-sm d-none d-md-block">
+            Har bir savolda siz tanlagan javob va to'g'ri variant ko'rsatiladi.
+          </div>
+        </div>
+
+        {% if questions %}
+          {% for question in questions %}
+            <div class="glass-surface glass-surface--soft p-4 mb-3">
+              <div class="d-flex align-items-start justify-content-between gap-3">
+                <div class="min-w-0">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    {% if question.is_correct %}
+                      <span class="badge glass-badge" style="background: rgba(22, 163, 74, 0.12); border-color: rgba(22, 163, 74, 0.20); color: rgba(22, 163, 74, 0.92);">
+                        <i class="fa fa-check me-1"></i>
+                        To'g'ri
+                      </span>
+                    {% else %}
+                      <span class="badge glass-badge" style="background: rgba(220, 38, 38, 0.10); border-color: rgba(220, 38, 38, 0.18); color: rgba(220, 38, 38, 0.92);">
+                        <i class="fa fa-times me-1"></i>
+                        Noto'g'ri
+                      </span>
+                    {% endif %}
+                    <span class="text-muted">#{{ forloop.counter }}</span>
+                  </div>
+
+                  <div class="fw-semibold mb-2">Savol</div>
+                  <div class="result-rich">{{ question.question.text|safe }}</div>
+                </div>
+              </div>
+
+              <div class="row g-3 mt-3">
+                <div class="col-md-6">
+                  <div class="fw-semibold mb-1">Sizning javobingiz</div>
+                  <div class="p-3 answer-box {% if question.is_correct %}answer-box--ok{% else %}answer-box--bad{% endif %}">
+                    <div class="result-rich">
+                      {{ question.selected_answer.text|default:"Javob tanlanmagan"|safe }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="fw-semibold mb-1">To'g'ri javob(lar)</div>
+                  <div class="p-3 answer-box" style="background: rgba(37, 99, 235, 0.06); border-color: rgba(37, 99, 235, 0.14);">
+                    <ul class="mb-0">
+                      {% for answer in question.question.answers.all %}
+                        {% if answer.is_correct %}
+                          <li class="result-rich fw-semibold">{{ answer.text|safe }}</li>
+                        {% endif %}
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <details class="mt-3">
+                <summary class="text-muted fw-semibold" style="cursor: pointer;">
+                  Barcha variantlar
+                </summary>
+                <ul class="mt-2 mb-0">
+                  {% for answer in question.question.answers.all %}
+                    <li class="{% if answer.is_correct %}fw-semibold{% else %}text-muted{% endif %}">
+                      <span class="result-rich">{{ answer.text|safe }}</span>
+                      {% if answer.is_correct %}
+                        <span class="text-muted">(To'g'ri)</span>
+                      {% endif %}
+                    </li>
+                  {% endfor %}
+                </ul>
+              </details>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="glass-surface glass-surface--soft p-4">
+            <div class="text-muted">Savollar topilmadi.</div>
+          </div>
+        {% endif %}
+      </div>
     {% endif %}
   </div>
 </main>
 {% endblock content %}
-
-{% block script %}
-<script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
-<script>
-  document.querySelectorAll('.btn-primary-custom').forEach(btn => {
-    btn.addEventListener('click', function() {
-      this.classList.add('btn-clicked');
-      setTimeout(() => {
-        this.classList.remove('btn-clicked');
-      }, 100);
-    });
-  });
-</script>
-{% endblock script %}

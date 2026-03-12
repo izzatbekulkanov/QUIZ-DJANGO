@@ -2,151 +2,257 @@
 {% load static %}
 
 {% block style %}
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  .content { max-width: 1000px; margin: 0 auto; padding: 0.5rem; }
-  .profile-img, .profile-placeholder { width: 80px; height: 80px; object-fit: cover; border-radius: 0.25rem; border: 1px solid #dee2e6; }
-  .profile-placeholder { background-color: #e9ecef; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: #6c757d; }
-  .badge-custom { background-color: #e9ecef; color: #495057; padding: 0.3rem 0.6rem; border-radius: 0.5rem; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.3rem; }
-  .btn-primary-custom { padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 0.25rem; }
-  .test-card { height: 100%; display: flex; flex-direction: column; justify-content: space-between; border-radius: 0.25rem; }
-  .test-card .card-body { flex-grow: 1; padding: 0.5rem; }
-  .test-card .card-footer { padding: 0.3rem; display: flex; align-items: center; justify-content: center; }
-  .card, .test-card { margin-bottom: 0.5rem; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); }
-  h3 { margin: 0.5rem 0; font-size: 1.1rem; }
-  hr { margin: 1rem 0; }
-  .card-text { margin-bottom: 0.3rem; font-size: 0.75rem; }
-  .ios-dialog {
-    display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: rgba(255, 255, 255, 0.95); border-radius: 13px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    width: 260px; padding: 15px; text-align: center; z-index: 1000;
+  .profile-photo {
+    width: 92px;
+    height: 92px;
+    border-radius: 18px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    box-shadow: 0 18px 44px rgba(2, 6, 23, 0.12);
   }
-  .ios-dialog-overlay {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.4); z-index: 999;
+
+  .profile-placeholder {
+    width: 92px;
+    height: 92px;
+    border-radius: 18px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.16), rgba(124, 58, 237, 0.14));
+    border: 1px solid rgba(37, 99, 235, 0.18);
+    box-shadow: 0 16px 34px rgba(37, 99, 235, 0.10);
+    color: rgba(2, 6, 23, 0.70);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    font-size: 1.35rem;
   }
-  .ios-dialog h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
-  .ios-dialog p { font-size: 0.8rem; color: #333; margin-bottom: 10px; }
-  .ios-dialog button { width: 100%; padding: 8px; margin: 4px 0; border-radius: 6px; font-size: 0.85rem; font-weight: 500; border: none; transition: background-color 0.2s; }
-  .ios-dialog .confirm-btn { background: #007AFF; color: white; }
-  .ios-dialog .confirm-btn:hover { background: #005BBB; }
-  .ios-dialog .cancel-btn { background: #E5E5EA; color: #000; }
-  .ios-dialog .cancel-btn:hover { background: #D1D1D6; }
-  .countdown-overlay {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.7); z-index: 1001; align-items: center; justify-content: center;
+
+  .assignment-meta {
+    color: rgba(2, 6, 23, 0.62);
+    font-size: 0.93rem;
   }
-  .countdown-text { font-size: 3rem; color: white; font-weight: bold; }
+
+  .assignment-title {
+    letter-spacing: -0.02em;
+  }
+
+  .assignment-footer .btn {
+    width: 100%;
+  }
 </style>
 {% endblock style %}
 
 {% block content %}
 <main id="main-container">
-  <div class="content">
-    <!-- iOS uslubidagi dialog oynalari -->
-    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  <div class="content py-4">
+    <!-- Dialog overlays -->
     <div class="ios-dialog-overlay" id="dialog-overlay"></div>
+
     <div class="ios-dialog" id="ongoing-dialog">
       <h3>Test ishlash jarayonida</h3>
       <p id="ongoing-message">Siz ushbu testni allaqachon boshlagansiz. Davom ettirishni xohlaysizmi?</p>
       <button class="confirm-btn" onclick="continueTest()">Davom ettirish</button>
       <button class="cancel-btn" onclick="closeDialog('ongoing-dialog')">Bekor qilish</button>
     </div>
+
     <div class="ios-dialog" id="restart-dialog">
       <h3>Testni qayta boshlash</h3>
       <p>Siz ushbu testni yakunlagansiz. Qayta boshlashni xohlaysizmi?</p>
       <button class="confirm-btn" onclick="startCountdown()">Qayta boshlash</button>
       <button class="cancel-btn" onclick="closeDialog('restart-dialog')">Bekor qilish</button>
     </div>
+
     <div class="ios-dialog" id="start-dialog">
       <h3>Testni boshlash</h3>
       <p>Siz ushbu testni hali boshlamagansiz. Ishlashni xohlaysizmi?</p>
       <button class="confirm-btn" onclick="startCountdown()">Ishlash</button>
       <button class="cancel-btn" onclick="closeDialog('start-dialog')">Bekor qilish</button>
     </div>
+
     <div class="countdown-overlay" id="countdown-overlay">
       <div class="countdown-text" id="countdown-text"></div>
     </div>
 
-    <div class="text-center mb-2">
-      <span class="badge-custom">
-        <i class="fa fa-graduation-cap text-primary"></i>
-        Namangan davlat pedagogika instituti TEST platformasi
-      </span>
-    </div>
+    <div class="glass-window glass-reveal">
+      <div class="glass-window-bar">
+        <div class="mac-dots" aria-hidden="true">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+        </div>
+        <div class="glass-window-title">Dashboard</div>
+        <div class="glass-window-actions">
+          <a href="{% url 'all_results' %}" class="btn btn-sm btn-glass-secondary">
+            <i class="fa fa-chart-bar me-1 opacity-75"></i>
+            Natijalar
+          </a>
+        </div>
+      </div>
 
-    <div class="row justify-content-center">
-      <div class="col-md-10">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <div class="row align-items-center">
-              <div class="col-md-3 text-center">
-                {% if user.profile_picture %}
-                  <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="profile-img">
-                {% else %}
-                  <div class="profile-placeholder">
-                    {{ user.first_name|slice:":1" }}{{ user.second_name|slice:":1" }}
-                  </div>
-                {% endif %}
+      <div class="glass-window-body">
+        <!-- Hero -->
+        <div class="glass-surface glass-reveal p-4">
+          <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+            <div class="min-w-0">
+              <span class="badge glass-badge mb-2">
+                <i class="fa fa-graduation-cap me-1 opacity-75"></i>
+                {{ system.name|default:"Test Platformasi" }}
+              </span>
+              <h1 class="h3 mb-1 text-truncate">
+                Xush kelibsiz, {{ user.first_name|default:user.username }}
+              </h1>
+              <div class="text-muted">
+                Faol topshiriqlar va testlaringiz shu yerda.
               </div>
-              <div class="col-md-9">
-                <h3 class="card-title mb-2">Foydalanuvchi ma'lumotlari</h3>
-                <div class="row">
-                  <div class="col-md-6">
-                    <p class="mb-1"><strong>Ismi:</strong> {{ user.first_name|default:user.username }} {{ user.second_name|default:"" }}</p>
-                    <p class="mb-1"><strong>Ro'li:</strong> {{ user.get_role_display|default:"Foydalanuvchi" }}</p>
-                    <p class="mb-1"><strong>Email:</strong> {{ user.email|default:"Ma'lumot yo'q" }}</p>
-                    <p class="mb-1"><strong>Telefon:</strong> {{ user.phone_number|default:"Ma'lumot yo'q" }}</p>
-                    <p class="mb-1"><strong>Kafedra/Fakultet:</strong> {{ user.department|default:"Ma'lumot yo'q" }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile -->
+        <div class="glass-surface glass-surface--soft glass-reveal p-4" style="--delay: 80ms;">
+          <div class="row align-items-center g-3">
+            <div class="col-12 col-md-auto text-center text-md-start">
+              {% if user.profile_picture %}
+                <img src="{{ user.profile_picture.url }}" alt="Profile" class="profile-photo">
+              {% else %}
+                <div class="profile-placeholder" aria-hidden="true">
+                  {{ user.first_name|default:user.username|slice:":1" }}{{ user.second_name|slice:":1" }}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="col min-w-0">
+              <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-2">
+                <div class="min-w-0">
+                  <div class="h5 mb-1 text-truncate">
+                    {{ user.first_name|default:user.username }} {{ user.second_name|default:"" }}
                   </div>
-                  <div class="col-md-6">
-                    <p class="mb-1"><strong>Ro'yxatdan o'tgan sana:</strong> {{ user.date_joined|date:"Y-m-d H:i" }}</p>
-                    <p class="mb-1"><strong>Guruh:</strong> {{ user.group_name|default:"Ma'lumot yo'q" }}</p>
+                  <div class="text-muted">
+                    <i class="fa fa-user-shield me-1 opacity-75"></i>
+                    {{ user.get_role_display|default:"Foydalanuvchi" }}
+                    {% if user.group_name %}
+                      <span class="ms-2"><i class="fa fa-users me-1 opacity-75"></i>{{ user.group_name }}</span>
+                    {% endif %}
                   </div>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                  <a href="{% url 'logout' %}" class="btn btn-glass-danger">
+                    <i class="fa fa-sign-out-alt me-1 opacity-75"></i>
+                    Chiqish
+                  </a>
+                </div>
+              </div>
+
+              <div class="row g-2 mt-3">
+                <div class="col-12 col-md-4">
+                  <div class="text-muted">Email</div>
+                  <div class="fw-semibold text-truncate">{{ user.email|default:"-" }}</div>
+                </div>
+                <div class="col-12 col-md-4">
+                  <div class="text-muted">Telefon</div>
+                  <div class="fw-semibold text-truncate">{{ user.phone_number|default:"-" }}</div>
+                </div>
+                <div class="col-12 col-md-4">
+                  <div class="text-muted">Kafedra/Fakultet</div>
+                  <div class="fw-semibold text-truncate">{{ user.department|default:"-" }}</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    {% if user_assignments %}
-      <div class="content py-2">
-        <h3 class="text-center mb-2">Topshiriqlar</h3>
-        <div class="row g-2">
-          {% for assignment in user_assignments %}
-            <div class="col-md-4">
-              <div class="card test-card" data-assignment-id="{{ assignment.id }}">
-                <div class="card-body">
-                  <h5 class="card-title" style="font-size: 0.9rem;">{{ assignment.test.name }}</h5>
-                  <p class="card-text"><strong>Kategoriya:</strong> {{ assignment.category.name }}</p>
-                  <p class="card-text"><strong>Savollar soni:</strong> {{ assignment.total_questions }}</p>
-                  <p class="card-text"><strong>Vaqt:</strong> {{ assignment.start_time|date:"Y-m-d H:i" }} – {{ assignment.end_time|date:"Y-m-d H:i" }}</p>
-                  <p class="card-text"><strong>Davomiylik:</strong> {{ assignment.duration }} daq</p>
-                  <p class="card-text"><strong>Urinishlar:</strong> {{ assignment.attempts }} / {{ assignment.max_attempts }}</p>
-                  <p class="card-text"><strong>Qolgan vaqt:</strong> <span class="remaining-time" data-end-time="{{ assignment.end_time|date:'c' }}">00:00</span></p>
-                </div>
-                <div class="card-footer text-center">
-                  {% if assignment.attempts >= assignment.max_attempts %}
-                    <div class="alert alert-warning alert-sm mb-0" role="alert">Barcha urinishlar ishlatildi</div>
-                  {% elif assignment.end_time < now %}
-                    <div class="alert alert-secondary alert-sm mb-0" role="alert">Topshiriq muddati tugagan</div>
-                  {% else %}
-                    <a href="{% url 'start-test' assignment.id %}" class="btn btn-primary btn-primary-custom start-test-btn">Boshlash</a>
-                  {% endif %}
+        <!-- Assignments -->
+        <div class="d-flex align-items-end justify-content-between gap-2 glass-reveal" style="--delay: 120ms;">
+          <div>
+            <h2 class="h5 mb-1">Topshiriqlar</h2>
+            <div class="text-muted">Faol test topshiriqlari ro'yxati.</div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          {% if user_assignments %}
+            {% for assignment in user_assignments %}
+              <div class="col-12 col-md-6 col-xl-4 glass-reveal" style="--delay: 140ms;">
+                <div class="card h-100 test-card" data-assignment-id="{{ assignment.id }}">
+                  <div class="card-body">
+                    <div class="d-flex align-items-start justify-content-between gap-2">
+                      <span class="badge glass-badge">
+                        <i class="fa fa-layer-group me-1 opacity-75"></i>
+                        {{ assignment.category.name }}
+                      </span>
+
+                      {% if assignment.attempts >= assignment.max_attempts %}
+                        <span class="badge glass-badge" style="background: rgba(217, 119, 6, 0.10); border-color: rgba(217, 119, 6, 0.18); color: rgba(217, 119, 6, 0.92);">
+                          Limit
+                        </span>
+                      {% elif assignment.end_time < now %}
+                        <span class="badge glass-badge" style="background: rgba(2, 6, 23, 0.06); border-color: rgba(2, 6, 23, 0.10);">
+                          Tugagan
+                        </span>
+                      {% else %}
+                        <span class="badge glass-badge" style="background: rgba(22, 163, 74, 0.10); border-color: rgba(22, 163, 74, 0.18); color: rgba(22, 163, 74, 0.92);">
+                          Faol
+                        </span>
+                      {% endif %}
+                    </div>
+
+                    <div class="mt-3">
+                      <div class="h5 mb-1 assignment-title">{{ assignment.test.name }}</div>
+                      <div class="assignment-meta">
+                        <div class="d-flex align-items-center justify-content-between py-1">
+                          <span><i class="fa fa-list-ol me-1 opacity-75"></i> Savollar</span>
+                          <span class="fw-semibold text-body">{{ assignment.total_questions }}</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between py-1">
+                          <span><i class="fa fa-stopwatch me-1 opacity-75"></i> Davomiylik</span>
+                          <span class="fw-semibold text-body">{{ assignment.duration }} daq</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between py-1">
+                          <span><i class="fa fa-redo me-1 opacity-75"></i> Urinish</span>
+                          <span class="fw-semibold text-body">{{ assignment.attempts }} / {{ assignment.max_attempts }}</span>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between py-1">
+                          <span><i class="fa fa-hourglass-half me-1 opacity-75"></i> Qolgan vaqt</span>
+                          <span class="fw-semibold remaining-time" data-end-time="{{ assignment.end_time|date:'c' }}">00:00</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card-footer bg-transparent border-0 pt-0 assignment-footer">
+                    {% if assignment.attempts >= assignment.max_attempts %}
+                      <button class="btn btn-glass-secondary" disabled>Urinishlar tugadi</button>
+                    {% elif assignment.end_time < now %}
+                      <button class="btn btn-glass-secondary" disabled>Topshiriq muddati tugagan</button>
+                    {% else %}
+                      <a href="{% url 'start-test' assignment.id %}" class="btn btn-glass-primary start-test-btn">
+                        <i class="fa fa-play me-1 opacity-75"></i>
+                        Boshlash
+                      </a>
+                    {% endif %}
+                  </div>
                 </div>
               </div>
+            {% empty %}
+              <div class="col-12">
+                <div class="glass-surface glass-surface--soft p-4 text-center">
+                  <div class="fw-semibold mb-1">Faol topshiriqlar mavjud emas</div>
+                  <div class="text-muted">Hozircha sizga biriktirilgan test topshirig'i yo'q.</div>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="col-12">
+              <div class="glass-surface glass-surface--soft p-4 text-center">
+                <div class="fw-semibold mb-1">Faol topshiriqlar mavjud emas</div>
+                <div class="text-muted">Hozircha sizga biriktirilgan test topshirig'i yo'q.</div>
+              </div>
             </div>
-          {% empty %}
-            <div class="col-12 text-center">
-              <p class="text-muted">Faol topshiriqlar mavjud emas</p>
-            </div>
-          {% endfor %}
+          {% endif %}
         </div>
       </div>
-    {% endif %}
+    </div>
   </div>
 </main>
 {% endblock content %}
@@ -233,7 +339,6 @@
     fetch(`/check-unfinished-test/${assignmentId}/`, {
       method: 'GET',
       headers: {
-        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
         'X-Requested-With': 'XMLHttpRequest',
       },
     })
@@ -270,15 +375,6 @@
       } else {
         console.error('Assignment ID yoki URL topilmadi');
       }
-    });
-  });
-
-  document.querySelectorAll('.btn-primary-custom').forEach(button => {
-    button.addEventListener('click', function() {
-      this.classList.add('btn-clicked');
-      setTimeout(() => {
-        this.classList.remove('btn-clicked');
-      }, 100);
     });
   });
 </script>

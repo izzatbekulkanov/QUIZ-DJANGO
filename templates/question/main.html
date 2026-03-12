@@ -33,6 +33,18 @@
     <link rel="stylesheet" id="css-theme" href="{% static 'assets/css/themes/amethyst.min.css' %}">
     <!-- END Stylesheets -->
 
+    <style>
+      /* Normalize hero height across pages (some templates override .bg-primary-dark-op padding). */
+      #main-container .bg-image > .bg-primary-dark-op {
+        padding: 1.5rem 0 !important;
+      }
+      @media (min-width: 768px) {
+        #main-container .bg-image > .bg-primary-dark-op {
+          padding: 2.25rem 0 !important;
+        }
+      }
+    </style>
+
     {% block style %}
     {% endblock style %}
 </head>

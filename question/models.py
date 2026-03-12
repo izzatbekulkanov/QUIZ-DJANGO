@@ -52,7 +52,8 @@ class Question(models.Model):
 
 class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
-    text = models.CharField(max_length=200)  # 'text' maydoni aniq ko'rsatilgan
+    # Allow rich HTML (images as base64) for Word/Excel imports.
+    text = models.TextField()
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):

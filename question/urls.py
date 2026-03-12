@@ -1,17 +1,47 @@
 from django.urls import path
 
 from .utils.utils import DownloadTemplateView, SaveImportedQuestionsView, ImportQuestionsView, ExportQuestionsView
-from .view.category import CategoriesView, AddCategoryView, EditCategoryView, GetCategoryTestsView, \
-    GetTestQuestionsCountView
-from .view.hemis_users import ImportStudentsFromHemisStreamView, ImportStaffFromHemisStreamView, \
-    ImportStudentsByGroupStreamView, GroupListView
+from .view.category import (
+    CategoriesView,
+    AddCategoryView,
+    EditCategoryView,
+    GetCategoryTestsView,
+    GetTestQuestionsCountView,
+)
+from .view.hemis_users import (
+    ImportStudentsFromHemisStreamView,
+    ImportStaffFromHemisStreamView,
+    ImportStudentsByGroupStreamView,
+    GroupListView,
+)
 from .view.site import site_settings_view
-from .view.test import QuestionView, AddQuestionView, DeleteTestView, EditTestView, AddQuestionTestView, AssignTestView, \
-    ToggleActiveView, AddAssignTestView, DeleteAssignmentView, EditAssignTestView, ViewAssignTestView, \
-    ExportAssignTestView
-from .views import MainView, UsersView, ResultsView, AddUserView, EditUserView, ViewTestDetailsView, \
-    assign_students_to_test, EncodingView, DeleteAllEncodingsView, DeleteFaceEncodingView, GenerateEncodingsView, \
-    ToggleAuthView
+from .view.test import (
+    QuestionView,
+    AddQuestionView,
+    DeleteTestView,
+    EditTestView,
+    AddQuestionTestView,
+    QuestionDetailApiView,
+    QuestionUpdateApiView,
+    QuestionDeleteApiView,
+    AssignTestView,
+    ToggleActiveView,
+    AddAssignTestView,
+    DeleteAssignmentView,
+    EditAssignTestView,
+    ViewAssignTestView,
+    ExportAssignTestView,
+)
+from .views import (
+    MainView,
+    UsersView,
+    ResultsView,
+    AddUserView,
+    EditUserView,
+    ViewTestDetailsView,
+    assign_students_to_test,
+    ToggleAuthView,
+)
 from .view.roles import RolesView
 
 urlpatterns = [
@@ -19,25 +49,14 @@ urlpatterns = [
     path('main/', MainView.as_view(), name='main'),
     path('site-settings/', site_settings_view, name='site_settings'),
 
-    # Foydalanuvchi bilan bog‘liq yo‘nalishlar
+    # Foydalanuvchi bilan bog'liq yo'nalishlar
     path('users/', UsersView.as_view(), name='users'),
     path('users/toggle-auth/<int:id>/', ToggleAuthView.as_view(), name='toggle-auth'),
     path('add-users/', AddUserView.as_view(), name='add-user'),
     path('edit-users/<int:id>/', EditUserView.as_view(), name='edit-user'),
     path('delete/<int:id>/', UsersView.as_view(), name='delete-user'),
 
-    # encodinglar uchun
-    path('encodings/', EncodingView.as_view(), name='encoding'),
-    path('generate_face_encoding/<int:user_id>/', GenerateEncodingsView.as_view(), name='generate_face_encoding'),
-    path('generate_face_encodings/', GenerateEncodingsView.as_view(), name='generate_face_encodings'),
-    path('generate_encodings/student/', GenerateEncodingsView.as_view(), name='generate_student_encodings'),
-    path('generate_encodings/teacher/', GenerateEncodingsView.as_view(), name='generate_teacher_encodings'),
-    path('generate_group_encodings/<str:group_name>/', GenerateEncodingsView.as_view(),
-         name='generate_group_encodings'),
-    path('delete_all_encodings/', DeleteAllEncodingsView.as_view(), name='delete_all_encodings'),
-    path('delete_encoding/<int:user_id>/', DeleteFaceEncodingView.as_view(), name='delete_encoding'),
-
-    # Kategoriya bilan bog‘liq yo‘nalishlar
+    # Kategoriya bilan bog'liq yo'nalishlar
     path('categories/', CategoriesView.as_view(), name='categories'),
     path('add-category/', AddCategoryView.as_view(), name='add-category'),
     path('categories/edit/<int:category_id>/', EditCategoryView.as_view(), name='edit-category'),
@@ -45,10 +64,13 @@ urlpatterns = [
     path('category-tests/', GetCategoryTestsView.as_view(), name='category-tests'),
     path('test-questions-count/', GetTestQuestionsCountView.as_view(), name='test-questions-count'),
 
-    # Test va savollar bilan bog‘liq yo‘nalishlar
+    # Test va savollar bilan bog'liq yo'nalishlar
     path('question/', QuestionView.as_view(), name='question'),
     path('add-question/', AddQuestionView.as_view(), name='add-question'),
     path('tests/<int:test_id>/add-question/', AddQuestionTestView.as_view(), name='add-question-test'),
+    path('test/<int:test_id>/questions/<int:question_id>/detail/', QuestionDetailApiView.as_view(), name='question-detail'),
+    path('test/<int:test_id>/questions/<int:question_id>/update/', QuestionUpdateApiView.as_view(), name='question-update'),
+    path('test/<int:test_id>/questions/<int:question_id>/delete/', QuestionDeleteApiView.as_view(), name='question-delete'),
     path('question/edit/<int:test_id>/', EditTestView.as_view(), name='edit-test'),
     path('question/delete/<int:test_id>/', DeleteTestView.as_view(), name='delete-test'),
     path('test/<int:test_id>/details/', ViewTestDetailsView.as_view(), name='view-test-details'),
@@ -57,7 +79,7 @@ urlpatterns = [
     path('download-template/', DownloadTemplateView.as_view(), name='download-template'),
     path('test/<int:test_id>/export/<str:format_type>/', ExportQuestionsView.as_view(), name='export-questions'),
 
-    # Test tayinlash bilan bog‘liq yo‘nalishlar
+    # Test tayinlash bilan bog'liq yo'nalishlar
     path('assign-test/', AssignTestView.as_view(), name='assign-test'),
     path('assignments/edit/<int:assignment_id>/', EditAssignTestView.as_view(), name='edit-assign-test'),
     path('add-assign-test/', AddAssignTestView.as_view(), name='add-assign-test'),

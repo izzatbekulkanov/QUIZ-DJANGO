@@ -48,3 +48,8 @@ desktop.ini
 *.sublime-project
 *.sublime-workspace
 *.iml
+# Local scratch / cleanup
+.trash/
+logs/runserver-*.out
+logs/runserver-*.err
+db.sqlite3.bak-*

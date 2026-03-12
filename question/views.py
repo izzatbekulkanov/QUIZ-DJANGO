@@ -1,7 +1,6 @@
 import json
 import pickle
 from urllib.parse import urlencode
-import face_recognition
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -16,9 +15,9 @@ from django.urls import reverse
 from django.views import View
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from django.views.decorators.csrf import csrf_exempt
-from account.models import CustomUser, FaceEncoding
+from account.models import CustomUser
 from logs.models import Log
 from question.models import StudentTest, Category, StudentTestQuestion, Test, StudentTestAssignment
 import os
@@ -154,274 +153,6 @@ class UsersView(View):
                 "success": False,
                 "message": f"Xatolik yuz berdi: {str(e)}"
             }, status=500)
-
-
-User = get_user_model()
-
-class EncodingView(LoginRequiredMixin, View):
-    template_name = 'question/views/encoding.html'
-    login_url = '/login/'
-
-    def get(self, request):
-        # Statistik ma'lumotlar
-        stats = [
-            {
-                'count': User.objects.filter(is_student=True, face_encoding__isnull=False).count(),
-                'label': 'Encoding yaratilgan talabalar'
-            },
-            {
-                'count': User.objects.filter(is_student=True, face_encoding__isnull=True).count(),
-                'label': 'Encoding yaratilmagan talabalar'
-            },
-            {
-                'count': User.objects.filter(is_teacher=True, face_encoding__isnull=False).count(),
-                'label': 'Encoding yaratilgan o‘qituvchilar'
-            },
-            {
-                'count': User.objects.filter(is_teacher=True, face_encoding__isnull=True).count(),
-                'label': 'Encoding yaratilmagan o‘qituvchilar'
-            },
-            {
-                'count': User.objects.filter(face_encoding__isnull=False).count(),
-                'label': 'Encoding yaratilgan foydalanuvchilar'
-            },
-            {
-                'count': User.objects.filter(face_encoding__isnull=True).count(),
-                'label': 'Encoding yaratilmagan foydalanuvchilar'
-            },
-        ]
-
-        # Guruhlar
-        groups = (
-            User.objects.filter(is_student=True, group_name__isnull=False)
-            .values('group_name')
-            .distinct()
-            .order_by('group_name')
-        )
-
-        # Foydalanuvchilar va ularning encoding ma'lumotlari
-        search_query = request.GET.get('search', '')
-        filter_type = request.GET.get('filter_type', '')
-        group_id = request.GET.get('group_id', '')
-
-        users = User.objects.all().select_related('face_encoding')
-
-        if search_query:
-            users = users.filter(
-                models.Q(username__icontains=search_query)
-                | models.Q(first_name__icontains=search_query)
-                | models.Q(second_name__icontains=search_query)
-            )
-
-        if filter_type == 'student':
-            users = users.filter(is_student=True)
-        elif filter_type == 'teacher':
-            users = users.filter(is_teacher=True)
-        elif filter_type == 'group' and group_id:
-            users = users.filter(group_name=group_id, is_student=True)
-
-        encodings = []
-        for user in users:
-            try:
-                fe = user.face_encoding  # OneToOne reverse
-                has_encoding = bool(fe and fe.encoding)
-            except FaceEncoding.DoesNotExist:
-                has_encoding = False
-
-            encodings.append({
-                'user': user,
-                'has_encoding': has_encoding
-            })
-
-        paginator = Paginator(encodings, 50)
-        page_number = request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
-
-        context = {
-            'stats': stats,
-            'groups': groups,
-            'encodings': page_obj,
-            'search_query': search_query,
-            'filter_type': filter_type,
-            'group_id': group_id,
-            'csrf_token': get_token(request),
-        }
-        return render(request, self.template_name, context)
-
-
-
-def process_user(user):
-    try:
-        if not user.profile_picture:
-            print(f"[XATO] {user.username} uchun rasm fayli yo‘q")
-            return None, f"{user.username} uchun rasm yo‘q"
-
-        image_path = user.profile_picture.path
-        if not os.path.exists(image_path):
-            print(f"[XATO] Rasm topilmadi: {user.username} - {image_path}")
-            return None, f"Rasm topilmadi: {user.username}"
-
-        image = face_recognition.load_image_file(image_path)
-        h, w = image.shape[:2]
-        resolution = f"{w}x{h}"
-
-        face_locations = face_recognition.face_locations(image)
-        if len(face_locations) == 0:
-            print(f"[XATO] {user.username} uchun yuz topilmadi")
-            return None, f"{user.username} uchun yuz topilmadi"
-        if len(face_locations) > 1:
-            print(f"[XATO] {user.username} rasmida bir nechta yuz aniqlandi")
-            return None, f"{user.username} rasmida faqat bitta yuz bo‘lishi kerak"
-
-        encodings = face_recognition.face_encodings(image, known_face_locations=face_locations)
-        if not encodings:
-            print(f"[XATO] {user.username} uchun encoding olinmadi")
-            return None, f"{user.username} uchun encoding olinmadi"
-
-        encoding = encodings[0]
-
-        if len(encoding) != 128:
-            print(
-                f"[XATO] Noto‘g‘ri encoding uzunligi: "
-                f"{user.username} - kutilgan 128, olingan {len(encoding)}"
-            )
-            return None, (
-                f"Noto‘g‘ri encoding uzunligi: {user.username} - "
-                f"kutilgan 128, olingan {len(encoding)}"
-            )
-
-        encoding_bytes = pickle.dumps(encoding.astype("float32"))
-
-        return {
-            "user": user,
-            "encoding": encoding_bytes,
-            "resolution": resolution,
-        }, None
-
-    except Exception as e:
-        print(f"[XATO] {user.username} uchun xato: {str(e)}")
-        return None, f"{user.username} uchun xato: {str(e)}"
-
-
-class GenerateEncodingsView(LoginRequiredMixin, View):
-    login_url = '/account/login/'   # yoki reverse_lazy('login')
-
-    def get(self, request, user_id=None, group_name=None, *args, **kwargs):
-        user_type = kwargs.get('user_type')
-
-        def stream():
-            total_processed = 0
-            skipped = 0
-
-            try:
-                print("[INFO] Encoding yaratish boshlandi...")
-                filters = {
-                    'profile_picture__isnull': False,
-                    'face_encoding__isnull': True,  # faqat encoding yo‘qlarga
-                }
-
-                if user_id:
-                    filters['id'] = user_id
-                    log_msg = f"Foydalanuvchi {user_id}"
-                elif group_name:
-                    filters['is_student'] = True
-                    filters['group_name'] = group_name
-                    log_msg = f"Guruh '{group_name}' talabalari"
-                elif user_type == 'student':
-                    filters['is_student'] = True
-                    log_msg = "Talabalar"
-                elif user_type == 'teacher':
-                    filters['is_teacher'] = True
-                    log_msg = "O‘qituvchilar"
-                else:
-                    log_msg = "Barcha foydalanuvchilar"
-
-                users = User.objects.filter(**filters)
-                total_count = users.count()
-                print(f"[INFO] Jami {total_count} foydalanuvchi topildi: {log_msg}")
-
-                if total_count == 0:
-                    yield (
-                        f'data: {{"status": "Encoding kerak bo‘lgan {log_msg.lower()} topilmadi", '
-                        f'"progress": 100}}\n\n'
-                    )
-                    return
-
-                for user in users:
-                    result, error = process_user(user)
-                    if error or not result:
-                        skipped += 1
-                        print(f"[XATO] O‘tkazib yuborildi: {error}")
-                        progress = round((total_processed + skipped) / total_count * 100)
-                        yield (
-                            f'data: {{"status": "{error}", '
-                            f'"progress": {progress}}}\n\n'
-                        )
-                        continue
-
-                    with transaction.atomic():
-                        FaceEncoding.objects.update_or_create(
-                            user=user,
-                            defaults={
-                                "encoding": result["encoding"],
-                                "encoding_version": "face_recognition_128",
-                                "image_resolution": result["resolution"],
-                                "confidence_score": 1.0,
-                            }
-                        )
-
-                    total_processed += 1
-                    progress = round((total_processed + skipped) / total_count * 100)
-                    yield (
-                        f'data: {{"status": "{total_processed}/{total_count} '
-                        f'{log_msg.lower()} uchun encoding yaratildi", '
-                        f'"progress": {progress}}}\n\n'
-                    )
-
-                status = "success" if skipped == 0 else "partial_success"
-                yield (
-                    f'data: {{"status": "✅ Yakunlandi. {total_processed}/{total_count} '
-                    f'{log_msg.lower()} uchun encoding yaratildi, {skipped} o‘tkazib yuborildi", '
-                    f'"result": "{status}", "progress": 100}}\n\n'
-                )
-
-            except Exception as e:
-                print(f"[XATO] Umumiy xato: {str(e)}")
-                yield f'data: {{"status": "❌ Xato: {str(e)}", "progress": 100}}\n\n'
-
-        return StreamingHttpResponse(stream(), content_type='text/event-stream')
-
-
-class DeleteAllEncodingsView(LoginRequiredMixin, View):
-    login_url = '/login/'
-
-    def delete(self, request):
-        try:
-            with transaction.atomic():
-                total_count = FaceEncoding.objects.count()
-                FaceEncoding.objects.all().delete()
-            print(f"[INFO] Jami {total_count} encoding o‘chirildi")
-            return JsonResponse({'success': True, 'message': f'Jami {total_count} encoding o‘chirildi'})
-        except Exception as e:
-            print(f"[XATO] Barcha encodinglarni o‘chirishda xato: {str(e)}")
-            return JsonResponse({'success': False, 'message': f'Xato: {str(e)}'}, status=500)
-
-
-class DeleteFaceEncodingView(LoginRequiredMixin, View):
-    login_url = '/login/'
-
-    def delete(self, request, user_id):
-        try:
-            user = User.objects.get(id=user_id)
-            FaceEncoding.objects.filter(user=user).delete()
-            print(f"[INFO] Foydalanuvchi {user_id} uchun encoding o‘chirildi")
-            return JsonResponse({'success': True, 'message': 'Yuz encodingi o‘chirildi'})
-        except User.DoesNotExist:
-            print(f"[XATO] Foydalanuvchi {user_id} topilmadi")
-            return JsonResponse({'success': False, 'message': 'Foydalanuvchi topilmadi'}, status=404)
-        except Exception as e:
-            print(f"[XATO] Encoding o‘chirishda xato: {str(e)}")
-            return JsonResponse({'success': False, 'message': f'Xato: {str(e)}'}, status=500)
 
 
 @method_decorator(login_required, name='dispatch')
@@ -639,7 +370,37 @@ class EditUserView(View):
         user.full_name = request.POST.get('full_name')
         user.phone_number = request.POST.get('phone_number')
         user.address = request.POST.get('address')
-        user.date_of_birth = request.POST.get('date_of_birth')
+        dob_raw = (request.POST.get('date_of_birth') or '').strip()
+        # Some clients can send empty values as fancy quotes; normalize to empty.
+        dob_raw = (
+            dob_raw.strip("\"'")
+            .replace("\u201c", "")
+            .replace("\u201d", "")
+            .replace("вЂњ", "")
+            .replace("вЂќ", "")
+            .strip()
+        )
+        if not dob_raw:
+            user.date_of_birth = None
+        else:
+            parsed = None
+            for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y", "%Y/%m/%d"):
+                try:
+                    parsed = datetime.strptime(dob_raw, fmt).date()
+                    break
+                except ValueError:
+                    continue
+
+            if parsed is None:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Tug'ilgan sana noto'g'ri formatda. YYYY-MM-DD ko'rinishida bo'lishi kerak.",
+                    },
+                    status=400,
+                )
+
+            user.date_of_birth = parsed
         user.gender = request.POST.get('gender')
         user.profile_picture = request.FILES.get('profile_picture', user.profile_picture)
         user.nationality = request.POST.get('nationality')
@@ -741,9 +502,21 @@ def assign_students_to_test(request, test_id):
     if group_filter:
         students = students.filter(group_name=group_filter)
     if search_query:
-        students = students.filter(full_name__icontains=search_query)
+        students = students.filter(
+            Q(full_name__icontains=search_query)
+            | Q(first_name__icontains=search_query)
+            | Q(second_name__icontains=search_query)
+            | Q(username__icontains=search_query)
+            | Q(student_id_number__icontains=search_query)
+        )
 
-    groups = CustomUser.objects.filter(is_student=True).values_list('group_name', flat=True).distinct()
+    groups = (
+        CustomUser.objects.filter(is_student=True, group_name__isnull=False)
+        .exclude(group_name="")
+        .values_list('group_name', flat=True)
+        .distinct()
+        .order_by('group_name')
+    )
 
     paginator = Paginator(students, 40)
     page_number = request.GET.get('page')
