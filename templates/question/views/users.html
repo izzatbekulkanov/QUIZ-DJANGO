@@ -126,6 +126,12 @@
                 <i class="fa fa-users text-info me-1"></i> Guruh bo‘yicha yuklash</a></li>
             </ul>
           </div>
+          <button class="btn btn-sm btn-warning" onclick="grantAllAuth()" aria-label="Barcha foydalanuvchilarga ruxsat berish">
+            <i class="fa fa-check-square me-1"></i> Barchasiga ruxsat berish
+          </button>
+          <button class="btn btn-sm btn-secondary" onclick="revokeAllAuth()" aria-label="Barcha foydalanuvchilardan ruxsatni olib tashlash">
+            <i class="fa fa-times-square me-1"></i> Barchasidan olib tashlash
+          </button>
           <a class="btn btn-sm btn-info" href="{% url 'add-user' %}" aria-label="Yangi foydalanuvchi qo'shish">
             <i class="fa fa-plus me-1"></i> Yangi
           </a>
@@ -515,7 +521,7 @@
           .catch(() => {
             Swal.fire({
               title: 'Xato!',
-              text: 'Server bilan bog‘lanishda xato',
+              text: "Server bilan bog'lanishda xato",
               icon: 'error',
               confirmButtonText: 'OK',
             });
@@ -523,5 +529,103 @@
       });
     });
   });
+
+  // Barcha foydalanuvchilarga ruxsat berish
+  function grantAllAuth() {
+    Swal.fire({
+      title: 'Tasdiqlash',
+      text: 'Barcha foydalanuvchilarga ruxsat berilsinmi?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ffc107',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Ha, ruxsat berish!',
+      cancelButtonText: 'Bekor',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const csrfToken = getCsrfToken();
+        if (!csrfToken) return;
+
+        fetch('/question/users/grant-all-auth/', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+          },
+        })
+          .then(response => response.json())
+          .then(data => {
+            Swal.fire({
+              title: data.success ? 'Muvaffaqiyat!' : 'Xato!',
+              text: data.message,
+              icon: data.success ? 'success' : 'error',
+              confirmButtonText: 'OK',
+            }).then(() => {
+              if (data.success) {
+                location.reload();
+              }
+            });
+          })
+          .catch(() => {
+            Swal.fire({
+              title: 'Xato!',
+              text: "Server bilan bog'lanishda xato",
+              icon: 'error',
+              confirmButtonText: 'OK',
+            });
+          });
+      }
+    });
+  }
+
+  // Barcha foydalanuvchilardan ruxsatni olib tashlash
+  function revokeAllAuth() {
+    Swal.fire({
+      title: 'Tasdiqlash',
+      text: 'Barcha foydalanuvchilardan ruxsatni olib tashlansinmi?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Ha, olib tashlash!',
+      cancelButtonText: 'Bekor',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const csrfToken = getCsrfToken();
+        if (!csrfToken) return;
+
+        fetch('/question/users/revoke-all-auth/', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
+          },
+        })
+          .then(response => response.json())
+          .then(data => {
+            Swal.fire({
+              title: data.success ? 'Muvaffaqiyat!' : 'Xato!',
+              text: data.message,
+              icon: data.success ? 'success' : 'error',
+              confirmButtonText: 'OK',
+            }).then(() => {
+              if (data.success) {
+                location.reload();
+              }
+            });
+          })
+          .catch(() => {
+            Swal.fire({
+              title: 'Xato!',
+              text: 'Server bilan bog'lanishda xato',
+              icon: 'error',
+              confirmButtonText: 'OK',
+            });
+          });
+      }
+    });
+  }
 </script>
 {% endblock script %}

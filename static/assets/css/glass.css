@@ -78,11 +78,28 @@ body.glass-app .h5 {
 body.glass-app .content {
   padding-top: 1.4rem;
   padding-bottom: 2rem;
+  flex: 1;
+}
+
+body.glass-app #page-footer {
+  margin-top: auto;
+  margin-left: -1.5rem;
+  margin-right: -1.5rem;
+  margin-bottom: -1.5rem;
+  padding: 1.5rem;
+  width: calc(100% + 3rem);
+  background-color: rgba(255, 255, 255, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
 }
 
 /* Layout (macOS-like sidebar) */
 body.glass-app .glass-shell {
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 body.glass-app .glass-layout {
@@ -91,6 +108,7 @@ body.glass-app .glass-layout {
   gap: 1.5rem;
   padding: 1.5rem;
   align-items: start;
+  flex: 1;
 }
 
 body.glass-app .glass-sidebar {
@@ -151,6 +169,8 @@ body.glass-app .glass-sidebar-foot {
 }
 
 body.glass-app .glass-main {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 

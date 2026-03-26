@@ -1,31 +1,267 @@
 {% extends 'question/main.html' %}
 {% load static %}
+
 {% block style %}
+<style>
+  .stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover {
+    background: rgba(255, 255, 255, 0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+
+  .stat-content h6 {
+    margin: 0;
+    font-size: 0.9rem;
+    color: rgba(2, 6, 23, 0.62);
+  }
+
+  .stat-content .stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: rgba(2, 6, 23, 0.92);
+  }
+
+  .question-card {
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+  }
+
+  .question-card:hover {
+    background: rgba(255, 255, 255, 0.7);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  }
+
+  .badge-status {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .badge-status.active {
+    background: rgba(22, 163, 74, 0.1);
+    color: rgba(22, 163, 74, 0.92);
+    border: 1px solid rgba(22, 163, 74, 0.2);
+  }
+
+  .badge-status.inactive {
+    background: rgba(107, 114, 128, 0.1);
+    color: rgba(107, 114, 128, 0.92);
+    border: 1px solid rgba(107, 114, 128, 0.2);
+  }
+
+  .header-section {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+</style>
 {% endblock style %}
 
 {% block content %}
-    <main id="main-container">
-        <!-- Hero -->
-        <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
-          <div class="bg-primary-dark-op">
-            <div class="content content-full">
-              <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
-                <div class="flex-grow-1">
-                  <h1 class="fw-semibold text-white mb-0">Dashboard</h1>
-                  <h2 class="h4 fw-normal text-white-75 mb-0">Welcome Administrator</h2>
+<main id="main-container">
+  <div class="content py-4">
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+        <div>
+          <h1 class="h3 mb-1">
+            <i class="fa fa-graduation-cap me-2 opacity-75"></i> Admin Panel
+          </h1>
+          <p class="text-muted mb-0">Testlar, savollar va foydalanuvchilarni boshqarish</p>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="{% url 'categories' %}" class="btn btn-primary">
+            <i class="fa fa-list me-1"></i> Kategoriyalar
+          </a>
+          <a href="{% url 'users' %}" class="btn btn-outline-primary">
+            <i class="fa fa-users me-1"></i> Foydalanuvchilar
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: rgba(37, 99, 235, 0.10); color: rgba(37, 99, 235, 0.92);">
+            <i class="fa fa-layer-group"></i>
+          </div>
+          <div class="stat-content">
+            <h6>Jami kategoriyalar</h6>
+            <div class="stat-value">{{ total_categories|default:0 }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: rgba(22, 163, 74, 0.10); color: rgba(22, 163, 74, 0.92);">
+            <i class="fa fa-file-alt"></i>
+          </div>
+          <div class="stat-content">
+            <h6>Jami testlar</h6>
+            <div class="stat-value">{{ total_tests|default:0 }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: rgba(217, 119, 6, 0.10); color: rgba(217, 119, 6, 0.92);">
+            <i class="fa fa-question-circle"></i>
+          </div>
+          <div class="stat-content">
+            <h6>Jami savollar</h6>
+            <div class="stat-value">{{ total_questions|default:0 }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-lg-3">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: rgba(220, 38, 38, 0.10); color: rgba(220, 38, 38, 0.92);">
+            <i class="fa fa-users"></i>
+          </div>
+          <div class="stat-content">
+            <h6>Jami foydalanuvchilar</h6>
+            <div class="stat-value">{{ total_users|default:0 }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Tests Section -->
+    <div class="mb-4">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h2 class="h5 mb-0">So'nggi testlar</h2>
+          <p class="text-muted mb-0">Eng so'nggi yaratilgan 5 ta test</p>
+        </div>
+        <a href="{% url 'question' %}" class="btn btn-sm btn-outline-primary">
+          Barchasini ko'rish
+        </a>
+      </div>
+
+      <div class="row g-3">
+        {% if recent_tests %}
+          {% for test in recent_tests %}
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card question-card h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+                  <h5 class="card-title mb-0">{{ test.name|truncatewords:5 }}</h5>
+                  <span class="badge-status {% if test.is_active %}active{% else %}inactive{% endif %}">
+                    {% if test.is_active %}<i class="fa fa-check-circle me-1"></i> Faol{% else %}<i class="fa fa-times-circle me-1"></i> Nofaol{% endif %}
+                  </span>
                 </div>
+
+                <p class="text-muted small mb-2">{{ test.description|truncatewords:10|default:"-" }}</p>
+
+                <div class="row g-2 text-center text-muted small mt-3">
+                  <div class="col-6">
+                    <div class="fw-semibold text-body">{{ test.questions.count }}</div>
+                    <div>Savollar</div>
+                  </div>
+                  <div class="col-6">
+                    <div class="fw-semibold text-body">{{ test.category.name|default:"-" }}</div>
+                    <div>Kategoriya</div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer bg-transparent border-0 pt-0">
+                <a href="{% url 'edit-test' test.id %}" class="btn btn-sm btn-outline-primary w-100">
+                  <i class="fa fa-edit me-1"></i> Tahrirlash
+                </a>
               </div>
             </div>
           </div>
-        </div>
-        <!-- END Hero -->
+          {% endfor %}
+        {% else %}
+          <div class="col-12">
+            <div class="text-center py-4">
+              <i class="fa fa-inbox fa-2x text-muted mb-2"></i>
+              <p class="text-muted">Hozircha testlar mavjud emas</p>
+              <a href="{% url 'questions' %}" class="btn btn-sm btn-primary">
+                Test yaratish
+              </a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
 
-        <!-- Page Content -->
-        <div class="content">
-
+    <!-- Quick Actions Section -->
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <div class="card bg-light border-0 h-100">
+          <div class="card-body">
+            <h5 class="card-title mb-3">
+              <i class="fa fa-plus-circle me-2 text-primary"></i> Tezkor harakatlar
+            </h5>
+            <div class="d-grid gap-2">
+              <a href="{% url 'add-category' %}" class="btn btn-outline-primary text-start">
+                <i class="fa fa-plus me-2"></i> Yangi kategoriya qo'shish
+              </a>
+              <a href="{% url 'add-question' %}" class="btn btn-outline-primary text-start">
+                <i class="fa fa-plus me-2"></i> Yangi test yaratish
+              </a>
+              <a href="{% url 'add-user' %}" class="btn btn-outline-primary text-start">
+                <i class="fa fa-plus me-2"></i> Yangi foydalanuvchi qo'shish
+              </a>
+            </div>
+          </div>
         </div>
-        <!-- END Page Content -->
-      </main>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="card bg-light border-0 h-100">
+          <div class="card-body">
+            <h5 class="card-title mb-3">
+              <i class="fa fa-cog me-2 text-primary"></i> Sozlamalar
+            </h5>
+            <div class="d-grid gap-2">
+              <a href="{% url 'site_settings' %}" class="btn btn-outline-primary text-start">
+                <i class="fa fa-sliders-h me-2"></i> Sayt sozlamalari
+              </a>
+              <a href="{% url 'question' %}" class="btn btn-outline-primary text-start">
+                <i class="fa fa-file-alt me-2"></i> Testlar
+              </a>
+              <a href="{% url 'users' %}" class="btn btn-outline-primary text-start">
+                <i class="fa fa-users-cog me-2"></i> Foydalanuvchilar
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
 {% endblock content %}
 
 {% block script %}

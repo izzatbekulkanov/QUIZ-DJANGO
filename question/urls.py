@@ -41,6 +41,8 @@ from .views import (
     ViewTestDetailsView,
     assign_students_to_test,
     ToggleAuthView,
+    GrantAllAuthView,
+    RevokeAllAuthView,
 )
 from .view.roles import RolesView
 
@@ -52,6 +54,8 @@ urlpatterns = [
     # Foydalanuvchi bilan bog'liq yo'nalishlar
     path('users/', UsersView.as_view(), name='users'),
     path('users/toggle-auth/<int:id>/', ToggleAuthView.as_view(), name='toggle-auth'),
+    path('users/grant-all-auth/', GrantAllAuthView.as_view(), name='grant-all-auth'),
+    path('users/revoke-all-auth/', RevokeAllAuthView.as_view(), name='revoke-all-auth'),
     path('add-users/', AddUserView.as_view(), name='add-user'),
     path('edit-users/<int:id>/', EditUserView.as_view(), name='edit-user'),
     path('delete/<int:id>/', UsersView.as_view(), name='delete-user'),

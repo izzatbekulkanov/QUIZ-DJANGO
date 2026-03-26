@@ -19,7 +19,7 @@ from datetime import date, timedelta, datetime
 from django.views.decorators.csrf import csrf_exempt
 from account.models import CustomUser
 from logs.models import Log
-from question.models import StudentTest, Category, StudentTestQuestion, Test, StudentTestAssignment
+from question.models import StudentTest, Category, StudentTestQuestion, Test, StudentTestAssignment, Question
 import os
 
 
@@ -28,7 +28,24 @@ class MainView(View):
     template_name = 'question/views/main.html'
 
     def get(self, request):
-        return render(request, self.template_name)
+        # Statistika ma'lumotlarini hisoblash
+        total_categories = Category.objects.count()
+        total_tests = Test.objects.count()
+        total_questions = Question.objects.count()
+        total_users = CustomUser.objects.count()
+        
+        # So'nggi 5 ta testni olish
+        recent_tests = Test.objects.all().order_by('-id')[:5]
+        
+        context = {
+            'total_categories': total_categories,
+            'total_tests': total_tests,
+            'total_questions': total_questions,
+            'total_users': total_users,
+            'recent_tests': recent_tests,
+        }
+        
+        return render(request, self.template_name, context)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -42,6 +59,36 @@ class ToggleAuthView(View):
             return JsonResponse({"success": True, "message": "Autentifikatsiya sozlamasi yangilandi"})
         except CustomUser.DoesNotExist:
             return JsonResponse({"success": False, "message": "Foydalanuvchi topilmadi"}, status=404)
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class GrantAllAuthView(View):
+    """Barcha foydalanuvchilarga login ruxsatini berish"""
+    def post(self, request):
+        try:
+            updated_count = CustomUser.objects.all().update(auth_is_id=True)
+            return JsonResponse({
+                "success": True,
+                "message": f"{updated_count} ta foydalanuvchiga ruxsat berildi",
+                "count": updated_count
+            })
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RevokeAllAuthView(View):
+    """Barcha foydalanuvchilardan login ruxsatini olib tashlash"""
+    def post(self, request):
+        try:
+            updated_count = CustomUser.objects.all().update(auth_is_id=False)
+            return JsonResponse({
+                "success": True,
+                "message": f"{updated_count} ta foydalanuvchidan ruxsati olib tashlandi",
+                "count": updated_count
+            })
         except Exception as e:
             return JsonResponse({"success": False, "message": str(e)}, status=500)
 

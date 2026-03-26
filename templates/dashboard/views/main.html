@@ -10,6 +10,11 @@
     object-fit: cover;
     border: 1px solid rgba(255, 255, 255, 0.75);
     box-shadow: 0 18px 44px rgba(2, 6, 23, 0.12);
+    transition: transform 0.3s;
+  }
+
+  .profile-photo:hover {
+    transform: scale(1.05);
   }
 
   .profile-placeholder {
@@ -27,17 +32,60 @@
     font-size: 1.35rem;
   }
 
-  .assignment-meta {
-    color: rgba(2, 6, 23, 0.62);
-    font-size: 0.93rem;
-  }
-
   .assignment-title {
     letter-spacing: -0.02em;
   }
 
-  .assignment-footer .btn {
-    width: 100%;
+  .stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+  }
+
+  .stat-card:hover {
+    background: rgba(255, 255, 255, 0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+
+  .stat-content h6 {
+    margin: 0;
+    font-size: 0.9rem;
+    color: rgba(2, 6, 23, 0.62);
+  }
+
+  .stat-content .stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: rgba(2, 6, 23, 0.92);
+  }
+
+  .test-card {
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+  }
+
+  .test-card:hover {
+    background: rgba(255, 255, 255, 0.7);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
   }
 </style>
 {% endblock style %}
@@ -162,11 +210,59 @@
           </div>
         </div>
 
+        <!-- Statistics Section -->
+        <div class="row g-3 mt-2 mb-4">
+          <div class="col-12 col-sm-6 col-lg-3 glass-reveal" style="--delay: 100ms;">
+            <div class="stat-card">
+              <div class="stat-icon" style="background: rgba(37, 99, 235, 0.10); color: rgba(37, 99, 235, 0.92);">
+                <i class="fa fa-tasks"></i>
+              </div>
+              <div class="stat-content">
+                <h6>Jami testlar</h6>
+                <div class="stat-value">{{ total_tests }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-lg-3 glass-reveal" style="--delay: 110ms;">
+            <div class="stat-card">
+              <div class="stat-icon" style="background: rgba(22, 163, 74, 0.10); color: rgba(22, 163, 74, 0.92);">
+                <i class="fa fa-check-circle"></i>
+              </div>
+              <div class="stat-content">
+                <h6>Yakunlangan</h6>
+                <div class="stat-value">{{ completed_tests }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-lg-3 glass-reveal" style="--delay: 120ms;">
+            <div class="stat-card">
+              <div class="stat-icon" style="background: rgba(217, 119, 6, 0.10); color: rgba(217, 119, 6, 0.92);">
+                <i class="fa fa-hourglass-half"></i>
+              </div>
+              <div class="stat-content">
+                <h6>Jarayonda</h6>
+                <div class="stat-value">{{ ongoing_tests }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-sm-6 col-lg-3 glass-reveal" style="--delay: 130ms;">
+            <div class="stat-card">
+              <div class="stat-icon" style="background: rgba(220, 38, 38, 0.10); color: rgba(220, 38, 38, 0.92);">
+                <i class="fa fa-chart-line"></i>
+              </div>
+              <div class="stat-content">
+                <h6>O'rtacha ball</h6>
+                <div class="stat-value">{{ average_score }}%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Assignments -->
-        <div class="d-flex align-items-end justify-content-between gap-2 glass-reveal" style="--delay: 120ms;">
+        <div class="d-flex align-items-end justify-content-between gap-2 glass-reveal" style="--delay: 140ms;">
           <div>
-            <h2 class="h5 mb-1">Topshiriqlar</h2>
-            <div class="text-muted">Faol test topshiriqlari ro'yxati.</div>
+            <h2 class="h5 mb-1">Faol testlar</h2>
+            <div class="text-muted">Sizga tayinlangan testlar ro'yxati.</div>
           </div>
         </div>
 
@@ -220,15 +316,18 @@
                     </div>
                   </div>
 
-                  <div class="card-footer bg-transparent border-0 pt-0 assignment-footer">
+                  <div class="card-footer bg-transparent border-0 pt-0">
                     {% if assignment.attempts >= assignment.max_attempts %}
-                      <button class="btn btn-glass-secondary" disabled>Urinishlar tugadi</button>
+                      <button class="btn btn-sm w-100 btn-outline-secondary" disabled>
+                        <i class="fa fa-ban me-1"></i> Urinishlar tugadi
+                      </button>
                     {% elif assignment.end_time < now %}
-                      <button class="btn btn-glass-secondary" disabled>Topshiriq muddati tugagan</button>
+                      <button class="btn btn-sm w-100 btn-outline-secondary" disabled>
+                        <i class="fa fa-clock me-1"></i> Muddati tugadi
+                      </button>
                     {% else %}
-                      <a href="{% url 'start-test' assignment.id %}" class="btn btn-glass-primary start-test-btn">
-                        <i class="fa fa-play me-1 opacity-75"></i>
-                        Boshlash
+                      <a href="{% url 'start-test' assignment.id %}" class="btn btn-sm w-100 btn-primary start-test-btn">
+                        <i class="fa fa-play me-1"></i> Test ishlash
                       </a>
                     {% endif %}
                   </div>

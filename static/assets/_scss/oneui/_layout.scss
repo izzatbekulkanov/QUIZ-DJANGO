@@ -76,3 +76,12 @@
 .content-side {
   @include content-layout($space-side, $space-side, hidden);
 }
+
+// Footer
+#page-footer {
+  margin-top: auto;
+  background-color: $light;
+  box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+  padding: 1rem 0;
+  text-align: center;
+}

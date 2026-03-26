@@ -37,11 +37,40 @@ class DashboardView(View):
         # Id bo‘yicha unikal qilamiz
         user_assignments = {a.id: a for a in user_assignments}.values()
 
+        # Statistika ma'lumotlarini hisoblash
+        total_assignments = len(user_assignments)
+        
+        completed_tests = StudentTest.objects.filter(
+            student=user,
+            completed=True
+        ).count()
+        
+        ongoing_tests = StudentTest.objects.filter(
+            student=user,
+            completed=False
+        ).count()
+        
+        # O'rtacha ball
+        completed_student_tests = StudentTest.objects.filter(
+            student=user,
+            completed=True
+        )
+        
+        if completed_student_tests.exists():
+            total_score = sum([t.score for t in completed_student_tests])
+            average_score = int(total_score / completed_student_tests.count())
+        else:
+            average_score = 0
+
         # Har bir topshiriq uchun foydalanuvchi urinishlar sonini olish
         context = {
             'user': user,
             'dark_mode': dark_mode,
             'now': timezone.now(),
+            'total_tests': total_assignments,
+            'completed_tests': completed_tests,
+            'ongoing_tests': ongoing_tests,
+            'average_score': average_score,
             'user_assignments': [
                 {
                     'id': a.id,
