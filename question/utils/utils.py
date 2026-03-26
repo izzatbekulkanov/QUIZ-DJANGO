@@ -25,38 +25,192 @@ import matplotlib.pyplot as plt
 from lxml import html as lxml_html
 
 
+def _word_doc_to_docx_via_com(doc_path):
+    try:
+        import win32com.client
+    except Exception as e:
+        raise RuntimeError("MS Word (win32com) topilmadi!") from e
+
+    from pathlib import Path
+    doc_path = Path(doc_path).resolve()
+    out_path = doc_path.with_suffix(".docx")
+
+    word = None
+    doc = None
+    try:
+        word = win32com.client.Dispatch("Word.Application")
+        word.Visible = False
+        word.DisplayAlerts = 0
+        doc = word.Documents.Open(str(doc_path))
+        doc.SaveAs(str(out_path), FileFormat=16)
+    finally:
+        try:
+            if doc: doc.Close(False)
+        except: pass
+        try:
+            if word: word.Quit()
+        except: pass
+    return out_path
+
+
 def _word_doc_to_docx(doc_path):
     import shutil
     import subprocess
     from pathlib import Path
+    import platform
+
+    if platform.system() == "Windows":
+        try:
+            return _word_doc_to_docx_via_com(doc_path)
+        except Exception:
+            pass
+
     soffice = shutil.which("soffice")
     if not soffice:
-        raise RuntimeError("Tizimda LibreOffice (soffice) o'rnatilmagan, faqat .docx format ishlaydi. .doc faylni konvert qilib bo'lmadi.")
+        raise RuntimeError("LibreOffice o'rnatilmagan")
 
     doc_path = Path(doc_path).resolve()
     out_dir = doc_path.parent
     proc = subprocess.run(
         [soffice, "--headless", "--convert-to", "docx", "--outdir", str(out_dir), str(doc_path)],
-        capture_output=True,
-        text=True,
-        check=False,
+        capture_output=True, text=True, check=False
     )
     out_path = doc_path.with_suffix(".docx")
-    if proc.returncode != 0 or not out_path.exists():
-        stderr = (proc.stderr or "").strip()
-        raise RuntimeError(f".doc faylni .docx ga konvert qilishda xato: {stderr or proc.returncode}")
+    if not out_path.exists():
+        raise RuntimeError("LibreOffice konvertatsiyada xatolik berdi")
     return out_path
 
 
-def parse_word(file) -> list[dict]:
-    """
-    Word (.doc, .docx) fayllarini o'qish (Linux va Windows).
-    Eski format (Variant va Jadval) hamda yangi format (===== #) qo'llab-quvvatlanadi.
-    """
-    from docx import Document
+def _detect_charset(raw):
+    import re
+    head = raw[:5000].decode("ascii", errors="ignore")
+    m = re.search(r"charset=([\w-]+)", head, flags=re.IGNORECASE)
+    if m: return m.group(1).strip().strip("\"'")
+    return "utf-8"
+
+
+def _embed_word_html_images(root, html_dir, images_dir):
+    import base64
+    import mimetypes
     from pathlib import Path
+    from urllib.parse import unquote
+
+    def resolve_src(src):
+        src = (src or "").strip()
+        if not src or src.lower().startswith("data:"): return None
+        src = unquote(src)
+        if src.lower().startswith("file:///"): return Path(src[8:])
+        if src.lower().startswith("file:"): return Path(src[5:])
+        src_norm = src.replace("\\", "/")
+        try:
+            for c in [html_dir / src_norm, images_dir / src_norm, images_dir / Path(src_norm).name, html_dir / Path(src_norm).name]:
+                if c.exists(): return c
+        except Exception:
+            pass
+        return None
+
+    def embed_attr(el, attr):
+        src = el.get(attr) or ""
+        fp = resolve_src(src)
+        if fp and fp.exists():
+            mime = mimetypes.guess_type(str(fp))[0] or "application/octet-stream"
+            b64 = base64.b64encode(fp.read_bytes()).decode("ascii")
+            el.set(attr, f"data:{mime};base64,{b64}")
+
+    for img in root.xpath("//*[local-name()='img']"):
+        embed_attr(img, "src")
+    for vml in root.xpath("//*[local-name()='imagedata']"):
+        if vml.get("src"): embed_attr(vml, "src")
+
+
+def _docx_to_html_embedded_via_word(docx_path):
+    try:
+        import win32com.client
+    except Exception as e:
+        raise RuntimeError("win32com yo'q") from e
+
+    import tempfile
+    from pathlib import Path
+    from lxml import html as lxml_html
+    docx_path = Path(docx_path).resolve()
+
+    with tempfile.TemporaryDirectory(prefix="quiz_word_html_") as td:
+        td_path = Path(td)
+        out_html = td_path / "input.html"
+
+        word = None
+        doc = None
+        try:
+            word = win32com.client.Dispatch("Word.Application")
+            word.Visible = False
+            word.DisplayAlerts = 0
+            doc = word.Documents.Open(str(docx_path))
+            doc.SaveAs(str(out_html), FileFormat=10)
+        finally:
+            try:
+                if doc: doc.Close(False)
+            except: pass
+            try:
+                if word: word.Quit()
+            except: pass
+
+        if not out_html.exists():
+            raise RuntimeError("Word HTML yaratmadi.")
+
+        raw = out_html.read_bytes()
+        html_text = raw.decode(_detect_charset(raw), errors="replace")
+        root = lxml_html.fromstring(html_text)
+        images_dir = out_html.parent / f"{out_html.stem}.files"
+        _embed_word_html_images(root, out_html.parent, images_dir)
+        return lxml_html.tostring(root, encoding="unicode", method="html")
+
+
+def _docx_to_html_embedded_via_libreoffice(docx_path):
+    import subprocess
+    import shutil
+    import tempfile
+    from pathlib import Path
+    from lxml import html as lxml_html
+
+    soffice = shutil.which("soffice")
+    if not soffice:
+        raise RuntimeError("LibreOffice (soffice) topilmadi!")
+
+    docx_path = Path(docx_path).resolve()
+    with tempfile.TemporaryDirectory(prefix="quiz_word_html_") as td:
+        subprocess.run([soffice, "--headless", "--convert-to", "html", "--outdir", td, str(docx_path)], capture_output=True)
+        out_html = Path(td) / f"{docx_path.stem}.html"
+        if not out_html.exists():
+            out_html = Path(td) / f"{docx_path.stem}.htm"
+        if not out_html.exists():
+            raise RuntimeError("LibreOffice HTML formatda muvaffaqiyatli saqlay olmadi.")
+
+        raw = out_html.read_bytes()
+        html_text = raw.decode(_detect_charset(raw), errors="replace")
+        root = lxml_html.fromstring(html_text)
+        _embed_word_html_images(root, out_html.parent, out_html.parent)
+        return lxml_html.tostring(root, encoding="unicode", method="html")
+
+
+def _docx_to_html_embedded(docx_path):
+    import platform
+    if platform.system() == "Windows":
+        try:
+            return _docx_to_html_embedded_via_word(docx_path)
+        except Exception as e:
+            print(f"Word orqali HTML qilish o'xshamadi: {e}, LibreOffice usuliga o'tamiz")
+            
+    try:
+        return _docx_to_html_embedded_via_libreoffice(docx_path)
+    except Exception as e:
+        raise RuntimeError("HTML rasm va formulalar eksporti Windowsda Word, Linuxda LibreOffice orqali ishlashi sozlangan, ammo tizimda bularni topilmadi.")
+
+
+def parse_word(file) -> list[dict]:
     import tempfile
     import re
+    from pathlib import Path
+    from lxml import html as lxml_html
 
     name = getattr(file, "name", "") or ""
     suffix = Path(name).suffix.lower()
@@ -67,11 +221,9 @@ def parse_word(file) -> list[dict]:
         img_path = Path(td)
         in_path = img_path / f"input{suffix}"
         
-        # Faylni temp direktoriyaga yozish
         with open(in_path, "wb") as f:
             if hasattr(file, "chunks"):
-                for chunk in file.chunks():
-                    f.write(chunk)
+                for chunk in file.chunks(): f.write(chunk)
             else:
                 f.write(file.read())
 
@@ -79,110 +231,144 @@ def parse_word(file) -> list[dict]:
         if suffix == ".doc":
             docx_path = _word_doc_to_docx(in_path)
 
-        doc = Document(docx_path)
-        questions = []
-        
+        html_text = _docx_to_html_embedded(docx_path)
+        root = lxml_html.fromstring(html_text)
+        body_list = root.xpath("//body")
+        if not body_list:
+            return []
+        body = body_list[0]
+
         q_re = re.compile(r"^Savol\s*(\d+)\s*[:.)]?\s*", re.IGNORECASE)
         v_re = re.compile(r"^Variant\s*(\d+)\b", re.IGNORECASE)
         sep_re = re.compile(r"^[=\-]{10,}$")
-        
+
+        questions = []
         current_q_text = []
         current_answers = []
-        
-        # 1. Matnli (Paragraph) tahlil
-        for para in doc.paragraphs:
-            text = para.text.strip()
-            if not text:
+
+        def iter_blocks(el):
+            for child in el.iterchildren():
+                tag = str(child.tag).lower()
+                if "}" in tag: tag = tag.split("}", 1)[1]
+                if tag in ("p", "h1", "h2", "h3", "h4", "table", "div"):
+                    yield child
+                elif tag in ("ul", "ol"):
+                    for li in child.xpath(".//*[local-name()='li']"):
+                        yield li
+                else:
+                    yield from iter_blocks(child)
+
+        for block in iter_blocks(body):
+            text = " ".join((block.text_content() or "").split())
+            has_img = bool(block.xpath(".//*[local-name()='img']") or block.xpath(".//*[local-name()='math']") or block.xpath(".//*[local-name()='imagedata']"))
+            if not text and not has_img:
                 continue
-                
+
+            block_html = lxml_html.tostring(block, encoding="unicode", method="html")
+
             # Separator
             if text == "+++++" or sep_re.match(text):
                 if current_q_text and current_answers:
                     questions.append({
-                        "text": "<br>".join(current_q_text),
+                        "text": "\n".join(current_q_text),
                         "image_base64": None,
                         "answers": current_answers
                     })
                 current_q_text = []
                 current_answers = []
                 continue
-                
-            # Match Savol
-            if q_re.match(text):
-                if current_q_text and current_answers:
-                    questions.append({
-                        "text": "<br>".join(current_q_text),
-                        "image_base64": None,
-                        "answers": current_answers
-                    })
-                current_q_text = [text]
-                current_answers = []
-                continue
-                
-            # Yangi yondashuv (===== #Javob)
-            if text.startswith("====="):
-                ans_text = text[5:].strip()
-                is_correct = False
-                if ans_text.startswith("#"):
-                    is_correct = True
-                    ans_text = ans_text[1:].strip()
-                current_answers.append((ans_text, is_correct))
-                continue
-                
-            # Eski yondashuv (Variant N)
+
+            # Variant (Eski)
             vm = v_re.match(text)
             if vm:
                 vnum = int(vm.group(1))
                 t_low = text.lower()
                 is_correct = (vnum == 1) or ("to'g'ri" in t_low) or ("togri" in t_low)
-                current_answers.append((text, is_correct))
+                current_answers.append((block_html, is_correct))
                 continue
-                
-            current_q_text.append(text)
-            
+
+            # Yangi Format
+            if text.startswith("====="):
+                ans_text = text[5:].strip()
+                is_correct = False
+                if ans_text.startswith("#"):
+                    is_correct = True
+                    
+                clean_html = block_html.replace("=====", "", 1)
+                if is_correct:
+                    clean_html = clean_html.replace("#", "", 1)
+                    
+                current_answers.append((clean_html, is_correct))
+                continue
+
+            # Savol bormi
+            if q_re.match(text):
+                if current_q_text and current_answers:
+                    questions.append({
+                        "text": "\n".join(current_q_text),
+                        "image_base64": None,
+                        "answers": current_answers
+                    })
+                current_q_text = [block_html]
+                current_answers = []
+                continue
+
+            current_q_text.append(block_html)
+
         if current_q_text and current_answers:
             questions.append({
-                "text": "<br>".join(current_q_text),
+                "text": "\n".join(current_q_text),
                 "image_base64": None,
                 "answers": current_answers
             })
-            
-        # Agar matn orqali topilsa, o'shani qaytarish
+
         if questions:
             return questions
-            
-        # 2. Jadval orqali (Fallback)
-        for table in doc.tables:
-            for row in table.rows:
-                cells = row.cells
+
+        # Fallback jadvali
+        tables = body.xpath(".//*[local-name()='table']")
+        out2 = []
+        for table in tables:
+            for tr in table.xpath(".//tr"):
+                cells = tr.xpath("./th|./td")
                 if len(cells) < 3:
                     continue
-                    
-                stem = cells[0].text.strip()
-                if not stem:
-                    continue
-                    
+                
+                stem_cell = cells[0]
+                option_cells = cells[1:5]
+                
+                def cell_to_html(cell):
+                    parts = []
+                    for child in cell:
+                        parts.append(lxml_html.tostring(child, encoding="unicode", method="html"))
+                    inner = "".join(parts).strip()
+                    if not inner:
+                        txt = " ".join((cell.text_content() or "").split())
+                        if txt: inner = f"<p>{txt}</p>"
+                    return inner if inner else ""
+                
+                q_html = cell_to_html(stem_cell)
+                if not q_html: continue
+                
                 answers = []
-                options = cells[1:5]
-                # Bitta cell matni faqat 1 marta append bo'lishi uchun kichik filter (mergedlar uchun shart emas, lekin word cellarni takrorlaydi)
                 last_txt = None
-                for cell in options:
-                    c_text = cell.text.strip()
-                    if c_text and c_text != last_txt:
-                        answers.append((c_text, False))
-                        last_txt = c_text
+                for c in option_cells:
+                    c_html = cell_to_html(c)
+                    if c_html and c_html != last_txt:
+                        answers.append((c_html, False))
+                        last_txt = c_html
                         
                 if len(answers) < 2:
                     continue
                     
                 answers[0] = (answers[0][0], True)
-                questions.append({
-                    "text": stem,
+                out2.append({
+                    "text": q_html,
                     "image_base64": None,
                     "answers": answers
                 })
-                
-        return questions
+
+        return out2
 
 from question.models import Test, Question, Answer
 
