@@ -25,69 +25,164 @@ import matplotlib.pyplot as plt
 from lxml import html as lxml_html
 
 
+def _word_doc_to_docx(doc_path):
+    import shutil
+    import subprocess
+    from pathlib import Path
+    soffice = shutil.which("soffice")
+    if not soffice:
+        raise RuntimeError("Tizimda LibreOffice (soffice) o'rnatilmagan, faqat .docx format ishlaydi. .doc faylni konvert qilib bo'lmadi.")
+
+    doc_path = Path(doc_path).resolve()
+    out_dir = doc_path.parent
+    proc = subprocess.run(
+        [soffice, "--headless", "--convert-to", "docx", "--outdir", str(out_dir), str(doc_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    out_path = doc_path.with_suffix(".docx")
+    if proc.returncode != 0 or not out_path.exists():
+        stderr = (proc.stderr or "").strip()
+        raise RuntimeError(f".doc faylni .docx ga konvert qilishda xato: {stderr or proc.returncode}")
+    return out_path
+
+
 def parse_word(file) -> list[dict]:
     """
-    Word (.docx) faylidan savollarni o'qish (Linux va Windows uchun mos).
-    Faqat .docx fayllar qabul qilinadi.
-    Format:
-    Savol matni
-    ===== #To'g'ri javob
-    ===== Noto'g'ri javob 1
-    ===== Noto'g'ri javob 2
-    +++++
+    Word (.doc, .docx) fayllarini o'qish (Linux va Windows).
+    Eski format (Variant va Jadval) hamda yangi format (===== #) qo'llab-quvvatlanadi.
     """
     from docx import Document
     from pathlib import Path
-    
+    import tempfile
+    import re
+
     name = getattr(file, "name", "") or ""
     suffix = Path(name).suffix.lower()
-    
-    if suffix == ".doc":
-        raise ValueError("Eski .doc fayllar qo'llab-quvvatlanmaydi, iltimos faylni .docx formatida saqlab yuklang.")
-    elif suffix != ".docx":
-        raise ValueError("Faqat .docx fayllar qabul qilinadi")
+    if suffix not in [".docx", ".doc"]:
+        raise ValueError("Faqat .docx yoki .doc fayllar qabul qilinadi")
 
-    doc = Document(file)
-    questions = []
-    
-    current_question_text = []
-    current_answers = []
-    
-    for para in doc.paragraphs:
-        text = para.text.strip()
-        if not text:
-            continue
-            
-        if text == "+++++":
-            if current_question_text and current_answers:
-                questions.append({
-                    "text": "<br>".join(current_question_text),
-                    "image_base64": None,
-                    "answers": current_answers
-                })
-            current_question_text = []
-            current_answers = []
-            continue
-            
-        if text.startswith("====="):
-            ans_text = text[5:].strip()
-            is_correct = False
-            if ans_text.startswith("#"):
-                is_correct = True
-                ans_text = ans_text[1:].strip()
-                
-            current_answers.append((ans_text, is_correct))
-        else:
-            current_question_text.append(text)
-            
-    if current_question_text and current_answers:
-        questions.append({
-            "text": "<br>".join(current_question_text),
-            "image_base64": None,
-            "answers": current_answers
-        })
+    with tempfile.TemporaryDirectory(prefix="quiz_word_") as td:
+        img_path = Path(td)
+        in_path = img_path / f"input{suffix}"
         
-    return questions
+        # Faylni temp direktoriyaga yozish
+        with open(in_path, "wb") as f:
+            if hasattr(file, "chunks"):
+                for chunk in file.chunks():
+                    f.write(chunk)
+            else:
+                f.write(file.read())
+
+        docx_path = in_path
+        if suffix == ".doc":
+            docx_path = _word_doc_to_docx(in_path)
+
+        doc = Document(docx_path)
+        questions = []
+        
+        q_re = re.compile(r"^Savol\s*(\d+)\s*[:.)]?\s*", re.IGNORECASE)
+        v_re = re.compile(r"^Variant\s*(\d+)\b", re.IGNORECASE)
+        sep_re = re.compile(r"^[=\-]{10,}$")
+        
+        current_q_text = []
+        current_answers = []
+        
+        # 1. Matnli (Paragraph) tahlil
+        for para in doc.paragraphs:
+            text = para.text.strip()
+            if not text:
+                continue
+                
+            # Separator
+            if text == "+++++" or sep_re.match(text):
+                if current_q_text and current_answers:
+                    questions.append({
+                        "text": "<br>".join(current_q_text),
+                        "image_base64": None,
+                        "answers": current_answers
+                    })
+                current_q_text = []
+                current_answers = []
+                continue
+                
+            # Match Savol
+            if q_re.match(text):
+                if current_q_text and current_answers:
+                    questions.append({
+                        "text": "<br>".join(current_q_text),
+                        "image_base64": None,
+                        "answers": current_answers
+                    })
+                current_q_text = [text]
+                current_answers = []
+                continue
+                
+            # Yangi yondashuv (===== #Javob)
+            if text.startswith("====="):
+                ans_text = text[5:].strip()
+                is_correct = False
+                if ans_text.startswith("#"):
+                    is_correct = True
+                    ans_text = ans_text[1:].strip()
+                current_answers.append((ans_text, is_correct))
+                continue
+                
+            # Eski yondashuv (Variant N)
+            vm = v_re.match(text)
+            if vm:
+                vnum = int(vm.group(1))
+                t_low = text.lower()
+                is_correct = (vnum == 1) or ("to'g'ri" in t_low) or ("togri" in t_low)
+                current_answers.append((text, is_correct))
+                continue
+                
+            current_q_text.append(text)
+            
+        if current_q_text and current_answers:
+            questions.append({
+                "text": "<br>".join(current_q_text),
+                "image_base64": None,
+                "answers": current_answers
+            })
+            
+        # Agar matn orqali topilsa, o'shani qaytarish
+        if questions:
+            return questions
+            
+        # 2. Jadval orqali (Fallback)
+        for table in doc.tables:
+            for row in table.rows:
+                cells = row.cells
+                if len(cells) < 3:
+                    continue
+                    
+                stem = cells[0].text.strip()
+                if not stem:
+                    continue
+                    
+                answers = []
+                options = cells[1:5]
+                # Bitta cell matni faqat 1 marta append bo'lishi uchun kichik filter (mergedlar uchun shart emas, lekin word cellarni takrorlaydi)
+                last_txt = None
+                for cell in options:
+                    c_text = cell.text.strip()
+                    if c_text and c_text != last_txt:
+                        answers.append((c_text, False))
+                        last_txt = c_text
+                        
+                if len(answers) < 2:
+                    continue
+                    
+                answers[0] = (answers[0][0], True)
+                questions.append({
+                    "text": stem,
+                    "image_base64": None,
+                    "answers": answers
+                })
+                
+        return questions
 
 from question.models import Test, Question, Answer
 
