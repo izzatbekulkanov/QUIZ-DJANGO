@@ -481,8 +481,10 @@ class ResultsView(View):
 
     def get(self, request):
         # Filters
-        category_id = request.GET.get('category')
-        test_name = request.GET.get('test')
+        category_id = request.GET.get('category', '').strip()
+        test_name = request.GET.get('test', '').strip()
+        username = request.GET.get('username', '').strip()
+        full_name = request.GET.get('full_name', '').strip()
 
         # Base query
         completed_tests = StudentTest.objects.filter(completed=True).select_related(
@@ -494,6 +496,17 @@ class ResultsView(View):
             completed_tests = completed_tests.filter(assignment__category_id=category_id)
         if test_name:
             completed_tests = completed_tests.filter(assignment__test__name__icontains=test_name)
+        if username:
+            completed_tests = completed_tests.filter(student__username__icontains=username)
+        if full_name:
+            name_query = Q(student__full_name__icontains=full_name)
+            for term in full_name.split():
+                name_query |= (
+                    Q(student__first_name__icontains=term)
+                    | Q(student__second_name__icontains=term)
+                    | Q(student__third_name__icontains=term)
+                )
+            completed_tests = completed_tests.filter(name_query)
 
         # Fetch categories for the filter dropdown
         categories = Category.objects.all()
@@ -501,6 +514,12 @@ class ResultsView(View):
         context = {
             'completed_tests': completed_tests,
             'categories': categories,
+            'filters': {
+                'category': category_id,
+                'test': test_name,
+                'username': username,
+                'full_name': full_name,
+            },
         }
         return render(request, self.template_name, context)
 

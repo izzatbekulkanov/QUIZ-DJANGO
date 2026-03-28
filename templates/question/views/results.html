@@ -8,7 +8,6 @@
 {% block content %}
 <main id="main-container">
   <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-  <!-- Hero -->
   <div class="bg-image overflow-hidden"
        style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
     <div class="bg-primary-dark-op">
@@ -23,37 +22,45 @@
     </div>
   </div>
 
-  <!-- Page Content -->
   <div class="content">
-    <!-- Filter Section -->
     <form method="get" class="mb-4">
       <div class="row g-3">
-        <div class="col-md-4">
+        <div class="col-lg-3 col-md-6">
           <label for="category" class="form-label">Kategoriya</label>
           <select id="category" name="category" class="form-control">
-            <option value="">Barcha Kategoriyalar</option>
+            <option value="">Barcha kategoriyalar</option>
             {% for category in categories %}
-            <option value="{{ category.id }}" {% if category.id|stringformat:"s" == request.GET.category %}selected{% endif %}>
-              {{ category.name }}
-            </option>
+              <option value="{{ category.id }}" {% if category.id|stringformat:"s" == filters.category %}selected{% endif %}>
+                {{ category.name }}
+              </option>
             {% endfor %}
           </select>
         </div>
-        <div class="col-md-4">
+        <div class="col-lg-3 col-md-6">
           <label for="test" class="form-label">Test nomi</label>
           <input type="text" id="test" name="test" class="form-control" placeholder="Test nomi"
-                 value="{{ request.GET.test }}">
+                 value="{{ filters.test }}">
         </div>
-        <div class="col-md-4 d-flex align-items-end">
+        <div class="col-lg-2 col-md-6">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" id="username" name="username" class="form-control" placeholder="Username"
+                 value="{{ filters.username }}">
+        </div>
+        <div class="col-lg-2 col-md-6">
+          <label for="full_name" class="form-label">F.I.Sh.</label>
+          <input type="text" id="full_name" name="full_name" class="form-control" placeholder="Ism familiya"
+                 value="{{ filters.full_name }}">
+        </div>
+        <div class="col-lg-2 col-md-12 d-flex align-items-end gap-2">
           <button type="submit" class="btn btn-primary w-100">Filtrlash</button>
+          <a href="{% url 'results' %}" class="btn btn-alt-secondary w-100">Tozalash</a>
         </div>
       </div>
     </form>
 
-    <!-- Results Table -->
     <div class="block block-rounded">
       <div class="block-header block-header-default">
-        <h3 class="block-title">Test Natijalari</h3>
+        <h3 class="block-title">Test natijalari</h3>
       </div>
       <div class="block-content">
         <div class="table-responsive">
@@ -72,36 +79,47 @@
             </thead>
             <tbody>
               {% for test in completed_tests %}
-              <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ test.student.username }}</td>
-                <td>{{ test.assignment.test.name }}</td>
-                <td>{{ test.assignment.category.name }}</td>
-                <td>{{ test.score|floatformat:2 }}</td>
-                <td>{{ test.duration }}</td>
-                <td>{{ test.end_time|date:"Y-m-d H:i" }}</td>
-                <td>
-                  <div class="d-flex gap-2 flex-wrap">
-                    <a href="{% url 'view-test-details' test.id %}" class="btn btn-info btn-sm">
-                      <i class="fa fa-eye"></i> Ko'rish
-                    </a>
-                    {% if request.user.is_superuser or test.assignment.teacher_id == request.user.id or test.assignment.test.created_by_id == request.user.id %}
-                      <button
-                        type="button"
-                        class="btn btn-danger btn-sm delete-result-btn"
-                        data-delete-url="{% url 'delete-student-result' test.id %}"
-                        data-student="{{ test.student.username }}"
-                        data-test="{{ test.assignment.test.name }}">
-                        <i class="fa fa-trash"></i> O'chirish
-                      </button>
-                    {% endif %}
-                  </div>
-                </td>
-              </tr>
+                <tr>
+                  <td>{{ forloop.counter }}</td>
+                  <td>
+                    <div class="fw-semibold">
+                      {% if test.student.full_name %}
+                        {{ test.student.full_name }}
+                      {% elif test.student.first_name or test.student.second_name %}
+                        {{ test.student.first_name }} {{ test.student.second_name }}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </div>
+                    <div class="text-muted fs-sm">@{{ test.student.username }}</div>
+                  </td>
+                  <td>{{ test.assignment.test.name }}</td>
+                  <td>{{ test.assignment.category.name }}</td>
+                  <td>{{ test.score|floatformat:2 }}</td>
+                  <td>{{ test.duration }}</td>
+                  <td>{{ test.end_time|date:"Y-m-d H:i" }}</td>
+                  <td>
+                    <div class="d-flex gap-2 flex-wrap">
+                      <a href="{% url 'view-test-details' test.id %}" class="btn btn-info btn-sm">
+                        <i class="fa fa-eye"></i> Ko'rish
+                      </a>
+                      {% if request.user.is_superuser or test.assignment.teacher_id == request.user.id or test.assignment.test.created_by_id == request.user.id %}
+                        <button
+                          type="button"
+                          class="btn btn-danger btn-sm delete-result-btn"
+                          data-delete-url="{% url 'delete-student-result' test.id %}"
+                          data-student="{{ test.student.username }}"
+                          data-test="{{ test.assignment.test.name }}">
+                          <i class="fa fa-trash"></i> O'chirish
+                        </button>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
               {% empty %}
-              <tr>
-                <td colspan="8" class="text-center text-muted">Natijalar mavjud emas.</td>
-              </tr>
+                <tr>
+                  <td colspan="8" class="text-center text-muted">Natijalar mavjud emas.</td>
+                </tr>
               {% endfor %}
             </tbody>
           </table>
@@ -125,11 +143,11 @@
         const deleteUrl = button.dataset.deleteUrl;
 
         const result = await Swal.fire({
-          title: 'Natijani o‘chirasizmi?',
-          text: `${student} uchun "${testName}" natijasi o‘chiriladi va qayta urinish mumkin bo‘ladi.`,
+          title: 'Natijani ochirasizmi?',
+          text: `${student} uchun "${testName}" natijasi ochiriladi va qayta urinish mumkin boladi.`,
           icon: 'warning',
           showCancelButton: true,
-          confirmButtonText: 'Ha, o‘chirish',
+          confirmButtonText: 'Ha, ochirish',
           cancelButtonText: 'Bekor qilish',
           confirmButtonColor: '#dc3545',
         });
@@ -148,14 +166,14 @@
           });
           const data = await response.json();
           if (!response.ok || !data.success) {
-            Swal.fire('Xatolik!', data.message || 'Natijani o‘chirishda xatolik yuz berdi.', 'error');
+            Swal.fire('Xatolik!', data.message || 'Natijani ochirishda xatolik yuz berdi.', 'error');
             return;
           }
 
           await Swal.fire('Muvaffaqiyatli', data.message, 'success');
           window.location.reload();
         } catch (error) {
-          Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
+          Swal.fire('Xatolik!', 'Server bilan boglanishda xatolik yuz berdi.', 'error');
           console.error(error);
         }
       });
