@@ -48,6 +48,15 @@
             <span class="nav-main-link-name">Test</span>
           </a>
         </li>
+        {% if request.user.is_superuser %}
+          <li class="nav-main-item ">
+            <a class="nav-main-link {% if request.resolver_match.url_name == 'generation' %}active{% endif %}"
+               href="{% url 'generation' %}">
+              <i class="nav-main-link-icon fas fa-magic"></i>
+              <span class="nav-main-link-name">Generatsiya</span>
+            </a>
+          </li>
+        {% endif %}
         <li class="nav-main-item ">
           <a class="nav-main-link {% if request.resolver_match.url_name == 'assign-test' %}active{% endif %}"
              href="{% url 'assign-test' %}">

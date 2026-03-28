@@ -2,6 +2,7 @@
 import json
 import random
 import tempfile
+import gzip
 from pathlib import Path
 from io import BytesIO
 import base64
@@ -23,6 +24,406 @@ from docx import Document
 from sympy import sympify, latex
 import matplotlib.pyplot as plt
 from lxml import html as lxml_html
+from PIL import Image
+
+DOCX_XMLNS = {
+    "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
+    "m": "http://schemas.openxmlformats.org/officeDocument/2006/math",
+    "o": "urn:schemas-microsoft-com:office:office",
+    "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+    "v": "urn:schemas-microsoft-com:vml",
+    "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+}
+
+BROWSER_SAFE_IMAGE_MIME_TYPES = {
+    "image/apng",
+    "image/avif",
+    "image/bmp",
+    "image/gif",
+    "image/jpeg",
+    "image/png",
+    "image/svg+xml",
+    "image/webp",
+}
+
+
+def _local_name(tag):
+    return tag.split("}", 1)[1] if "}" in tag else tag
+
+
+def _normalize_text(text):
+    return " ".join((text or "").split())
+
+
+def _docx_convert_image_to_png(blob):
+    try:
+        image = Image.open(BytesIO(blob))
+        if image.mode not in ("RGB", "RGBA"):
+            image = image.convert("RGBA")
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+        return buffer.getvalue()
+    except Exception:
+        return None
+
+
+def _docx_media_map(doc):
+    media = {}
+    for rel_id, rel in doc.part.rels.items():
+        if "image" not in rel.reltype:
+            continue
+
+        part = getattr(rel, "target_part", None)
+        if part is None:
+            continue
+
+        target_ref = getattr(rel, "target_ref", "") or ""
+        blob = part.blob
+        lower_target = target_ref.lower()
+
+        if lower_target.endswith((".emz", ".wmz")):
+            try:
+                blob = gzip.decompress(blob)
+                target_ref = target_ref[:-4] + (".emf" if lower_target.endswith(".emz") else ".wmf")
+            except OSError:
+                pass
+
+        guessed_mime = mimetypes.guess_type(target_ref)[0]
+        mime = guessed_mime or getattr(part, "content_type", None) or "application/octet-stream"
+
+        if mime not in BROWSER_SAFE_IMAGE_MIME_TYPES:
+            converted = _docx_convert_image_to_png(blob)
+            if converted is None:
+                continue
+            blob = converted
+            mime = "image/png"
+
+        b64 = base64.b64encode(blob).decode("ascii")
+        media[rel_id] = f"data:{mime};base64,{b64}"
+    return media
+
+
+def _docx_formula_to_html(node):
+    text = _normalize_text("".join(node.itertext()))
+    if not text:
+        text = "[formula]"
+    return f'<span class="docx-formula">{std_html.escape(text)}</span>'
+
+
+def _docx_collect_image_html(node, media_map):
+    html_parts = []
+
+    rel_embed = f"{{{DOCX_XMLNS['r']}}}embed"
+    rel_id_attr = f"{{{DOCX_XMLNS['r']}}}id"
+    rel_legacy_attr = f"{{{DOCX_XMLNS['o']}}}relid"
+
+    for child in node.iter():
+        tag = _local_name(child.tag)
+        rel_id = None
+
+        if tag == "blip":
+            rel_id = child.get(rel_embed)
+        elif tag == "imagedata":
+            rel_id = child.get(rel_id_attr) or child.get(rel_legacy_attr)
+
+        if not rel_id:
+            continue
+
+        src = media_map.get(rel_id)
+        if src:
+            html_parts.append(f'<img src="{src}" alt="image">')
+        else:
+            html_parts.append('<span class="docx-image-placeholder">[image]</span>')
+
+    return html_parts
+
+
+def _docx_render_inline(node, media_map):
+    tag = _local_name(node.tag)
+
+    if tag in {"t", "instrText", "delText"}:
+        return std_html.escape(node.text or "")
+    if tag in {"tab"}:
+        return "    "
+    if tag in {"br", "cr"}:
+        return "<br>"
+    if tag in {"noBreakHyphen"}:
+        return "-"
+    if tag == "sym":
+        char = node.get(f"{{{DOCX_XMLNS['w']}}}char") or ""
+        try:
+            return chr(int(char, 16)) if char else ""
+        except ValueError:
+            return ""
+    if tag in {"drawing", "pict"}:
+        return "".join(_docx_collect_image_html(node, media_map))
+    if tag in {"oMath", "oMathPara"}:
+        return _docx_formula_to_html(node)
+    if tag in {"r", "smartTag", "sdtContent", "ins", "del", "object"}:
+        return "".join(_docx_render_inline(child, media_map) for child in node)
+    if tag == "hyperlink":
+        inner = "".join(_docx_render_inline(child, media_map) for child in node)
+        if not inner:
+            return ""
+        return f"<span>{inner}</span>"
+
+    return "".join(_docx_render_inline(child, media_map) for child in node)
+
+
+def _docx_paragraph_to_html(paragraph, media_map):
+    inner = "".join(_docx_render_inline(child, media_map) for child in paragraph._p)
+    inner = inner.strip()
+
+    if not inner:
+        text = std_html.escape(paragraph.text or "")
+        inner = text.strip()
+
+    return f"<p>{inner}</p>" if inner else ""
+
+
+def _docx_table_to_html(table, media_map):
+    rows_html = []
+
+    for row in table.rows:
+        cells_html = []
+        for cell in row.cells:
+            paragraph_html = []
+            for paragraph in cell.paragraphs:
+                rendered = _docx_paragraph_to_html(paragraph, media_map)
+                if rendered:
+                    paragraph_html.append(rendered)
+
+            cell_inner = "".join(paragraph_html).strip()
+            if not cell_inner:
+                cell_text = _normalize_text(cell.text)
+                if cell_text:
+                    cell_inner = f"<p>{std_html.escape(cell_text)}</p>"
+
+            cells_html.append(f"<td>{cell_inner}</td>")
+
+        rows_html.append("<tr>" + "".join(cells_html) + "</tr>")
+
+    return "<table>" + "".join(rows_html) + "</table>" if rows_html else ""
+
+
+def _docx_to_html_embedded_pure(docx_path):
+    from docx.table import Table
+    from docx.text.paragraph import Paragraph
+
+    doc = Document(docx_path)
+    media_map = _docx_media_map(doc)
+
+    blocks = []
+    for child in doc.element.body.iterchildren():
+        tag = _local_name(child.tag)
+
+        if tag == "p":
+            rendered = _docx_paragraph_to_html(Paragraph(child, doc), media_map)
+            if rendered:
+                blocks.append(rendered)
+        elif tag == "tbl":
+            rendered = _docx_table_to_html(Table(child, doc), media_map)
+            if rendered:
+                blocks.append(rendered)
+
+    return "<html><body>" + "".join(blocks) + "</body></html>"
+
+
+IMPORT_TEXT_REPLACEMENTS = {
+    "\uf025": "%",
+    "\uf0b0": "°",
+    "\uf0b1": "±",
+    "\uf0d7": "×",
+    "\uf0f7": "÷",
+    "вЂ˜": "'",
+    "вЂ™": "'",
+    "вЂњ": '"',
+    "вЂќ": '"',
+    "вЂ“": "-",
+    "вЂ”": "-",
+    "вЂ¦": "...",
+    "Â°": "°",
+    "Â±": "±",
+    "Â·": "·",
+}
+
+
+def _cleanup_import_html(value):
+    cleaned = value or ""
+    for old, new in IMPORT_TEXT_REPLACEMENTS.items():
+        cleaned = cleaned.replace(old, new)
+    return cleaned
+
+
+IMPORT_ALLOWED_TAGS = {
+    "b",
+    "br",
+    "div",
+    "em",
+    "i",
+    "img",
+    "li",
+    "ol",
+    "p",
+    "strong",
+    "sub",
+    "sup",
+    "table",
+    "tbody",
+    "td",
+    "th",
+    "thead",
+    "tr",
+    "u",
+    "ul",
+}
+
+IMPORT_ALLOWED_ATTRIBUTES = {
+    "img": {"alt", "src"},
+    "td": {"colspan", "rowspan"},
+    "th": {"colspan", "rowspan"},
+}
+
+
+def _element_has_meaningful_content(element):
+    text = _cleanup_import_html("".join(element.itertext()).replace("\xa0", " ")).strip()
+    if text:
+        return True
+    return bool(element.xpath(".//img | .//table | .//br"))
+
+
+def _normalize_import_fragment(value):
+    cleaned = _cleanup_import_html(value).replace("\xa0", " ").strip()
+    if not cleaned:
+        return ""
+
+    try:
+        root = lxml_html.fromstring(f"<div>{cleaned}</div>")
+    except Exception:
+        return std_html.escape(cleaned)
+
+    for node in root.xpath(".//comment()"):
+        parent = node.getparent()
+        if parent is not None:
+            parent.remove(node)
+
+    for element in list(root.iter())[1:]:
+        if not isinstance(element.tag, str):
+            continue
+
+        tag = _local_name(element.tag).lower()
+        style = (element.get("style") or "").lower()
+
+        if tag in {"script", "style", "meta", "link", "title", "head"}:
+            element.drop_tree()
+            continue
+
+        if tag in {"html", "body"}:
+            element.drop_tag()
+            continue
+
+        if tag in {"font", "span"}:
+            if "vertical-align: super" in style:
+                element.tag = "sup"
+                tag = "sup"
+            elif "vertical-align: sub" in style:
+                element.tag = "sub"
+                tag = "sub"
+            else:
+                element.drop_tag()
+                continue
+
+        if tag not in IMPORT_ALLOWED_TAGS:
+            element.drop_tag()
+            continue
+
+        allowed_attrs = IMPORT_ALLOWED_ATTRIBUTES.get(tag, set())
+        for attr in list(element.attrib):
+            if attr.lower() not in allowed_attrs:
+                del element.attrib[attr]
+
+        if tag == "img":
+            src = (element.get("src") or "").strip()
+            if not src or src.lower().startswith("javascript:"):
+                element.drop_tree()
+                continue
+            element.set("alt", _cleanup_import_html(element.get("alt") or "image"))
+
+    for element in list(root.iter())[::-1]:
+        if element is root or not isinstance(element.tag, str):
+            continue
+        tag = _local_name(element.tag).lower()
+        if tag in {"p", "div", "li", "td", "th"} and not _element_has_meaningful_content(element):
+            element.drop_tree()
+
+    parts = []
+    if (root.text or "").strip():
+        parts.append(std_html.escape(_cleanup_import_html(root.text)))
+    for child in root:
+        parts.append(lxml_html.tostring(child, encoding="unicode", method="html"))
+
+    normalized = _cleanup_import_html("".join(parts)).strip()
+    normalized = re.sub(r"(?:\s*\r?\n\s*){3,}", "\n\n", normalized)
+    return normalized
+
+
+def _required_office_backend_error():
+    import platform
+
+    system = platform.system()
+    if system == "Windows":
+        return (
+            "Windows serverda Word ham, LibreOffice ham topilmadi. "
+            "Aniq import uchun Microsoft Word yoki LibreOffice o'rnating. "
+            "Masalan: winget install TheDocumentFoundation.LibreOffice"
+        )
+    if system == "Linux":
+        return (
+            "Linux serverda LibreOffice topilmadi. "
+            "Aniq import uchun LibreOffice o'rnating. "
+            "Masalan: sudo apt update && sudo apt install -y libreoffice"
+        )
+    if system == "Darwin":
+        return (
+            "macOS serverda LibreOffice topilmadi. "
+            "Aniq import uchun LibreOffice o'rnating. "
+            "Masalan: brew install --cask libreoffice"
+        )
+    return (
+        "Serverda kerakli office backend topilmadi. "
+        "Aniq import uchun Microsoft Word yoki LibreOffice o'rnating."
+    )
+
+
+def _resolve_office_backend():
+    import platform
+
+    system = platform.system()
+    soffice = shutil.which("soffice") or shutil.which("libreoffice")
+
+    if system == "Windows" and not soffice:
+        windows_candidates = [
+            Path("C:/Program Files/LibreOffice/program/soffice.exe"),
+            Path("C:/Program Files (x86)/LibreOffice/program/soffice.exe"),
+        ]
+        for candidate in windows_candidates:
+            if candidate.exists():
+                soffice = str(candidate)
+                break
+
+    if system == "Windows":
+        try:
+            import win32com.client  # noqa: F401
+            return "word", None
+        except Exception:
+            if soffice:
+                return "libreoffice", soffice
+            raise RuntimeError(_required_office_backend_error())
+
+    if soffice:
+        return "libreoffice", soffice
+
+    raise RuntimeError(_required_office_backend_error())
 
 
 def _word_doc_to_docx_via_com(doc_path):
@@ -53,32 +454,27 @@ def _word_doc_to_docx_via_com(doc_path):
     return out_path
 
 
-def _word_doc_to_docx(doc_path):
-    import shutil
+def _word_doc_to_docx_via_libreoffice(doc_path, soffice_path):
     import subprocess
     from pathlib import Path
-    import platform
-
-    if platform.system() == "Windows":
-        try:
-            return _word_doc_to_docx_via_com(doc_path)
-        except Exception:
-            pass
-
-    soffice = shutil.which("soffice")
-    if not soffice:
-        raise RuntimeError("LibreOffice o'rnatilmagan")
 
     doc_path = Path(doc_path).resolve()
     out_dir = doc_path.parent
-    proc = subprocess.run(
-        [soffice, "--headless", "--convert-to", "docx", "--outdir", str(out_dir), str(doc_path)],
+    subprocess.run(
+        [soffice_path, "--headless", "--convert-to", "docx", "--outdir", str(out_dir), str(doc_path)],
         capture_output=True, text=True, check=False
     )
     out_path = doc_path.with_suffix(".docx")
     if not out_path.exists():
         raise RuntimeError("LibreOffice konvertatsiyada xatolik berdi")
     return out_path
+
+
+def _word_doc_to_docx(doc_path):
+    backend, soffice_path = _resolve_office_backend()
+    if backend == "word":
+        return _word_doc_to_docx_via_com(doc_path)
+    return _word_doc_to_docx_via_libreoffice(doc_path, soffice_path)
 
 
 def _detect_charset(raw):
@@ -165,20 +561,15 @@ def _docx_to_html_embedded_via_word(docx_path):
         return lxml_html.tostring(root, encoding="unicode", method="html")
 
 
-def _docx_to_html_embedded_via_libreoffice(docx_path):
+def _docx_to_html_embedded_via_libreoffice(docx_path, soffice_path):
     import subprocess
-    import shutil
     import tempfile
     from pathlib import Path
     from lxml import html as lxml_html
 
-    soffice = shutil.which("soffice")
-    if not soffice:
-        raise RuntimeError("LibreOffice (soffice) topilmadi!")
-
     docx_path = Path(docx_path).resolve()
     with tempfile.TemporaryDirectory(prefix="quiz_word_html_") as td:
-        subprocess.run([soffice, "--headless", "--convert-to", "html", "--outdir", td, str(docx_path)], capture_output=True)
+        subprocess.run([soffice_path, "--headless", "--convert-to", "html", "--outdir", td, str(docx_path)], capture_output=True)
         out_html = Path(td) / f"{docx_path.stem}.html"
         if not out_html.exists():
             out_html = Path(td) / f"{docx_path.stem}.htm"
@@ -193,17 +584,10 @@ def _docx_to_html_embedded_via_libreoffice(docx_path):
 
 
 def _docx_to_html_embedded(docx_path):
-    import platform
-    if platform.system() == "Windows":
-        try:
-            return _docx_to_html_embedded_via_word(docx_path)
-        except Exception as e:
-            print(f"Word orqali HTML qilish o'xshamadi: {e}, LibreOffice usuliga o'tamiz")
-            
-    try:
-        return _docx_to_html_embedded_via_libreoffice(docx_path)
-    except Exception as e:
-        raise RuntimeError("HTML rasm va formulalar eksporti Windowsda Word, Linuxda LibreOffice orqali ishlashi sozlangan, ammo tizimda bularni topilmadi.")
+    backend, soffice_path = _resolve_office_backend()
+    if backend == "word":
+        return _docx_to_html_embedded_via_word(docx_path)
+    return _docx_to_html_embedded_via_libreoffice(docx_path, soffice_path)
 
 
 def parse_word(file) -> list[dict]:
@@ -229,7 +613,13 @@ def parse_word(file) -> list[dict]:
 
         docx_path = in_path
         if suffix == ".doc":
-            docx_path = _word_doc_to_docx(in_path)
+            try:
+                docx_path = _word_doc_to_docx(in_path)
+            except Exception as e:
+                raise RuntimeError(
+                    ".doc fayl legacy format. Uni import qilish uchun Word yoki LibreOffice kerak. "
+                    "Cross-platform import uchun .docx dan foydalaning."
+                ) from e
 
         html_text = _docx_to_html_embedded(docx_path)
         root = lxml_html.fromstring(html_text)
@@ -259,12 +649,16 @@ def parse_word(file) -> list[dict]:
                     yield from iter_blocks(child)
 
         for block in iter_blocks(body):
-            text = " ".join((block.text_content() or "").split())
+            text = _cleanup_import_html(" ".join((block.text_content() or "").split()))
             has_img = bool(block.xpath(".//*[local-name()='img']") or block.xpath(".//*[local-name()='math']") or block.xpath(".//*[local-name()='imagedata']"))
             if not text and not has_img:
                 continue
 
-            block_html = lxml_html.tostring(block, encoding="unicode", method="html")
+            block_html = _normalize_import_fragment(
+                lxml_html.tostring(block, encoding="unicode", method="html")
+            )
+            if not block_html and not has_img:
+                continue
 
             # Separator
             if text == "+++++" or sep_re.match(text):
@@ -293,11 +687,11 @@ def parse_word(file) -> list[dict]:
                 is_correct = False
                 if ans_text.startswith("#"):
                     is_correct = True
-                    
-                clean_html = block_html.replace("=====", "", 1)
+
+                clean_html = _normalize_import_fragment(block_html.replace("=====", "", 1))
                 if is_correct:
-                    clean_html = clean_html.replace("#", "", 1)
-                    
+                    clean_html = _normalize_import_fragment(clean_html.replace("#", "", 1))
+
                 current_answers.append((clean_html, is_correct))
                 continue
 
@@ -340,11 +734,14 @@ def parse_word(file) -> list[dict]:
                 def cell_to_html(cell):
                     parts = []
                     for child in cell:
-                        parts.append(lxml_html.tostring(child, encoding="unicode", method="html"))
+                        parts.append(_normalize_import_fragment(
+                            lxml_html.tostring(child, encoding="unicode", method="html")
+                        ))
                     inner = "".join(parts).strip()
                     if not inner:
                         txt = " ".join((cell.text_content() or "").split())
-                        if txt: inner = f"<p>{txt}</p>"
+                        if txt:
+                            inner = _normalize_import_fragment(f"<p>{std_html.escape(_cleanup_import_html(txt))}</p>")
                     return inner if inner else ""
                 
                 q_html = cell_to_html(stem_cell)
@@ -425,7 +822,7 @@ def parse_excel(file, additional_files=None):
         question_text = re.sub(r'\[Rasm:\s*[^\]]+\]', '', question_text).strip()
 
         # Javoblarni olish (dinamik son)
-        answers = [(row[i], i == 1) for i in range(1, len(row)) if row[i]]  # 1-variant toвЂgвЂri
+        answers = [(_cleanup_import_html(str(row[i])), i == 1) for i in range(1, len(row)) if row[i]]  # 1-variant toвЂgвЂri
         if len(answers) < 2:  # Kamida 1 toвЂgвЂri va 1 notoвЂgвЂri javob
             print(f"Qator oвЂtkazib yuborildi: yetarli javoblar yoвЂq (javoblar soni: {len(answers)})")
             continue
@@ -434,7 +831,7 @@ def parse_excel(file, additional_files=None):
         random.shuffle(answers)
 
         questions.append({
-            'text': question_text,
+            'text': _cleanup_import_html(str(question_text)),
             'image_base64': image_base64,
             'answers': answers
         })
@@ -446,76 +843,70 @@ def parse_excel(file, additional_files=None):
 @method_decorator(login_required, name='dispatch')
 class ImportQuestionsView(View):
     def post(self, request, test_id):
-        print(f"POST soвЂrovi keldi: test_id={test_id}, foydalanuvchi={request.user}")
+        print(f"Import request: test_id={test_id}, user={request.user}")
         test = get_object_or_404(Test, id=test_id)
-        print(f"Test topildi: {test.name} (ID: {test_id})")
+        print(f"Test found: {test.name} (ID: {test_id})")
 
         file = request.FILES.get('import_file')
-        additional_files = request.FILES.getlist('additional_files', [])
-        print(f"Fayl: {file.name if file else 'Fayl yuklanmadi'}")
-        print(f"QoвЂshimcha fayllar: {[f.name for f in additional_files] if additional_files else 'YoвЂq'}")
+        print(f"File: {file.name if file else 'no file'}")
 
         if not file:
             return JsonResponse({"success": False, "errors": "Fayl yuklanmadi"})
 
         name = (file.name or "").lower()
-        is_excel = name.endswith(".xlsx")
         is_word = name.endswith(".docx") or name.endswith(".doc")
-        if not (is_excel or is_word):
-            return JsonResponse({"success": False, "errors": "Faqat .xlsx, .docx yoki .doc fayllar qabul qilinadi"})
+        if not is_word:
+            return JsonResponse({"success": False, "errors": "Faqat .docx yoki .doc fayllar qabul qilinadi"})
 
         if file.size > 10 * 1024 * 1024:
-            print(f"Xato: Fayl hajmi {file.size} bayt, 10MB dan katta")
-            return JsonResponse({"success": False, "errors": "Fayl hajmi 10MB dan kichik boвЂlishi kerak"})
+            print(f"Error: file size {file.size} bytes is larger than 10MB")
+            return JsonResponse({"success": False, "errors": "Fayl hajmi 10MB dan kichik bo'lishi kerak"})
 
         try:
-            if is_excel:
-                print("Excel faylini parsing boshlandi...")
-                questions = parse_excel(file, additional_files)
-            else:
-                print("Word faylini parsing boshlandi...")
-                questions = parse_word(file)
+            print("Word faylini parsing boshlandi...")
+            questions = parse_word(file)
             print(f"Parsing natijasi: {len(questions)} ta savol topildi")
             if not questions:
                 print("Xato: Faylda savollar topilmadi")
                 return JsonResponse({"success": False, "errors": "Faylda savollar topilmadi"})
 
-            # Savollarni sessionвЂ™da saqlash
+            # Savollarni sessionda saqlash
             request.session['imported_questions'] = questions
             request.session['test_id'] = test_id
-            print(f"SessionвЂ™da saqlandi: {len(questions)} ta savol, test_id={test_id}")
+            print(f"Saved in session: {len(questions)} questions, test_id={test_id}")
 
             return JsonResponse({
                 "success": True,
                 "questions": questions,
-                "message": "Savollar muvaffaqiyatli oвЂqildi, modalda koвЂrsatilmoqda!"
+                "message": "Savollar muvaffaqiyatli o'qildi, modalda ko'rsatilmoqda!"
             })
         except Exception as e:
             print(f"Xato yuz berdi: {str(e)}")
-            return JsonResponse({"success": False, "errors": f"Faylni oвЂqishda xato: {str(e)}"})
+            return JsonResponse({"success": False, "errors": f"Faylni o'qishda xato: {str(e)}"})
 
 
 @method_decorator(login_required, name='dispatch')
 class DownloadTemplateView(View):
     def get(self, request):
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Questions Template"
-
-        headers = ["Savol matni", "Variant 1", "Variant 2", "Variant 3", "Variant 4", "ToвЂgвЂri javob"]
-        ws.append(headers)
-
-        example_row = ["Misol savol", "ToвЂgвЂri javob", "NotoвЂgвЂri 1", "NotoвЂgвЂri 2", "NotoвЂgвЂri 3", "1 variant"]
-        ws.append(example_row)
+        document = Document()
+        for line in [
+            "1. Misol savol matni",
+            "===== #To'g'ri javob",
+            "===== Noto'g'ri javob 1",
+            "===== Noto'g'ri javob 2",
+            "===== Noto'g'ri javob 3",
+            "+++++",
+        ]:
+            document.add_paragraph(line)
 
         buffer = BytesIO()
-        wb.save(buffer)
+        document.save(buffer)
         buffer.seek(0)
         response = HttpResponse(
             content=buffer,
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
-        response['Content-Disposition'] = 'attachment; filename=questions_template.xlsx'
+        response['Content-Disposition'] = 'attachment; filename=questions_template.docx'
         return response
 
 
@@ -535,8 +926,17 @@ class SaveImportedQuestionsView(View):
 
         try:
             for q in questions:
-                question_text = q['text'].strip()
-                correct_answer = next((text for text, is_correct in q['answers'] if is_correct), None)
+                question_text = _normalize_import_fragment(q['text']).strip()
+                normalized_answers = []
+                for answer_text, is_correct in q['answers']:
+                    cleaned_answer = _normalize_import_fragment(answer_text).strip()
+                    if cleaned_answer:
+                        normalized_answers.append((cleaned_answer, is_correct))
+
+                if not question_text or len(normalized_answers) < 2:
+                    continue
+
+                correct_answer = next((text for text, is_correct in normalized_answers if is_correct), None)
                 if not correct_answer:
                     print(f"Savol oвЂtkazib yuborildi: toвЂgвЂri javob yoвЂq: {question_text}")
                     continue
@@ -561,7 +961,7 @@ class SaveImportedQuestionsView(View):
                     image_name = f"question_{question.id}.png"
                     question.image.save(image_name, ContentFile(image_data))
 
-                for answer_text, is_correct in q['answers']:
+                for answer_text, is_correct in normalized_answers:
                     Answer.objects.create(
                         question=question,
                         text=answer_text,
@@ -585,24 +985,25 @@ class SaveImportedQuestionsView(View):
 @method_decorator(login_required, name='dispatch')
 class DownloadTemplateView(View):
     def get(self, request):
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Questions Template"
-
-        headers = ["Savol matni", "Variant 1", "Variant 2", "Variant 3", "Variant 4"]  # ToвЂgвЂri javob ustuni olib tashlandi
-        ws.append(headers)
-
-        example_row = ["Misol savol", "ToвЂgвЂri javob", "NotoвЂgвЂri 1", "NotoвЂgвЂri 2", "NotoвЂgвЂri 3"]
-        ws.append(example_row)
+        document = Document()
+        for line in [
+            "1. Misol savol matni",
+            "===== #To'g'ri javob",
+            "===== Noto'g'ri javob 1",
+            "===== Noto'g'ri javob 2",
+            "===== Noto'g'ri javob 3",
+            "+++++",
+        ]:
+            document.add_paragraph(line)
 
         buffer = BytesIO()
-        wb.save(buffer)
+        document.save(buffer)
         buffer.seek(0)
         response = HttpResponse(
             content=buffer,
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
-        response['Content-Disposition'] = 'attachment; filename=questions_template.xlsx'
+        response['Content-Disposition'] = 'attachment; filename=questions_template.docx'
         return response
 
 

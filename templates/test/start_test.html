@@ -144,6 +144,55 @@
       vertical-align: middle;
     }
 
+    .import-rich {
+      font-size: inherit;
+      line-height: inherit;
+      color: inherit;
+      overflow-wrap: anywhere;
+    }
+
+    .import-rich * {
+      max-width: 100%;
+      font-size: inherit;
+      color: inherit;
+      font-family: inherit;
+    }
+
+    .import-rich p {
+      margin-bottom: 0.5rem;
+    }
+
+    .import-rich p:last-child {
+      margin-bottom: 0;
+    }
+
+    .import-rich img {
+      max-width: min(100%, 560px);
+      width: auto !important;
+      height: auto !important;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .import-rich table {
+      width: auto;
+      max-width: 100%;
+      border-collapse: collapse;
+    }
+
+    .import-rich td,
+    .import-rich th {
+      padding: 0.25rem 0.4rem;
+      vertical-align: middle;
+      border: 1px solid rgba(15, 23, 42, 0.12);
+    }
+
+    .import-rich sup,
+    .import-rich sub {
+      font-size: 0.78em;
+      line-height: 0;
+    }
+
     .question-card .question-figure {
       max-height: 260px;
       border-radius: 12px;
@@ -441,7 +490,7 @@
               <h5 class="text-center mb-2 fw-semibold">
                 Savol [[ currentQuestionIndex + 1 ]] / [[ questions.length ]]
               </h5>
-              <div class="mb-3" v-html="currentQuestion.text"></div>
+              <div class="mb-3 import-rich" v-html="currentQuestion.text"></div>
               <img v-if="currentQuestion.image" :src="currentQuestion.image" alt="Savol rasmi" class="question-figure d-block mx-auto mb-3">
 
               <ul class="d-grid gap-2">
@@ -461,7 +510,7 @@
                     class="form-check-input m-0"
                     :checked="answer.selected"
                     @change="selectAnswer(currentQuestion.id, answer.id)">
-                  <div class="flex-1 answer-text" v-html="answer.text"></div>
+                  <div class="flex-1 answer-text import-rich" v-html="answer.text"></div>
                 </li>
               </ul>
             </div>

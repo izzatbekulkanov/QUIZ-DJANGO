@@ -1,0 +1,462 @@
+{% extends 'question/main.html' %}
+{% load static %}
+
+{% block style %}
+<style>
+  .bg-image {
+    background-size: cover;
+    background-position: center;
+  }
+  .bg-primary-dark-op {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 1rem;
+  }
+  .generation-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 18px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+  }
+  .generation-stat {
+    border-radius: 18px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(241,245,249,0.96));
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  }
+  .generation-stat .display-6 {
+    letter-spacing: -0.04em;
+  }
+  .generation-table td,
+  .generation-table th {
+    vertical-align: middle;
+  }
+  .badge-soft {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.08);
+    color: #1d4ed8;
+    font-weight: 600;
+  }
+  .result-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 16px;
+    background: #fff;
+  }
+  .result-preview {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 14px;
+    padding: 1rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    max-height: 280px;
+    overflow: auto;
+  }
+  .result-empty {
+    border: 1px dashed rgba(15, 23, 42, 0.18);
+    border-radius: 18px;
+    background: rgba(248, 250, 252, 0.8);
+  }
+  .sticky-panel {
+    position: sticky;
+    top: 1rem;
+  }
+  .upload-dropzone {
+    border: 2px dashed rgba(37, 99, 235, 0.28);
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(239, 246, 255, 0.9), rgba(248, 250, 252, 0.95));
+    padding: 1.1rem;
+    cursor: pointer;
+    transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+  }
+  .upload-dropzone:hover,
+  .upload-dropzone.dragover {
+    border-color: rgba(37, 99, 235, 0.6);
+    background: linear-gradient(135deg, rgba(219, 234, 254, 0.95), rgba(239, 246, 255, 0.98));
+    transform: translateY(-1px);
+  }
+</style>
+{% endblock style %}
+
+{% block content %}
+<main id="main-container">
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+    <div class="bg-primary-dark-op">
+      <div class="container">
+        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-0">Generatsiya</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">`QUIZ` ichidagi Word fayllarni importga tayyor standart `.docx` formatga o'tkazish</h2>
+          </div>
+          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
+            <a class="btn btn-light btn-sm" href="{% url 'question' %}">
+              <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container py-4">
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="generation-stat p-4 h-100">
+          <div class="text-muted text-uppercase fs-sm fw-semibold mb-2">Generatsiya qilingan</div>
+          <div class="display-6 fw-bold">{{ stats.generated_count }}</div>
+          <div class="text-muted">`generated/` ichidagi standart `_hemis.docx` natijalar</div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="generation-stat p-4 h-100">
+          <div class="text-muted text-uppercase fs-sm fw-semibold mb-2">Run kataloglar</div>
+          <div class="display-6 fw-bold">{{ stats.run_count }}</div>
+          <div class="text-muted">Har bir generatsiya alohida papkaga saqlanadi</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-xl-8">
+        <div class="card generation-card mb-4">
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-lg-7">
+                <label class="form-label fw-semibold" for="upload-file">Upload orqali generatsiya</label>
+                <div class="upload-dropzone" id="upload-dropzone">
+                  <input type="file" id="upload-file" class="d-none" accept=".doc,.docx">
+                  <div class="d-flex align-items-start gap-3">
+                    <div class="fs-2 text-primary">
+                      <i class="fa fa-cloud-upload-alt"></i>
+                    </div>
+                    <div>
+                      <div class="fw-semibold">Word faylni bu yerga tashlang yoki tanlang</div>
+                      <div class="text-muted fs-sm">Faqat `.docx` va `.doc`. Maksimal 20MB.</div>
+                      <div class="text-primary small mt-2 d-none" id="upload-file-name"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-5">
+                <div class="row g-3 align-items-end">
+                  <div class="col-md-6">
+                <label class="form-label fw-semibold" for="profile-select">Parser profili</label>
+                <select class="form-select" id="profile-select">
+                  {% for value, label in profile_options %}
+                    <option value="{{ value }}">{{ label }}</option>
+                  {% endfor %}
+                </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold" for="encoding-select">Encoding</label>
+                    <select class="form-select" id="encoding-select">
+                      {% for value in encoding_options %}
+                        <option value="{{ value }}">{{ value }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="col-12">
+                    <button type="button" class="btn btn-primary w-100" id="upload-generate-btn" disabled>
+                      <i class="fa fa-upload me-1"></i> Upload qilib tayyorlash
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {% comment %}
+        <div class="card generation-card">
+          <div class="card-header bg-white border-0 pb-0">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+              <div>
+                <h3 class="h5 mb-1">Manba fayllar</h3>
+                <div class="text-muted">Natija standart `1. savol / ===== variant / +++++` shaklida yangi `.docx` bo'ladi.</div>
+              </div>
+              <span class="badge-soft"><i class="fa fa-folder-open"></i> {{ stats.source_count }} ta fayl</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover generation-table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>Fayl</th>
+                    <th>Profil</th>
+                    <th>Qo'shimcha manba</th>
+                    <th>Holat</th>
+                    <th class="text-end">Amal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for file in source_files %}
+                    <tr>
+                      <td>
+                        <div class="fw-semibold">{{ file.name }}</div>
+                        <div class="text-muted fs-sm">{{ file.extension }} · {{ file.size_kb }} KB</div>
+                      </td>
+                      <td>
+                        <span class="badge bg-primary-subtle text-primary">{{ file.recommended_profile_label }}</span>
+                      </td>
+                      <td>
+                        {% if file.sidecars %}
+                          <div class="text-muted fs-sm">{{ file.sidecars|join:", " }}</div>
+                        {% else %}
+                          <span class="text-muted fs-sm">Yo'q</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if file.has_ready_output %}
+                          <span class="badge bg-success">Root `_hemis.docx` mavjud</span>
+                        {% else %}
+                          <span class="badge bg-secondary">Faqat manba</span>
+                        {% endif %}
+                      </td>
+                      <td class="text-end">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-primary generate-one-btn"
+                          data-source-name="{{ file.name }}">
+                          <i class="fa fa-play me-1"></i> Generatsiya
+                        </button>
+                      </td>
+                    </tr>
+                  {% empty %}
+                    <tr>
+                      <td colspan="5" class="text-center text-muted py-4">Generatsiya uchun fayl topilmadi.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        {% endcomment %}
+      </div>
+
+      <div class="col-xl-4">
+        <div class="sticky-panel">
+          <div class="card generation-card mb-4">
+            <div class="card-header bg-white border-0">
+              <h3 class="h5 mb-0">So'nggi natija</h3>
+            </div>
+            <div class="card-body">
+              <div id="result-panel" class="result-empty p-4 text-center text-muted">
+                Hozircha generatsiya bajarilmadi.
+              </div>
+            </div>
+          </div>
+
+          <div class="card generation-card">
+            <div class="card-header bg-white border-0">
+              <h3 class="h5 mb-0">Oxirgi fayllar</h3>
+            </div>
+            <div class="card-body">
+              {% if recent_outputs %}
+                <div class="list-group list-group-flush">
+                  {% for item in recent_outputs %}
+                    <div class="list-group-item px-0">
+                      <div class="fw-semibold small">{{ item.name }}</div>
+                      <div class="text-muted fs-sm mb-2">Run: {{ item.run_id }} · {{ item.updated_at|date:"Y-m-d H:i:s" }}</div>
+                      <a href="{{ item.download_url }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fa fa-download me-1"></i> Yuklab olish
+                      </a>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="text-muted">Hali generatsiya qilingan fayl yo'q.</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock content %}
+
+{% block script %}
+<script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+    const profileSelect = document.getElementById('profile-select');
+    const encodingSelect = document.getElementById('encoding-select');
+    const resultPanel = document.getElementById('result-panel');
+    const uploadInput = document.getElementById('upload-file');
+    const uploadDropzone = document.getElementById('upload-dropzone');
+    const uploadFileName = document.getElementById('upload-file-name');
+    const uploadGenerateBtn = document.getElementById('upload-generate-btn');
+
+    function escapeHtml(value) {
+      return (value || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function buildResultHtml(data) {
+      const resultCards = data.results.map((item) => `
+        <div class="result-card p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+            <div>
+              <div class="fw-semibold">${escapeHtml(item.source_name)}</div>
+              <div class="text-muted fs-sm">${item.question_count} ta savol · ${escapeHtml(item.profile_label)} · ${escapeHtml(item.encoding)} · ${escapeHtml(item.backend_label)}</div>
+              <div class="text-muted fs-sm mt-1">${escapeHtml(item.output_dir)}</div>
+            </div>
+            <div class="btn-group btn-group-sm">
+              <a class="btn btn-outline-primary" href="${item.docx_download_url}">DOCX</a>
+              <a class="btn btn-outline-secondary" href="${item.txt_download_url}">TXT</a>
+            </div>
+          </div>
+          <div class="result-preview mt-3">${escapeHtml(item.preview)}</div>
+        </div>
+      `).join('');
+
+      const errorHtml = (data.errors || []).length
+        ? `
+          <div class="alert alert-warning mb-0">
+            ${(data.errors || []).map((item) => `<div><strong>${escapeHtml(item.source_name)}:</strong> ${escapeHtml(item.error)}</div>`).join('')}
+          </div>
+        `
+        : '';
+
+      return `
+        <div class="mb-3">
+          <div class="fw-semibold">${escapeHtml(data.message || 'Generatsiya tugadi')}</div>
+          <div class="text-muted fs-sm">Run: ${escapeHtml(data.run_id || '-')}</div>
+        </div>
+        ${resultCards}
+        ${errorHtml}
+      `;
+    }
+
+    function setUploadState(file) {
+      if (!file) {
+        uploadFileName.textContent = '';
+        uploadFileName.classList.add('d-none');
+        uploadGenerateBtn.disabled = true;
+        return;
+      }
+      uploadFileName.textContent = `${file.name} · ${(file.size / 1024).toFixed(1)} KB`;
+      uploadFileName.classList.remove('d-none');
+      uploadGenerateBtn.disabled = false;
+    }
+
+    function getValidUpload(fileList) {
+      const file = fileList && fileList.length ? fileList[0] : null;
+      if (!file) {
+        return null;
+      }
+      const lower = (file.name || '').toLowerCase();
+      if (!(lower.endsWith('.docx') || lower.endsWith('.doc'))) {
+        Swal.fire('Xatolik!', 'Faqat .docx yoki .doc yuklash mumkin.', 'error');
+        return null;
+      }
+      if (file.size > 20 * 1024 * 1024) {
+        Swal.fire('Xatolik!', 'Upload fayl hajmi 20MB dan kichik bo\'lishi kerak.', 'error');
+        return null;
+      }
+      return file;
+    }
+
+    async function runGeneration(mode, sourceName = '', uploadedFile = null) {
+      const formData = new FormData();
+      formData.append('mode', mode);
+      formData.append('profile', profileSelect.value);
+      formData.append('encoding', encodingSelect.value);
+      if (sourceName) {
+        formData.append('source_name', sourceName);
+      }
+      if (uploadedFile) {
+        formData.append('upload_file', uploadedFile);
+      }
+
+      Swal.fire({
+        title: 'Generatsiya ketmoqda',
+        text: 'Iltimos, kuting...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      try {
+        const response = await fetch("{% url 'generation-run' %}", {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        });
+        const data = await response.json();
+        Swal.close();
+
+        if (!response.ok || !data.success) {
+          const message = (data.errors || []).map((item) => `${item.source_name}: ${item.error}`).join('\n') || data.errors || 'Generatsiyada xatolik yuz berdi';
+          Swal.fire('Xatolik!', message, 'error');
+          return;
+        }
+
+        resultPanel.className = '';
+        resultPanel.innerHTML = buildResultHtml(data);
+
+        Swal.fire({
+          title: data.partial ? 'Qisman bajarildi' : 'Muvaffaqiyatli',
+          text: data.message,
+          icon: data.partial ? 'warning' : 'success',
+          confirmButtonText: 'OK',
+        });
+      } catch (error) {
+        Swal.close();
+        Swal.fire('Xatolik!', 'Server bilan bog\'lanishda xatolik yuz berdi.', 'error');
+        console.error(error);
+      }
+    }
+
+    uploadDropzone.addEventListener('click', () => uploadInput.click());
+    uploadDropzone.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      uploadDropzone.classList.add('dragover');
+    });
+    uploadDropzone.addEventListener('dragleave', () => {
+      uploadDropzone.classList.remove('dragover');
+    });
+    uploadDropzone.addEventListener('drop', (event) => {
+      event.preventDefault();
+      uploadDropzone.classList.remove('dragover');
+      const file = getValidUpload(event.dataTransfer.files);
+      if (!file) {
+        return;
+      }
+      uploadInput.files = event.dataTransfer.files;
+      setUploadState(file);
+    });
+    uploadInput.addEventListener('change', () => {
+      const file = getValidUpload(uploadInput.files);
+      if (!file) {
+        uploadInput.value = '';
+        setUploadState(null);
+        return;
+      }
+      setUploadState(file);
+    });
+    uploadGenerateBtn.addEventListener('click', () => {
+      const file = getValidUpload(uploadInput.files);
+      if (!file) {
+        return;
+      }
+      runGeneration('upload', '', file);
+    });
+  });
+</script>
+{% endblock script %}

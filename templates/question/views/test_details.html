@@ -7,6 +7,40 @@
     word-wrap: break-word;
     white-space: pre-wrap;
 }
+  .question-content,
+  .question-content * {
+    max-width: 100%;
+    font-size: inherit;
+    color: inherit;
+    font-family: inherit;
+    overflow-wrap: anywhere;
+  }
+  .question-content {
+    white-space: normal;
+    line-height: 1.6;
+  }
+  .question-content p {
+    margin-bottom: 0.5rem;
+  }
+  .question-content p:last-child {
+    margin-bottom: 0;
+  }
+  .question-content table {
+    width: auto;
+    max-width: 100%;
+    border-collapse: collapse;
+  }
+  .question-content td,
+  .question-content th {
+    padding: 0.25rem 0.4rem;
+    vertical-align: middle;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+  }
+  .question-content sup,
+  .question-content sub {
+    font-size: 0.78em;
+    line-height: 0;
+  }
   table {
     table-layout: fixed;
     width: 100%;
@@ -93,7 +127,7 @@ td img {
                           </td>
                           <td>
                               {% if student_question.selected_answer %}
-                              {{ student_question.selected_answer.text|safe }}
+                              <div class="question-content">{{ student_question.selected_answer.text|safe }}</div>
                               {% else %}
                               <span class="text-muted">Javob berilmagan</span>
                               {% endif %}
@@ -101,7 +135,7 @@ td img {
                           <td>
                               {% for answer in student_question.question.answers.all %}
                                   {% if answer.is_correct %}
-                                  {{ answer.text|safe }}
+                                  <div class="question-content">{{ answer.text|safe }}</div>
                                   {% endif %}
                               {% endfor %}
                           </td>

@@ -5,6 +5,36 @@
 <style>
   .result-rich img { max-width: 100%; height: auto; border-radius: 12px; }
   .result-rich p { margin-bottom: 0.5rem; }
+  .result-rich p:last-child { margin-bottom: 0; }
+  .result-rich,
+  .result-rich * {
+    max-width: 100%;
+    font-size: inherit;
+    color: inherit;
+    font-family: inherit;
+    overflow-wrap: anywhere;
+  }
+  .result-rich img {
+    max-width: min(100%, 560px);
+    width: auto !important;
+    height: auto !important;
+  }
+  .result-rich table {
+    width: auto;
+    max-width: 100%;
+    border-collapse: collapse;
+  }
+  .result-rich td,
+  .result-rich th {
+    padding: 0.25rem 0.4rem;
+    vertical-align: middle;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+  }
+  .result-rich sup,
+  .result-rich sub {
+    font-size: 0.78em;
+    line-height: 0;
+  }
   .answer-box { border-radius: 14px; border: 1px solid rgba(15, 23, 42, 0.10); }
   .answer-box--ok { background: rgba(22, 163, 74, 0.08); border-color: rgba(22, 163, 74, 0.18); }
   .answer-box--bad { background: rgba(220, 38, 38, 0.06); border-color: rgba(220, 38, 38, 0.16); }

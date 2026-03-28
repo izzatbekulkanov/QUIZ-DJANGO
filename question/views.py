@@ -486,7 +486,7 @@ class ResultsView(View):
 
         # Base query
         completed_tests = StudentTest.objects.filter(completed=True).select_related(
-            'student', 'assignment__test', 'assignment__category'
+            'student', 'assignment__teacher', 'assignment__test', 'assignment__test__created_by', 'assignment__category'
         ).order_by('-end_time')
 
         # Apply filters
@@ -503,6 +503,34 @@ class ResultsView(View):
             'categories': categories,
         }
         return render(request, self.template_name, context)
+
+
+@method_decorator(login_required, name='dispatch')
+class DeleteStudentResultView(View):
+    def post(self, request, test_id):
+        student_test = get_object_or_404(
+            StudentTest.objects.select_related('assignment__teacher', 'assignment__test'),
+            id=test_id,
+        )
+
+        allowed = (
+            request.user.is_superuser
+            or student_test.assignment.teacher_id == request.user.id
+            or student_test.assignment.test.created_by_id == request.user.id
+        )
+        if not allowed:
+            return JsonResponse({"success": False, "message": "Ruxsat yo'q"}, status=403)
+
+        student_label = student_test.student.username
+        test_label = student_test.assignment.test.name
+        student_test.delete()
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": f"{student_label} uchun '{test_label}' natijasi o'chirildi. Endi qayta urinish mumkin.",
+            }
+        )
 
 
 @method_decorator(login_required, name='dispatch')

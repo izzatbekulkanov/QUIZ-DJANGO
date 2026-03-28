@@ -7,6 +7,7 @@
 
 {% block content %}
 <main id="main-container">
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
   <!-- Hero -->
   <div class="bg-image overflow-hidden"
        style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
@@ -66,7 +67,7 @@
                 <th>Natija (%)</th>
                 <th>Davomiylik (minut)</th>
                 <th>Bajarilgan vaqt</th>
-                <th>Ko'rish</th>
+                <th>Amallar</th>
               </tr>
             </thead>
             <tbody>
@@ -80,9 +81,21 @@
                 <td>{{ test.duration }}</td>
                 <td>{{ test.end_time|date:"Y-m-d H:i" }}</td>
                 <td>
-                  <a href="{% url 'view-test-details' test.id %}" class="btn btn-info btn-sm">
-                    <i class="fa fa-eye"></i> Ko'rish
-                  </a>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <a href="{% url 'view-test-details' test.id %}" class="btn btn-info btn-sm">
+                      <i class="fa fa-eye"></i> Ko'rish
+                    </a>
+                    {% if request.user.is_superuser or test.assignment.teacher_id == request.user.id or test.assignment.test.created_by_id == request.user.id %}
+                      <button
+                        type="button"
+                        class="btn btn-danger btn-sm delete-result-btn"
+                        data-delete-url="{% url 'delete-student-result' test.id %}"
+                        data-student="{{ test.student.username }}"
+                        data-test="{{ test.assignment.test.name }}">
+                        <i class="fa fa-trash"></i> O'chirish
+                      </button>
+                    {% endif %}
+                  </div>
                 </td>
               </tr>
               {% empty %}
@@ -100,4 +113,53 @@
 {% endblock content %}
 
 {% block script %}
+<script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+    document.querySelectorAll('.delete-result-btn').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const student = button.dataset.student || 'talaba';
+        const testName = button.dataset.test || 'test';
+        const deleteUrl = button.dataset.deleteUrl;
+
+        const result = await Swal.fire({
+          title: 'Natijani o‘chirasizmi?',
+          text: `${student} uchun "${testName}" natijasi o‘chiriladi va qayta urinish mumkin bo‘ladi.`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Ha, o‘chirish',
+          cancelButtonText: 'Bekor qilish',
+          confirmButtonColor: '#dc3545',
+        });
+
+        if (!result.isConfirmed) {
+          return;
+        }
+
+        try {
+          const response = await fetch(deleteUrl, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+          });
+          const data = await response.json();
+          if (!response.ok || !data.success) {
+            Swal.fire('Xatolik!', data.message || 'Natijani o‘chirishda xatolik yuz berdi.', 'error');
+            return;
+          }
+
+          await Swal.fire('Muvaffaqiyatli', data.message, 'success');
+          window.location.reload();
+        } catch (error) {
+          Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
+          console.error(error);
+        }
+      });
+    });
+  });
+</script>
 {% endblock script %}

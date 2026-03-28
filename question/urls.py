@@ -8,6 +8,7 @@ from .view.category import (
     GetCategoryTestsView,
     GetTestQuestionsCountView,
 )
+from .view.generation import GenerationDownloadView, GenerationRunView, GenerationView
 from .view.hemis_users import (
     ImportStudentsFromHemisStreamView,
     ImportStaffFromHemisStreamView,
@@ -36,6 +37,7 @@ from .views import (
     MainView,
     UsersView,
     ResultsView,
+    DeleteStudentResultView,
     AddUserView,
     EditUserView,
     ViewTestDetailsView,
@@ -70,6 +72,10 @@ urlpatterns = [
 
     # Test va savollar bilan bog'liq yo'nalishlar
     path('question/', QuestionView.as_view(), name='question'),
+    path('question/', QuestionView.as_view(), name='questions'),
+    path('generation/', GenerationView.as_view(), name='generation'),
+    path('generation/run/', GenerationRunView.as_view(), name='generation-run'),
+    path('generation/download/<str:run_id>/<path:filename>/', GenerationDownloadView.as_view(), name='generation-download'),
     path('add-question/', AddQuestionView.as_view(), name='add-question'),
     path('tests/<int:test_id>/add-question/', AddQuestionTestView.as_view(), name='add-question-test'),
     path('test/<int:test_id>/questions/<int:question_id>/detail/', QuestionDetailApiView.as_view(), name='question-detail'),
@@ -101,5 +107,6 @@ urlpatterns = [
 
     # Natijalar va rollar
     path('results/', ResultsView.as_view(), name='results'),
+    path('results/<int:test_id>/delete/', DeleteStudentResultView.as_view(), name='delete-student-result'),
     path('roles/', RolesView.as_view(), name='roles'),
 ]
