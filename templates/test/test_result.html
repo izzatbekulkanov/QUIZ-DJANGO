@@ -16,7 +16,7 @@
                     <p><strong>Test:</strong> {{ student_test.assignment.test.name }}</p>
                     <p><strong>Natija:</strong> {{ student_test.score|floatformat:2 }}%</p>
                     <p><strong>To‘g‘ri javoblar:</strong> {{ correct_answers }} / {{ total_questions }}</p>
-                    <p><strong>Test davomiyligi:</strong> {{ student_test.duration }} minut</p>
+                    <p><strong>Test davomiyligi:</strong> {{ student_test.get_duration_display }}</p>
                 </div>
                 <div class="card-footer text-center">
                     <a href="{% url 'dashboard' %}" class="btn btn-primary">Dashboardga qaytish</a>

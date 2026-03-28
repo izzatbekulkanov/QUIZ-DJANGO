@@ -72,7 +72,7 @@
                 <th>Test nomi</th>
                 <th>Kategoriya</th>
                 <th>Natija (%)</th>
-                <th>Davomiylik (minut)</th>
+                <th>Davomiylik</th>
                 <th>Bajarilgan vaqt</th>
                 <th>Amallar</th>
               </tr>
@@ -96,7 +96,7 @@
                   <td>{{ test.assignment.test.name }}</td>
                   <td>{{ test.assignment.category.name }}</td>
                   <td>{{ test.score|floatformat:2 }}</td>
-                  <td>{{ test.duration }}</td>
+                  <td>{{ test.get_duration_display }}</td>
                   <td>{{ test.end_time|date:"Y-m-d H:i" }}</td>
                   <td>
                     <div class="d-flex gap-2 flex-wrap">
