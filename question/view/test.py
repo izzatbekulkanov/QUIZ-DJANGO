@@ -38,8 +38,8 @@ class QuestionView(View):
 
         # Get all tests with question count and student count
         tests_queryset = Test.objects.select_related('category').annotate(
-            question_count=Count('questions'),
-            student_count=Count('students')  # Talabalar sonini hisoblash
+            question_count=Count('questions', distinct=True),
+            student_count=Count('students', distinct=True)  # Talabalar sonini hisoblash
         )
 
         # Apply filters
