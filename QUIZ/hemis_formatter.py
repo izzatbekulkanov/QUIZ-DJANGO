@@ -180,8 +180,8 @@ def chunk_segments(segments: list[str], chunk_size: int = 5) -> list[list[str]]:
 
 
 def make_question(segments: list[str]) -> Question:
-    if len(segments) != 5:
-        raise ValueError(f"Expected 5 segments, got {len(segments)}: {segments}")
+    if len(segments) < 2:
+        raise ValueError(f"Expected at least 2 segments, got {len(segments)}: {segments}")
 
     prompt = strip_question_number(segments[0])
     answers = [normalize_answer(answer) for answer in segments[1:]]
@@ -347,11 +347,7 @@ def parse_sequential(text: str) -> list[Question]:
 
         if not tokens:
             continue
-        if len(tokens) % 5 != 0:
-            raise ValueError(f"Sequential parser could not split block into 5-part questions: {tokens}")
-
-        for chunk in chunk_segments(tokens):
-            questions.append(make_question(chunk))
+        questions.append(make_question(tokens))
 
     return questions
 
@@ -375,8 +371,8 @@ PROFILE_LABELS = {
 
 def verify_questions(questions: list[Question]) -> None:
     for index, question in enumerate(questions, start=1):
-        if len(question.answers) != 4:
-            raise ValueError(f"Question {index} does not have 4 answers")
+        if len(question.answers) < 2:
+            raise ValueError(f"Question {index} does not have enough answers")
         if sum(answer.startswith("#") for answer in question.answers) != 1:
             raise ValueError(f"Question {index} does not have exactly one correct answer")
         if "====" in question.prompt or "++++" in question.prompt:
