@@ -589,9 +589,10 @@ class ViewTestDetailsView(View):
 
 def assign_students_to_test(request, test_id):
     test = get_object_or_404(Test, id=test_id)
-    students = CustomUser.objects.filter(is_student=True).exclude(assigned_tests=test)
+    students = CustomUser.objects.filter(is_student=True).exclude(assigned_tests=test).order_by('group_name', 'second_name', 'first_name', 'username')
 
     group_filter = request.GET.get('group', '')
+    group_search = request.GET.get('group_search', '').strip()
     search_query = request.GET.get('search', '')
     if group_filter:
         students = students.filter(group_name=group_filter)
@@ -604,13 +605,17 @@ def assign_students_to_test(request, test_id):
             | Q(student_id_number__icontains=search_query)
         )
 
-    groups = (
+    groups_qs = (
         CustomUser.objects.filter(is_student=True, group_name__isnull=False)
         .exclude(group_name="")
-        .values_list('group_name', flat=True)
-        .distinct()
         .order_by('group_name')
     )
+    if group_search:
+        groups_qs = groups_qs.filter(group_name__icontains=group_search)
+
+    groups = list(groups_qs.values_list('group_name', flat=True).distinct())
+    if group_filter and group_filter not in groups:
+        groups = [group_filter] + groups
 
     paginator = Paginator(students, 40)
     page_number = request.GET.get('page')
@@ -622,6 +627,8 @@ def assign_students_to_test(request, test_id):
         query_params = {}
         if group_filter:
             query_params['group'] = group_filter
+        if group_search:
+            query_params['group_search'] = group_search
         if search_query:
             query_params['search'] = search_query
         if page_number:
@@ -661,6 +668,7 @@ def assign_students_to_test(request, test_id):
         'assigned_students': assigned_students,
         'groups': groups,
         'group_filter': group_filter,
+        'group_search': group_search,
         'search_query': search_query,
         'alert': alert,
     })
