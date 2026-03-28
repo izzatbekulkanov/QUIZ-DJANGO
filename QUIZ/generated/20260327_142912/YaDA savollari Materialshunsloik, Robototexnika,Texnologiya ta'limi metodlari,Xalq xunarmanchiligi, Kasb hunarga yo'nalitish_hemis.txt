@@ -1,0 +1,3408 @@
+1. Metall deb nimaga aytiladi?
+===== #Noshaffof, yaltiroqlikka ega bo'lgan, elektr va issiqlikni yaxshi o'tkazuvchan, plastik, shuningdek, payvandlash xususiyati kabi belgilari bo'lgan kimyoviy elementlar metallar deb ataladi
+===== Temperaturasi pasaygan sari elektr o'tkazuvchanligi ortadigan, bolg'alanuvchan, issiq o'tkazuvchan va yaltiroq moddalar metallar deb ataladi.
+===== Noshaffof, yaltiroqlikka ega bo'lgan, elektr va issiqlikni yaxshi o'tkazuvchan, plastik, shuningdek, metallar yoki metallmaslar bilan bog'lanuvchan, payvandlash xususiyati kabi belgilari bo'lgan moddalar metallar deb ataladi.
+===== Elektr va issiqlik o'tkazuvchan, magnitlanuvchan, metallar yoki metallmaslar bilan bog'lanuvchan moddalar metallar deb ataladi.
++++++
+2. Metallar necha turga bo'linadi?
+===== #2
+===== 3
+===== 4
+===== 5
++++++
+3. Metall bog'lanish nima?
+===== #Ionlar va erkin elektronlar o'rtasidagi elektrostatik tortishish kuchlari yordamida bog'lanish
+===== Tashqi elektronlarning yadrolar bilan bog'lanishi
+===== Metall bilan qotishmalarning bog'lanishi.
+===== Atomlar bilan ionlarning bog'lanishi.
++++++
+4. Ko'pchilik metallar asosan qanday kristall panjaraga ega bo'ladi?
+===== #Hajmi markazlashgan kub, yoqlari markazlashgan kub, geksogonal panjara
+===== Hajmi markazlashgan kub panjara
+===== Hajmi markazlashgan kub, yoqlari markazlashgan kub, tetroganal panjara
+===== Hajmi markazlashgan kub, geksoganal va tetroganal panjara
++++++
+5. Kristall panjaralarning qanday turlari mavjud?
+===== #Kub, tetroganal, geksogonal
+===== Hajmi markazlashgan kub, yoqlari markazlashgan kub, geksogonal.
+===== Kub, hajmi markazlashgan geksoganal va yoqlari zich joylashgan geksoganal
+===== Kub, oddiy tetroganal, geksogonal
++++++
+6. Kristallarda necha xil nuqsonlar mavjud?
+===== #3 xil
+===== 9 xil
+===== 4 xil
+===== 5 xil
++++++
+7. Qotishmaning ichki tuzilishini o'zgartirish hisobiga unga alohida xossalar berish uchun suyuq qotishmaga turli kimyoviy elementlar kiritish qanday ataladi?
+===== #Legirlash
+===== Modifikatsiyalash
+===== Diffuziyalash
+===== Qotishma hosil qilish
++++++
+8. Hajmi markazlashgan kub panjarali metallarni ko'rsating?
+===== #Fe, Cz, V, W, Mo, Li, Ta, Sn
+===== Al, Cu, Ni, Co, Pv, Ag
+===== Zn, Mg, Fe, Co, Ti, Be
+===== Fe, Co, Sn, H2, O, Au
++++++
+9. Fe, Al, Su, Ni, Co, R', Ag, Au metallar qanday kristall panjaradan iborat?
+===== #YOqlari markazlashgan kub
+===== Hajmi markazlashgan kub
+===== Oddiy tetroganal
+===== Geksoganal pnjara
++++++
+10. Atomlari zich joylashgan geksoganal panjarada nechta atom bor?
+===== #17 ta
+===== 19 ta
+===== 25 ta
+===== 20 ta
++++++
+11. Metallar tuzilishini qanday usullar yordamida o'rganish mumkin?
+===== #Makroanaliz, mikroanaliz, rentgen, defektoskopiya
+===== Rentgen, defektoskopiya
+===== Makroanaliz, mikroanaliz
+===== Kimyoviy reaksiyaga kiritish
++++++
+12. Suyuq holatdan qattiq holatga o'tish nima deb ataladi?
+===== #Kristallanish.
+===== Allatropik shakl o'zgarish.
+===== Polimorfizm.
+===== Anizatropiya.
++++++
+13. Ba'zi metall kristall panjaralar tashqi sharoit (temperatura, bosim) o'zgarganda bir turdan ikkinchi turga aylanadi. Bu hodisa qanday ataladi?
+===== #Allatropik shakl o'zgarish yoki polimorfizm.
+===== Kristallanish.
+===== Anizatropiya.
+===== Kristal markazlarning paydo bo'lish
++++++
+14. Temirni suyuq holatdan uy temperaturasigacha asta-sekin sovitsak necha xil allatropik shakl o'zgarishlariga o'tadi?
+===== #2 ta.
+===== 3 ta.
+===== 4 ta.
+===== 5 ta
++++++
+15. Texnik toza temir moddasi xona temperaturasidan boshlab qizdirilganda necha gradus temperaturada (allatropik shakl o'zgarishlari) Fe? (?-temir) dan Fe? (?-temir) ga aylanadi?
+===== #9110S.
+===== 9680S
+===== 11000S
+===== 9500S
++++++
+16. Qizdirilgan texnik toza temir moddasi sovutilganda necha gradus temperaturada (allatropik shakl o'zgarishlari) Fe? (?-temir) dan Fe? (?-temir) ga aylanadi?
+===== #13920S
+===== 15390S
+===== 19110S
+===== 17680S
++++++
+17. Metallarning qanday xossalari bor?
+===== #Fizik, mexanik, kimyoviy, texnologik, ekspluatatsion
+===== Fizik, mustahkamlik, kimyoviy, texnologik
+===== Mexanik, elektr o'tkazuvchanlik, payvandlanuvchanlik
+===== Fizikaviy, kimyoviy, mexanikaviy, plastik, elastik, eksluatatsion
++++++
+18. Metallning fizikaviy xossalarini ko'rsating?
+===== #Rangi, zichligi, suyuqlanish temperaturasi, elektr o'tkazuvchanligi, issiqlik sig'imi, magnit xossalari, elastikligi
+===== Rangi, zichligi, karoziyabardoshligi, elektr o'tkazuvchanligi
+===== Rangi, zichligi, suyuqlanish temperasi, issiqlik o'tkazuvchanligi, issiqdan kengayuvchanligi, issiqlik sig'imi, elektr o'tkazuvchanligi, magnit xossalari
+===== Rangi, zichligi, og'irligi, elektr o'tkazuvchanligi, elastikligi, plastikligi
++++++
+19. Engil metallar zichligi qanday bo'ladi?
+===== #4500 kg/m3 gacha
+===== 4700 kg/m3 gacha
+===== 5000 kg/m3 gacha
+===== 5250 kg/m3 gacha
++++++
+20. Zichligiga ko'ra engil metallarning massasi qancha bo'ladi?
+===== #2700 kg\m3 kam
+===== 2800 kg\m3 ko'p.
+===== 2900 kg\m3 kam
+===== 4000 kg\m3 kam
++++++
+21. Eng engil metall qaysi metall va uning solishtirma og'irligi qancha
+===== #Li. 0,53 g/sm3
+===== Al. 2,7 g/sm3
+===== Cu. 0,40 g/sm3
+===== Zn 0.85 g/sm3
++++++
+22. Suyuqlanish temperaturasi qanday ifodalanadi?
+===== #0 S da
+===== T-Tn1..., Tn2 da
+===== Kel'vin (K) da
+===== T0 S da
++++++
+23. Materialning deyarli deformatsiyalanmasdan yuqori temperaturalarda mexanik zo'riqishlarda bardosh bera olishi qanday nomlanadi?
+===== #Otashbardoshlik
+===== Olovbardoshlik
+===== CHidamlilik.
+===== Mustahkamlik
++++++
+24. Metallarning mexanik xossasi deb nimaga aytiladi?
+===== #Tashqi kuchlar ta'siriga qarshilik ko'rsatish xususiyati
+===== Dinamik zo'riqishlarga qarshilik ko'rsatish xususiyati
+===== Metallarning mustahkamligi, qattiqligi, zarbiy qovushokligi
+===== Mustahkamligi, qattiqligi, elastikligi, okuvchanlik chegarasi, proporsionallik chegarasi
++++++
+25. Deformatsiya turlarini ko'rsating?
+===== #Siqilish, cho'zilish, buralish, kirkilish, egilish
+===== Siqilish, cho'zilish, charchash, chidamlilik, egilish
+===== Siqilish, cho'zilish, uzilish, charchash
+===== Siqilish, cho'zilish, buralish, chidamlilik
++++++
+26. Nisbiy uzayish formulasini ko'rsating?
+===== #B = (Lk-L0)/L0*100 %
+===== V = (F0-Fk)/F0*100 %
+===== G = P/P *100 %
+===== B = (f-f)/f*100 %
++++++
+27. Metallarning qattiqligi necha usulda aniqlanadi?
+===== #3
+===== 7
+===== 5
+===== 4
++++++
+28. Sinalayotgan namuna ko'ndalang kesim yuzining yuza birligiga to'g'ri keladigan zo'riqish kattaligi qanday nomlanadi?
+===== #Kuchlanish
+===== Egilish
+===== Mustahkamlik
+===== Plastiklik
++++++
+29. Takror-o'zgaruvchan kuchlanish ta'siri ostida material shikastlanishining asta-sekin to'planib, darzlar paydo bo'lishiga va emirilishiga sabab bo'ladigan jarayon qanday nomlanadi?
+===== #Toliqish.
+===== Mikro qattiqlik
+===== Chidamlilik
+===== Qovushoqlik.
++++++
+30. HB-bu belgi nimani anglatadi?
+===== #Brinell bo'yicha qattiqlik
+===== Rokvell bo'yicha qattiqlik
+===== Vikkers bo'yicha qattiqlik
+===== Brinel va Rokvel bo'yicha qattiqlik
++++++
+31. Metallarning texnologik xossalari deganda nimani tushunamiz?
+===== #Sovuqlayin va qizdirilgan holatlarda ularga ishlov berish xususiyatini
+===== Kesib ishlanuvchanlik, payvandlanuvchanlik, oquvchanlikni
+===== Sovuqlayin ishlov berish va payvandlanuvchanlikni
+===== Kesib ishlanuvchanlik va payvandlanuvchanlikni
++++++
+32. Cuyultirilgan metallning quyish qolipi bo'shlig'ini yaxshi to'ldirish xususiyati qanday ataladi?
+===== #Suyuq holatda oquvchanlik
+===== Materialning quyilish xossasi
+===== Kristallanishda kirishuvchanlik
+===== Likvatsiya.
++++++
+33. Likvatsiya nima?
+===== #Qotishmalarning kristallanishida paydo bo'ladigan kimyoviy tarkibning bir jinslimasligi.
+===== Qotishmalarning kristallanishida paydo bo'ladigan donodorlikning bir xil kattalikda emasligi
+===== Suyultirilgan metallning quyish qolipi bo'shlig'ini yaxshi to'ldira olmasligi
+===== Qotishmaning kristallanish temperatura intervali
++++++
+34. Metallarning ekspluatatsion xossalarini to'g'ri ko'rsating
+===== #Eyilishga chidamlilik, sovuqbardoshlik, issiqbardoshlik, antifriksion xossalar
+===== Eyilishga chidamlilik, karroziyabardoshlik, mustahkamlik, chidamlilik antifriksion xossalar
+===== Olovbardoshlik, mustahkamlik, chidamlilik
+===== Deformatsiyalanish, eyilishga chidamlilik, qattiqlik va ko'p ishlanuvchanlik
++++++
+35. Espluatatsion xossalardan eng muhimi qaysi xossa?
+===== #Eyilishga chidamlilik
+===== Mustahkamlik
+===== Issiqbardoshlik.
+===== Deformatsiyalanuvchanlik
++++++
+36. Qotishmalar necha turga bo'linadi?
+===== #4
+===== 5
+===== 7
+===== 9
++++++
+37. Metall va qotishmalarning tuzilishi o'zgaradigan temperaturalar nima deb ataladi?
+===== #Kritik nuqta
+===== Kyuri nuqtasi
+===== Kritik temperatura
+===== Faza.
++++++
+38. Qotishma komponentlari kristallanganda qattiq holatda bir-birini erita olmaganda hamda kimyoviy reaksiyaga kirishib birikma hosil qila olmaganda yuzaga kelgan aralashma qanday ataladi
+===== #Mexanik aralashmalar
+===== To'g'ri javob berilmagan
+===== Qattiq eritmalar
+===== Kimyoviy birikmalar
++++++
+39. Texnik temirning tarkibida qancha uglerod (S) bor?
+===== #0,025% S
+===== 0,2% S
+===== 0,25% S
+===== 1-10 % S.
++++++
+40. Uglerodning ?-temirga singdirilgan qattiq eritmasi qanday nomlanadi?
+===== #Ferrit
+===== Austenit
+===== Sementit
+===== Ledeburit
++++++
+41. Po'latda kritik nuqtalar borligini kim birinchi bo'lib aniqlab berdi?
+===== #E. Chernov
+===== F.Osmond
+===== A. Baykov
+===== N. Gudsov
++++++
+42. Qattiq qotishmalarni ko'rsating?
+===== #Su-Au, Ag-Au
+===== Su-Ni
+===== Al-O
+===== Fe-G.
++++++
+43. Bir xil tarkibga, bir xil agregat holatiga ega bo'lgan holatga hamda sistemaning boshqa qismlaridan bo'lish sirti bilan ajratilgan sistemaning bir jinsli qismi qanday ataladi?
+===== #Faza
+===== Komponent.
+===== Sistema
+===== Qattiq eritma
++++++
+44. "Likvidus" so'zi qanday ma'noni bildiradi?
+===== #Lotin tilida suyuq degan ma'noni bildiradi
+===== Ingliz tilida tilida suyuq degan ma'noni bildiradi
+===== Yunon tilida suyuq degan ma'noni bildiradi
+===== Yunon tilida qattiq degan ma'noni bildiradi
++++++
+45. "Solidus" so'zi qanday ma'noni bildiradi?
+===== #YUnon tilida qattiq degan ma'noni bildiradi
+===== Ingliz tilida tilida suyuq degan ma'noni bildiradi
+===== Lotin tilida qattiq degan ma'noni bildiradi
+===== Lotin tilida suyuq degan ma'noni bildiradi
++++++
+46. Evtektika deb nimaga aytiladi?
+===== #Suyuq qotishmadan bir vaqtda kristallanadigan ikki yoki undan ko'p kristall turlari hosil qiladigan mexanik aralashmaga aytiladi
+===== Bitta kritik nuqtada ham qotadigan va ham suyuqlanadigan qotishmalarga aytiladi
+===== Tarkibida 4,3% uglerodi bo'lgan temir-uglerod qotishmasiga aytiladi
+===== Likvidus va solidus chiziqlari bir-biri Bilan kesishadigan nuqtaga aytiladi
++++++
+47. Likvidus va solidus chiziqlari orasidagi masofa qancha katta bo'lsa ...... ham shuncha katta bo'ladi (tushirib qoldirilgan to'g'ri so'zlarni joyiga qo'ying).
+===== #dendrit likvatsiya
+===== donodorlik
+===== qattiqlik
+===== plastiklik
++++++
+48. Holat diagrammalari deb nimaga aytiladi?
+===== #Qotishmalarning temperatura va komponentlar konsepsiyasiga bog'liq holda faza holatining grafik tasviri holat diagrammasi deyiladi
+===== Qotishmalarning temperatura va komponentlar konsepsiyasiga bog'liq holdagi grafik tasviri holat diagrammasi deyiladi
+===== Qotishmalarning temperatura va komponentlar konsepsiyasiga bog'liq holda ifodalangan diagrammasi holat diagrammasi deyiladi.
+===== Qotishmalarning temperatura va komponentlar konsepsiyasiga bog'liq holda ifodalangan fazaning bo'lish sirtlari holat diagrammasi deyiladi
++++++
+49. "Evtektika" so'zi qaysi tildan olingan bo'lib nima ma'noni bildiradi?
+===== #Grekchada oson suyuqlanadigan degan ma'noni bildiradi
+===== Lotinchada oson suyuqlanadigan degan ma'noni bildiradi
+===== Lotinchada bir nuqtada suyuqlanadigan degan ma'noni bildiradi
+===== Grekchada bir nuqtada suyuqlanadigan degan ma'noni bildiradi
++++++
+50. Temir nechta polimorf modifikatsiyaga ega?
+===== #2 ta (?, ?)
+===== 3 ta (?, ?, ?)
+===== 4 ta (?, ?, ?, ?)
+===== 5 ta (?, ?, ?, ?, ?)
++++++
+51. Ferrit (F) ning to'g'ri ta'rifini ko'rsating?
+===== #Ferrit uglerodning ?-temirga singdirilgan qattiq eritmasidir
+===== Ferrit uglerodning temirga singdirilgan qattiq eritmasidir
+===== Ferrit uglerodning ?-temirga singdirilgan qattiq eritmasidir
+===== Ferrit uglerodning ?-temirga singdirilgan qattiq eritmasidir
++++++
+52. Austenit (A) ning to'g'ri ta'rifini ko'rsating?
+===== #Austenit uglerodning ?-temirga singdirilgan qattiq eritmasidir
+===== Austenit uglerodning temirga singdirilgan qattiq eritmasidir
+===== Austenit uglerodning ?-temirga singdirilgan qattiq eritmasidir
+===== Austenit uglerodning ?-temirga singdirilgan qattiq eritmasidir
++++++
+53. Austenitning qattiqligi qancha?
+===== #ÍB 160 - 200
+===== ÍB 200 - 210
+===== ÍB 220 - 230
+===== ÍB 170 - 200
++++++
+54. Sementitda necha foiz uglerod bor?
+===== #6.67%.
+===== 7.25-7.14%.
+===== 9.3%.
+===== 10,0%
++++++
+55. Grafitning shakli qanday ko'rinishda bo'ladi?
+===== #Shar va plastinka
+===== Shar ko'rinishida
+===== Shar va sferik
+===== Plastinka va bodroq
++++++
+56. Perlitning tarkibida qancha uglerod bo'ladi?
+===== #0.8%.
+===== 0.925%.
+===== 0.82%.
+===== 0.86%.
++++++
+57. Ledeburitning tarkibida qancha uglerod bo'ladi?
+===== #4.3%.
+===== 6.8%.
+===== 5.14%.
+===== 6.67%.
++++++
+58. Temir-sementit holat diagrammasida birlamchi kristallanish qaysi chiziqda paydo bo'ladi?
+===== #ACD chizig'ida
+===== AECF chizig'ida
+===== GOEF chizig'ida
+===== GOK chizig'ida
++++++
+59. Temir-sementit holat diagrammasida ikkilamchi kristallanish qaysi chiziqda paydo bo'ladi?
+===== #AECF chizig'ida
+===== GOECF chizig'ida
+===== GOK chizig'ida
+===== ACF chizig'ida
++++++
+60. Po'latning tarkibida qancha miqdorda uglerod (S) bor?
+===== #0,025-2,14 foiz S
+===== 0-2 foiz S
+===== 2,14-6,67 foiz S.
+===== 1,7-2,8 foiz S
++++++
+61. Kimyoviy tarkibiga ko'ra po'latning turlarini ko'rsatin
+===== #Uglerodli, legirlangan
+===== Kanstruksion, legirlangan
+===== Uglerodli, asbobsozlik
+===== Konstruksion, asbobsozlik
++++++
+62. Uglerodli po'latlar necha turga bo'linadi?
+===== #Kam uglerodli (0,25 foizgacha S), o'rtacha uglerodli (0,25-0,6 foiz S), ko'p uglerodli (0,6 foizdan ko'p S).
+===== Kam uglerodli, uglerodli, kup uglerodli, yuqori uglerodli
+===== Kam uglerodli (0,25 gacha S), uglerodli (1,0-1,6 foiz S), ko'p uglerodli (1,6-2,14 foiz S).
+===== Kam uglerodli, ko'p uglerodli
++++++
+63. Vazifasiga ko'ra po'latlarning turlarini ko'rsating?
+===== #Konstruksion, asbobsozlik, maxsus
+===== Qaynamaydigan, qaynaydigan, chala qaynaydigan
+===== Uglerodli, asbobsozlik va legirlangan
+===== Legirlangan, maxsus, asbobsozlik
++++++
+64. Po'latlar qanday ko'rsatkichlarga ko'ra turlarga bo'linadi?
+===== #Kimyoviy tarkibi, vazifasi, sifati, oksidlantirish darajasi, tuzilishi
+===== Kimyoviy tarkibi, vazifasi, mexanik va fizik xossalari
+===== Sifati, oksidsizlantirish darajasi, tuzilishi, mexanik va texnologik xossalari
+===== Vazifasi, tarkibidagi uglerod miqdori, xossalari
++++++
+65. Po'latning sifatini aniqlashda zararli aralashmalar me'yorining asosiy ko'rsatkichi qaysi elementlar hisoblanadi?
+===== #S, P.
+===== C, N, P
+===== O, N, S
+===== C, N, P, S.
++++++
+66. Cuyuq po'latdan kislorodni chiqarish jarayoni nima deb ataladi?
+===== #Oksidsizlantirish
+===== Oksidlash
+===== Legirlash
+===== Xromlash
++++++
+67. Qanday element konstruksion po'latning mexanik xossalariga yaxshi ta'sir ko'rsatadi?
+===== #Xrom
+===== Nikel'.
+===== Marganets
+===== Titan.
++++++
+68. 30XÃÑÍ×A rusumli po'lat tarkibida uglerod (S) necha foizni tashkil etadi?
+===== #0,30% C.
+===== 30% C
+===== 3,0% C
+===== 70% Fe, 30% C
++++++
+69. Juda qattiq va mo'rt, kesuvchi asboblar bilan yomon ishlanadi, bu ta'rif qanday qotishmaga berilgan?
+===== #Oq cho'yan
+===== Kulrang cho'yan
+===== Po'lat
+===== Legirlangan kulrang cho'yan
++++++
+70. Cho'yanning tarkibida qancha miqdorda uglerod S bor?
+===== #2,14-6,67 foiz S
+===== 0,01-2,0 foiz S
+===== 2,7-6,67 foiz S
+===== 0-2,4 foiz S
++++++
+71. Cho'yanlar qanday turlarga bo'linadi?
+===== #Oq cho'yan, kul rang cho'yan, bolg'alanuvchan cho'yan, maxsus xossali cho'yan
+===== Oq cho'yan, kulrang cho'yan, mustahkamligi yuqori cho'yan, austentli cho'yan, issiqga chidamli cho'yan
+===== Magnitli cho'yan, magnitsiz cho'yan, austentli cho'yan, issiqga chidamli cho'yan
+===== Mustahkamligi kam kulrang cho'yan, mustahkamligi yuqori bo'lgan cho'yan, maxsus xossali cho'yan
++++++
+72. Qanday cho'yan qayta ishlanadigan cho'yan deb ataladi?
+===== #Oq cho'yan.
+===== Kul rang cho'yan
+===== Mustahkamligi kam kulrang cho'yan
+===== Bolg'alanuvchan cho'yan.
++++++
+73. C× 10 (143-229) rusum nimani bildiradi?
+===== #Kul rang cho'yan, 10 - rusum, (143-229) esa qattiqlik
+===== Maxsus xossali cho'yan,10 - uglerod miqdori, (143-229) esa qattiqlik
+===== Kul rang cho'yan, 10 - rusum va (143-229) esa zarbiy qovushoqligi
+===== Ok cho'yan,10 - qattiqlik va (143-229) esa uglerod miqdori
++++++
+74. Kul rang cho'yanlar necha guruhga bo'linadi?
+===== #4
+===== 7
+===== 5
+===== 6
++++++
+75. Quyidagi rusumlar ichidan bolg'alanuvchan cho'yanni ko'rsating?
+===== #Ê× 60-3 (269)
+===== Â× 42-12 (140-200)
+===== Ñ× 25 (180-250).
+===== Ñò 6
++++++
+76. Maxsus xossali cho'yanning qanday turlari mavjud?
+===== #Magnitli, magnitsiz, austenitli, issiqga chidamli ferroqotishmalar
+===== Magnitli, magnitsiz, legirlangan, modifikatsiya qilingan
+===== Ferroqotishmalar, kul rang cho'yan
+===== Austenitli, issiqga chidamli, mustahkamligi yuqori
++++++
+77. Bolg'alanuvchan cho'yan qanday cho'yandan olinadi?
+===== #Oq cho'yandan
+===== Ferroqotishmalardan
+===== Mustahkamligi yuqori bo'lgan cho'yandan
+===== Kul rang cho'yandan
++++++
+78. Alyuminiy qotishmalari necha xilga bo'linadi?
+===== #2
+===== 3
+===== 4
+===== 5
++++++
+79. Sanoat miqiyosida alyuminiy olish uchu nasosan qaysi rudalardan foydalaniladi?
+===== #Boksit va nefelindan
+===== Sul'fid va magnetit rudalaridan
+===== Magnetit va dala shpatidan
+===== Glinozem va kremnezemdan
++++++
+80. Alyuminiyning suyuqlanish temperaturasi necha gradus?
+===== #6600S
+===== 7320S
+===== 7460S
+===== 8270S
++++++
+81. Deformatsiyalanadigan alyuminiy qotishmalari kimyoviy tarkibiga ko'ra necha guruhga bo'linadi?
+===== #7
+===== 9
+===== 14
+===== 11
++++++
+82. Quymabop alyuminiy qotishmalari kimyoviy tarkibiga ko'ra necha guruhga bo'linadi?
+===== #5
+===== 7
+===== 10
+===== 6
++++++
+83. Toblash uchun silumin necha gradusga qizdiriladi?
+===== #520-5400S ga
+===== 620-6400S ga
+===== 720-7400S ga
+===== 840-8600S ga
++++++
+84. Misning qanday qotishmalari mavjud?
+===== #Latun, bronza, nikelli
+===== Bronza, nikelli, qalayli
+===== Latun, bronza, ruxli
+===== Bronza, qalayli, nikeli
++++++
+85. Latun qanday metallarning qotishmasi?
+===== #Mis bilan rux
+===== Mis bilan qalay
+===== Mis bilan nikel
+===== Mis bilan qo'rg'oshin
++++++
+86. Bronza qanday metallarning qotishmasi?
+===== #Mis bilan qalay
+===== Alyuminiy bilan qo'rg'oshin
+===== Mis bilan rux
+===== Nikel bilan alyuminiy
++++++
+87. Qanaqa bronzalarni bilasiz?
+===== #Qalayli Alyuminiyli Margenetsli
+===== Qalayli
+===== Alyuminiyli
+===== Margenetsli
++++++
+88. Mexanik xossalari uncha yuqori emas, lekin korroziyalanishga qarshiligi yaxshi, plastikligi yuqori, yuqori temperaturalarda ham mexanik xossalarini saqlab qoladi, bu ta'rif qanaqa bronzaga xos?
+===== #Margenetsli
+===== Qalayli
+===== Alyuminiyli
+===== Qo'rg'oshinli
++++++
+89. Mis, 43% nikel', 0,5% marganets tarkibli termoparalar tayorlashda ishlatiladigan maxsus termoelektronli qotishmalar qanday nomlanadi?
+===== #Kopel'
+===== Neyzl'berlar
+===== Kuniallar
+===== Mel'xiorlar
++++++
+90. ÁğÀÆ 9-4 bu belgi qanday qotishmaning rusumini bildiradi?
+===== #Bronza
+===== Titan.
+===== Po'lat
+===== Latun.
++++++
+91. Texnik toza titanning mustahkamligi uning qanday xususiyatiga bog'liq bo'ladi?
+===== #Tozalik darajasiga
+===== Yaltiroqliligiga.
+===== Qovushoqligiga
+===== Kimyoviy miqdoriga
++++++
+92. Mustahkamligiga ko'ra titan qotishmalari nechta guruhga bo'linadi?
+===== #3 ta
+===== 4 ta
+===== 6 ta
+===== 9 ta
++++++
+93. Titan qotishmalari qaysi sohalarda ko'proq ishlatiladi?
+===== #Aviatsiya va ximiya sohasida
+===== Traktor va avtomobilsozlikda
+===== Tibbiyot sohasida
+===== Mashinasozlik va aviatsiya sohasida
++++++
+94. Magniyning suyuqlanish temperaturasi necha gradus?
+===== #6500S
+===== 7270S
+===== 8450S.
+===== 7270S.
++++++
+95. Magniy olish uchun asosan qaysi chiqindilardan foydalaniladi?
+===== #Karnellit (MgCl2*KCl*6H2O) Magnezit (MgCO3) )Dolomit (CaCO3*MgCO3)
+===== Karnellit (MgCl2*KCl*6H2O)
+===== Magnezit (MgCO3)
+===== Dolomit (CaCO3*MgCO3)
++++++
+96. Qalayning suyuqlanish temperaturasi necha gradus?
+===== #2310S
+===== 2490S
+===== 2600S
+===== 2320S.
++++++
+97. Qalay yoki qo'rg'oshin asosli antifriksion materiallar qanday nom bilan ataladi?
+===== #Babbitlar.
+===== Bronzala
+===== Antifriksion qotishma
+===== Titanlar
++++++
+98. Qo'rg'oshinning suyuqlanish temperaturasi necha gradus?
+===== #3270S
+===== 3780S
+===== 3500S
+===== 4370S.
++++++
+99. Ruxning suyuqlanish temperaturasi necha gradus?
+===== #4190S.
+===== 4320S
+===== 4980S.
+===== 5270S
++++++
+100. Ruxning qaysi xossalari yuqori?
+===== #Quyilish, karroziyabardoshlik
+===== Mustahkamligi, eyilishga chidamliligi
+===== Zichligi, elastikligi, qattiqligi
+===== Plastiklik, elektr o'tkazuvchanlik
++++++
+101. Suyuqlanish temperaturasiga ko'ra kavsharlar necha turga bo'linadi?
+===== #3 turga
+===== 5 turga
+===== 7 turga
+===== 9 turga
++++++
+102. Past temperaturada suyuqlanadigan kavsharlar necha gradusda suyuqlanadi?
+===== #145-4500S
+===== 160-2250S
+===== 225-2450S
+===== 450-6500S
++++++
+103. O'rtacha temperaturada suyuqlanadigan kavsharlar necha gradusda suyuqlanadi?
+===== #450-11000S
+===== 470-9500S
+===== 485-11000S
+===== 495-11000S
++++++
+104. Yuqori temperaturada suyuqlanadigan kavsharlar necha gradusda suyuqlanadi?
+===== #1100-18500S
+===== 1100-19500S
+===== 1200-19500S
+===== 1200-20000S
++++++
+105. Engil suyuqlanadigan kavsharlar nechta (va qaysi) qismdan tashkil topadi?
+===== #3 ta (kukunsimon kavshar, flyus va qotirgichdan).
+===== 5 ta (kukunsimon kavshar va flyusdan).
+===== 8 ta (flyus va qotirgichdan)
+===== 11 ta (kukunsimon pasta, flyus va bog'lovchidan)
++++++
+106. Qiyin eriydigan kukunsimon kavsharlar qaerda ishlatiladi?
+===== #Kesuvchi asboblar ishlab chiqarishda qattiq qotishmali plastinkalarni kavsharlashda
+===== Asbobsozlik buyumlari ishlab chiqarishda o'tkir yuzani biriktirishda
+===== Kesuvchi asboblar ishlab chiqarishda tishli yuzalarni kavsharlashda
+===== Kesuvchi asboblar ishlab chiqarishda dasta qismini ishchi qism bilan kavsharlashda
++++++
+107. Qiyin eriydigan kukunsimon kavsharlarning tarkibini to'g'ri ko'rsating?
+===== #40% ferromarganets, 10% ferrosilitsiy, 20% cho'yan qirindisi, 5% mis qirindisi, 15% maydalangan oyna
+===== 60% ferromarganets, 10 % ferrosilitsiy, 15% cho'yan qirindisi, 5% mis qirindisi, 10% maydalangan oyna
+===== 70% ferromarganets, 15% ferrosilitsiy, 25% cho'yan qirindisi, 10% mis qirindisi, 15% maydalangan oyna
+===== 50% ferromarganets, 15% ferrosilitsiy, 25% cho'yan qirindisi, 10% mis qirindisi, 15% maydalangan oyna.
++++++
+108. Antifriksion qotishmalar mashina va mexanizmlarda nima maqsadda ko'proq ishlatiladi?
+===== #Ishqalanuvchi sirtlarining puxtaligini oshirishda
+===== Podshipniklarning eyilishga chidamliligini oshirishda
+===== Tishli g'ildiraklarning mustahkamligini oshirishda
+===== Shakldor quymalarning mustahkamligini oshirishda
++++++
+109. Babbitlar qaysi elementlar asosidagi antifriksion materiallar hisoblanadi?
+===== #Qalay yoki qo'rg'oshin asosli
+===== Mis va alyuminiy asosli
+===== Mis yoki qalay asosli
+===== Qalay yoki rux asosli
++++++
+110. ÀÑ÷ rusumi qaysi qotishmani bildiradi?
+===== #Maxsus antifriksion cho'yanlarini
+===== Alyuminiy-qo'rg'oshinli cho'yanlarni
+===== Antifriksion-qo'rg'oshinli cho'yanlarni
+===== Uglerodli antifriksion cho'yanlarni
++++++
+111. Po'latning olinishiga qarab, qanday yumshatish usullaridan foydalaniladi?
+===== #Diffuzion, to'la va izotermik, Chala va sferoidlovchi, Rekristallizatsion yumshatish
+===== CHala va sferoidlovchi yumshatish
+===== Rekristallizatsion yumshatish
+===== Diffuzion, to'la va izotermik yumshatish.
++++++
+112. Diffuzion yumshatish yana qanday nom bilan ataladi?
+===== #Gomogenlovchi yumshatish nomi bilan
+===== Aralashtirib yumshatish nomi bilan
+===== Modifikator nomi bilan.
+===== Sferoidlovchi yumshatish nomi bilan.
++++++
+113. Diffuzion yumshatishda po'lat necha gradus temperaturaga qizdiriladi?
+===== #1100-12000S
+===== 1727-18270S
+===== 1911-13000S.
+===== 1200-13000S
++++++
+114. To'la yumshatishda po'lat necha gradus temperaturaga qizdiriladi?
+===== #As1 kritik nuqtadan 30-500S pastroq temperaturaga
+===== As2 kritik nuqtadan 40-500S yuqoriroq temperaturaga
+===== As3 kritik nuqtadan 40-500S yuqoriroq temperaturaga
+===== Ast kritik nuqtadan 40-500S yuqoriroq temperaturaga
++++++
+115. Chala yumshatishda po'lat necha gradus temperaturaga qizdiriladi?
+===== #As1 kritik nuqtadan 30-500S yuqoriroq temperaturaga
+===== As1 kritik nuqtadan 30-500S pastroq temperaturaga
+===== As2 kritik nuqtadan 30-500S pastroq temperaturaga
+===== As2 kritik nuqtadan 30-500S yuqoriroq temperaturaga
++++++
+116. Izotermik yumshatishda po'lat necha gradus temperaturaga qizdiriladi?
+===== #Konstruksion po'latlar As3 kritik nuqtadan 30-500S, asbobsozlik po'latlari esa As1 kritik nuqtadan 50-1000S yuqoriroq temperaturaga.
+===== Konstruksion po'latlar As1 kritik nuqtadan 30-500S pastroq, asbobsozlik po'latlari esa As3 kritik nuqtadan 30-500S yuqoriroq temperaturaga
+===== Konstruksion po'latlar As3 kritik nuqtadan 30-500S pastroq, asbobsozlik po'latlari esa As1 kritik nuqtadan 50-1000S yuqoriroq temperaturaga
+===== Konstruksion po'latlar As1 kritik nuqtadan 30-500S yuqoriroq, asbobsozlik po'latlari esa As3 kritik nuqtadan 30-500S yuqoriroq temperaturaga.
++++++
+117. Sferoidlangan yumshatishda po'lat necha gradus temperaturaga qizdiriladi?
+===== #As1 kritik nuqtadan biroz yuqoriroq temperaturaga
+===== As1 kritik nuqtadan biroz pastroq temperaturaga
+===== As3 kritik nuqtadan biroz pastroq temperaturaga
+===== As3 kritik nuqtadan biroz yuqoriroq temperaturaga
++++++
+118. Rekristallizatsion yumshatishda po'lat necha gradus temperaturaga qizdiriladi?
+===== #As1 kritik nuqtadan pastroq (650-7000S) temperaturagacha
+===== As1 kritik nuqtadan pastroq (150-3000S) temperaturagacha
+===== As1 kritik nuqtadan pastroq (300-4000S) temperaturagacha
+===== As1 kritik nuqtadan pastroq (350-4500S) temperaturagacha
++++++
+119. Termik ishlov berish jarayonida paydo bo'ladigan, tuzatib bo'lmaydigan nuqsonlar qanday nom bilan ataladi?
+===== #Toblash darzlari
+===== O'ta qizdirish
+===== Sun'iy eskirtirish
+===== Yumshoq dog'lar
++++++
+120. Toblashda po'lat necha gradus temperaturaga qizdiriladi?
+===== #Evtektoiddan oldingi po'latlar As3 kritik nuqtadan 30-500S, evtektoiddan keyingi po'latlar esa As1 kritik nuqtadan 30-500S yuqoriroq temperaturagacha qizdiriladi.
+===== Evtektoiddan oldingi po'latlar As3 kritik nuqtadan 30-500S, evtektoiddan keyingi po'latlar esa As1 kritik nuqtadan 30-500S pastroq temperaturagacha qizdiriladi
+===== Evtektoiddan oldingi po'latlar As3 kritik nuqtadan 30-500S, evtektoiddan keyingi po'latlar esa Ast kritik nuqtadan 30-500S yuqoriroq temperaturagacha qizdiriladi
+===== Evtektoiddan oldingi po'latlar As3 kritik nuqtadan 30-500S, evtektoiddan keyingi po'latlar esa Ast kritik nuqtadan 50-1000S yuqoriroq temperaturagacha qizdiriladi
++++++
+121. Po'latlarni toblashda qizdirish tezligi va tutib turish vaqti qaysi omillarga bog'liq?
+===== #Kimyoviy tarkibi, o'lchamlari, massasi, shakli, pechning turi va qizdiriladigan muhitga.
+===== Kimyoviy tarkibi, o'lchamlari, massasi, shakli, qattiqligi, pechning turi va qizdiriladigan muhitga
+===== Kimyoviy tarkibi, o'lchamlari, mustahkamligi, shakli, pechning turi va qizdiriladigan muhitga
+===== Kimyoviy tarkibi, o'lchamlari, massasi, olovbardoshligi, pechning turi va qizdiriladigan muhitga
++++++
+122. Elektr pechlarida po'latni qizdirish vaqti taxminan buyumning 1 mm qalinligiga necha daqiqa hisobidan olinadi?
+===== #2 daqiqa
+===== 5 daqiqa
+===== 8 daqiqa
+===== 9 daqiqa
++++++
+123. Agar 200S dagi suvning sovitish xususiyatini 1 ga teng deb qabul qilsak, moyning sovitish xususiyati qanchaga teng?
+===== #0.17-0.44 ga
+===== 0.19-0.3 ga
+===== 0.24-0.33 ga.
+===== 0.19-0.55 ga
++++++
+124. Agar 200S dagi suvning sovitish xususiyatini 1 ga teng deb qabul qilsak, suyultirilgan qo'rg'oshinning sovitish xususiyati (3350S da) qanchaga teng?
+===== #0.05 ga
+===== 0.07 ga
+===== 0.09 ga.
+===== 0.08 ga
++++++
+125. Agar 200S dagi suvning sovitish xususiyatini 1 ga teng deb qabul qilsak, havoning sovitish xususiyati qanchaga teng?
+===== #0.03 ga
+===== 0.04 ga
+===== 0.05 ga
+===== 0.06 ga
++++++
+126. Mexatron tizimlar tarkibiga qaysi asosiy komponentlar kiradi?
+===== #Mexatron tizimlar tarkibiga; yuritmalar bloki; kompyuter boshqarish qurilmasi; axborotni boshqarish qurilmasiga yetkazuvchi sensorlar.
+===== Mexanik qurilma; yuritmalar bloki; tashqi blok; axborotni boshqarish qurilmasiga yetkazuvchi sensorlar
+===== Mexanik qurilma; kuchaytirgichlar; kompyuter; axborotni boshqarish qurilmasiga yetkazuvchi sensorlar
+===== Elektrik qurilma; yuritmalar bloki; kompyuter boshqarish qurilmasi; axborotni boshqarish qurilmasiga yetkazuvchi sensorlar
++++++
+127. Qaysi sohalarda robototexnik vositalar parkining 80 %-i mujassamlangan?
+===== #birinchi avtomatik boshqarish vositalari mashinasozlik va asbobsozlikda.
+===== Mashinasozlik va avtomobilsozlikda
+===== Asbobsozlik va avtomobilsozlikda
+===== Robotsozlikda
++++++
+128. Robot so'zi nechanchi yilda birinchi marta ishlatilgan?
+===== #1920
+===== 1921
+===== 1924
+===== 1928
++++++
+129. Boshqaruviga inson aralashuvi darajasi bo'yicha robotlar necha turga ajratiladi?
+===== #2
+===== 3
+===== 4
+===== 5
++++++
+130. Biotexnik robotlar qaysi turlarga bo'linadi?
+===== #Biotexnik robotlar masofadan turib boshqariladigan (harakatni takrorlovchi) barcha robotlar; ekzoskeletlar; inson tomonidan boshqarish pulti orqali boshqariladigan robotlar;
+===== Masofadan turib boshqariladigan (harakatni takrorlovchi) barcha robotlar; ekzoskeletlar; sanoat robotlari; avtomatik robotlar
+===== Masofadan turib boshqariladigan (harakatni takrorlovchi) barcha robotlar; ekzoskeletlar; inson tomonidan boshqarish pulti orqali boshqariladigan robotlar;
+===== Masofadan turib boshqariladigan (harakatni takrorlovchi) barcha robotlar; ekzoskeletlar; ishlab chiqarish robotlari; yarimavtomatik robotlar
++++++
+131. Robototexnik tizimlar uchun xarakterli bo`lgan boshqarish iyerarxiyasida nechta boshqarish boshqichi belgilangan?
+===== #4
+===== 7
+===== 5
+===== 6
++++++
+132. Robototexnik tizimlar iyerarxiyasida qaysi boshqarish bosiqichlari mavjud?
+===== #Robototexnik tizimlar uchun xarakterli bo`lgan Intellektual, strategik, taktik va ijro etuvchi.
+===== Strategik, taktik va ijro etuvchi;
+===== Intellektual, taktik va ijro etuvchi;
+===== Tashqi kompyuterli, strategik, taktik va ijro etuvchi
++++++
+133. Intellektual mexatronik moduliga qaysi elementlar konstruktiv birlashtirilgan?
+===== #Intellektual mexatronik moduliga dvigatel, mexanik, axborot, elektron va boshqaruv qismlarni sinergetik inregratsiyalash yo'li bilan konstruktiv birlashtirilgan.
+===== Dvigatel, gidravlik, axborot, elektron va boshqaruv qismlarni sinergetik inregratsiyalash yo'li bilan konstruktiv birlashtirilgan;
+===== Dvigatel, elektr, axborot, elektron va boshqaruv qismlarni sinergetik inregratsiyalash yo'li bilan konstruktiv birlashtirilgan;
+===== Dvigatel, pnevmatik, axborot, elektron va boshqaruv qismlarni sinergetik inregratsiyalash yo'li bilan konstruktiv birlashtirilgan;
++++++
+134. Motor-reduktorlar nechanchi yilda ixtiro qilingan?
+===== #927 yilda
+===== 1929 yilda
+===== 1928 yilda
+===== 1932 yilda
++++++
+135. Motor-reduktorlar qaysi firma tomonidan ixtiro qilingan?
+===== #Bayer
+===== Soni
+===== Bosh
+===== Hitachi
++++++
+136. Teskari aloqa qanday vazifani bajaradi?
+===== #Teskari aloqa yordamida signal tizimning chiqish yo'lidan boshqaruv organiga beriladi.
+===== kirish signalini chiqish yo'lidan boshqaruv organiga beriladi;
+===== axborot tizimning kirish yo'lidan chiqish yo'liga uzatishni anglatadi;
+===== ma'lumotlar tizimning chiqish yo'li to'g'ri uning kirish yo'liga uzatiladi
++++++
+137. Signallar qanday ko'rinishda bo'ladi?
+===== #Signallar analog (uzluksiz) va raqamli (diskret).
+===== Kuchli va kuchsiz;
+===== Raqamli va raqamsiz;
+===== Uzun va qisqa.
++++++
+138. Tizim deb nimaga aytiladi?
+===== #Tizim deb ixtiyoriy tabiatli o'zaro bog'liq elementlarning bir maqsadga yo'naltirilgan to'plami.
+===== Texnologik jarayonni o'zaro bog'liq elementlarining bir maqsadga yo'naltirilgan to'plami;
+===== Texnologik jihozlarni o'zaro bog'liq elementlarining bir maqsadga yo'naltirilgan to'plami;
+===== Texnologik jihoz elementlarini nazorat va boshqaruv asboblari bilan o'zaro bog'liqligi.
++++++
+139. USB (yu-es-bi, angl. Universal Serial Bus) nima?
+===== #USB bu-hisoblash texnikasi atrofidagi qurilmalardan o'rta va kichik tezlikda axborotlarni uzatish uchun ketma-ket interfeys.
+===== Kompyuter tarmoqlari uchun axborotni paket shaklida uzatish texnologiyasi
+===== Kompyuter tarmoqlari uchun axborotni global tarmoq orqali uzatish texnologiyasi
+===== Hisoblash texnikasi atrofidagi qurilmalardan katta tezlikda axborotlarni uzatish uchun interfeys
++++++
+140. Arduino Uno mikrokontrollerining nechta porti raqamli signallarini qabul qiladi?
+===== #14
+===== 18
+===== 16
+===== 15
++++++
+141. Arduino Uno mikrokontrollerining nechta porti analogli signallarni qabul qiladi?
+===== #6
+===== 9
+===== 7
+===== 8
++++++
+142. Arduino Uno qurilmasining maqomi nima?
+===== #Arduino Uno qurilmasining maqomi bu-Mikrokontroller.
+===== Rezistor
+===== Tranzistor
+===== Tok o'zgartirgichi
++++++
+143. Mexatronika atamasi muallifi kim?
+===== #Mori Tetsuro
+===== Godfri Xaunsfild
+===== Allan Kormak
+===== Nik Xolon'yak
++++++
+144. Mexatronika atamasi 1982 yilgacha qaysi kompaniyaning savdo belgisi bo`lgan
+===== #Yaskawa Electric savdo belgisi.
+===== Soni
+===== Mitsubisi
+===== Toyota
++++++
+145. Sinergetik birlashuv deganda nimani tushunasiz?
+===== #Sinergetik birlashuv bu- elementlar bir - birini to`ldiribgina qolmay, bu tarzda birlashib hosil bo`lgan tizim yangi xususiyatlarga ega bo`ladi.
+===== Elementlarning strukturaviy birlashuvi
+===== Elementlar birlashganda energiya bir turdan ikkinchisiga o`zgartiriladi
+===== Sinergetik birlashuv - bu tor xususiyatli elementlarning birlashuvi
++++++
+146. Mexatronika tizimining qaysi qismi ishchi organ bilan bevosita bog'langan?
+===== #Mexanik qismi.
+===== Dvigatel qismi
+===== Boshqarish bloki
+===== Inson-operator
++++++
+147. Birinchi avlod mexatronika tizimlari xususiyati
+===== #Birinchi avlod mexatronika tizimlari bu- Dasturlanadigan tizimlar.
+===== Masofadan boshqariladigan tizimlar
+===== Pult orqali boshqariladigan tizimlar
+===== Mexanik tizimlar
++++++
+148. Ikkinchi avlod mexatronika tizimlari xususiyati
+===== #Ikkinchi avlod mexatronika tizimlari bu- Adaptiv tizimlar.
+===== Masofadan boshqariladigan tizimlar
+===== Pult orqali boshqariladigan tizimlar
+===== Mexanik tizimlar
++++++
+149. Uchinchi avlod mexatronika tizimlari xususiyati
+===== #Uchinchi avlod mexatronika tizimlari bu-Intellektual tizimlar.
+===== Masofadan boshqariladigan tizimlar
+===== Pult orqali boshqariladigan tizimlar
+===== Mexanik tizimlar
++++++
+150. Raqamli dasturli boshqariladigan stanoklar qaysi tizimlarga mansub?
+===== #Raqamli dasturli boshqariladigan stanoklar tipik mexatron tizimlarga mansub
+===== Tipik mexanik tizimlar
+===== Tipik elektrik tizimlar
+===== Tipik kibernetik tizimlar
++++++
+151. "Robot" so'zini kim o`ylab topgan?
+===== #Karel Chapek.
+===== Tettsuro Mori
+===== Godfri Xaunsfild
+===== Allan Kormak
++++++
+152. Birinchi sanoat robotlari xususiyati nima?
+===== #Birinchi sanoat robotlari xususiyati -dasturli boshqariladigan robotlar.
+===== Mexanik boshqariladigan robotlar
+===== Tashqi signal asosida boshqariladigan robotlar
+===== Hissiyotga ega robotlar
++++++
+153. Ikkinchi avlod sanoat robotlari xususiyati nima?
+===== #Ikkinchi avlod sanoat robotlari xususiyati -Hissiyotga ega robotlar.
+===== Dasturli boshqariladigan robotlar
+===== Mexanik boshqariladigan robotlar
+===== Tashqi signal asosida boshqariladigan robotlar
++++++
+154. Uchinchi avlod sanoat robotlari xususiyati nima?
+===== #Uchinchi avlod sanoat robotlari xususiyati -Intellektual robotlar.
+===== Dasturli boshqariladigan robotlar
+===== Mexanik boshqariladigan robotlar
+===== Tashqi signal asosida boshqariladigan robotlar
++++++
+155. Avtomatik boshqariladigan intellektual robotlar bu......
+===== #androidlar
+===== ekzoskeletlar
+===== dronlar
+===== botlar
++++++
+156. Radarlar masofani aniqlashda qanaqa signalni yuboradi?
+===== #Elektrmagnit to`lqinlarni.
+===== Ultratovushni
+===== Infraqizil nurlarni
+===== Elektr kuchlanishni
++++++
+157. Avtomobillar tormozlarini avtiblokirovkalash tizimida qanaqa datchiklardan foydalanadi?
+===== #Avtomobillarda magnitrezistorli va Xoll datchiklari.
+===== Ultratovushli va magnitrezistorli datchiklar
+===== Ultratovushli va Xoll datchiklari
+===== Ultratovushli datchiklar
++++++
+158. Tibbiyotda mexatronika tizimlarining qo`llash yo`nalishlari?
+===== #Tibbiyotda reabilitatsiyalovchi, xizmat ko`rsatuvchi va klinik.
+===== Xizmat ko`rsatuvchi, klinik
+===== Reabilitatsiyalovchi, yo`l ko`rsatuvchi va klinik
+===== Protezlovchi, xizmat ko`rsatuvchi va klinik
++++++
+159. Klinik robotlar nechta masalani yechishga mo`ljallangan?
+===== #3
+===== 6
+===== 4
+===== 5
++++++
+160. Gidroyuritmalar qaysi turlarga bo`linadi?
+===== #Gidroyuritmalar -Gidrotsilindrlar; gidromotorlar; gidrodvigatellar.
+===== Gidrotsilindrlar; gidromotorlar; gidrobosimlar
+===== Gidrotsilindrlar; gidrobosimlar; gidrodvigatellar
+===== Gidrobosimlar; gidromotorlar; gidrodvigatellar
++++++
+161. Pnevmoyuritma nima?
+===== #Pnevmoyuritma qisilgan havo energiyasini mexanik ishga o`zgartiruvchi va mashina va mexanizmlarni harakatga keltiruvchi qurilmalar majmuasidir.
+===== Pnevmoyuritma qisilgan suyuqlik energiyasini mexanik ishga o`zgartiruvchi va mashina va mexanizmlarni harakatga keltiruvchi qurilmalar majmuasidir
+===== Pnevmoyuritma kinetik energiyani mexanik ishga o`zgartiruvchi va mashina va mexanizmlarni harakatga keltiruvchi qurilmalar majmuasidir
+===== Pnevmoyuritma potentsial energiyani mexanik ishga o`zgartiruvchi va mashina va mexanizmlarni harakatga keltiruvchi qurilmalar majmuasidir
++++++
+162. Pnevmoyuritmalar ishchi organi harakatiga qarab necha turga bo`linadi?
+===== #2
+===== 3
+===== 4
+===== 5
++++++
+163. P'ezoelektrik materiallarning asosiy xususiyati nima?
+===== #Ularga mexanik ta`sir qilganda elektr energiyasining paydo bo`lishi, hamda elektr toki bilan ta`sirlashga ularning deformatsiyalanishi.
+===== Ularga mexanik ta`sir qilganda kinetik energiyasining paydo bo`lishi, hamda ularga elektr toki bilan ta`sirlashga deformatsiyalanishi
+===== Ularga mexanik ta`sir qilganda potentsial energiyasining paydo bo`lishi, hamda ularga elektr toki bilan ta`sirlashga deformatsiyalanishi
+===== Ularga mexanik ta`sir qilganda bosimning paydo bo`lishi, hamda ularga elektr toki bilan ta`sirlashga deformatsiyalanishi
++++++
+164. P'ezoelektrik dvigatellarning ishi nimaga asoslangan?
+===== #P'ezoelektrik dvigatellarning ishi maxsus ishlov berilgan keramik materiallardagi teskari p'ezoelektrik effektga asoslangan.
+===== Maxsus ishlov berilgan metall materiallardagi to`g'ri p'ezoelektrik effektga asoslangan
+===== Maxsus ishlov berilgan tok o`tkazuvchi materiallardagi teskari p'ezoelektrik effektga asoslangan
+===== Maxsus ishlov berilgan keramik materiallardagi chiziqli p'ezoelektrik effektga asoslangan
++++++
+165. Pnevmatik (sorbtsion) sun`iy mushakda to`ldiruvchi nima vositasida isitiladi?
+===== #Termoelement.
+===== Bug'
+===== Gaz
+===== Issiq suv
++++++
+166. "Bridjestoun" (Yaponiya) firmasining "Softarm" sanoat robotida nechta bionik yuritma ishlatilgan?
+===== #2
+===== 3
+===== 4
+===== 6
++++++
+167. Mexatronika tizimlarining asosiy vazifalaridan biri bu:
+===== #mexatron modul zvenosining harakatini berilgan qonun bo`yicha boshqarishni amalga oshirishdir.
+===== mexatron modul zvenosining harakatini xaotik boshqarishni amalga oshirishdir
+===== mexatron modul zvenosining harakatini tashqi signal asosida boshqarishni amalga oshirishdir
+===== mexatron modul zvenosining harakatini ichki signal bo`yicha boshqarishni amalga oshirishdir
++++++
+168. Dvigateldan mexatron modulning chiqish zvenosiga harakatni uzatish nimalar vositasida amalga oshiriladi?
+===== #harakat o`zgartirgichlari vositasida.
+===== Kuchli o`zgartirgichlar
+===== Raqamli-analog o`zgartirgichlar
+===== Boshqarish qurilmalari
++++++
+169. Harakat o`zgartiruvchilari qanday vazifani bajaradi?
+===== #Harakatni bir turini boshqasiga o`zgartirish hamda dvigatel valining aylanish momentlari va tezliklarini chiqish zvenoning parametrlariga moslashtirish.
+===== Bir harakat turini boshqasiga o`zgartirish hamda boshqaruv qurilmasi komandalariga dvigatel vali parametrlarini moslashtirish
+===== Bir energiya turini boshqasiga o`zgartirish hamda kuchli o`zgartiruvchilar signallariga dvigatel valini moslashtirish
+===== Bir energiya turini boshqasiga o`zgartirish hamda dvigatel valining aylanish momentlari va tezliklarini bir xilda saqlab turish
++++++
+170. Detal nima?
+===== #Detal bu-mashinaning ayrim bo`laklarga ajralmaydigan qismi.
+===== Mashinaning tashkil etuvchi bo`laklarga bo`linadigan qismi
+===== Mashinaning asosiy funktsiyasini bajaruvchi qismi
+===== Mashinaning strukturasini belgilaydigan qismi
++++++
+171. Uzatmalarni ilashish turiga qarab nechta guruhga bo`linadi?
+===== #2
+===== 3
+===== 5
+===== 4
++++++
+172. Uzatmalarni ilashish turiga qarab qaysi guruhdarga bo`linadi?
+===== #Egiluvchan va bevosita kontaktli uzatish moslamalari.
+===== Tasmali va bevosita kontaktli uzatish moslamalari
+===== Zanjirli va bevosita kontaktli uzatish moslamalari
+===== Egiluvchan va tishli uzatish moslamalari
++++++
+173. Yo`naltiruvchilar deb qanaqa qurilmalarga aytiladi?
+===== #Mexanizm elementlariga berilgan nisbiy harakatni ta`minlab beruvchi qurilmalarga.
+===== Mexanizm elementlariga berilgan harakatni yetkazib beruvchi qurilmalarga
+===== Mexanizm elementlariga berilgan tezlanishni ta`minlab beruvchi qurilmalarga
+===== Mexanizm elementlariga berilgan tezlikni ta`minlab beruvchi qurilmalarga
++++++
+174. Mexatronik modullar ularni tashkil qilgan elementlariga qarab nechta guruhga bo`linadi?
+===== #2
+===== 4
+===== 5
+===== 3
++++++
+175. Mexatronik modullarni guruhlarini ko`rsating
+===== #Harakat moduli, mexatronik harakat moduli, intellektual mexatronik modul.
+===== Harakat moduli, intellektual mexatronik modul
+===== Mexatronik harakat moduli, intellektual mexatronik modul
+===== Tezlik moduli, mexatronik harakat moduli, intellektual mexatronik modul
++++++
+176. Yuqori momentli dvigatellar qaysi aylanish chastotalarida barqaror ishlaydi?
+===== #0,1-1000 ayl/min.
+===== 1,1-1010 ayl/min
+===== 0,2-100 ayl/min
+===== 0,3-200 ayl/min
++++++
+177. Motor-shpindellarning konstruktiv xususiyati nimadan iborat?
+===== #Motor-shpindelni bevosita dvigatel rotorida o`rnatilganidir.
+===== Shpindelni bevosita reduktor valiga o`rnatilganidir
+===== Tishli g'altakni bevosita dvigatel rotorida o`rnatilganidir
+===== Shpindelni bevosita dvigatel schyotkasida o`rnatilganidir
++++++
+178. Nechanchi yillardan boshlab chiziqli dvigatellarni ishlab chiqish yo`lga qo`yilgan?
+===== #1980-yillardan
+===== 1981-yillardan
+===== 1986-yillardan
+===== 1984-yillardan
++++++
+179. Strategik boshqichdagi boshqarish tizimining asosiy vazifasi nima?
+===== #Strategik boshqichdagi boshqarish tizimining asosiy vazifasi bu- mexatronik tizimlarning harakatini rejalash.
+===== Mexatronik tizimlarning harakatini boshqarish
+===== Mexatronik tizimlarning harakatini dasturlash
+===== Mexatronik tizimlarning harakatini nazorat qilish
++++++
+180. Boshqarishning intellektual bosqichini qo`llashdan maqsad nima?
+===== #ob`ekt va tashqi muhit haqidagi axborot to`liq bo`lmagan sharoitda mexanik tizimning harakati haqida qaror qabul qilishdir.
+===== Ob`ekt va tashqi muhit haqidagi axborot to`liq bo`lgan sharoitda mexanik tizimning harakati haqida qaror qabul qilishdir
+===== Ob`ekt va tashqi muhit haqidagi axborot yo`q bo`lgan sharoitda mexanik tizimning harakati haqida qaror qabul qilishdir
+===== Ob`ekt va tashqi muhit haqidagi axborot aniq bo`lgan sharoitda mexanik tizimning harakati haqida qaror qabul qilishdir
++++++
+181. Mashina yuritma qismining vazifasining vazifasi nima?
+===== #Beriladigan energiyani (elektr, gidravlik yoki pnevmatik energiyani) mexanik energiyaga aylantirish
+===== Beriladigan energiyani (elektr, gidravlik yoki pnevmatik energiyani) potentsial energiyaga aylantirish
+===== Beriladigan energiyani (elektr, gidravlik yoki pnevmatik energiyani) mexanik energiyaga aylantirish
+===== Beriladigan energiyani (elektr, gidravlik yoki pnevmatik energiyani) mexanik energiyaga aylantirish
++++++
+182. Mexatronikani o`rganishdagi ba`zaviy ob`ekti bo`lib nima xizmat qiladi?
+===== #mexatron modullar
+===== Mexatron tizimlar
+===== Mexatron ob`ektlar
+===== Mexatron mashinalar
++++++
+183. Mexatronikaning ko`p tarqalgan logotipi qaysi tashkilot tomonidan ishlab chiqilgan?
+===== #Mexatronikaning ko`p tarqalgan logotipi Renssleyer politexnika instituti (AQSH) logotipi
+===== Turin politexnika universiteti (Italiya)
+===== Lyoven katolik universiteti (Belgiya)
+===== Qirollik texnologiya instituti (Shvetsiya)
++++++
+184. Mexatronik tizimning ijrochi mexanizmi qanday vazifani bajaradi?
+===== #Mexatronik tizimning ijrochi mexanizmi boshqarish sistemasidan keladigan signallarga asosan mexanik harakatni amalga oshiradi.
+===== Boshqarish sistemasidan keladigan signallarga asosan isitish tizimini boshqaradi
+===== Boshqarish sistemasidan keladigan signallarga asosan aylanma harakatni amalga oshiradi
+===== Boshqarish sistemasidan keladigan signallarga asosan ilgarilanma harakatni amalga oshiradi
++++++
+185. Mexatronika mahsulotlari qanday vazifani amalga oshiradi?
+===== #Mexatronika mahsulotlari har qanday dinamik xossaga ega bo`lgan mexanik organlarni maqsadli harakatga yo`naltirish vazifalarini amalga oshiradi.
+===== Har qanday dinamik xossaga ega bo`lgan mexanik organlarni ishga tushirish vazifalarini amalga oshiradi
+===== Har qanday dinamik xossaga ega bo`lgan elektrik qurilmalarni maqsadli harakatga yo`naltirish vazifalarini amalga oshiradi
+===== Har qanday dinamik xossaga ega bo`lgan pnevmatik qurilmalarni harakatga yo`naltirish vazifalarini amalga oshiradi
++++++
+186. Mexatronika tizimning strukturasi- bu....
+===== #Mexatronika tizim elementlari tartibi va ular orasidagi aloqadorlik.
+===== mexatronik quyi tizimlar majmuasi
+===== belgilangan mexatronik guruh xususiyatlarini akslantiruvchi tizim tavsifi
+===== mexatronik tizim majmuasi
++++++
+187. Mikrokontroller nima?
+===== #Mikrokontroller operator bilan o'zaro ta'sirlashmaydigan berilgan algoritm bo'yicha mantiqiy tahlil va boshqaruvni amalga oshiruvchi mikroprotsessorli qurilma.
+===== Operator bilan o'zaro ta'sirlashadigan berilgan algoritm bo'yicha ishlaydigan qurilma
+===== Operator bilan o'zaro ta'sirlashadigan berilgan algoritm bo'yicha boshqaruvni amalga oshiruvchi qurilma
+===== Operator bilan o'zaro ta'sirlashadigan berilgan algoritm bo'yicha mantiqiy tahlil qiladigan mikroprotsessorli qurilma
++++++
+188. Mexatronik modullarni boshqarish faqat ........ bilan amalga oshiriladi. Nuqtalar o`rniga to`g'ri so`zni qo`ying.
+===== #mikrokontroller bilan
+===== elektrik rele
+===== o`zgartirgichlar
+===== tiristorlar
++++++
+189. Mexatronik tizimda qaysi qurilma mantiqiy amallarni bajaradi?
+===== #Mantiqiy amallarni protsessorli qurilma bajaradi
+===== Registr
+===== Hisoblagich
+===== Koder
++++++
+190. Mexatronik tizimlar qaysi boshqarish printsipi asosida boshqariladi?
+===== #Mexatronik tizimlar teskari aloqali boshqarish printsipi asosida boshqariladi
+===== Ochiq sistemali boshqarish asosida
+===== To`g'ri aloqali boshqarish printsipi asosida
+===== Signalni qayta ishlash asosida
++++++
+191. Qaysi texnik vosita mexatronik tizimning boshqaruv qismi tarkibiga kiradi?
+===== #Kontroller mexatronik tizimning boshqaruv qismi tarkibiga kiradi
+===== Intellektual datchik
+===== Ijrochi mexanizmlar
+===== Tranzistorli qurilma
++++++
+192. Mexatronik tizim haqidagi axborotning material tashuvchisi nima?
+===== #Signal axborotning material tashuvchisi
+===== Ishchi organ
+===== Dastur
+===== Ma'lumot
++++++
+193. Kompyuter faqat ........... shakldagi axborotlarni qayta ishlaydi
+===== #Raqamli
+===== analog
+===== uzluksiz
+===== simvolli
++++++
+194. Vaqt bo'yicha o'zgaruvchi jarayonlar qanday modellar orqali ifodalanadi?
+===== #Dinamik.
+===== Statik
+===== Stoxastik
+===== Statistik
++++++
+195. Qaysi tizim o'z holatini yoki o'zining muhitini o'zgartirish xususiyatiga ega?
+===== #Adaptiv.
+===== Izolyatsiyalangan
+===== Ochiq
+===== Yopiq
++++++
+196. Qaysi qurilma raqamli signallarni analog signallarga o'giradi?
+===== #RAO'.
+===== ARO'
+===== Modem
+===== Plotter
++++++
+197. CAN (Controller Area Network) tarmoq interfeysining yangi kontseptsiyasi qaysi kompaniya tomonidan taklif qilingan?
+===== #Bosch
+===== Sony
+===== Siemens
+===== Panasonic
++++++
+198. Raqamli elementlarda elektrik signallar qanday tasvirlanadi?
+===== #Potentsial kuchlanish ko'rinishida.
+===== Impuls kuchlanish ko'rinishida
+===== Tangensial kuchlanish ko'rinishida
+===== Sinusoidal kuchlanish ko'rinishida
++++++
+199. Konstruktiv belgilariga ko`ra mikroprotsessorlar qaysi turlarga bo`linadi?
+===== #Bir kristalli va ko`p kristalli.
+===== Asinxron va sinxron
+===== Birlik va o`nlik
+===== Raqamli va analog
++++++
+200. Qaysi atamalarni amalda sinonim so`zlar deb qabul qilish mumkin?
+===== #"Elektryuritma" va "mexatronik tizim".
+===== "Mexanik yuritma" va "mexatronik tizim"
+===== "Pnevmoyuritma" va "mexatronik tizim"
+===== "Gidroyuritma" va "mexatronik tizim"
++++++
+201. Mexatronika tizimlariga harakat maqsadi qayerdan beriladi?
+===== #Mexatronika tizimlariga harakat inson-operator yoki tashqi kompyuter tarmog'i orqali beriladi
+===== Inson-operator yoki kontroller
+===== Inson-operator yoki protsessor
+===== Inson-operator yoki intellektual datchik
++++++
+202. Mexatronika qaysi texnik fanlar bilan sinergetik bog'langan?
+===== #Mexanika, elektrtexnika va elektronika, axborot va kompyuter tizimlari.
+===== Axborot va kompyuter tizimlari ,mexanika
+===== Fizika, axborot va kompyuter tizimlari, mexanika
+===== Elektrtexnika va elektronika, mexanika, avtomatika
++++++
+203. Radiopriyomniklar kontur katushkalarini yig'ish uchun robototexnik kompleksini bir davr ishlash vaqti?
+===== #9 sek
+===== 20 sek
+===== 15 sek
+===== 10 sek.
++++++
+204. Birinchi to`liq avtomatlashtirilgan manipulyatorlar birinchi marta nechanchi yillarda ishlab chiqilgan?
+===== #1960-1961
+===== 1970-1971
+===== 1965-1966
+===== 1962-1963
++++++
+205. To`liq avtomatlashtirilgan manipulyatorlar birinchi marta qayerda ishlab chiqilgan?
+===== #AQSh.
+===== Yaponiya
+===== Shvetsiya
+===== Italiya
++++++
+206. Birinchi sanoat robotlari qachon yaratilgan?
+===== #1962 yilda
+===== 1964 yilda
+===== 1966 yilda
+===== 1974 yilda
++++++
+207. Birinchi sanoat robotlari qayerda yaratilgan?
+===== #AQSh.
+===== Yaponiya
+===== Shvetsiya
+===== Italiya
++++++
+208. robot ishlab chiqarish bo`yicha birinchi o`rinni qaysi davlat egallagan?
+===== #Yaponiya.
+===== AQSh
+===== Shvetsiya
+===== Germaniya
++++++
+209. Robot-androidlar nima?
+===== #Robot-androidlar -sun`iy intellekka ega bo`lgan avtonom robotlar.
+===== Masofadan turib boshqariladigan robotlar
+===== Pul't orqali boshqariladigan robotlar
+===== Dastur orqali boshqariladigan robotlar
++++++
+210. "Dexterous Hand" mexanik qo'li nechta erkinlik darajasiga ega?
+===== #23
+===== 24
+===== 25
+===== 26
++++++
+211. Robot-dasturlar odatcha nima deb ataladi?
+===== #Bot.
+===== Bit
+===== Dot
+===== Dit
++++++
+212. Hozirgi vaqtda yengil avtomobilning necha foiz narxini elektron komponentlar va dasturiy ta`minot egallaydi?
+===== #40%.
+===== 45%
+===== 50%
+===== 42%
++++++
+213. Elektronli ABSi bo`lgan avtomobil birinchi marta qachon seriyali ishlab chiqarilgan?
+===== #1978 yilda
+===== 1991 yilda
+===== 1982 yilda
+===== 1979 yilda
++++++
+214. Birinchi marta seriyali ishlab chiqarilgan elektronli ABSi bo`lgan avtomobil markasini ko`rsating.
+===== #Mercedes.
+===== Mitsubishi
+===== Toyota
+===== BMW
++++++
+215. "Bosh" firmasining ob-havo datchigida qanaqa signal beriladi?
+===== #Infraqizil nur.
+===== Ultrabinafsha nur
+===== Tovushli to`lqin
+===== Ko`rinadigan nur
++++++
+216. Sun`iy yurak guruhlarini ko`rsating
+===== #Gemooksigenatorlar va kardioprotezlar.
+===== Gemooksigenatorlar va endoprotezlar
+===== Gemooksimotorlar va kardioprotezlar
+===== Gemooksiyuritmalar va kardioprotezlar
++++++
+217. Qanday tizim "inson-mashina" tizimi bo`lib hisoblanadi?
+===== #"inson-mashina" tizimi bu-avtomatlashtirilgan boshqarish tizimi.
+===== Avtomatlashgan boshqarish tizimi
+===== Mikroprotsessorli boshqarish tizimi
+===== Kompyuterli boshqarish tizimi
++++++
+218. Qadamli elektrdvigatellarning boshqa dvigatellardan farqi nima?
+===== #Boshqa dvigatellardan farqi shundaki, ularning rotori uzlukli qadam bo`yicha aylanadi.
+===== Boshqa dvigatellardan farqi shundaki, ularning rotori uzluksiz qadam bo`yicha aylanadi
+===== Boshqa dvigatellardan farqi shundaki, ularning rotori to`g'ri chiziqli qadam bo`yicha harakat qiladi
+===== Boshqa dvigatellardan farqi shundaki, ularning statori uzlukli qadam bo`yicha aylanadi
++++++
+219. LED so`zining kengaytmasi to`gri berilgan qatorni belgilang.
+===== #LED so`zining kengaytmasi- Light Emitting Diode.
+===== Left Emitting Diode
+===== Level Emitting Diode
+===== Local Emitting Diode
++++++
+220. Arduino UNO kontrollerining nechta raqamli kirish/chiqish portlari mavjud.
+===== #13
+===== 14
+===== 16
+===== 15
++++++
+221. Arduino UNO kontrollerining nechta analog kirish portlari mavjud.
+===== #5
+===== 6
+===== 8
+===== 7
++++++
+222. Arduino UNO kontrollerining nechta portini KIM (keng impul'sli modulyatsiya)-chiqish porti sifatida ishlatilishi mumkin
+===== #6
+===== 8
+===== 7
+===== 9
++++++
+223. MCP 9700 harorat datchigining iste`mol kuchlanishi qaysi oraliqdagi qiymatlarga mos keladi.
+===== #3,3 V - 5 V.
+===== 10,3 V - 15 V
+===== 3,5 mA - 15 mA
+===== 3,8 Om - 25 Om
++++++
+224. Arduino UNO kontrollerining analog kirish sonli qiymat signali necha volt kuchlanishga teng bo`ladi
+===== #5 V
+===== 7 V
+===== 9 V
+===== 220 V
++++++
+225. Birinchi to`liq avtomatlashtirilgan manipulyatorlar nechanchi yillarda va qayerda ishlab chiqilgan.
+===== #1960-1961 yillar AQSHda.
+===== 1967-1968 yillar Germaniyada
+===== 1970-1971 yillar AQSHda
+===== 1976-1979 yillar Germaniyada
++++++
+226. "Texnologiya fanini o'qitish metodikasi" fanini o'qitishdan maqsad nimadan iborat?
+===== #Umumiy o'rta ta'lim maktablarida o'qitiladigan texnologiya fani metodologiyasini, texnologiya darslarida ta'lim-tarbiya ishini tashkil etish va uni amalga oshirish.
+===== Milliy istiqlol g'oyasi, milliy va umuminsoniy qadriyatlarimizni chuqur his etib, ularni ta'lim-tarbiya mazmuniga singdira oladigan shaxs
+===== kasb tanlashga yo'llash Texnologiya, o'qituvchisi sifatida shakllantirishdir.
+===== Hamma javoblar to'g'ri
++++++
+227. Texnologiya fani DTS da hammasi bo'lib fanga necha soat ajratilgan?
+===== #407 soat
+===== 410 soat
+===== 408 soat
+===== 508 soat
++++++
+228. Texnologiya qaysi tildan olingan va qanday ma'noni bildiradi?
+===== #"techno" - san'at va "logos" - o'rganishdan yunoncha
+===== Lotincha "techno"-hunar, usta va "logos" -fan ta'lim
+===== Lotincha "techno"-ta'lim va "logos" - hunar
+===== Yunoncha "techno"-fan va "logos" - ta'lim
++++++
+229. Ibn Sinoning tavsiya qilgan asarida tarbiya va ta'lim quyidagilardan qaysilarni o'z ichiga oladi?
+===== #Ibn sino Jismoniy tarbiya Aqliy tarbiya. Estetik tarbiya. Axloqiy tarbiya. Mehnat tarbiyasi (hunar o'rganish).
+===== Jismoniy tarbiya Aqliy tarbiya.
+===== Estetik tarbiya. Axloqiy tarbiya.
+===== Mehnat tarbiyasi(hunar o'rganish).
++++++
+230. Amaliy fanlar blok-moduli tavsifiga qaysi fanlar kiradi?
+===== #Amaliy fanlar musiqa madaniyati, tasviriy san'at,chizmachilik, texnologiya, jismoniy tarbiya va chaqiruvga qadar boshlang'ich tayyorgarlik fanlari
+===== musiqa madaniyati, tasviriy san'at,chizmachilik, texnologiya
+===== matematika, chizmachilik, texnologiya
+===== musiqa madaniyati, tasviriy san'at,chizmachilik, texnologiya
++++++
+231. Amaliy fanlar o'quv predmetlari blok - moduli bo'yicha o'quvchilarda rivojlantiriladigan umumiy kompetensiyalarni belgilang.
+===== #Axborotlar bilan ishlash kompetensiyasi kommunikativ kompetensiya, , o'zini-o'zi rivojlantirish kompetensiyasi, ijtimoiy faol fuqarolik kompetensiyasi, milliy va umummadaniy kompetensiyasi, matematik savodxonlik, fan va texnika yangiliklaridan xabardor bo'lish hamda foydalanish kompetensiyasi;
+===== Ijtimoiy faol fuqarolik kompetensiyasi, matematik savodxonlik, fan va texnika yangiliklaridan xabardor bo'lish hamda foydalanish kompetensiyasi;
+===== To'g'ri va ongli kasb tanlash, ijtimoiy munosabatlarga kirisha olish kompetensiyasi;
+===== Kommunikativ kompetensiya, axborotlar bilan ishlash kompetensiyasi, o'zini o'zi rivojlantirish kompetensiyasi, psixomotor, funksional, hamda amaliy faoliyat turlarini bajarishdagi operatsion kompetensiya.
++++++
+232. Vazirlar Mahkamasining qaysi qaroriga asosan Umumiy o'rta va o'rta maxsus, kasb-hunar ta'limining umumta'lim fanlari bo'yicha malaka talablari ishlab chiqildi.
+===== #Vazirlar Mahkamasining 2017 yil 6-apreldagi 187-son
+===== 2018 yil 5 - apreldagi 187-son
+===== Xalq ta'limi vaziri 2017 yil 6-apreldagi 185-son
+===== Prizident famoni 2017 yil 5-apreldagi 187-son
++++++
+233. "Texnologiya fanini o'qitish metodikasi" fani nimani o'rganadi?
+===== #Texnologiya fani aynan bir fanning xususiy masalalarini
+===== Yoshlarga ta'lim tarbiya berish usullarini texnologiya fani
+===== Yoshlarni har tomonlama kamol toptirish masalasi bilan texnologiya fani
+===== Hammasi to'g'ri javob
++++++
+234. "Texnologiya fanini o'qitish metodikasi" qaysi fanlar bilan aloqador?
+===== #Texnologiya fani yoshlar gigiyenasi va fiziologiyasi, psixologiya
+===== Yoshlar gigiyenasi va fiziologiyasi
+===== Psixologiya, yoshlar fiziologiyasi
+===== Noto'g'ri javob yo'q.
++++++
+235. Texnologiya fani umumta'lim maktablarida qanday amalga oshiriladi?
+===== #Texnik mehnat V-VII sinfda, Boshlang'ich sinfda qo'l mehnati, VIII-IX sinfda kasbga yo'naltirish.
+===== Odaty xolda amalga oshiriladi .
+===== Yog'och o'ymakorlik ishlari
+===== V-IX sinflarga kasbga yo'naltirish.
++++++
+236. Dars rejasi texnologiya fanidan qanday tuziladi?
+===== #Dars o'tiladigan kun, mavzu, maqsadii, ish ob'ekti, jihoz va materiallar, darsning borishi, darsning tashkiliy qismi, o'tgan dasrni mustahkamlash, yangi mavzuni bayon qilish, kirish, joriy, yakuniy instruktajlar, uyga vazifa, foydalanilgan adabiyotlar.
+===== Mavzuni rejaga binoan faqat yangi mavzuning bayoni yoritiladi .
+===== Hamma javoblar to'g'ri .
+===== O'qituvchining dasrni qanday tashkil etishi bayon etiladi .
++++++
+237. Fanlararo bog'lanish texnologiya fanidan nima uchun kerak?
+===== #Fanlararo boshlanishni amalga oshirish amaliy bilimni mustahkamlash uchun .
+===== Amaliy bilimlarni hayotda qo'llash uchun .
+===== Fanlar bilan texnologiya fanining samaradorligini oshiradi .
+===== Nazariy bilimlarni turmush bilan bog'lashdan iborat.
++++++
+238. Texnologiya fanini tabiiy va ilmiy fanlar bilan bog'lash rejasi qanday tuziladi?
+===== #Tabiiy fanlarning texnologiya fani bilan bog'liqligini hisobga olgan holda
+===== Ularnining amalda qo'llash darajasi muvofiqligiga qarab .
+===== Fanlarning ilmiyligiga asoslangan holda
+===== Fanlarning rejaga mosligiga qarab.
++++++
+239. Texnologiya fani o'qituvchisiga qo'yiladigan talablarni ko'rsating.
+===== #Ta'lim-tarbiya jarayonini to'g'ri tashkil etish, Ish o'rnini to'g'ri tashkil etish, halollik, kamtarlik, qattiylik, dalillik, mas'uliyatlilik,
+===== O'quvchilar ichida xavfiszlikni ta'minlash.
+===== O'quv materiallarini to'g'ri tanlash ta'lim-tarbiya vazifalarini,
+===== O'quv dastgohlaridan to'g'ri foydalanishni o'rgatish .
++++++
+240. Texnologiya fanida o'qitish shakllarini ko'rsating.
+===== #Texnoloyiya fanini o'qitish shakllari hamma javobda to'g'ri
+===== Zveno
+===== Frontal
+===== Individua
++++++
+241. Didaktik talablarini ko'rsatib bering .
+===== #Dars maqsadining aniqligi, ta'lim tarbiya vazifalarining birligi, o'quv materialini to'g'ri tanlash, ta'lim metodlarini tanlash,
+===== O'quv stanoklarini xavfsizligini aniqlash
+===== Asboblar bilan ta'minlash va jihozlash
+===== Hammasi to'g'ri javob
++++++
+242. Tadqiqot metodlarini ko'rsating .
+===== #Tadqiqot metodlari kuzatish, anketa so'roqlari, suhbat, pedagogik tajribani o'rganish tajribalar
+===== Malaka amaliyot
+===== Ko'nikma pedagogik tajribani o'rganish, laboratoriya tajribalari .
+===== Malaka, anketa surovnomalar laboratoriya tajribalari
++++++
+243. Dars rejasi tuzish nima uchun kerak?
+===== #Darsga tayyorlanishi, uning strukturaviy tuzilishini ishlab chiqish uchun.
+===== Mashg'ulot birin-ketin uzviy boglash uchun
+===== O'quvchilarni darsga jalb kilish uchun
+===== Hamma javob to'g'ri
++++++
+244. O'quv yili uchun qanday hujjatlar rejalashtiriladi?
+===== #O'quv yiliga taqvim mavzuli reja, ishlab chiqarish ishlari ro'yxati, dars reja
+===== Yillik ish reja tuziladi
+===== Oylik yoki choraklik ish rejalar tuziladi .
+===== Hamma javoblar to'g'ri .
++++++
+245. O'quv ustaxonasiga qanday talablar qo'yiladi?
+===== #O'quv va didaktik materiallar bilan jixozlanishi, sanitariya gigiyena talablariga javob beradi, dasturdagi mavzular o'rganish uchun sharoit yaratiladi. zaruriy xom ashiyo bilan ta'minlangan bo'lishi kerak.
+===== Sanitariya va gigiyena talablariga javob beradi .
+===== Xonalar zaruriy materiyallar bilan ta'minlangan bo'lishi kerak
+===== Barcha javoblar to'g'ri
++++++
+246. Didaktik tamoyillarini ko'rsating .
+===== #Didaktik, tarbiyaviy, bilimlarni amaliyotda qo'llash ilmiylik va politexnik xarakteri, texnologiya fanining ongliligi va aktivligi, texnologiya fanining sistemaligi va puxtaligi
+===== Ilmiylik va politexnik xarakteri,didaktik tarbiyaviy texnikaviy ilmiylik
+===== Ilmiylik va poltexnikaviy xarakteri sestemasi
+===== To'g'ri javob A va B
++++++
+247. Texnologiya fani dasturini tuzishda nimalarga e'tibor berish kerak?
+===== #Texnologiya fani dasturi o'quvchilarning yoshini hisobga olish
+===== Mahallani hisobga olish, sharoit yetishi hisobda olinishi kerak
+===== Texnologiya fani dasturi barcha o'quvchilar uchun bir xil bo'ladi
+===== Qishloq va shahar maktablari sharoitini hamda o'g'il va qizlarga mos bo'lishiga e'tibor berishadi
++++++
+248. O'quv ustaxonasini jihozlash tartibini tushuntirib bering.
+===== #O'quv ustaxonasi keng, yorug' bo'lishi kerak
+===== Ustaxonasi derazalarida gullar bo'lishi kerak
+===== Yer sathi 90m 2, 36 voltli pasaytiruvchi asbob, sahna 20 m 2
+===== Ustaxonani jihozlashda mebel anjomlari bilan jihozlash kerak
++++++
+249. O'quv yiliga texnologiya fani o'qituvchisi qanday tayyorgarlik ko'radi.
+===== #O'quv xonani jihozlaydi. Ko'rgazmalar tayyorlaydi
+===== Yillik mavzuli reja tuzadi xonani jihozlaydi
+===== Ko'rgazmali qurollar tayyorlaydi konspekt yozadi
+===== Hamma javob to'g'ri
++++++
+250. Mehnatga axloqiy tayyorlash nima?
+===== #Mehnat bolalarga jamoada ishlani, o'zaro do'stona yordamni, ijodiy tashabbuskorlikni, tashkilotchilik qobiliyatlarini namoyish qilishdan iborat.
+===== O'quvchilarni mehnat natijalariga hurmat bilan yondashishlari nazarda tutiladi.
+===== Texnologik ta'lim va tarbiyasi bilan o'quvchilarni mehnatga tayyorlash.
+===== O'quvchilarni mehnat kishilariga va mehnat natijalariga yaxshi munosabatda bo'lish.
++++++
+251. Mehnatning psixologik komponentlari.
+===== #Mehnatning psixologik komponentlari sezish, anglash, emotsional idrok, diqqat, xotira, tafakkur.
+===== Psixologik komponentlari Diqqat, idrok, xotira, tafakkur.
+===== Psixomotor, emotsional idrok, e'tibor, ko'rish, eshitish.
+===== Sezish, psixomotor, emotsional, idrok,diqqat,xotira.
++++++
+252. Dars rejasini nimalar tashkil etadi?
+===== #Dars tashkiliy qism, asosiy qism, yakuniy qism.
+===== Yangi mavzu, darsning yakuniy qismi.
+===== Tashkiliy qism va yakuniy qism.
+===== Ta'limiy, tarbiyaviy va tashkiliy qism.
++++++
+253. Jismoniy mehnat nima?
+===== #Insonning tana a'zolari orqali ongli ravishda faoliyat ko'rsatish
+===== Jismoniy madaniyat
+===== Mehnatning hamma turi jismoniy mehnatdir.
+===== Inson aqliy faoliyati bilan ish bajarishi.
++++++
+254. Mehnatga amaliy tayyorlash nima?
+===== #Materialga ishlov bera olish, asbob va uskunalardan foydalana bilish, xatoni o'z vaqtida aniqlash va to'g'rilay olish.
+===== Texnologik ta'limining muhim omillaridan biridir.
+===== Asbob va materiallarga ishlov bera olish.
+===== Bilim, malaka va ko'nikmalarini shakllantirish.
++++++
+255. Darsda texnologiya fani o'qituvchisi nimalarga e'tibor berishi kerak?
+===== #Darsni rejalashtirishga, vaqtdan unumli foydalanishga, ko'rsatmaga amal qilishga, ish joyini to'g'ri tashkil etishga.
+===== Bolaning qobiliyatiga, qiziqishiga, imkoniyatlariga e'tibor berish kerak.
+===== Mehnat darsida yangidan-yangi bilim va ko'nikmalar berish kerak.
+===== Mavzuni tushuntirish, materiallar va buyumlar namunasini,asboblarni materiallarga ishlov berish usullarini va bosqichlar izchilligini ko'rsatishga.
++++++
+256. Texnologiya fanining vazifasi nima?
+===== #Ta'lim berish bilan birga axloqiy, estetik, iqtisodiy-ekologiya va aqliy bilim va jismoniy mehnatga o'rgatish.
+===== O'quvchilarni mehnatga, mustaqil hayotga tayyorlash.
+===== O'quvchilarni kasbga, hunarga o'rgatish.
+===== O'quvchilarni kasb tanlashga o'rgatish.
++++++
+257. O'qitish metodlarini tanlash nimalarga bog'liq?
+===== #O'quv mashg'ulot turi va tipiga
+===== Mashg'ulot mavzusiga
+===== Materialining mantiqiy yo'nalishi, mazmuni va mustaqil ish xarakteriga bog'liq.
+===== Pedagogkni bilimiga
++++++
+258. Umumiy o'rta ta'lim maktablarining o'quv rejasida texnologiya o'quv faniga 1-4 sinflarda haftasiga necha soatdan o'tiladi?
+===== #Haftasiga 1 soatdan
+===== Haftasiga 2 soatdan
+===== Haftasiga 3 soatdan
+===== Haftasiga 4 soatdan
++++++
+259. Umumiy o'rta ta'lim maktablarining o'quv rejasida texnologiya o'quv faniga 5-7 sinflarda haftasiga necha soatdan o'tiladi?
+===== #Haftasiga 2 soatdan
+===== Haftasiga 3-4 soatdan
+===== Haftasiga 3 soatdan
+===== Haftasiga 5 soatdan
++++++
+260. O'quv materialining mazmuniga quyidagilardan qaysilari kiradi?
+===== #O'quv materialining mazmuniga keltirilganlarni barchasi to'gri
+===== Ta'limning ko'rgazmali va texnik vositalarini qo'shib hisoblaganda darsni o'tkazish zarur bo'lgan o'quv qurollari;
+===== Darsning har bir qismida o'qituvchi va o'quvchining ish usullari hamda metodlari;
+===== Darsda bevosita o'tkaziladigan test sinovlari; uy vazifalari, topshiriqlar.
++++++
+261. Texnologiya fani o'qituvchisining shaxsiy fazilatlariga quyidagilardan qaysilari kiradi?
+===== #Texnologik ta'lim o'qituvchisi o'z fanining ilmiy asoslarini mukammal bilish;
+===== Mustahkam mehnat va kasb ko'nikmalari va malakalarini egallagan bo'lishi;
+===== Mavzuni o'quvchilarga mohirlik bilan yetkazib bera olishi;
+===== Hamma javoblar to'g'ri
++++++
+262. ......... - mohiyatiga ko'ra ikki o'quv predmetlari orasidagi aloqadorlikni, ya'ni birinchi o'quv predmeti bo'yicha o'zlashtirilgan bilim va ish-harakat usullarini ikkinchisida qo'llashni va aksincha qo'llanishini ifodalaydi.
+===== #.Predmetlararo aloqadorlik
+===== O'zaro aloqadorlik
+===== Integrativ aloqadorlik
+===== Integratsiya
++++++
+263. ........ - o'zining mohiyatiga ko'ra keng tushuncha bo'lib, o'rganilayotgan ob'yektning turli jihatlari va xususiyatlarini har tomonlama ochib berilishini nazarda tutadi.
+===== #.Uzviylik
+===== Predmetlararo aloqadorlik
+===== O'zaro aloqadorlik
+===== Integrativ aloqadorlik
++++++
+264. Modulli î'qitish samaradorligi qanday omillarga bog'liq?
+===== #Moddiy-texnik bazasi ta'lim muassasadagi
+===== Didaktik materiallarning ishlab chiqilishiga; - modullar natijasi va tahliliga
+===== Professor-î'qituvchilar tarkibi darajasi
+===== Barcha javob to'g'ri
++++++
+265. Modulli ta'limning amaliy mashg'ulotlarda qo'llashning afzalliklari qaysi javobda to'g'ri keltirilgan?
+===== #Alohida tugallangan ta'lim mazmuni mustaqil qismlar (bloklar)dan iborat bo'lishi va ularni o'zlashtirish ta'lim maqsadlaridan kelib chiqishi lozim.
+===== O'qituvchi o'quvchilarning o'quv-biluv faoliyatini modullar orqali yoki bevosita boshqaradi. Bevosita boshqarganda u aniq maqsad asosida va o'quvchi bilan yaxshi munosabatda bo'lib boshqaradi.
+===== Chop etilgan modullarning mavjudligi o'qituvchiga o'quvchilarning har biriga individual maslahat bera olish va o'quvchiga qanday yordam qilishni belgilab olish imkoniyatini beradi.
+===== Barcha javoblar to'g'ri
++++++
+266. ...... - o'quvchilarning bilim, ko'nikma va malakalarini egallash bo'yicha o'quv-bilish faoliyatini tashkil qilish, ularning tafakkur va qobiliyatlarni o'stirish, dunyoqarash, ma'naviy sifatlari, axloqiy, estetik madaniyatni shakllantirishga qaratilgan pedagogik jarayondir.
+===== #.Ta'lim
+===== Tarbiya
+===== Dars
+===== Metod
++++++
+267. Fanlar bo'yicha Olimpiada o'tkazilganda baholash mezonlari qanday bo'ladi?
+===== #Fan mutaxassis o'qituvchilar tomonidan baholanadi
+===== O'quvchilar o'zini o'zi baholaydi
+===== Jamoatdan yoki ota-onalar tomonidan baholadi
+===== Respublika tashkiliy qo'mitasi tomonidan ishlab chiqiladi va qo'shma buyruq bilan tasdiqlanadi.
++++++
+268. Texnologiya fanining quyidagi nechta tamoyillari mavjud?
+===== #9ta
+===== 10ta
+===== 11ta
+===== 12ta
++++++
+269. Ta'lim va tarbiya birligi - bu?
+===== #Ta'lim jarayonida o'quvchilarni tarbiyalash.
+===== O'quvchilarni tarbiyasini ta'lim jarayonida inobatga olmaslik
+===== O'quvchilarni urushish ta'lim jarayonida
+===== O'quvchilarni yomon yo'lga boshlash.ta'lim jarayonida
++++++
+270. Texnologiya fanining tarbiyaviy mohiyati, tarbiyaviy vazifalarni o'qitishning mazmuni, shuningdek o'quv ishlarini tashkiliy shakl va metodlari orqali amalga oshirishdan iborat. Bu qaysi tamoyil?
+===== #Texnologiya fanini nazariya va amaliyot birligi.
+===== Ta'lim va tarbiya birligi.
+===== Ta'limning ilmiyligi va politexnik xususiyatga egaligi.
+===== Ta'limda tizimlilik va izchillik.
++++++
+271. Mazkur tamoyil mehnatga doir o'quv materialini o'quvchilar o'rganilayotgan hodisa va jarayonni jonli idrok etish asosida o'zlashtirishiari bilan bir qatorda, ularda abstrakt tafakkurni shakllantirishni ham ko'zda tutadi. Bu qaysi tamoyil?
+===== #Mazkur tamoyil bu ko'rgazmalilik
+===== Ta'lim va tarbiya birligi.
+===== Ta'limning ilmiyligi va politexnik xususiyatga egaligi.
+===== Ta'limda tizimlilik va izchillik
++++++
+272. Mehnatni unumi o'quvchilarning texnik bilimlarini o'zlashtirish hamda ularning har tomonlama rivojlanishiga yaxshi ta'sir ko'rsatadi. Bu qaysi tamoyilga tegishli?
+===== #Mustahkam va puxta o'zlashtirish.
+===== Ta'lim va tarbiya birligi.
+===== Ta'limning ilmiyligi va politexnik xususiyatga egaligi.
+===== Ta'limda tizimlilik va izchillik
++++++
+273. Texnologiya fani darslarida o'quvchilar umumtexnika xarakteridagi qaysi fanlarning dastlabki ma'lumotlarni egallaydilar?
+===== #Chizmachilik, materialshunoslik, mashinashunoslik, elektrotexnika
+===== Adabiyot, tarix, jug'rofiya, fizika
+===== Fizika, ximiya, rasm, fiziologiya
+===== Chet tili, mashinashunoslik
++++++
+274. Metodik reja qaysi majlisda ko'rib chiqilib, tasdiqlanadi?
+===== #Metodik kengash
+===== Pedagogik kengash
+===== Xalq kengashi
+===== Deputatlar kengashi
++++++
+275. Darsning didaktik vazifasini aniqlang.
+===== #Dars maqsadga olib keluvchi masalalarning ketma-ketligi
+===== O'qitish usullarining optimal variantlari
+===== Mashg'ulot materialining amaliyot bilan va oldingi o'tilgan materiallari bilan bevosita bog'lanishi
+===== Mashg'ulotning tuzilishini aniqlash: darsni samarali boshlash va vaqtni to'g'ri taqsimlash, darsning rejasi va yaxlitligi
++++++
+276. Integratsiyalash turlari qaysilar?
+===== #Ilmiy umummetodologik, umumilmiy, xususiy, muammoli
+===== An'anaviy, noan'anaviy, muammoli
+===== Bir butunlik, didaktiklik, umumilmiy
+===== Didaktiklik, umummetodologik, xususiy ilmiy, an'anaviy
++++++
+277. Individual metodik ish quyidagi qaysi shakllarda amalga oshiriladi?
+===== #Umumta'lim maktablari rahbarlari, o'qituvchilar, va boshqa texnik xodimlarning o'z g'oyaviy-siyosiy darajasi
+===== Pedagogik malakasi va kasb mahoratini oshirish yuzasidan olib boriladigan mustaqil metodik ishlari
+===== Maktab rahbari (direktor), uning o'rinbosarlari, o'qituvchiIar, pedagoglar va boshqa texnik xodimlar bilan olib boriladigan individual metodik ishlari
+===== Yuqoridagilarning barchasi to'g'ri.
++++++
+278. Keltirilgan javoblarda pedagogik faoliyatga nisbatan tanqidiy va ijodiy yondoshish, o'zining ijodkorlik malakalariga egaligini namoyish eta olish qaysi kompetentlikka mansub?
+===== #Kreativ kompetentlik
+===== Ektremal kompetentlik
+===== Texnologik kompetentlik
+===== Innovastion kompetentlik
++++++
+279. Fanning "Texnologiya va dizayn" yo'nalishi qanday bo'limlardan tashkil topgan?
+===== #Faqat yog'ochga va metallga ishlov berish texnologiyasi
+===== Gazlamalarga ishlov berish texnologiyasi, Kasbga yo'naltirish
+===== Qishloq xo'jaligi asoslari yo'nalishi, robotatexnika
+===== Hamma javoblar to'g'ri
++++++
+280. O'quv rejasi nima?
+===== #O'tiladigan fanlar, haftada necha soatdan va o'quv yili davomida jami shu sinfda necha soat dars o'tilishi kerak ekanligini ko'rsatuvchi hujjat.
+===== Har bir fan bo'yicha alohida-lohida mavjud bo'lib mehnat ta'limi bo'yicha o'quv dasturi boshqa fanlardan farq qiladi.
+===== Ustaxonasida qilinadiga ishlar ro'yxati.
+===== Hammasi to'g'ri.
++++++
+281. Rejalashtiruvchi hujjatlar qaysilar?
+===== #Rejalasj o'quv ustaxonalarida yasaladigan buyumlar ro'yxati, tabiiy- ilmiy shakldagi fanlar o'zaro bog'lanish jadvali, konstruksion- texnologik xarita
+===== Tabiiy-ilmiy shakldagi fanlar o'zaro bog'lanish jadvali, konstruksion- texnologik xarita.
+===== O'quv ustaxonalarida yasaladigan buyumlar ro'yxati.
+===== To'gri javob yo'q.
++++++
+282. O'qitish shakli nima?
+===== #O'quvchilarni bilim, malaka va ko'nikmalar bilan qurollantirish uchun ular qay tarzda tashkil etilganligini xarakterlaydi.
+===== Uqituvchi tomonidan bilim, malaka va ko'nikma singdirilishi va o'quvchilar tomonidan bu bilim, malaka ko'nikmalarni o'zlashtirishning o'ziga xos usullarini xarakterlaydi.
+===== Har bir mavzuni o'qitishda nazariya bilan amaliyotning birligi qoidasiga amal qilinishini ta'minlashi kerak.
+===== Hamma javob to'g'ri.
++++++
+283. "Pazandachilik asoslari" qaysi bo'limlarga ega bo'ladi?
+===== #Pazandachilik o'quv xonasida xavfsizlik texnika qoidalari va sanitariya-gigiyena talablari, pazandachilik tarixi va taraqqiyoti, oziq- ovqat malisulotlarining ozuqaviy qiymatini inson organizmi ucliun ahamiyatini bilish.
+===== Xavfsizlik texnikasi qoidalari va sanitariya-gigiyena talablari, tabiiy tolali gazlamalardan paxta va zig'ir tolalaridan to'qilgan gazlamalar, ularning xususiyatlarini bilish.
+===== Turli choklar bilan so'kilgan buyum larni ta'mirlab, tikishni bilish.
+===== Hamma javoblar to'g'ri
++++++
+284. Kuzatishga asoslangan tasniflash ishlari qaysilar?
+===== #Keltirilgan hamma javob to'g'ri
+===== Obzor tadqiqotlari
+===== Ta'lim tarbiya unsurlari orasida bog'liqlikni aniqlash
+===== Izlanish tadqiqotlari
++++++
+285. Texnologiya fanida yozma javoblarni ommaviy ravishda yig'ib olish metodi qaysi?
+===== #Test sinovlari metodi
+===== Suhbat metodi
+===== Ekperiment metodi
+===== Kuzatish metodi
++++++
+286. Texnologiya fanini o'qitish metodikasi, kasb tanlashga yo'llashda ilmiy tadqiqot ishlarning metodologik asoslari qaysi?
+===== #To'g'ri javoblar keltirilgan
+===== Shaxsning ijodiy va faoliyatlilik ma'nosi haqidagi ta'limot.
+===== Shaxsning o'zaro aloqa bogiash va o'zaro bogiiqligi haqidagi ta'limot.
+===== Munosabatlar nazariyasi. Mutaxassis shaxsini shakllantirish haqidagi nazariy ta'limot.
++++++
+287. Texnologiya ta'limining tamoyillari qaysilar?
+===== #To'g'ri javoblar hammasi
+===== Maktabda ta'lim va tarbiya birligi. Ta'lim ning ilmiyligi va politexnik xususiyatga egaligi.
+===== Yosh individual xususiyatlarini hisobga olish. Ta'limda tizim lilik va izchillik. Nazariya va amaliyot birligi.
+===== Onglilik va faollik. Ta'limda ko'rsatmalilik. Bilim, ko'nikm a va malakalarni o'zlashtirishning mustahkamligi va puxtaligi.
++++++
+288. Texnologiya darslarida olgan texnik bilimlari, mehnat ko'nikmalari va malakalari tom ma'nosi bilan ilmiy va politexnik xususiyatga ega bo'lish kerak bu qaysi tamoyil?
+===== #Ta'lim ning ilmiyligi va politexnik xususiyatga egaligi.
+===== Politexnik, ta'limda tizim lilik va izchillik.
+===== Nazariya va amaliyot birligi.
+===== Bilim, ko'nikma va malakalarni o'zlashtirishning mustahkamligi va puxtaligi.
++++++
+289. Ta'lim-........
+===== #Ta'lim ma'lum maqsadga yo'naltirilgan, rejali ravishda amalga oshiriladigan "o'qituvchi-o'quvchi-o'qituvchi" muloqoti bo'lib, uning natijasida o'quvchida ma'lumot, tarbiya va umumiy shakllanish, rivojlanish amalga oshadi.
+===== O'rganayotgan ob'yekt haqida uning muhim xususiyat va sifatlarini, obyektning ma'lum jihatlarini biz tushunchalarda ifodalaymiz va o'rganamiz.
+===== O'qitish jarayoni va uning natijasi hisoblanib, o'quvchida bilim, iqtidor va ko'nikm alarning o'zlashtirilganligini, bilish qobiliyati o'sganligi va ular asosida ilmiy dunyoqarash, shaxsiy sifatlar shakllanganligini, ularning ijobiy kuchlari va qobiliyatlarining qay darajada rivojlanganligini anglatadi.
+===== A va C javob to'g'ri
++++++
+290. Bilim - ......
+===== #Bilim o'rganayotgan ob'yekt haqida uning muhim xususiyat va sifatlarini, ob'yektning ma'lum jihatlarini biz tushunchalarda ifodalaymiz va o'rganamiz.
+===== O'qitish jarayoni va uning natijasi hisoblanib, o'quvchida bilim, iqtidor va ko'nikmalarning o'zlashtirilganligini, bilish qobiliyati o'sganligi va ular asosida ilmiy dunyoqarash, shaxsiy sifatlar shakllanganligini, ularning ijobiy kuchlari va qobiliyatlarining qay darajada rivojlanganligini anglatadi.
+===== Ma'lum maqsadga yo'naltirilgan, rejali ravishda amalga oshiriladigan "o'qituvchi-o'quvchi-o'qituvchi" muloqoti bo'lib, uning natijasida o'quvchida ma'lumot, tarbiya va umumiy shakllanish, rivojlanish amalga oshadi.
+===== Barcha javoblar to'g'ri
++++++
+291. Ta'lim vositalari nechtaga bo'linadi va qaysilar?
+===== #Texnik vositalar, real ta'lim vositalari va chop etilgan o'quv materiallari.
+===== Nazorat varaqalari, Real ta'lim vositalari, Matnlar
+===== Chop etilgan o'quv materiallari va texnik vositalar
+===== o'quv qo'llanmalar va taqdimotlar.
++++++
+292. Muammoli vaziyatlarni hal etishda o'qituvchi o'quvchi- talabalar faoliyatini fikr yuritishning mantiqiy operatsiyalari nimadan iborat?
+===== #Muammoli vaziyatda Tahlil, sintez, taqqoslash, analogiya, umumlashtirish, tasniflash va xulosa yasashga yo'naltiradi.
+===== Tahlil, sintez, taqqoslash.
+===== Analogiya, umumlashtirish, tasniflash.
+===== Tasniflash va xulosa yasashga yo'naltiradi.
++++++
+293. ......- muayyan muddatga mo'ljallangan, ta'lim jarayoni markazida ta'lim oluvchi shaxsi bo'lib, o'qitishning zamonaviy shakli, faol o'qitish metodlari va zamonaviy didaktik vositalarning majmuini ta'lim-tarbiya ishidan ko'zlangan maqsad va kafolatlangan natijaga erishishga yo'naltirishdir.
+===== #.Noan'anaviy ta'lim texnologiya
+===== An'anaviy ta'lim texnologiya
+===== Qanday faol metod
+===== Nima uchun grafik organayzeri
++++++
+294. Innovatsiya-so'ziga oid ta'rif qaysi javobda to'g'ri ko'rsatilgan?
+===== #Yangilik kiritish
+===== Metodlar xilma-xilligi o'zgarishi
+===== Vositalar orqali yondashuv
+===== Tarqatma materiallardan foydalanish.
++++++
+295. Ta'lim vositasi nima?
+===== #Ta'lim jarayonida ma'lum o'qitish usulini muvvafaqiyatli amalga oshirish uchun zarur bo'lgan yordamchi o'quv materiallari
+===== Dars jarayonida tabiiy va sun'iy ko'rgazmali vositalardan foydalanish
+===== Ma'ruza,tushuntirish, suhbat,
+===== O'qituvchi va o'quvchilarning kutilgan maqsadga erishishga qaratilgan birgalikdagi faoliyati
++++++
+296. Metod tushunchasining to'g'ri javobini ko'rsating.
+===== #Ma'lum o'qitish usulini muvvafaqiyatli amalga oshirish uchun zarur bo'lgan yordamchi o'quv materiallari.
+===== Tushuntirish, suhbat, ma'ruza, suhbat.
+===== Ta'lim jarayonida o'qituvchi va o'quvchilarning kutilgan maqsadga erishishga qaratilgan birgalikdagi faoliyati
+===== O'quvchiga yordam berish lozim bo'lgan ilmiy bilimlar majmuasi
++++++
+297. 8-9 sinf o'quv dasturi mazmuni qaysi javobda to'g'ri berilgan ?
+===== #8-9 sinfda Xalq hunarmandchiligi texnologiyasi, ishlab chiqarish asoslari, kasbga yo'naltirish asoslari
+===== Xalq hunarmandchiligi texnologiyasi kasbga yo'naltirish asoslari
+===== Ishlab chiqarish asoslari kasbga yo'naltirish asoslari
+===== Kasbga yo'naltirish asoslari
++++++
+298. An'anaviy ta'limning asosiy kamchiligini ko'rsating.
+===== #Amalda o'quvchining aqliy, ijodiy, kommutativ bilim olishini etarlicha ta'minlanmaydi
+===== Ta'limda o'quvchining maqsadlari inobatga olinmaydi
+===== Zamonaviy ta'limning talablariga butunlay javob bermaydi
+===== Ta'lim faqat darslik va o'quv qo'llanmalarga asoslanadi
++++++
+299. Ta'lim texnologiyasi turlarini belgilang.
+===== #O'zini-o'zi tarbiyalash texnologiyasi
+===== Nazariy, amaliy, aralash, mustahkamlash
+===== Noan'anaviy, an'anaviy, mustahkamlash
+===== Aralash, ma'ruza, masofaviy, nazariy
++++++
+300. Pedagogik texnologiyaning tuzilmasi aks etgan qatorni toping
+===== #Pedagogik texnologiya kontseptual asos, ta'lim jarayonini mazmuni, texnologik jarayon
+===== Ta'lim texnologiyasi Tafsifiy, ilmiy, amaliy
+===== Umumpedagogik, predmetli, lokal
+===== Muammoli o'qitish, dasturlashtirilgan, tabaqalashtirilgan o'qitish
++++++
+301. Ta'lim jarayonini "Texnologiyalash" qanday ma'noni bildiradi?
+===== #Ta'lim maqsadlariga erishishda ta'lim jarayonini o'qituvchining shaxsiy mahoratiga bog'liq bo'lmagan holda universal tarzda loyihalanganini bildiradi;
+===== O'quv ishlab chiqarish ta'limi tushuniladi;
+===== O'qitishning texnik vositalari yordamida tashkiletishni bildiradi;
+===== O'qituvchi o'quvchi bilish faoliyatining tashkiliy shakllarini ta'lim mazmuniga mos holda tanlashini bildiradi.
++++++
+302. Modul nima?
+===== #Ma'lum o'quv predmetining o'ziga xos xususiyatlarini e'tiborga olib ta'lim samaradorligini oshirish maqsadida o'quv materialini yirik turkumlarga ajratib o'qitish.
+===== O'quv materialining mantiqiy yo'nalishi, mazmuni va mustaqil ish xarakteriga bog'liq
+===== Axborotni qabul qilish, yordam, axborotni qayta ishlamagan holda javob berish
+===== Apparatli vositalar yordamida bilimishlar bazasi axborotlar bilan tanishish, axborotni ovoz, vidio, kinofragmentlar, multiplikatsiya bilan birlashtir imkonini beradi
++++++
+303. Texnologiya fanida fanlararo bog'lanish nima uchun kerak?
+===== #Mexnat ta'limida amaliy bilimni mustahkamlash uchun
+===== Amaliy bilimlarni xayotda qo'llash uchun .
+===== Fanlar bilan texnologiya fanining samaradorligini oshiradi
+===== Fanlararo boshlanishni amalga oshirish nazariy bilimlarni turmush bilan bog'lashdan iborat.
++++++
+304. Baholashning obyektivligi deganda nimani tushunasiz?
+===== #Bahoning yagona talablar asosida qo'yilishi .
+===== Reyting asosida qo'yish .
+===== Haqqoniylik talablari asosida qo'yilishi.
+===== Joriy nazorat asosida kuyilishi.
++++++
+305. Texnologiya fani o'qituvchisiga qo'yiladigan talablarni ko'rsating?
+===== #Mas'uliyatlilik, Ish o'rnini to'g'ri tashkil etish, xalollik, kamtarlik, qattiylik, dalillik, ta'lim-tarbiya jarayonini to'g'ritashkiletish
+===== O'quvchilar ichida xavfiszlikni ta'minlash.
+===== Ta'lim-tarbiya vazifalarini, O'quv materiallarini to'g'ri tanlash
+===== O'quv dastgoxlaridan to'g'ri foydalanishni o'rgatish .
++++++
+306. Tenologiya fanini qanday baholash mezonlarini bilasiz?
+===== #Mehnat usullarini to'g'ri baholash, ishlashanganligi, vaqt normasi, o'quvchilarning bilimlarini baholash ish o'rnini tashkil qilish, xavfsizlik qoidalariga rioya qilish
+===== Texnologik jarayonlarni to'g'ri baholash
+===== Ishlash aniqligi, ish tartibini rejalashtirish
+===== To'g'ri javob berilmagan
++++++
+307. Baholashning reyting tizimlari turlarini ko'rsatib bering?
+===== #Joriy, oraliq, yakuniy
+===== Oraliq
+===== Joriy yakuniy
+===== Joriy
++++++
+308. Sinfdan tashqari ishlarning formalari.
+===== #Sinfdan tashqari bajariladigan ishlar, ommaviy ishlar to'garak ishlari, yakka tartibdagi mashg'ulot.
+===== Darsdan tashqari bajariladigan ishlar, ommaviy ishlar, , maktabdan tashqari guruh ishlari
+===== Ommaviy ishlar, maktab ishlari, yakka tartibdagi mashg'ulot.
+===== Ommaviy ishlar, yakka tartibdagi mashg'ulot, maktab ishlari.
++++++
+309. Olimpiada o'tkaziladigan fanlar bo'yicha baholash mezonlari qanday bo'ladi?
+===== #Mutaxasis o'qituvchilar tomonidan baholanadi
+===== O'quvchilar o'zini o'zi baholaydi
+===== Ota-onalar tomonidan baholadi
+===== Respublika tashkiliy qo'mitasi tomonidan ishlab chiqiladi va qo'shma buyruq bilan tasdiqlanadi.
++++++
+310. Mehnatni ilmiy tashkil etish - bu
+===== #Mehnat munosabatlarini tashkil etish hamda mehnatning ashyoviy unsurlarini tashkil etishga ajratiladi.
+===== Dars jarayoni tayyorlashga yoki bitta operatsiyani bajarish uchun belgilangan vaqtdir.
+===== Ishchi vaqt birligida tayyorlaydigan mahsulot yoki bajaradigan operatsiyalar miqdori
+===== Hamma javoblar to'g'ri
++++++
+311. Umumta'lim maktablarida tashkil etiladigan ilmiy-metodik ishlarning vazifalari sirasiga quyidagilardan qaysilari kiradi?
+===== #Umum ta'lim maktabi pedagog va texnik xodimlarining ilmiy-g'oyaviy saviyasini, pedagogik mahoratini oshirish;
+===== O'quvchilarni milliy mustaqillik ruhida tarbiyalash mazmuni, shakl, metod va vositalarini takomillashtirish;
+===== Ta'lim, tarbiya va rivojlantirish maqsadlarining birligi, umumilmiy, umumkasb va maxsus tayyorgarlikning uzviyligini ta'minlash;
+===== Hamma javoblar to'g'ri
++++++
+312. Qaysilari jamoaviy metodik ish shakllari sirasiga kiradi?
+===== #Pedagogik kengash;
+===== Uslubiy komissiyalar;
+===== Ilg'or tajriba maktabi, muammoli seminarlar, ilmiy-uslubiy konferensiyalar, pedagogik o'qish va turli uslubiy kengashlar.
+===== Hamma javoblar to'g'ri
++++++
+313. Metodik ishlarni rejalashtirishda quyidagi qaysi talablarga asoslanish maqsadga muvofiqdir?
+===== #Metodik ishlarni kelajakdagi rivojlanishni ko'zda tutish (bajarish muddatlari va vazifalari bo'yicha);
+===== Rejalarni ta'lim-tarbiya va metodik ishning ahvoli va natijalarini har tomonlama chuqur o'rganish hamda tahlil qilish asosida ishlab chiqish;
+===== Rejalarning ijodiy xarakteri, ya'ni ularni bajarishda ishtirok etuvchi xodimlarning tashabbusi va ijodkorligini namoyish etilishga zarur imkoniyat yaratish;
+===== Yuqoridagilarning barchasi to'g'ri.
++++++
+314. Texnologiya fanining maqsad va vazifalari nimalardan iborat?
+===== #Texnologiya fani barcha keltirilgan javob to'g'ri.
+===== Ularda dastlabki mehnat ko'nikmalari va malakalarini, mehnatga qiziqish va mehnatsevarlikni shakllantirish,
+===== Ularni mehnat va kasblarni qadrlashga, ularning ahamiyatini tushunishga o'rgatish,
+===== Aqliy va jismoniy mehnat turlari, jarayonlari hamda kasblar bilan tanishtirish
++++++
+315. Kuzatishga asoslangan tasniflanish ishlari necha ko'rinishga ega?
+===== #A) 2
+===== B) 3
+===== C) 4
+===== D) 5
++++++
+316. Qaysi metod o'rganilayotgan ob'yekt harakat dinamikasini ochishda, predm etning tashqi ko'rinishi, ichki tuzilishi haqida ma'lumot berishda keng qo'llaniladi?
+===== #Test metodi
+===== Ko'rgazmali metodlar
+===== Amaliy metod
+===== Namoyish metodi
++++++
+317. Ko'rgazmali metodlardan foydalanishda qaysi shartlarga amal qilish maqsadga muvofiqdir?
+===== #Ko'rgazmalilikning o'quvchilar yoshi va rivojlanish darajasiga mos kelishi
+===== Namoyish etilayotgan ob'yektlar barcha o'quvchilarga yaxshi ko'rinib turishi
+===== Amaliy ishlarni ob'yektga qaratilishi
+===== A va B javoblar to'g'ri
++++++
+318. O'quvchilarga konstruktsiyalash qoidalari tushuntirilganda ularga qanday talablar amal qilish zarur?
+===== #O'quvchilarga oyihalashtiriladigan detallar o'tkir burchaklarga, g'adir-budirlarga ega bo'lmasligi; detallarning, o'lchovlari buyumlarga nisbatan proportsional bo'lishi;
+===== Detallarning geometrik shakllari ham oddiy bo'lishi; murakkab to'zilishlarga ega bo'lmasligi; loyihalashtirilayotgan buyum oz miqdordagi detallardan tuzilish
+===== C) Detallarning geometrik shakllari ham oddiy bo'lishi; murakkab to'zilishlarga ega bo'lmasligi; loyihalashtirilayotgan buyum oz miqdordagi detallardan tuzilish
+===== D) Har ikkala javob to'g'ri
++++++
+319. Baholash usullarining ishonchlilik darajasi quyidagi qaysi holatlarda ko'proq bo'ladi.
+===== #Baholash usullari hamma ta'lim oluvchilar qo'yilgan talabni aniq tushunsa;
+===== Nazorat ishi shartlari oldindan ma'lum qilinsa va unga rioya qilinsa;
+===== Hamma natijalar baholashning oldindan kelishilgan mezonlariga to'la asoslangan bo'lsa;
+===== Hamma javoblar to'g'ri
++++++
+320. Texnologiya fanida mehnat amaliyotini tashkil etishda nimalarni inobatga olish zarur?
+===== #Mehnat faoliyatining bu ko'rinishlarini tashkil etishda ularning yoshi, shaxsiy, ruhiy, fiziologik, jismoniy va aqliy xususiyatlarini;
+===== Pedagogik va metodik, huquqiy mezonlar, mehnat qonunchiligi, sanitariya-gigiyena qoidalari va mehnat xavfsizligi talablari;
+===== An'anaviy va noan'anaviy aqidalar, milliy, mahalliy, urf-odatlar, ijtimoiy, iqtisodiy, etniksharoitlar, xususiyatlar hisobga olinishi zarur.
+===== Barcha javoblar to'g'ri
++++++
+321. Texnolopgik ta'limidan kurs ishini bajarishdan maqsadi nima?
+===== #Talaba fandan nazariy, amaliy mashg'ulotlarda olgan ko'nikma va malakalarni chuqurlashtirish, mustahkamlash, tajribada o'rganish
+===== Kurs ishi bilim va ko'nikmani hosil qilish
+===== Ball to'plash
+===== Mehnat fanini chuqur o'rgangani uchun.
++++++
+322. Texnologiya fanini kurs ishining kirish qismida nima yoritiladi?
+===== #Tanlangan mavzuning dolzarbligi, maqsadii va predmeti, metodlari kabilardir
+===== Sinov ishlari yoritiladi
+===== Hech narsa yoritilmaydi
+===== Mavzu bayon qilinadi
++++++
+323. O'quv rejasi bo'yicha mehnat amaliyoti - yozgi ta'tilni qisqartirish evaziga quyidagicha muddatlarda tashkil etiladi:
+===== #5-6-sinflarda 16 kun, 7-8 sinflarda 16 kun
+===== 6-sinflarda 17 kun, 7-8 sinflarda 18 kun
+===== 5-6-sinflarda 18 kun, 7-8 sinflarda 17 kun
+===== 5-6-sinflarda 17 kun, 7-8 sinflarda 17 kun
++++++
+324. Qaysi javobda texnologik ta'limida mehnat amaliyotini tashkil etishda nimalarni inobatga olish zarur?
+===== #Keltirilgan barcha javoblar texnologik ta'limida mehnat amaliyotini tashkil etishda inobatga olinadi.
+===== O'quvchilarning mehnat faoliyatining bu ko'rinishlarini tashkil etishda ularning yoshi, shaxsiy, ruhiy, fiziologik, jismoniy va aqliy xususiyatlarini;
+===== Pedagogik va metodik, huquqiy mezonlar, mehnat qonunchiligi, sanitariya-gigiyena qoidalari va mehnat xavfsizligi talablari;
+===== Milliy, mahalliy, an'anaviy va noan'anaviy aqidalar, urf- odatlar, ijtimoiy, iqtisodiy, etnik sharoitlar, xususiyatlar hisobga olinishi zarur.
++++++
+325. Pedagogik amaliyot jarayonida tayyorlanadigan hujjatlarga quyidagilarni qaysilari kiradi?
+===== #Pedagogik amaliyot kundaligi, tarbiyaviy ish reja
+===== Tarbiyaviy ish reja, fan dasturi
+===== O'qituvchi ish rejasi, texnologik xarita
+===== Talabaning doimiy ish daftari
++++++
+326. Texnologiya fanini o'qitish metodikasi fanining vazifalari nimalardan iborat?
+===== #Talabalarni umumiy o'rta ta'lim maktablarida texnologiya ta'limi fanining maqsad va vazifalari o'quv rejasida tutgan o'rni bilan tanishtirish.
+===== Milliy istiqlol g'oyasi milliy va umuminsoniy qadriyatlarimizni chuqur his etib, ularni ta'lim-tarbiya mazmuniga sindira oladigan shaxs.
+===== Umumiy o'rta ta'lim maktablarida o'qitiladigan texnologiya fani metodologiyasini texnologiya darslarida ta'lim-tarbiya ishini tashkil etish va uni amalga oshirish.
+===== Umuminsoniy qadriyatlarimizni chuqur his etib, ularga ta'lim-tarbiya olib borish.
++++++
+327. Pedagogika fanining tarmog'i sifatida texnologiya ta'limi metodikasi oldiga qanday asosiy tadqiqot vazifalarini qo'yadi?
+===== #Pedagogika fanining tarmog'I sifatida texnologiya ta'limi vazifalarini asoslash, ularning tarbiyaviy va ta'limiy ahamiyatini ochib berish.
+===== Kuzatish, eksperiment.
+===== Nazariy tadqiqotlar.
+===== Ilg'or pedagogik tajribani o'rganish va umumlashtirish.
++++++
+328. Texnologiya ta'limi taraqqiyotining rivojlanish istiqbollari qaysilar?
+===== #Texnologik ta'limini î'rta maktab î'quv rejasiga î'sib kelayotgan yosh avlodni kamol top tirish vositalaridan biri sifatida kiritilishi.
+===== A.Navoiy mehnatning insonni go'zallashtirishi, faqat mehnat tufayligina insonning kamol topishini ta'kidlagani.
+===== Umumiy o'rta ta'lim maktablarida texnologiya ta'limi fanining maqsad va vazifalari o'quv rejasida tutgan o'rning ahamiyati.
+===== Faqat mehnat tufayligina insonning kamol topishini ta'kidlagani.
++++++
+329. Nechinchi yilda maktablarda mustaqil î'quv fani sifatidagi texnologik (mehnat) ta'limi tugatildi?
+===== #1937
+===== 1942
+===== 1952
+===== 1954
++++++
+330. Texnologik (mehnat) ta'limiga nechinchi yilda jamoatchilik e'tibori qaratildi va maktabda politexnik ta'lim va mehnat tarbiyasini rivojlantirish zarurligi kî'rsatildi?
+===== #1952
+===== 1954
+===== 1955
+===== 1953
++++++
+331. 1954-yilda texnologiya fanini î'rta maktab î'quv rejasiga î'sib kelayotgan yosh avlodni kamol toptirish vositalaridan biri sifatida kiritildi. Shu yillardan boshlab texnologiya fani fanida î'quvchilarni kasbiy tayyorlash yo'lga qo'yildi va nechi turdagi kasblarga tayyorlandi?
+===== #200
+===== 400
+===== 600
+===== 300
++++++
+332. Nechinchi yildan boshlab texnologiya faniga ajratilgan umumiy soat ikki barobarga oshdi, î'quvchilar unumli mehnatga va shu bilan birgalikda ishlab chiqarish mehnatiga î'rgatildi.
+===== #1984
+===== 1986
+===== 1996
+===== 1988
++++++
+333. Ta'limning mazmuni deganda nimani tushunasiz?
+===== #Ta'limning mazmuni deganda o'quvchilarni o'qish jarayonida egallab olishi lozim bo'lgan hamda tizimga solingan bilim, malaka va ko'nikmalarni aniq doirasi tushuniladi.
+===== O?qitiladigan fan, uning bo?limlari, o?qitilish tartibi hamda har bir fanning yil davomida o?qitilishini
+===== Barcha umumta'lim maktablarida so'zsiz amal qilinishi lozim bo'lgan davlat hujjati.
+===== Maktabning yagona o'quv rejasi xalq ta'limi tomonidan tasdiqlanadi.
++++++
+334. Texnologiya sohasi texnologiya fani va chizmachilik fanlarini o'z ichiga oladi. Bunda: texnologiya fani nechi foiz (soat) ni chizmachilik - 0,79 % (68 soat) tashkil qiladi?
+===== #-4,72% (407)
+===== -6,72% (607)
+===== -5,72%(507)
+===== - 7,72 % (707 soat),
++++++
+335. Predmetlararo aloqadorlik prinsipiga amal qilish ta'lim-tarbiya sifatini oshirishning muhim omillaridan biri hisoblanadi. Ma'lumki, bunday aloqadorlik o'rganilayotgan ob'yektni har tomonlama chuqur o'rganishni ta'minlaydi. U pedagogikada uzviylik, predmetlararo aloqadorlik, o'zaro aloqadorlik va integrativ aloqadorlik darajalarida talqin etiladi. Shular ortasidan uzviylik deganda nimani tushunasiz?
+===== #Predmetlararo aloqadorlikda uzviylik o'zlashtirilgan bilim, ko'nikma va malakalarning asta-sekinlik bilan kengayib, chuqurlashib, mukammaallashib borishini ko'zda tutadi.
+===== O'zining mohiyatiga ko'ra keng tushuncha bo'lib, o'rganilayotgan ob'yektning turli jihatlari va xususiyatlarini har tomonlama ochib berilishini nazarda tutadi.
+===== Mohiyatiga ko'ra ikki o'quv predmetlari orasidagi aloqadorlikni, ya'ni birinchi o'quv predmeti bo'yicha o'zlashtirilgan bilim va ish-harakat usullarini ikkinchisida qo'llashni va aksincha qo'llanishini ifodalaydi.
+===== Nisbatan yuqori darajali aloqadorlik bo'lib, avval zikr etilganlaridan o'quv dasturiga va maqsadga muvofiq kiritilganligi bilan farq qiladi, albatta, uni ta'minlashni talab etadi. Natijada ob'yekt haqida tizimli mukammal bilim, ish-harakat usullari shakllanishiga imkon yaratadi.
++++++
+336. "Modulli î'qitish" terminiga ta'rif bering.
+===== #Modulli î'qitish termini xalqaro tushuncha modul bilan bog'liq bî'lib, uning bitta ma'nosi - faoliyat kî'rsata oladigan î'zaro chambarchas bog'liq elementlardan iborat bî'lgan tugunni bildiradi.
+===== O'zlashtirilgan bilim, ko'nikma va malakalarning asta-sekinlik bilan kengayib, chuqurlashib, mukammaallashib borishini ko'zda tutadi.
+===== Nisbatan yuqori darajali aloqadorlik bo'lib, avval zikr etilganlaridan o'quv dasturiga va maqsadga muvofiq kiritilganligi bilan farq qiladi, albatta, uni ta'minlashni talab etadi. Natijada ob'yekt haqida tizimli mukammal bilim, ish-harakat usullari shakllanishiga imkon yaratadi.
+===== O'zining mohiyatiga ko'ra keng tushuncha bo'lib, o'rganilayotgan ob'yektning turli jihatlari va xususiyatlarini har tomonlama ochib berilishini nazarda tutadi.
++++++
+337. Modulli î'qitish samaradorligi qaysi omillarga bog'liq?
+===== #Modullar natijasi va tahlili- didaktik materiallarning ishlab chiqilishiga;
+===== Amaliy faoliyatga î'rgatish va kuzatiladigan xarakterlarni baholash darajasida O'qitish samaradorligini nazorat qilish;
+===== O'qitishni individuallashtirish;
+===== Kasbga qiziqtirish asosida, faollashtirish, mustaqillik va î'qitish imkoniyatlarini tî'la rî'yobga chiqarish.
++++++
+338. Texnologiya faniga oid qanaqa umumiy kompetensiyalar shakllantirilgan?
+===== #Texnologiya faniga oid kompetensiyalarga barcha javoblar to'g'ri.
+===== Kommunikativ, Axborotlar bilan ishlash kompetensiyalari.
+===== O'zini o'zi rivojlantirish kompetensiyasi.
+===== Ijtimoiy faol fuqarolik kompetensiyasi.
++++++
+339. Ta'lim mazmunini belgilovchi me'yoriy hujjatlar?
+===== #Ta'lim mazmunini belgilovchi davlat ta'lim standarti, umumiy o'rta ta'limning tayanch o'quv rejasi, umumiy o'rta ta'limning o'quv dasturi, umumiy o'rta ta'limning malaka talablari.
+===== Malaka talablari.
+===== Namunaviy ishchi dastur
+===== Sillabuslar
++++++
+340. Ro'zg'orshunoslik asoslari nimani o'rganadi?
+===== #Ro'zg'orshunoslikda o'quvchilar pol qoplamalari hamda mebellarning loklangan va qoplamali yuzalarini saqlash tadbirlari va kichik ta'mirlash; oyna romlarini kichik ta'mirlash va qishda issiqlikni saqlash usullari; xizmat ko'rsatish sohalariga oid kasb-hunar turlari;
+===== Xalq hunarmandchilik. To'qish san'ati haqida ma'lumot. Qizlar uchun balero to'qish tehnologiyasi bilan tanishish, baleroni orqa qismini to'qish qizlar uchun balero to'qish.
+===== C. O'quvchilar metallarning xususiyatlari to'g'risida boshlang'ich bilimlar, rejalash, ishlov berish, pardozlash ishlari va bu ishlarni bajarishda ishlatiladigan qo'l hamda elektr asboblarining tuzilishi.
+===== O'quvchilar elektr montaj ishlarini tashkil qilish; elektr o'tkazish simlarining turlari va ularni montaj qilish, izolyatsiyalash ishlari;
++++++
+341. Texnologiya o'quv fani umumiy o'rta ta'lim maktablarning 8-9 sinflarda haftasiga necha soatdan o'tiladi?
+===== #2
+===== 5
+===== 8
+===== 6
++++++
+342. Integratsiyaning mohiyatini aniqlash jarayonida uning qanday asoslarini aniqlab olish lozim?
+===== #Integratsiyaning filosofik, pedagogik - psixologik va metodik asoslarini aniqlab olish.
+===== Fizik, kimiyoviy xossalarini aniqlab olish.
+===== Fanlararo bog'lanishini aniqlab olish.
+===== Psixologik va metodik asoslarini aniqlab olish.
++++++
+343. Nazariy yoki amaliy laboratoriya darsiga o'rindoshlik asosida taklif etilayotgan oliy o'quv yurti professori yoki dotsenti va ishlab chiqarish korxonasi yoki xo'jalik mutaxassis xodimini yil davomida haftasiga necha soat miqdorida dars o'tish uchun qatnashi ?
+===== #2-4
+===== 4-8
+===== 3-6
+===== 5-10
++++++
+344. Maktab islohotida texnologiya fanining vazifalari.
+===== #Mexanizasiyalashtirilgan va elektrlashtirilgan vositalar bilan ishlashni, texnologik bilim va malakalarni, mehnat qonunchiligi, xavfsizlik texnikasi,
+===== Integratsiyaning filosofik, pedagogik - psixologik va metodik asoslarini aniqlab olish.
+===== O'quvchilar metallarning xususiyatlari to'g'risida boshlang'ich bilimlar, rejalash, ishlov berish, pardozlash ishlari va bu ishlarni bajarishda ishlatiladigan qo'l hamda elektr asboblarining tuzilishi.
+===== Xalq hunarmandchilik. To'qish san'ati haqida ma'lumot berish.
++++++
+345. Texnologiya fani 1-4 sinflar uchun qanday bo'limlar asosida o'qitiladi?
+===== #Tabiiy va turli materiallar bilan ishlash.
+===== Mehnatga axloqiy tayyorlash.
+===== C. Mehnatga ruhiy jihatdan tayyorlash
+===== D.Polimer materiallarga ishlov berish texnologiyasi.
++++++
+346. Ishchi guruh tomonidan Davlat ta'lim standarti sharhlarida o'quvchilarning yosh va psixofiziologik xususiyatlariga mos kelmaydigan, fanlararo bog'lanishni ta'minlamaydigan ko'pgina mavzular chiqarilib, texnologiya fani yo'nalishlari o'zaro integrasiyalashtirilib, 5 ta yo'nalish nechtaga o'zgartirildi?
+===== #3
+===== 6
+===== 5
+===== 4
++++++
+347. 5-7 sinflarda "Yog'ochga ishlov berish texnologiyasi" va "Metallga ishlov berish texnologiyasi" yo'nalishlari umumlashtirilib, yangi qaysi keltiribchiqarildi?
+===== #5-7 sinflarda yangi "Uy-ro'zg'or buyumlarni ta'mirlash" yo'nalishi
+===== "Elektrotexnika ishlari"
+===== "Gazlamaga ishlov berish texnologiyasi"
+===== "Buyumlarni ta'mirlash texnologiyasi"
++++++
+348. O'quv dasturlari nimaga asoslanib tuziladigan davlat hujjati bo'lib, unda ma'lum bir o'quv fani bo'yicha o'qitiladigan bilim hajmi va ta'lim mazmuni ifodalanadi.?
+===== #O'quv dasturlari DTSga asoslanib tuziladi.
+===== Namunaviy ishchi rejaga asoslanib
+===== Malaka talablariga asoslanib.
+===== Ta'lim to'g'risidagi qonunga asoslanib
++++++
+349. O'quv dasturi odatda nechi qismdan iborat bo'lib?
+===== #3
+===== 5
+===== 8
+===== 9
++++++
+350. O'quv dasturining birinchi bo'limi nima deb nomlanadi?
+===== #Uqtirish xati.
+===== Nazariy va amaliy materiallarni o'rganish.
+===== Darsdan tashqari qo'shimcha adabiyotlarni o'rganish bo'limi.
+===== Mavzular bo'yicha ishlash bo'limi.
++++++
+351. Umumiy o'rta ta'lim maktablarida texnologiya fani boshlang'ich ta'lim yo'nalishida umumlashgan holda, 5-9-sinflarda qaysi yo'nalishlari asosida o'qitiladi.
+===== #Umumiy o'rta ta'lim maktablarida "Texnologiya va dizayn", "Servis xizmati"
+===== "Elektrotexnika ishlari"
+===== "Buyumlarni ta'mirlash texnologiyasi"
+===== "Gazlamaga ishlov berish texnologiyasi"
++++++
+352. Texnologiya ta'limi fanining mazmuni shartli ravishda nechiga bo'linadi?
+===== #3
+===== 5
+===== 6
+===== 7
++++++
+353. Umumiy o'rta ta'lim maktablarning 5-9 sinflarida o'quvchilar soni shahar maktablarida nechta va undan ortiq bo'lsa, qishloq maktablarida 20 va undan ortiq bo'lsa, texnologiya ta'limi darslari shu holda olib boriladi.
+===== #25
+===== 27
+===== 28
+===== 30
++++++
+354. O'zbekiston Respublikasi Vazirlar mahkamasining "Umumiy o'rta ta'lim muassasalarining 10-11-sinflari o'quvchilariga kasbiy ta'lim berishga ixtisoslashgan o'quv-ishlab chiqarish majmualarini tashkil etish chora-tadbirlari to'g'risida"gi nechinchi sonli qarori 24 oktabr kuni qabul qilindi?
+===== #¹ 868-sonli
+===== ¹ 869-sonli
+===== ¹ 871-sonli
+===== ¹ 884-sonli
++++++
+355. O'quv-ishlab chiqarish majmualari faoliyatini tashkil etishni muvofiqlashtiruvchi kengash nechinchi yillarda o'quv-ishlab chiqarish majmualarini zarur jihozlar bilan ta'minlash dasturi ishlab chiqilgan?
+===== #2018-2020
+===== 2020-2021
+===== 2023-2024
+===== 2024-2025
++++++
+356. Qaysi dasturda ta'lim va tarbiya tizimida, jumladan, texnologiya ta'limida ajlodlarimiz tajribalarida milliy, ma'naviy, ma'rifiy meroslarimizdan keng foydalanish, qadriyatlarni chuqur o'rganish zarurligi belgilab berilgan?
+===== #"Kadrlar tayyorlash milliy dasuri"
+===== Malaka talablariga asoslanib.
+===== Ta'lim to'g'risidagi qonun.
+===== Davlat ta'lim standarti.
++++++
+357. Texnologiya fanida ilmiylik va tizimlilik tamoyili-o'quvchilarga o'rgatish uchun ilmiy jihatdan asoslangan, amalda sinab ko'rilgan ma'lumotlar berilishini talab etadi. Ularni tanlab olishda fan va texnikaning eng so'ngi yutuqlari va kashfiyotlaridan foydalanish kerak.
+===== #Texnologiya fanida ilmiylik va tizimlilik tamoyili
+===== Onglilik va faollik
+===== Izchillik tamoyili
+===== Ko'rsatmalilik tamoyili
++++++
+358. Tamoyillar ichida qaysi tamoyili pedogogik jarayonning hamma bo'g'inlarida amalga oshiriladi?
+===== #Tizimlilik va izchillik
+===== Onglilik va faollik
+===== Ko'rsatmalilik tamoyili
+===== Ilmiylik va tizimlilik tamoyili
++++++
+359. Ko'rsatmalilik tamoyiliga ta'rif bering.
+===== #Ko'rsatmalilik tamoyili- O'qitishning ko'rsatmaliligi shuni tasdiqlaydiki, agar o'quvchilarda o'rganilayotgan jarayonlarni narsa va hodisalarni bevosita idrok qilish bilan bog'liq muayyan hissiy amaliy tajriba bo'lsa bilimlarni o'zlashtiradilar.
+===== Elementar didaktika qoidalariga amal kilishni talab etadi: Oddiydan murakkabga, ma'lumdan no'malumga.
+===== O'qitishni shunday tashkil etishni talab etadiki, bunda o'quv fanlarini o'qitish qat'iy mantiqiy tartibda olib boriladi.
+===== O'quvchilarga o'rgatish uchun ilmiy jihatdan asoslangan, amalda sinab ko'rilgan ma'lumotlar berilishini talab etadi.
++++++
+360. Politexnik printsipi haqida ma'lumot bering.
+===== #Politexnik printsipi. Mexnat ta'limi bosqichlari orasidagi izchillik politexnik printsipi uchun katta ahamiyatga ega.
+===== O'quvchilarga o'rgatish uchun ilmiy jihatdan asoslangan, amalda sinab ko'rilgan ma'lumotlar berilishini talab etadi.
+===== Elementar didaktika qoidalariga amal kilishni talab etadi: Oddiydan murakkabga, ma'lumdan no'malumga.
+===== O'qitishni shunday tashkil etishni talab etadiki, bunda o'quv fanlarini o'qitish qat'iy mantiqiy tartibda olib boriladi.
++++++
+361. "Texnologiya va dizayn" yo'nalishi bo'yicha o'quvchilar qanday bilimlarga ega bo'lishlari kerak?
+===== #"Texnologiya va dizayn" yo'nalishi bo'yicha o'quvchilar Yog'ochga ishlov berish texnologiyasi: yog'ochning turmushda va xalq xo'jaligidagi ahamiyati, tuzilishi, turlari, ishlatilish sohalari; yog'ochlarning tashqi ko'rinishi va o'ziga xos belgilari haqida.
+===== O'qitishni shunday tashkil etishni talab etadiki, bunda o'quv fanlarini o'qitish qat'iy mantiqiy tartibda olib boriladi.
+===== Elementar didaktika qoidalariga amal kilishni talab etadi: Oddiydan murakkabga, ma'lumdan no'malumga.
+===== O'quvchilarga o'rgatish uchun ilmiy jihatdan asoslangan, amalda sinab ko'rilgan ma'lumotlar berilishini talab etadi.
++++++
+362. Pedagogik nuqtai nazardan olib qaydigan bo'lsak, .... bu - shaxsning ongida tushunchalar, sxemalar, ma'lum obrazlar ko'rinishida aks etuvchi borliq haqidagi tizimlashtirilgan ilmiy ma'lumotlar majmui. Nuqtalar o'rnini to'ldiring.
+===== #Pedagogik nuqtai nazardan bilim
+===== Ko'nikma
+===== Malaka
+===== Ixtisoslik
++++++
+363. Ko'nikma nima?
+===== #Ko'nikma - shaxsning muayyan faoliyatni tashkil eta olish qobiliyati.
+===== Shaxsning ongida tushunchalar, sxemalar, ma'lum obrazlar ko'rinishida aks etuvchi borliq haqidagi tizimlashtirilgan ilmiy ma'lumotlar majmui.
+===== Muayyan harakat yoki faoliyatni bajarishning avtomatlashtirilgan shakli.
+===== Kishining mehnat faoliyati, doimiy mashg?uloti turi; muayyan ish turini malakali bajarishga imkon beradigan bilim, mahorat, tajribani talab etadi.
++++++
+364. Ixtisoslik nima?
+===== #Ixtisoslik - insonning mehnat taqsimoti natajasida kasb ichida alohidalangan doimiy ishlab chiqarish faoliyati (asbobsoz chilangar, yig'uvchi chilangar, universal chilangar).
+===== Muayyan harakat yoki faoliyatni bajarishning avtomatlashtirilgan shakli.
+===== Kishining mehnat faoliyati, doimiy mashg?uloti turi; muayyan ish turini malakali bajarishga imkon beradigan bilim, mahorat, tajribani talab etadi.
+===== Shaxsning ongida tushunchalar, sxemalar, ma'lum obrazlar ko'rinishida aks etuvchi borliq haqidagi tizimlashtirilgan ilmiy ma'lumotlar majmui.
++++++
+365. Kasb deganda nimani tushunasiz?
+===== #Kasb - kishining mehnat faoliyati, doimiy mashg?uloti turi; muayyan ish turini malakali bajarishga imkon beradigan bilim, mahorat, tajribani talab etadi.
+===== Insonning mehnat taqsimoti natajasida kasb ichida alohidalangan doimiy ishlab chiqarish faoliyati (asbobsoz chilangar, yig'uvchi chilangar, universal chilangar).
+===== Shaxsning ongida tushunchalar, sxemalar, ma'lum obrazlar ko'rinishida aks etuvchi borliq haqidagi tizimlashtirilgan ilmiy ma'lumotlar majmui.
+===== Muayyan harakat yoki faoliyatni bajarishning avtomatlashtirilgan shakli.
++++++
+366. Ta'lim tizimi deb nimaga aytiladi?
+===== #Ta'lim tizimi deb, amaliy ko'nikma va mehnat malakalarini to'g'ri tarkib topishini, kasbiy faoliyatga tayyorlashni ta'minlaydigan o'quv materialining maqsadga muvofiq tuzilmasiga.
+===== Kishining mehnat faoliyati, doimiy mashg?uloti turi; muayyan ish turini malakali bajarishga imkon beradigan bilim, mahorat, tajribani talab etadi.
+===== Insonning mehnat taqsimoti natajasida kasb ichida alohidalangan doimiy ishlab chiqarish faoliyati (asbobsoz chilangar, yig'uvchi chilangar, universal chilangar).
+===== Shaxsning ongida tushunchalar, sxemalar, ma'lum obrazlar ko'rinishida aks etuvchi borliq haqidagi tizimlashtirilgan ilmiy ma'lumotlar majmui.
++++++
+367. Didaktika ta'lim nazariyasi atamasi sifatida dastlab nechinchi asr bîshlarida paydî bo'ldi?
+===== #XVII
+===== XVIII
+===== XIX
+===== XX
++++++
+368. Ta'lim so'ziga ta'rif bering.
+===== #Ta'lim-o'qituvchi tomonidan o'quvchilarga ma'lum bir maqsadga erishish uchun, ushbu maqsad talab etgan mazmunni u yoki bu metodlar yordamida aniq shakllarda yetkazib beriladigan va natijaga ega bo'lgan jarayondir.
+===== O'quvchini o'rganuvchilik faoliyatidir.
+===== ilgari olingan tajriba asosida harakatni bajara olish qobiliyatidir.
+===== o'qituvchi tomonidan berilishi, o'quvchilar tomonidan o'zlashtirilishi lozim bo'lgan bilimlar tizimi va axloqiy g'oyalar to'plamidir.
++++++
+369. Operatsiya - predmet tizimi XIX asrning nechinchi -yillarida S.A.Vladimirskiy tomonidan taklif etilgan.
+===== #90
+===== 92
+===== 96
+===== 98
++++++
+370. Motorli-mashq tizimda o'quvchilarga kasb ta'limi berish besh davrga bo'linadi:
+===== #A.5
+===== B.6
+===== C.8
+===== D.7
++++++
+371. O'quv ustaxonalarida o'quvchilar soni nechtadan ortsa o'qituvchi tomonidan boshqarish qiyin bo'lganligi sababli asosan sinf ikki guruhga bo'linadi.
+===== #15-20
+===== 18-22
+===== 20-22
+===== 22-24
++++++
+372. Metod nima?
+===== #Metod - (grekcha "metodos" so'zidan olingan bo'lib, yo'l, ahloq usuli ma'nolarini anglatadi). Tabiat va ijtimoiy hayot hodisalarini bilish, tadqiq qilish usuli.
+===== O'qituvchining o'quvchilar bilan muntazam qo'llaydigan, o'quvchilarga o'z aqliy qobiliyatlarini va qiziqishlarini rivojlantirish, bilim va ko'nikmalarni egallash hamda ulardan amalda foydalanish imkonini beruvchi ish usuli.
+===== Biror ishni maqsadga muvofiq o'tkazish metodlari, usullari, yo'llari majmuasi.
+===== Biror narsa, hodisa, jarayonni o'rganish yoki amalga oshirish tartibi.
++++++
+373. Metodika nima?
+===== #Metodika - biror ishni maqsadga muvofiq o'tkazish metodlari, usullari, yo'llari majmuasi. U alohida metodikalardan tashkil topadi.
+===== Biror narsa, hodisa, jarayonni o'rganish yoki amalga oshirish tartibi.
+===== Biror ishni maqsadga muvofiq o'tkazish metodlari, usullari, yo'llari majmuasi.
+===== O'qituvchining o'quvchilar bilan muntazam qo'llaydigan, o'quvchilarga o'z aqliy qobiliyatlarini va qiziqishlarini rivojlantirish, bilim va ko'nikmalarni egallash hamda ulardan amalda foydalanish imkonini beruvchi ish usuli.
++++++
+374. Uslubga ta'rif bering.
+===== #Uslub - biror narsa, hodisa, jarayonni o'rganish yoki amalga oshirish uchun qo'llash lozim bo'lgan usullar majmuasi.
+===== Biror ishni maqsadga muvofiq o'tkazish metodlari, usullari, yo'llari majmuasi.
+===== O'qituvchining o'quvchilar bilan muntazam qo'llaydigan, o'quvchilarga o'z aqliy qobiliyatlarini va qiziqishlarini rivojlantirish, bilim va ko'nikmalarni egallash hamda ulardan amalda foydalanish imkonini beruvchi ish usuli.
+===== Biror narsa, hodisa, jarayonni o'rganish yoki amalga oshirish tartibi.
++++++
+375. Innovatsion ta'lim qaysi tildan olingan?
+===== #Inglizcha
+===== Fransuzcha
+===== Nemischa
+===== Grekcha
++++++
+376. Xalq hunarmandchiligi san'ati qaysi faoliyat bilan bog'liq?
+===== #Qo'l mehnati bilan tayyorlanadigan mahsulotlar yaratish
+===== Faqat suv va tabiiy resurslar bilan ishlash
+===== Zamonaviy sanoat mashinalari ishlab chiqarish
+===== Faqat qishloq xo'jaligi bilan shug'ullanish
++++++
+377. Xalq hunarmandchiligi san'ati qanday rivojlanish bosqichlaridan o'tgan?
+===== #Tarixiy, etnik va zamonaviy bosqichlardan
+===== Faqat zamonaviy bosqichdan
+===== Faqat sanoat bosqichidan
+===== Faqat davlat tomonidan boshqariladigan bosqichdan
++++++
+378. O'zbekiston hududida qadimgi hunarmandchilik markazlari qaysilar edi?
+===== #Baqtriya, So'g'd, Xorazm, Shosh, Parkana
+===== Moskva, Kiev, Minsk
+===== Parij, London, Rim
+===== Tokio, Seul, Peking
++++++
+379. Xalq hunarmandchiligi va amaliy san'atdagi umumiylik nima bilan aniqlanadi?
+===== #Qo'l mehnati va estetik qimmatga ega bo'lish
+===== Faqat sanoat uskunalari bilan ishlab chiqarish
+===== Faqat eksportga mo'ljallangan mahsulotlar
+===== Faoliyatning faqat iqtisodiy qismi
++++++
+380. Xalq hunarmandchiligi va amaliy san'atdagi farq nima?
+===== #Hunarmandchilik asosan foydali mahsulot yaratadi, amaliy san'at esa estetik qimmatga ega bo'ladi
+===== Hunarmandchilik faqat amaliy san'atni o'rgatadi
+===== Amaliy san'at faqat ishlab chiqarish bilan shug'ullanadi
+===== Farq yo'q, ular bir xil
++++++
+381. O'zbekistonda xalq amaliy san'ati qaysi davrlardan boshlab rivojlangan?
+===== #Qadimgi davrlardan hozirgi kungacha
+===== Faqat XX asrdan boshlab
+===== Faqat so'nggi 10 yildan boshlab
+===== Faqat mustaqillikdan keyin
++++++
+382. Milliy hunarmandchilikni rivojlantirishga ijtimoiy-iqtisodiy islohotlar qanday ta'sir ko'rsatadi?
+===== #Hunarmandchilikni qo'llab-quvvatlash va bozor imkoniyatlarini kengaytiradi
+===== Faqat sanoat ishlab chiqarishni rivojlantiradi
+===== Hunarmandchilikni kamaytiradi
+===== Hunarmandchilikni faqat muzeylarda saqlashga majbur qiladi
++++++
+383. Xalq hunarmandchiligi san'ati mahsulotlari qanday asosiy xususiyatlarga ega?
+===== #Foydali, estetik va madaniy qimmatga ega
+===== Faqat foydali, lekin estetik emas
+===== Faqat estetik, lekin foydali emas
+===== Faqat eksport uchun mo'ljallangan
++++++
+384. O'quvchilarni milliy hunarmandchilik va amaliy san'at asoslariga o'rgatishda texnologiya mashg'ulotlarida nimalarga e'tibor beriladi?
+===== #Mahsulotning texnologik jarayoni va estetik jihatlari
+===== Faqat nazariy bilimlarga
+===== Faqat sanoat mashinalaridan foydalanishga
+===== Faqat raqamli texnologiyalarga
++++++
+385. Xalq hunarmandchiligi turlari qaysilarni o'z ichiga oladi?
+===== #To'qimachilik, kulolchilik, zargar, yog'och o'yish, sopolchilik
+===== Faqat elektronika ishlab chiqarish
+===== Faqat avtomobilsozlik
+===== Faqat zamonaviy robototexnika
++++++
+386. Baqtriyada hunarmandchilik qaysi asarlar bilan mashhur bo'lgan?
+===== #Metall buyumlar va sopol idishlar
+===== Faqat yog'och o'yma
+===== Faqat zamonaviy sanoat buyumlari
+===== Faqat qishloq xo'jaligi vositalari
++++++
+387. So'g'dda hunarmandchilikning qaysi mahsulotlari ishlab chiqarilgan?
+===== #Matolar, zargarlik buyumlari va sopol idishlar
+===== Faqat metall asboblar
+===== Faqat oziq-ovqat mahsulotlari
+===== Faqat dasturiy ta'minot
++++++
+388. Xorazm hududida hunarmandchilikning asosiy yo'nalishi nima bo'lgan?
+===== #Zarhal ishlari va gil sopolchilik
+===== Faqat zamonaviy kimyo sanoati
+===== Faqat neft qazib chiqarish
+===== Faqat avtomobil ishlab chiqarish
++++++
+389. Shosh va Parkana hududlarida hunarmandchilikning mashhur turlari nimalar?
+===== #To'qimachilik va metall ishlov berish
+===== Faqat qishloq xo'jaligi
+===== Faqat sanoat ishlab chiqarish
+===== Faqat xizmat ko'rsatish
++++++
+390. Xalqning turmush madaniyati va ma'naviyatini ko'tarishda xalq hunarmandchiligi qanday rol o'ynaydi?
+===== #Estetik va madaniy qadriyatlarni shakllantiradi
+===== Faqat iqtisodiy foyda beradi
+===== Faqat texnik bilimlarni oshiradi
+===== Faqat eksportga xizmat qiladi
++++++
+391. Hunarmandchilik mahsulotlari iqtisodiy jihatdan nima beradi?
+===== #Mahalliy iqtisodiy rivojlanish va ish o'rinlari yaratadi
+===== Faqat muzey kolleksiyasini to'ldiradi
+===== Faqat xorijga sotish uchun xizmat qiladi
+===== Faqat ilmiy tadqiqotlarda qo'llanadi
++++++
+392. O'zbekistonda xalq amaliy san'ati rivojlanishining tarixiy manbalari qaysilar?
+===== #Arxeologik topilmalar, qo'lyozmalar va tarixiy asarlar
+===== Faqat zamonaviy gazetalar
+===== Faqat internet manbalari
+===== Faqat kitoblar
++++++
+393. Milliy hunarmandchilik va amaliy san'atning umumiy maqsadi nima?
+===== #Qo'l mehnati bilan foydali va estetik mahsulot yaratish
+===== Faqat foydali mahsulot ishlab chiqarish
+===== Faqat amaliy mashg'ulotlar o'tkazish
+===== Faqat zamonaviy texnologiyalarni o'rgatish
++++++
+394. Umumta'lim maktablarida texnologiya darslarida milliy hunarmandchilikni o'rgatishning mazmuni nima?
+===== #Mahsulot yaratish jarayonini amaliy va nazariy o'rgatish
+===== Faqat tarixiy ma'lumot berish
+===== Faqat iqtisodiy tahlil qilish
+===== Faqat raqamli texnologiyalarni o'rgatish
++++++
+395. Hunarmandchilik va amaliy san'at turlari o'rtasidagi farq nimalarda?
+===== #Amaliy san'at ko'proq estetik qimmatga, hunarmandchilik foydali mahsulotga qaratilgan
+===== Hunarmandchilik faqat estetikga qaratilgan
+===== Amaliy san'at faqat foydali mahsulot ishlab chiqaradi
+===== Farq yo'q
++++++
+396. Xalq hunarmandchiligi turlarini rivojlantirish hozirgi kunda qaysi imkoniyatlar bilan bog'liq?
+===== #Bozor iqtisodiyoti, davlat qo'llab-quvvatlashi, turizm
+===== Faqat eksport bilan
+===== Faqat ilmiy tadqiqotlar bilan
+===== Faqat muzeylarda
++++++
+397. Xalq hunarmandchiligi san'ati milliy madaniyatning qaysi elementini aks ettiradi?
+===== #Turmush tarzi, urf-odatlar va estetik did
+===== Faqat iqtisodiy tizim
+===== Faqat siyosiy tartib
+===== Faqat texnologik uskunalar
++++++
+398. Xalq amaliy san'ati asosan qaysi usullar bilan yaratiladi?
+===== #Qo'l mehnati, an'anaviy texnologiyalar va dizayn elementlari bilan
+===== Faqat kompyuter dasturlari orqali
+===== Faqat sanoat mashinalari bilan
+===== Faqat kimyo vositalari bilan
++++++
+399. O'zbekistonda xalq hunarmandchiligi qaysi vazifani bajaradi?
+===== #Madaniyatni saqlash va rivojlantirish, iqtisodiy imkoniyatlar yaratish
+===== Faqat eksport qilish
+===== Faqat ilmiy tadqiqotlar
+===== Faqat me'morchilik bilan shug'ullanish
++++++
+400. Hunarmandchilik va amaliy san'atning asosiy qadriyatlari qaysilar?
+===== #Estetik, madaniy va iqtisodiy qimmat
+===== Faqat iqtisodiy qimmat
+===== Faqat estetik qimmat
+===== Faqat texnologik qimmat
++++++
+401. Xalq hunarmandchiligi san'ati asosan nima bilan bog'liq?
+===== #Mahalliy xalqning an'anaviy ijodi
+===== Zamonaviy texnologiya ishlab chiqarish
+===== Faol siyosiy ishlar
+===== Yozma adabiyot bilan
++++++
+402. Kashtachilik san'ati asosan nima uchun ishlatiladi?
+===== #Matoni bezash va dekorativ maqsadlarda
+===== Ovqat pishirishda
+===== Qurilish materiallarini tayyorlashda
+===== Metall buyumlarni ishlab chiqarishda
++++++
+403. Kashta tikishning asosiy turlari qaysi?
+===== #Chiziqli, nuqtali, to'qilgan va aralash
+===== Bo'yoqli va plastmassali
+===== Metall va yog'ochli
+===== Elektron va mexanik
++++++
+404. Applikatsiya usulida bezash nima degani?
+===== #Biror materialni boshqa material ustiga tikish orqali bezash
+===== Matoni ranglash orqali bezash
+===== Tosh bilan ishlash
+===== Yog'ochni o'yib bezash
++++++
+405. Kashtado'zlik san'ati qachon rivojlana boshlagan?
+===== #Qadimiy davrlardan
+===== XX asr oxirida
+===== So'nggi 10 yilda
+===== 19-asr boshida
++++++
+406. Kashtachilikning rivojlanish bosqichlaridan biri nima?
+===== #An'anaviy, milliy va zamonaviy uslublar
+===== Faqat sanoat bosqichi
+===== Texnologik bosqich
+===== Mexanik bosqich
++++++
+407. Hozirgi kunda kashtachilikning ahvoli qanday?
+===== #Rivojlanib borayotgan va xalq hunarmandchiligi bilan bog'liq
+===== Yo'q bo'lib ketgan
+===== Faqat eksportga yo'naltirilgan
+===== Faqat maktablarda o'rgatiladi
++++++
+408. Kashtachilik maktablari nima uchun muhim?
+===== #Yoshlarni hunarmandchilikka o'rgatadi
+===== Qishloq xo'jaligini rivojlantiradi
+===== Faol siyosiy ishlar bilan shug'ullanadi
+===== Faqat adabiyot o'qitadi
++++++
+409. Kashtachilik mahsulotlari qaysilar?
+===== #Kiyim-kechak, sochiq, yostiq, stol pardalari
+===== Temir buyumlar
+===== Avtomobil qismlari
+===== Kompyuter qismlari
++++++
+410. Kashta tayyorlashda ishlatiladigan asosiy jihoz nima?
+===== #Ignalar, iplar, qalam, mato
+===== Kompyuter va printer
+===== Elektr tornavida
+===== Qaychi va bolg'a
++++++
+411. Kashta tikishda ish o'rni qanday tashkil etiladi?
+===== #Yoritilgan, qulay stol va o'tirish joyi bilan
+===== Qorong'u xonada, erga o'tirib
+===== Qishda tashqarida
+===== Faqat ochiq havoda
++++++
+412. Kashtachilikda qo'llaniladigan chok nima uchun ishlatiladi?
+===== #Matoni tikish va bezash uchun mustahkamlash
+===== Oziq-ovqat tayyorlash
+===== Metallni birlashtirish
+===== Yog'ochni kesish
++++++
+413. Oshxona buyumlarini applikatsiya usulida bezash mumkinmi?
+===== #Ha, salfetka, oshxona sochiqlari, stol pardalarida
+===== Yo'q, faqat kiyimda
+===== Faqat mebelga
+===== Faqat devorga
++++++
+414. Bolalar kiyimlarini applikatsiya usulida bezash nima uchun foydalidir?
+===== #Kiyimga rang-baranglik va dekorativ ko'rinish beradi
+===== Kiyimni og'irlashtiradi
+===== Faqat katta kiyimlarga mos
+===== Kiyimni yirtilishga moyil qiladi
++++++
+415. Kashta tikishda "nuqtali" chok qaysi maqsadda ishlatiladi?
+===== #Matoga nuqtali naqsh hosil qilish
+===== Matoni kesish
+===== Rang berish
+===== Faqat metallni birlashtirish
++++++
+416. Kashta tikishda "chiziqli" chok nima uchun ishlatiladi?
+===== #Chiziqli naqsh va tasvirlar yaratish
+===== Rang berish
+===== Metall kesish
+===== Yog'och o'yish
++++++
+417. Kashtachilikda "aralash" chok qanday ishlatiladi?
+===== #Bir nechta tikish usullarini birlashtirish
+===== Faqat bitta matoga tikish
+===== Faqat rang berish
+===== Faqat metall birlashtirish
++++++
+418. Kashtado'zlik tarixida qaysi davr eng qadimiy hisoblanadi?
+===== #Qadimiy O'zbekiston hududida miloddan avvalgi davrlar
+===== XX asr oxiri
+===== 18-asr
+===== 21-asr boshida
++++++
+419. Kashtachilik mahsulotlarini tayyorlashda ishlatiladigan iplar qaysi xillari mavjud?
+===== #Paxta, ipak, jun iplar
+===== Metall simlar
+===== Plastmassa iplar
+===== Kompyuter simlari
++++++
+420. Kashta maktablari qaysi faoliyatni rivojlantiradi?
+===== #Hunarmandchilik va kreativlik
+===== Sport va jismoniy tayyorgarlik
+===== Faqat informatika
+===== Tarix va geografiya
++++++
+421. Applikatsiya usulida kiyimni bezashda qaysi asboblar kerak?
+===== #Mato, igna, ip, qaychi
+===== Faqat kompyuter
+===== Faqat bo'yoq
+===== Faqat temir
++++++
+422. Kashtachilikda ish joyini yoritish nima uchun muhim?
+===== #Detallarni aniq ko'rish va charchamaslik
+===== Faqat estetika uchun
+===== Rang berish uchun emas
+===== Faqat oshxona buyumlari uchun
++++++
+423. Oshxona buyumlarini kashta bilan bezashning maqsadi nima?
+===== #Amaliy va dekorativ bezash
+===== Faqat saqlashni osonlashtirish
+===== Faqat sotishga
+===== Faqat metall buyumlar uchun
++++++
+424. Kashtachilik mahsulotlarini tayyorlash jarayonida ish tartibi qanday bo'ladi?
+===== #Mato tayyorlash, naqsh chizish, choklash, yakuniy tekshirish
+===== Faqat choklash
+===== Faqat naqsh chizish
+===== Faqat bo'yoq berish
++++++
+425. Kashtachilikda rangli naqshlar yaratishda asosiy vosita nima?
+===== #Rangli iplar va turli choklar
+===== Kompyuter va printer
+===== Metall buyumlar
+===== Yog'och va bolg'a
++++++
+426. Zardo'zlik san'ati nimani anglatadi?
+===== #Tikuv buyumlarini oltin va kumush ip bilan bezash
+===== Yog'ochdan buyum yasash
+===== To'qimachilikda naqsh chizish
+===== Metall buyumlarni qayta ishlash
++++++
+427. Zardo'zlikda ishlatiladigan asosiy material nima?
+===== #Oltin, kumush, metall iplar
+===== Yog'och va tuproq
+===== Matolar va ipak bo'yoqlar
+===== Plastmassa
++++++
+428. Zardo'zlik san'ati qaysi turdagi buyumlarni bezashda qo'llaniladi?
+===== #Choynak, kiyim, poyabzal, o'yinchoqlar
+===== Faqat mato va gilam
+===== Yog'och mebel
+===== Faoliyat buyumlari emas
++++++
+429. Tikuv buyumlarini zardo'zlik usuli bilan bezash jarayonida birinchi bosqich nima?
+===== #Bezak nusxasini tanlash
+===== Matoni yuvish
+===== Buyumni bo'yash
+===== Chiroqni yoqish
++++++
+430. Zardo'zlikda ishlatiladigan chok turlaridan qaysi biri eng ko'p qo'llaniladi?
+===== #Qirqish, bog'lash, sirt chok
+===== Tikuv, shtrix
+===== Sirt bo'yash
+===== Bo'yoq bilan chizish
++++++
+431. Choynak g'ilofi bezak uchun tayyorlanayotganda birinchi qilinadigan ish nima?
+===== #Shaklni moslamaga joylashtirish
+===== G'ilofni yuvish
+===== Bo'yash
+===== Bo'yoq bilan naqsh chizish
++++++
+432. Zardo'zlikda naqshlarni tanlashda nimaga e'tibor beriladi?
+===== #Ramziy ma'nosi va kompozitsiya uyg'unligi
+===== Rangni yoqtirish
+===== Narxining arzonligi
+===== Buyum hajmi
++++++
+433. Zardo'zlik san'ati tarixida eng rivojlangan davr qaysi hisoblanadi?
+===== #XVI-XVIII asrlar
+===== XX asr boshida
+===== II jahon urushi davrida
+===== XXI asrning oxirida
++++++
+434. Zardo'zlik mahsulotlarini tayyorlashda ishlatiladigan jihozlardan qaysi biri asosiy hisoblanadi?
+===== #Zardo'zlik qalam va moslamasi
+===== Yog'och arra
+===== Bo'yoq f?rcasi
+===== Mato yuvish mashinasi
++++++
+435. Zardo'zlikda ishlatiladigan xom-ashyo qaysilar?
+===== #Oltin, kumush, iplar, ipak matolar
+===== Temir, yog'och, plastmassa
+===== Qog'oz, karton, rangli bo'yoqlar
+===== Tuproq, loy, tosh
++++++
+436. Zardo'zlik san'ati hozirgi kunda qaysi sohalarda keng qo'llanadi?
+===== #Uy bezak buyumlari, kiyim, sovg'alar
+===== Faqat tarixiy muzeylarda
+===== Qurilishda
+===== Oshxona asboblarida
++++++
+437. Zardo'zlikda ishlatiladigan eng oddiy chok turi qaysi?
+===== #Sirt chok
+===== Qo'l bo'yash
+===== Metall chok
+===== Yog'och bilan ishlash
++++++
+438. Zardo'zlikda bezaklar ramziy ma'noga ega bo'ladi. Quyidagi naqshlardan qaysi biri baxt va farovonlikni bildiradi?
+===== #Gullik naqshlar
+===== Chiziqli naqshlar
+===== Geometrik naqshlar
+===== Bo'sh naqshlar
++++++
+439. Zardo'zlik maktablarining asosiy vazifasi nima?
+===== #Hunarmandlarni tayyorlash va san'atni rivojlantirish
+===== Naqshlarni sotish
+===== Buyumlarni qayta ishlash
+===== Metallni eritish
++++++
+440. Zardo'zlik mahsulotlarini tayyorlashda kompozitsiya qayerdan boshlanadi?
+===== #Asosiy markazdan
+===== Chekkadan
+===== Tasodifiy joydan
+===== Yuqoridan pastga
++++++
+441. Zardo'zlikda ishlatiladigan naqshlar ko'pincha qaysi usulda chiziladi?
+===== #Nusxa olish va matoga o'tkazish
+===== Faqat tasodifiy chizish
+===== Bo'yoq bilan ranglash
+===== Chok bilan kesish
++++++
+442. Zardo'zlik san'ati tarixi qaysi mintaqada an'anaviy rivojlangan?
+===== #Markaziy Osiyo
+===== Shimoliy Yevropa
+===== Janubiy Amerika
+===== Avstraliya
++++++
+443. Zardo'zlik buyumlarini bezashda ranglarning tanlanishida nimaga e'tibor beriladi?
+===== #Ranglarning uyg'unligi va mato bilan mosligi
+===== Faqat qimmat ranglarni ishlatish
+===== Tasodifiy ranglar
+===== Yorqin bo'yoqdan voz kechish
++++++
+444. Zardo'zlik san'ati ustalari kimlar deb ataladi?
+===== #Zardo'zchilar
+===== Tikuvchilar
+===== Yog'och ustalari
+===== Bo'yoqchilar
++++++
+445. Zardo'zlik mahsulotlarini bezashda ishlatiladigan moslamalarga misol keltiring:
+===== #Shakl moslamasi, zardo'zlik ramkalari
+===== Yog'och arra
+===== Qog'oz presi
+===== Mato yuvish mashinasi
++++++
+446. Zardo'zlik san'atida gullik naqshlar nimani bildiradi?
+===== #Hayot va go'zallik
+===== Vaqt o'tishi
+===== Qiyinchilik
+===== Bo'shliq
++++++
+447. Zardo'zlikda ishlatiladigan iplar qaysi materialdan bo'ladi?
+===== #Oltin, kumush, ipak
+===== Paxta va jun
+===== Plastmassa
+===== Yog'och tolasi
++++++
+448. Zardo'zlik san'ati mahsulotlarini tayyorlashda asosiy maqsad nima?
+===== #Buyumga estetik va ramziy bezak berish
+===== Faqat foydali bo'lish
+===== Tez tayyorlash
+===== Faqat metall ishlatish
++++++
+449. Zardo'zlikning rivojlanish bosqichlaridan qaysi biri mustaqil san'at shakli sifatida ko'riladi?
+===== #XVI-XVIII asrlar
+===== XIV asr
+===== XIX asr boshida
+===== XXI asr
++++++
+450. Zardo'zlik san'ati bo'yicha oliy ta'limda asosiy o'qitiladigan predmet nima?
+===== #Zardo'zlik texnologiyasi va naqsh san'ati
+===== Metall ishlov berish
+===== Yog'och o'ymakorligi
+===== Kimyo
++++++
+451. Do'ppi tikishda ishlatiladigan asosiy material qaysi?
+===== #Matî
+===== Charm
+===== Paxta ipi
+===== Sintetik lent
++++++
+452. Do'ppining shaklini tayyorlashda qaysi vosita ishlatiladi?
+===== #Qalam va o'lchov chizgich
+===== Qaychi
+===== Ignà
+===== Tikuv mashinasi
++++++
+453. Do'ppining asosiy o'lchovi nima orqali aniqlanadi?
+===== #Bosh aylanmasi
+===== Yuz uzunligi
+===== Bo'yinning balandligi
+===== Elkalar kengligi
++++++
+454. Qaysi ip do'ppi tikishda eng ko'p ishlatiladi?
+===== #Matî ipi
+===== Charm ipi
+===== Sintetik ip
+===== Tikuv lenta
++++++
+455. Do'ppini bichish jarayonida qaysi vosita kerak bo'ladi?
+===== #Qaychi
+===== Ipak tasma
+===== Ignà
+===== Rulon
++++++
+456. Do'ppini bezashda qaysi element ishlatiladi?
+===== #Zardo'zlik elementi
+===== Matî bo'yog'i
+===== Poyabzal tagligi
+===== Charm patta
++++++
+457. Do'ppining yuqori qismi qanday nomlanadi?
+===== #Tepasi
+===== Pastki qismi
+===== Yon qismi
+===== Ichki qismi
++++++
+458. Do'ppini tikishda igna qanday ishlatiladi?
+===== #Matîni biriktirish uchun
+===== Bezash uchun faqat
+===== O'lchov olish uchun
+===== Shakl berish uchun
++++++
+459. Do'ppini bezashda ishlatiladigan eng an'anaviy usul qaysi?
+===== #Kashtachilik
+===== Bo'yash
+===== Charm yopishtirish
+===== Sintetik lenta yopishtirish
++++++
+460. Do'ppini tikishda asos sifatida qaysi shakl olinadi?
+===== #Doira
+===== Kvadrat
+===== Uchburchak
+===== To'rtburchak
++++++
+461. Do'ppining ichki qismi nima uchun ishlatiladi?
+===== #Boshni qulay tutish uchun
+===== Bezash uchun
+===== Shakl berish uchun
+===== O'lchov olish uchun
++++++
+462. Do'ppini tayyorlash jarayonida qaysi vosita ishlatilmaydi?
+===== #Guruch
+===== Qaychi
+===== Ignà
+===== Chizgich
++++++
+463. Do'ppini o'lchash jarayonida boshning qaysi qismi o'lchanadi?
+===== #Bosh aylanmasi
+===== Barmoq uzunligi
+===== Yelkalar kengligi
+===== Yuz uzunligi
++++++
+464. Do'ppini bezashda ishlatiladigan charm elementining vazifasi nima?
+===== #Dekorativ va mustahkamlovchi
+===== Faqat ichki qoplama
+===== Tikuvni tezlashtirish
+===== Shakl berish
++++++
+465. Do'ppi tikishda igna qanday turda bo'lishi kerak?
+===== #Matî turiga mos va nozik
+===== Qalin va uzun
+===== Charm uchun faqat
+===== Sintetik matî uchun qattiq
++++++
+466. Do'ppini bichib olishdan oldin nima qilinadi?
+===== #O'lchov olish va asos shaklini tayyorlash
+===== Tikuv ipini kesish
+===== Charm yopishtirish
+===== Rang berish
++++++
+467. Do'ppini tikish jarayonida igna orqali nima amalga oshiriladi?
+===== #Matî qismlari biriktiriladi
+===== Bezash elementlari yopishtiriladi
+===== Shakl chiziladi
+===== O'lchov aniqlanadi
++++++
+468. Do'ppini bezashda ishlatiladigan tilla ip qaysi texnikada qo'llanadi?
+===== #Zardo'zlik
+===== Kashtachilik
+===== Bo'yash
+===== Sintetik lenta bilan yopishtirish
++++++
+469. Do'ppini tayyorlash jarayonida qaysi element bosqich sifatida oldin keladi?
+===== #Asosni shakllantirish
+===== Tikuvni boshlash
+===== Bezash elementini qo'yish
+===== Rang berish
++++++
+470. Do'ppining yon qismini tikishda qanday usul ishlatiladi?
+===== #Chok bilan biriktirish
+===== Bo'yash
+===== Charm yopishtirish
+===== Shakl berish
++++++
+471. Do'ppini bezashda ishlatiladigan matî turi qanday tanlanadi?
+===== #Qalinligi va rangiga qarab
+===== Faqat qimmat bo'lsa
+===== Faqat matî brendi bo'yicha
+===== Shakliga qarab emas
++++++
+472. Do'ppining ichki qismi qanday qilinadi?
+===== #Yumshoq va qulay matî bilan qoplanadi
+===== Charm bilan qattiq qilinadi
+===== Zardo'zlik bilan bezatiladi
+===== Sintetik lenta bilan yopishtiriladi
++++++
+473. Do'ppini tayyorlashda qaysi element xavfsizlik uchun muhim?
+===== #Tikuv mustahkamligi
+===== Rang
+===== Bezash elementi
+===== Shakl chizgichi
++++++
+474. Do'ppini tayyorlash jarayonida qanday tartibda ishlanadi?
+===== #O'lchov > Bichish > Tikish > Bezash
+===== Tikish > Bezash > O'lchov > Bichish
+===== Bezash > O'lchov > Tikish > Bichish
+===== Bichish > O'lchov > Bezash > Tikish
++++++
+475. Do'ppini bezashda eng ko'p ishlatiladigan rang elementi qaysi?
+===== #Oltin va kumush rangdagi zardo'zlik
+===== Qora matî
+===== Yashil charm
+===== Sintetik lenta
++++++
+476. Kasbga qiziqish deganda nimani tushunasiz?
+===== #Talabaning kasbga qiziqishi
+===== Biror fanga kizikishi
+===== Ichki kizikishlar
+===== A va B javoblar tugri
++++++
+477. Kasbga yo'llash ishlarining nechta vazifasi bor?
+===== #6 ta
+===== 7 ta
+===== 8 ta
+===== 9 ta
++++++
+478. Shaxar va qishloq kasbga yo'llash markazlarining vazifasi nimadan iborat?
+===== #Yoshlarni mexnatga tayyorlash umumiy maqsadlari bilan bog'liq
+===== Yoshlarni ishlatib kurish
+===== Yoshlarni kizikishlariga ye'tibor berish
+===== B va S javob tugri
++++++
+479. Psixologik me'zon nima?
+===== #Shaxsning o'z tanlovidan ya'ni kasb tanlovi va ish joyidan o'zi to'la qoniqish xosil qilishidir
+===== A va B javob tug'ri
+===== Psixologik fan tushunchasi
+===== Yeng muxim psixologik me'zon
++++++
+480. Kasbiy ma'orif nimani o'z ichiga qamrab oladi?
+===== #Hamma javoblar to'g'ri
+===== Kasbiy tashvikot
+===== Kasbiy targibot
+===== Kasbiy malumot
++++++
+481. Amerika Qo'shma Shtatlarining Boston shaxrida nechanchi yili birinchi bor kasbiy maslaxat byurosi ochildi?
+===== #1908
+===== 1911
+===== 1909
+===== 1910
++++++
+482. Pedagogik me'zon samaradorligi nima?
+===== #Kasb tanlashda pedagogik kollektiv yoki o'qituvchining tavsiyasi bilan shaxsning individual tanlovining mos kelishi
+===== Shaxsning uz tanlovidan, ya'ni kasb tanlovi va ish joyidanuzi tula konikish xosil kilishidir
+===== Moddiy va turli xil boyliklar va'da kilingan xolda kasbga yunalish ishlari tashkil yetilsa
+===== A va V javob tugri
++++++
+483. Kasbga yo'naltiruvchi xodimlarni qanday yo'l bilan tayyorlanmoqda?
+===== #Barcha javob to'g'ri
+===== Amaliy ish jarayoni orkali
+===== Mustakil urganish
+===== Tadkikot yuli
++++++
+484. Kasbga yo'llash qanday qobiliyatni talab qiladi?
+===== #Bilim, maxorat
+===== Kunikish, topshirik berish
+===== Sukish va majburlash
+===== Urgatish, bilim berish
++++++
+485. Tashxis nima?
+===== #Talabaning qay darajada bilimliligini sinab, so'ngra fikr bildirish
+===== Talabaga bilimini baxolash
+===== Talabaga berilgan ta'rif
+===== Talabaga maktov berish
++++++
+486. Yoshlarni kasbiy mexnat yulini aniklashga yordam kursatish maksadida Bostonda nechanchi yili birinchi kasbga yullash byurosi ish boshladi?
+===== #1908 yili yanvar oyida
+===== 1909 yili yanvarda
+===== 1910 yili fevral
+===== 1911 yili dekabr
++++++
+487. Shaxar va kishlok kasbga yullash markazlari nechta vazifalarni xal kiladi?
+===== #9 ta
+===== 10 ta
+===== 17 ta
+===== 16 ta
++++++
+488. Nechanchi yili Germaniyada kasbga yullash va kasbiy maslaxat tizimi xakida konun kabul kilindi?
+===== #1922 yil
+===== 1924 yil
+===== 1926 yil
+===== 1928 yil
++++++
+489. Qaysi olim tomonidan 1922 yil u yoki bu kasbni tanlash sabablarini aniqlash ustida olib borgan ilmiy izlanishlar natijasi e'lon kilindi?
+===== #Smirnov
+===== Lomonosov
+===== Garvart
+===== Myunsterberg
++++++
+490. Kasbga yullashni nechta asosiy tashkil yetuvchilari bor?
+===== #3 ta
+===== 4 ta
+===== 5 ta
+===== 6 ta
++++++
+491. Kasbga yullash tizimidagi ishlar Xozirgi kunda nechta yunalishlarni uz ichiga oladi?
+===== #3 ta
+===== 4 ta
+===== 5 ta
+===== 6 ta
++++++
+492. Differinsial munosabat...........?
+===== #Kasbga yo'llash ishlarini samarali va maqsadga muvofiq tashkil etish imkonini beradi.
+===== Bu ukituvchi bilan ukuvchi orasidagi munosabat
+===== A va V javob tugri
+===== Barcha javoblar tugri
++++++
+493. Kasbga yo'llash muammolari bo'yicha ilmiy izlanishlar qaysi fan metodlaridan yaratiladi ?
+===== #Barcha javoblar to'g'ri
+===== Psixologiya
+===== Ekonomika
+===== Pedagogika
++++++
+494. Quyidagi ta'rif kasbga yo'llash tizimidagi faoliyat turlaridan qaysi biriga to'gri keladi? tanlab olingan kasbda tarbiyalash jarayonida burchni sezish, mas'uliyat, kasbga xurmat, kasbiy g'ururlarni o'quvchilarda shakllantirish ........jarayonida amalga oshiriladi.
+===== #kasbiy tarbiya
+===== kasb ma'lumoti
+===== kasb maslaxati
+===== kasb targiboti
++++++
+495. Kasb tanlashga yo'llash nazariyasini quyidagi ko'rinishda ifodalash mumkin
+===== #Barcha javoblar to'g'ri
+===== Kasb tanlashga yullash faoliyatini samarali amalga oshirishga karatilgan goya va tasavvur
+===== Tanlanga shaklda kasb ettirilgan kompleks karashlardir
+===== Bildirilgan fikrlar majmui yullash
++++++
+496. Kasbiy diagnostika nima ?
+===== #Barcha javoblar to'g'ri
+===== Kasbiy fikr va maksad
+===== Moillik va kobiliyatlarni urgatish
+===== Kasbiy kobiliyatlarni urgatish
++++++
+497. Parsak byuroni muvaffakiyatli Bulishiga nechta asosiy omil belgiladi?
+===== #3 ta
+===== 4 ta
+===== 5 ta
+===== 6 ta
++++++
+498. Kasbiy maslaxat nechanchi sinfukuvchilari bilanutkaziladi?
+===== #5-9
+===== 8
+===== 6
+===== 7
++++++
+499. Tibbiy - kasbiy maslaxat kanday xarakterda buladi?
+===== #5
+===== 12
+===== 8
+===== 7
++++++
+500. Kasbiy maslaxat qanday xarakterda bo'ladi?
+===== #Individual
+===== Psixologik
+===== Psixologik - pedagogik
+===== Pedagogik
++++++
+501. Kasbiy maslaxatlar nechta yunalishda amalga oshiriladi?
+===== #4
+===== 5
+===== 7
+===== 6
++++++
+502. Mehnat va kasb faoliyati To'g'risidagi bilimlarni kengaytirishda o'quvchilarga qanday maslaxat beriladi?
+===== #Ma'lumot - axborot
+===== Psixologik
+===== Pedagogika
+===== Psixologik - pedagogik
++++++
+503. Kasbga yullash markazlarida kanday mutaxassislar bulishi kerak?
+===== #Barchasi to'g'ri
+===== Psixolog
+===== Defektolog
+===== Pediatr yoki terapevt.
++++++
+504. Kasbga yunaltiruvchi mutaxassisning vazifalari nimplardan iborat?
+===== #Barchasi to'g'ri
+===== Ma'ruza kilish
+===== Suxbat kilish
+===== Ukuvchilar, ukituvchilar, ota-onalarurtasida targibotutkazish
++++++
+505. Kasbga yullash markazi koshida qanday xonalarni tashkil kilish mumkin?
+===== #Barchasi to'g'ri
+===== Kasbiy
+===== Tibbiy
+===== Psixologik
++++++
+506. Kasb tanlash kabinetini faoliyati nimadan iborat bulishi kerak?
+===== #Barcha javoblar to'g'ri
+===== Kasbga kizikish uygotish
+===== Kasb tugrisida ma'lumot berish
+===== Kasbga yullash
++++++
+507. Kasb tanlash kabinetini kim boshkarishi lozim?
+===== #Maxsus tayyorlangan mutaxassis
+===== ukituvchilar
+===== Vrachlar
+===== Psixologlar
++++++
+508. Angliyalik olim F. Galton ye'tirof yetgan ilm kaysi?
+===== #Shaxsiy tafovutlarni ilmiy o'rganish
+===== Kasbga yullash
+===== Kasbga kiziktirish
+===== A va V javob tugri
++++++
+509. Amerikada mexnat birjasi va maktab tashkilotlari xamkorlik ishini tartibga soluvchi direktiv tashkilot tomonidan kuyi tashkilotlarga yuboriladigan firmani nechanchi yili e'lon kilindi ?
+===== #1911 yil
+===== 1921 yil
+===== 1931 yil
+===== 1912 yil
++++++
+510. .Byuroni asoschilaridan birining nomi qaysi katorda tugri berilgan?
+===== #F. Parsak
+===== Garvart
+===== Myunsterberg
+===== Gal'ton
++++++
+511. Pedagogik me'zon samaradorligi nima?
+===== #Kasb tanlashda pedagogik kollektiv yoki o'qituvchining tavsiyasi bilan shaxsning individual tanlovning mos kelishi
+===== Shaxsning uz tanlovidan, ya'ni kasb tanlovi va ish joyidan uzi tula konikish xosil kilishidir
+===== Moddiy va turli xil boyliklar va'da kilingan xolda kasbga yunalish ishlari tashkil yetilsa
+===== A va B javob tugri
++++++
+512. Tibbiy - kasbiy maslaxat qanday xarakterda bo'ladi?
+===== #5
+===== 8
+===== 6
+===== 9
++++++
+513. Kasbiy maslaxat qanday xarakterda bo'ladi?
+===== #Individual
+===== Psixologik
+===== Psixologik - pedagogik
+===== Pedagogik
++++++
+514. Tashxis nima?
+===== #Talabaning qay darajada bilimliligini sinab, so'ngra fikr bildirish
+===== Talabani uzi bilimini baxolashi
+===== Talabaga berilgan tula ta'rif
+===== Maktov berish
++++++
+515. Quyidagi ta'rif kasbga yo'llash tizimidagi faoliyat turlaridan qaysi biriga to'g'ri keladi? tanlab olingan kasbni egallash jarayonida burchni sezish, mas'uliyat, kasbga xurmat, kasbiy gururlarni o'quvchilarda shakllantirish ........jarayonida amalga oshiriladi.
+===== #kasbiy tarbiya
+===== kasb malumoti
+===== kasb maslaxati
+===== kasb targiboti
++++++
+516. Kasbga yo'llash markazlarida qanday mutaxassislar bo'lishi kerak?
+===== #Barchasi to'g'ri
+===== Psixolog
+===== Defektolog
+===== Pediatr yoki terapevt.
++++++
+517. Kasbga yo'naltiruvchi mutaxassisning vazifalari nimalardan iborat?
+===== #Barchasi to'g'ri
+===== Ma'ruza kilish
+===== Suxbat kilish
+===== Ukuvchilar, ukituvchilar, ota-onalarurtasida targibotutkazish
++++++
+518. Kasbga yullash tizimidagi ishlar xozirgi kunda nechta yunalishlarni uz ichiga oladi?
+===== #6 ta
+===== 14 ta
+===== 12 ta
+===== 13 ta
++++++
+519. Kasbga yullash ishlarining nechta vazifasi bor?
+===== #6 ta
+===== 17 ta
+===== 18 ta
+===== 14 ta
++++++
+520. Shaxar va kishlok kasbga yullash markazlari nechta vazifalarni xal kiladi?
+===== #9 ta
+===== 10 ta
+===== 17 ta
+===== 16 ta
++++++
+521. Amerikada mexnat birjasi va maktab tashkilotlari xamkorlik ishini tartibga soluvchi direktiv tashkilot tomonidan kuyi tashkilotlarga yuboriladigan firmani nechanchi yili ye'lon kilindi ?
+===== #1911 yil
+===== 1921 yil
+===== 1931 yil
+===== 1916 yil
++++++
+522. Kasbga yullash markazi koshida kanday xonalarni tashkil kilish mumkin?
+===== #Barchasi to'g'ri
+===== Kasbiy
+===== Tibbiy
+===== Psixologik
++++++
+523. Amerika Kushma Shtatlarining Boston shaxrida nechanchi yili birinchi bor kasbiy maslaxat byurosi ochildi?
+===== #1908
+===== 1911
+===== 1909
+===== 1910
++++++
+524. Kasbga yo'llash qanday qobiliyatni talab qiladi?
+===== #Bilim, maxorat
+===== Kunikish, topshirik berish
+===== Sukish va majburlash
+===== Urgatish, bilim berish
++++++
+525. Qaysi olim tomonidan 1922 yil u yoki bu kasbni tanlash sabablarini aniqlash ustida olib borgan ilmiy izlanishlar natijasi e'lon kilindi?
+===== #Smirnov
+===== Lomonosov
+===== Garvart
+===== Myunsterberg
++++++
+526. Kasbga yullashni nechta asosiy tashkil yetuvchilari bor?
+===== #3 ta
+===== 4 ta
+===== 5 ta
+===== 6 ta
++++++
+527. Byuroni asoschilaridan birining nomi kaysi katorda tugri berilgan?
+===== #F. Parsak
+===== Garvart
+===== Myunsterberg
+===== Gal'ton
++++++
+528. Parsak byuroni muvaffakiyatli bulishiga nechta asosiy omil belgiladi?
+===== #3 ta
+===== 4 ta
+===== 5 ta
+===== 6 ta
++++++
+529. Angliyalik olim F. Galton ye'tirof yetgan ilm kaysi?
+===== #Shaxsiy tafovutlarni ilmiy o 'rganish
+===== Kasbga yullash
+===== Kasbga kiziktirish
+===== A va B javob tugri
++++++
+530. Yoshlarni kasbiy mexnat yulini aniklashga yordam kursatish maksadida Bostonda nechanchi yili birinchi kasbga yullash byurosi ish boshladi?
+===== #1908 yili yanvar oyida
+===== 1909 yili yanvarda
+===== 1910 yili fevral
+===== 1918 yili dekabr
++++++
+531. Differinsial munosabat...........?
+===== #Kasbga yo'llash ishlarini samarali va maqsadga muvofiq tashkil etish imkonini beradi.
+===== Bu ukituvchi bilan ukuvchi orasidagi munosabat
+===== A va B javob tugri
+===== Barcha javoblar tugri
++++++
+532. Kasbga yullash muammolari buyicha ilmiy izlanishlar kaysi fan metodlaridan yaratiladi ?
+===== #Barcha javoblar to'g'ri
+===== Psixologiya
+===== Ekanomika
+===== Pedagogika
++++++
+533. Kasb tanlash kabinetini kim boshqarishi lozim?
+===== #Maxsus tayyorlangan mutaxassis
+===== ukituvchilar
+===== Vrachlar
+===== Psixologlar
++++++
+534. Kasbga yunaltiruvchi xodimlarni kanday yul bilan tayyorlanmokda?
+===== #Barcha javob to'g'ri
+===== Amaliy ish jarayoni orkali
+===== Mustakil urganish
+===== Tadkikot yuli
++++++
+535. Quyidagi ta'rif kasbga yo'llash tizimidagi faoliyat turlaridan qaysi biriga to'g'ri keladi? - tanlab olingan kasbni egallash jarayonida burchni sezish, mas'uliyat, kasbga xurmat, kasbiy g'ururlarni o'quvchilarda shakllantirish ........jarayonida amalga oshiriladi.
+===== #kasbiy tarbiya
+===== kasb malumoti
+===== kasb maslaxati
+===== kasb targiboti
++++++
+536. Kasbiy maslaxat nechanchi sinfukuvchilari bilanutkaziladi?
+===== #5-9
+===== 8
+===== 4
+===== 7
++++++
+537. Kasbiy maslaxatlar nechta yunalishda amalga oshiriladi?
+===== #4
+===== 5
+===== 7
+===== 6
++++++
+538. Mexnat va kasb faoliyati to'g'risidagi bilimlarni kengaytirishda o'quvchilarga qanday axborot beriladi?
+===== #Ma'lumot - axborot
+===== Psixologik
+===== Pedagogika
+===== Psixologik - pedagogik
++++++
+539. Kasbga qiziqish deganda nimani tushunasiz?
+===== #Talabaning kasbga qiziqishi
+===== Biror fanga kizikishi
+===== Ichki kizikishlar
+===== A va B javoblar tugri
++++++
+540. Differinsial munosabat...........?
+===== #Kasbga yo'llash ishlarini samarali va maqsadga muvofiq tashkil etish imkonini beradi.
+===== Bu ukituvchi bilan ukuvchi orasidagi munosabat
+===== A va B javob tugri
+===== Barcha javoblar tugri
++++++
+541. Kasbga yo'llash qanday qobiliyatni talab qiladi?
+===== #Bilim, maxorat
+===== Kunikish, topshirik berish
+===== Sukish va majburlash
+===== Urgatish, bilim berish
++++++
+542. Kasbga yullashni nechta asosiy tashkil yetuvchilari bor?
+===== #3 ta
+===== 4 ta
+===== 5 ta
+===== 6 ta
++++++
+543. Tibbiy - kasbiy maslaxat kanday xarakterda buladi?
+===== #5
+===== 6
+===== 7
+===== 8
++++++
+544. Kasbiy maslaxat qanday xarakterda bo'ladi?
+===== #Individual bo'ladi
+===== Psixologik
+===== Psixologik - pedagogik
+===== Pedagogik
++++++
+545. Kasbga yullash ishlarining nechta vazifasi bor?
+===== #6 ta
+===== 7 ta
+===== 8 ta
+===== 9 ta
++++++
+546. Shaxar va kishlok kasbga yullash markazlari nechta vazifalarni xal kiladi?
+===== #9 ta
+===== 10 ta
+===== 17 ta
+===== 16 ta
++++++
+547. Kasbga yo'llash markazi qoshida qanday xonalarni tashkil qilish mumkin?
+===== #Barchasi to'g'ri
+===== Kasbiy
+===== Tibbiy
+===== Psixologik
++++++
+548. Tashxis nima?
+===== #Talabaning qay darajada bilimliligini sinab, so'ngra fikr bildirish
+===== Talabaga uzini uzi bilimini baxolashi
+===== Talabaga berilgan tugri ta'rif
+===== Talabaga maktov berish
++++++
+549. Kasbga yullash muammolari buyicha ilmiy izlanishlar kaysi fan metodlaridan yaratiladi ?
+===== #Barcha javoblar to'g'ri
+===== Psixologiya
+===== Ekanomika
+===== Pedagogika
++++++
+550. Kasbga yullash markazlarida kanday mutaxassislar bulishi kerak?
+===== #Barchasi to'g'ri
+===== Psixolog
+===== Defektolog
+===== Pediatr yoki terapevt.
++++++
+551. Kasbga yunaltiruvchi mutaxassisning vazifalari nimplardan iborat?
+===== #Barchasi to'g'ri
+===== Ma'ruza kilish
+===== Suxbat kilish
+===== Ukuvchilar, ukituvchilar, ota-onalarurtasida targibotutkazish
++++++
+552. Kuyidagi ta'rif kasbga yullash tizimidagi faoliyat turlaridan kaysi biriga tugri keladi? tanlab olingan kasbni yegallash jarayonida burchni sezish, mas'uliyat, kasbga xurmat, kasbiy gururlarni ukuvchilarda shakllantirish ........jarayonida amalga oshiriladi.
+===== #kasbiy tarbiya
+===== kasb ma'lumoti
+===== kasb maslaxati
+===== kasb targiboti
++++++
+553. Kasb tanlash kabinetini kim boshkarishi lozim?
+===== #Maxsus tayyorlangan mutaxassis
+===== ukituvchilar
+===== Vrachlar
+===== Psixologlar
++++++
+554. Kasbga yo'naltiruvchi xodimlarni qanday yo'l bilan tayyorlanmoqda?
+===== #Barcha javob to'g'ri
+===== Amaliy ish jarayoni orkali
+===== Mustakil urganish
+===== Tadkikot yuli
++++++
+555. Angliyalik olim F. Galton ye'tirof yetgan ilm kaysi?
+===== #Shaxsiy tafovutlarni ilmiy o'rganish
+===== Kasbga yullash
+===== Kasbga kiziktirish
+===== A va B javob tugri
++++++
+556. Yoshlarni kasbiy mexnat yulini aniklashga yordam kursatish maksadida Bostonda nechanchi yili birinchi kasbga yullash byurosi ish boshladi?
+===== #1908 yili yanvar oyida
+===== 1909 yili yanvarda
+===== 1910 yili fevral
+===== 1918 yili dekabr
++++++
+557. Byuroni asoschilaridan birining nomi kaysi katorda tugri berilgan?
+===== #F. Parsak
+===== Garvart
+===== Myunsterberg
+===== Gal'ton
++++++
+558. Parsak byuroni muvaffakiyatli bulishiga nechta asosiy omil belgiladi?
+===== #3 ta
+===== 4 ta
+===== 5 ta
+===== 6 ta
++++++
+559. Kasbiy maslaxat nechanchi sinf ukuvchilari bilan utkaziladi?
+===== #5-9
+===== 8
+===== 6
+===== 7
++++++
+560. Kasbga yullash tizimidagi ishlar xozirgi kunda nechta yunalishlarni o'z ichiga oladi?
+===== #6 ta
+===== 14 ta
+===== 12 ta
+===== 8 ta
++++++
+561. Kasbiy maslaxatlar nechta yunalishda amalga oshiriladi?
+===== #4
+===== 5
+===== 6
+===== 7
++++++
+562. Mexnat va kasb faoliyati to'g'risidagi bilimlarni kengaytirishda o'q'uvchilarga qanday axborot beriladi?
+===== #Ma'lumot - axborot
+===== Psixologik
+===== Pedagogika
+===== Psixologik - pedagogik
++++++
+563. Kasbiy diagnostika nima ?
+===== #Barcha javob to'g'ri
+===== Kasbiy fikr va maksad
+===== Moillik va kobiliyatlarniurgatish
+===== Yoshlarni kizikishlari
++++++
+564. Amerikada mexnat birjasi va maktab tashkilotlari xamkorlik ishini tartibga soluvchi direktiv tashkilot tomonidan kuyi tashkilotlarga yuboriladigan firmani nechanchi yili ye'lon kilindi ?
+===== #1911 yil
+===== 1921 yil
+===== 1931 yil
+===== 1920 yil
++++++
+565. Shaxar va qishlok kasbga yo'llash markazlarining vazifasi nimadan iborat?
+===== #Yoshlarni mehnatga tayyorlash umumiy maqsadlari bilan bog'liq
+===== Yoshlarni ishlatib kurish
+===== Yoshlarni kizikishlariga ye'tibor berish
+===== B va S javob tugri
++++++
+566. Nechanchi yili Germaniyada kasbga yullash va kasbiy maslaxat tizimi xakida konun kabul kilindi?
+===== #1922 yil
+===== 1924 yil
+===== 1926 yil
+===== 1923 yil
++++++
+567. Kaysi olim tomonidan 1922 yil u yoki bu kasbni tanlash sabablarini aniqlash ustida olib borgan ilmiy izlanishlar natijasi e'lon qilindi?
+===== #Smirnov
+===== Lomonosov
+===== Garvart
+===== Myunsterberg
++++++
+568. Amerika Qo'shma Shtatlarining Boston shaxrida nechanchi yili birinchi bor kasbiy maslaxat byurosi ochildi?
+===== #1908
+===== 1911
+===== 1919
+===== 1910
++++++
