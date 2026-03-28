@@ -33,7 +33,7 @@ from docx.shared import Pt
 WORD_SAVE_AS_TEXT = 7
 SEPARATOR_RE = re.compile(r"={4,}")
 BLOCK_SEPARATOR_RE = re.compile(r"\+{4,}")
-ENCODING_CANDIDATES = ("cp1254", "cp1251", "utf-8", "cp1252", "latin1")
+ENCODING_CANDIDATES = ("cp1254", "cp1251", "utf-8-sig", "utf-8", "cp1252", "latin1")
 
 
 @dataclass
@@ -58,6 +58,7 @@ OverrideHandler = Callable[[list[str]], list[list[str]]]
 
 
 def normalize_text(value: str) -> str:
+    value = value.replace("\ufeff", "").replace("\u200b", "")
     value = value.replace("\u000b", "\n").replace("\u000c", "\n")
     value = value.replace("\r", "\n")
     value = value.replace("\u00a0", " ")
@@ -68,6 +69,24 @@ def normalize_text(value: str) -> str:
 
 def normalize_segment(value: str) -> str:
     return re.sub(r"\s+", " ", normalize_text(value)).strip()
+
+
+def clean_raw_line(value: str) -> str:
+    value = value.replace("\ufeff", "").replace("\u200b", "")
+    value = re.sub(r"^(?:ï»¿|п»ї)+", "", value)
+    return value.strip()
+
+
+def is_separator_line(value: str, pattern: re.Pattern[str]) -> bool:
+    cleaned = clean_raw_line(value)
+    if pattern.fullmatch(cleaned):
+        return True
+
+    if pattern is BLOCK_SEPARATOR_RE and re.fullmatch(r"[^\w\d]{1,3}\+{4,}", cleaned):
+        return True
+    if pattern is SEPARATOR_RE and re.fullmatch(r"[^\w\d]{1,3}={4,}", cleaned):
+        return True
+    return False
 
 
 def strip_question_number(prompt: str) -> str:
@@ -84,12 +103,13 @@ def normalize_answer(answer: str) -> str:
 
 
 def split_blocks(text: str) -> list[list[str]]:
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    lines = [clean_raw_line(line) for line in text.splitlines()]
+    lines = [line for line in lines if line]
     blocks: list[list[str]] = []
     current: list[str] = []
 
     for line in lines:
-        if BLOCK_SEPARATOR_RE.fullmatch(line):
+        if is_separator_line(line, BLOCK_SEPARATOR_RE):
             if current:
                 blocks.append(current)
                 current = []
@@ -107,10 +127,10 @@ def split_raw_blocks(text: str) -> list[list[str]]:
     current: list[str] = []
 
     for raw_line in text.splitlines():
-        line = raw_line.strip()
+        line = clean_raw_line(raw_line)
         if not line:
             continue
-        if BLOCK_SEPARATOR_RE.fullmatch(line):
+        if is_separator_line(line, BLOCK_SEPARATOR_RE):
             if current:
                 blocks.append(current)
                 current = []
@@ -128,7 +148,7 @@ def block_to_segments(lines: list[str]) -> list[str]:
     current: list[str] = []
 
     for line in lines:
-        if SEPARATOR_RE.fullmatch(line):
+        if is_separator_line(line, SEPARATOR_RE):
             segments.append(normalize_segment(" ".join(current)))
             current = []
             continue
@@ -320,7 +340,8 @@ def parse_sequential(text: str) -> list[Question]:
         if len(block) == 1 and is_header_line(block[0]):
             continue
 
-        tokens = [normalize_segment(line) for line in block if not SEPARATOR_RE.fullmatch(line)]
+        tokens = [normalize_segment(line) for line in block if not is_separator_line(line, SEPARATOR_RE)]
+        tokens = [token for token in tokens if not is_separator_line(token, BLOCK_SEPARATOR_RE)]
         tokens = [token for token in tokens if token and not is_header_line(token)]
         tokens = remove_duplicate_number_token(tokens)
 
@@ -392,7 +413,7 @@ def get_encoding_order(source_name: str, requested_encoding: str) -> list[str]:
 
     name = source_name.lower()
     if "rus" in name or "russian" in name:
-        return ["cp1251", "cp1254", "utf-8", "cp1252", "latin1"]
+        return ["cp1251", "cp1254", "utf-8-sig", "utf-8", "cp1252", "latin1"]
     return list(ENCODING_CANDIDATES)
 
 
