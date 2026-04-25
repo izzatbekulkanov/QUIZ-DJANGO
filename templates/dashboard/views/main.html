@@ -1,480 +1,355 @@
-{% extends 'dashboard/index.html' %}
+{% extends 'dashboard/home_index.html' %}
 {% load static %}
 
 {% block style %}
-<style>
-  .profile-photo {
-    width: 92px;
-    height: 92px;
-    border-radius: 18px;
-    object-fit: cover;
-    border: 1px solid rgba(255, 255, 255, 0.75);
-    box-shadow: 0 18px 44px rgba(2, 6, 23, 0.12);
-    transition: transform 0.3s;
-  }
+  <style>
+    .remaining-time-progress {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+    }
 
-  .profile-photo:hover {
-    transform: scale(1.05);
-  }
+    .remaining-time-progress .remaining-progress-bar {
+      border-radius: 999px;
+      transition: width 1s linear, background 0.25s ease;
+    }
 
-  .profile-placeholder {
-    width: 92px;
-    height: 92px;
-    border-radius: 18px;
-    display: grid;
-    place-items: center;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.16), rgba(124, 58, 237, 0.14));
-    border: 1px solid rgba(37, 99, 235, 0.18);
-    box-shadow: 0 16px 34px rgba(37, 99, 235, 0.10);
-    color: rgba(2, 6, 23, 0.70);
-    font-weight: 900;
-    letter-spacing: -0.03em;
-    font-size: 1.35rem;
-  }
-
-  .assignment-title {
-    letter-spacing: -0.02em;
-  }
-
-  .stat-card {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.5rem;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    transition: all 0.3s ease;
-  }
-
-  .stat-card:hover {
-    background: rgba(255, 255, 255, 0.7);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  }
-
-  .stat-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-  }
-
-  .stat-content h6 {
-    margin: 0;
-    font-size: 0.9rem;
-    color: rgba(2, 6, 23, 0.62);
-  }
-
-  .stat-content .stat-value {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: rgba(2, 6, 23, 0.92);
-  }
-
-  .test-card {
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    transition: all 0.3s ease;
-  }
-
-  .test-card:hover {
-    background: rgba(255, 255, 255, 0.7);
-    transform: translateY(-4px);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
-  }
-</style>
+  </style>
 {% endblock style %}
 
 {% block content %}
-<main id="main-container">
-  <div class="content py-4">
-    <!-- Dialog overlays -->
-    <div class="ios-dialog-overlay" id="dialog-overlay"></div>
-
-    <div class="ios-dialog" id="ongoing-dialog">
-      <h3>Test ishlash jarayonida</h3>
-      <p id="ongoing-message">Siz ushbu testni allaqachon boshlagansiz. Davom ettirishni xohlaysizmi?</p>
-      <button class="confirm-btn" onclick="continueTest()">Davom ettirish</button>
-      <button class="cancel-btn" onclick="closeDialog('ongoing-dialog')">Bekor qilish</button>
-    </div>
-
-    <div class="ios-dialog" id="restart-dialog">
-      <h3>Testni qayta boshlash</h3>
-      <p>Siz ushbu testni yakunlagansiz. Qayta boshlashni xohlaysizmi?</p>
-      <button class="confirm-btn" onclick="startCountdown()">Qayta boshlash</button>
-      <button class="cancel-btn" onclick="closeDialog('restart-dialog')">Bekor qilish</button>
-    </div>
-
-    <div class="ios-dialog" id="start-dialog">
-      <h3>Testni boshlash</h3>
-      <p>Siz ushbu testni hali boshlamagansiz. Ishlashni xohlaysizmi?</p>
-      <button class="confirm-btn" onclick="startCountdown()">Ishlash</button>
-      <button class="cancel-btn" onclick="closeDialog('start-dialog')">Bekor qilish</button>
-    </div>
-
-    <div class="countdown-overlay" id="countdown-overlay">
-      <div class="countdown-text" id="countdown-text"></div>
-    </div>
-
-    <div class="glass-window glass-reveal">
-      <div class="glass-window-bar">
-        <div class="mac-dots" aria-hidden="true">
-          <span class="dot dot-red"></span>
-          <span class="dot dot-yellow"></span>
-          <span class="dot dot-green"></span>
-        </div>
-        <div class="glass-window-title">Dashboard</div>
-        <div class="glass-window-actions">
-          <a href="{% url 'all_results' %}" class="btn btn-sm btn-glass-secondary">
-            <i class="fa fa-chart-bar me-1 opacity-75"></i>
-            Natijalar
-          </a>
-        </div>
+  <div class="block block-rounded mb-5">
+    <div class="block-header block-header-default">
+      <div>
+        <h3 class="block-title">Faol testlar</h3>
+        <div class="fs-sm text-muted">Sizga tayinlangan topshiriqlar ro'yxati</div>
       </div>
-
-      <div class="glass-window-body">
-        <!-- Hero -->
-        <div class="glass-surface glass-reveal p-4">
-          <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
-            <div class="min-w-0">
-              <span class="badge glass-badge mb-2">
-                <i class="fa fa-graduation-cap me-1 opacity-75"></i>
-                {{ system.name|default:"Test Platformasi" }}
-              </span>
-              <h1 class="h3 mb-1 text-truncate">
-                Xush kelibsiz, {{ user.first_name|default:user.username }}
-              </h1>
-              <div class="text-muted">
-                Faol topshiriqlar va testlaringiz shu yerda.
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Profile -->
-        <div class="glass-surface glass-surface--soft glass-reveal p-4" style="--delay: 80ms;">
-          <div class="row align-items-center g-3">
-            <div class="col-12 col-md-auto text-center text-md-start">
-              {% if user.profile_picture %}
-                <img src="{{ user.profile_picture.url }}" alt="Profile" class="profile-photo">
-              {% else %}
-                <div class="profile-placeholder" aria-hidden="true">
-                  {{ user.first_name|default:user.username|slice:":1" }}{{ user.second_name|slice:":1" }}
-                </div>
-              {% endif %}
-            </div>
-
-            <div class="col min-w-0">
-              <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-2">
-                <div class="min-w-0">
-                  <div class="h5 mb-1 text-truncate">
-                    {{ user.first_name|default:user.username }} {{ user.second_name|default:"" }}
-                  </div>
-                  <div class="text-muted">
-                    <i class="fa fa-user-shield me-1 opacity-75"></i>
-                    {{ user.get_role_display|default:"Foydalanuvchi" }}
-                    {% if user.group_name %}
-                      <span class="ms-2"><i class="fa fa-users me-1 opacity-75"></i>{{ user.group_name }}</span>
-                    {% endif %}
-                  </div>
-                </div>
-
-                <div class="d-flex gap-2 flex-wrap">
-                  <a href="{% url 'logout' %}" class="btn btn-glass-danger">
-                    <i class="fa fa-sign-out-alt me-1 opacity-75"></i>
-                    Chiqish
-                  </a>
-                </div>
-              </div>
-
-              <div class="row g-2 mt-3">
-                <div class="col-12 col-md-4">
-                  <div class="text-muted">Email</div>
-                  <div class="fw-semibold text-truncate">{{ user.email|default:"-" }}</div>
-                </div>
-                <div class="col-12 col-md-4">
-                  <div class="text-muted">Telefon</div>
-                  <div class="fw-semibold text-truncate">{{ user.phone_number|default:"-" }}</div>
-                </div>
-                <div class="col-12 col-md-4">
-                  <div class="text-muted">Kafedra/Fakultet</div>
-                  <div class="fw-semibold text-truncate">{{ user.department|default:"-" }}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Statistics Section -->
-        <div class="row g-3 mt-2 mb-4">
-          <div class="col-12 col-sm-6 col-lg-3 glass-reveal" style="--delay: 100ms;">
-            <div class="stat-card">
-              <div class="stat-icon" style="background: rgba(37, 99, 235, 0.10); color: rgba(37, 99, 235, 0.92);">
-                <i class="fa fa-tasks"></i>
-              </div>
-              <div class="stat-content">
-                <h6>Jami testlar</h6>
-                <div class="stat-value">{{ total_tests }}</div>
-              </div>
-            </div>
-          </div>
-          <div class="col-12 col-sm-6 col-lg-3 glass-reveal" style="--delay: 110ms;">
-            <div class="stat-card">
-              <div class="stat-icon" style="background: rgba(22, 163, 74, 0.10); color: rgba(22, 163, 74, 0.92);">
-                <i class="fa fa-check-circle"></i>
-              </div>
-              <div class="stat-content">
-                <h6>Yakunlangan</h6>
-                <div class="stat-value">{{ completed_tests }}</div>
-              </div>
-            </div>
-          </div>
-          <div class="col-12 col-sm-6 col-lg-3 glass-reveal" style="--delay: 120ms;">
-            <div class="stat-card">
-              <div class="stat-icon" style="background: rgba(217, 119, 6, 0.10); color: rgba(217, 119, 6, 0.92);">
-                <i class="fa fa-hourglass-half"></i>
-              </div>
-              <div class="stat-content">
-                <h6>Jarayonda</h6>
-                <div class="stat-value">{{ ongoing_tests }}</div>
-              </div>
-            </div>
-          </div>
-          <div class="col-12 col-sm-6 col-lg-3 glass-reveal" style="--delay: 130ms;">
-            <div class="stat-card">
-              <div class="stat-icon" style="background: rgba(220, 38, 38, 0.10); color: rgba(220, 38, 38, 0.92);">
-                <i class="fa fa-chart-line"></i>
-              </div>
-              <div class="stat-content">
-                <h6>O'rtacha ball</h6>
-                <div class="stat-value">{{ average_score }}%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Assignments -->
-        <div class="d-flex align-items-end justify-content-between gap-2 glass-reveal" style="--delay: 140ms;">
-          <div>
-            <h2 class="h5 mb-1">Faol testlar</h2>
-            <div class="text-muted">Sizga tayinlangan testlar ro'yxati.</div>
-          </div>
-        </div>
-
-        <div class="row g-3">
-          {% if user_assignments %}
-            {% for assignment in user_assignments %}
-              <div class="col-12 col-md-6 col-xl-4 glass-reveal" style="--delay: 140ms;">
-                <div class="card h-100 test-card" data-assignment-id="{{ assignment.id }}">
-                  <div class="card-body">
-                    <div class="d-flex align-items-start justify-content-between gap-2">
-                      <span class="badge glass-badge">
-                        <i class="fa fa-layer-group me-1 opacity-75"></i>
-                        {{ assignment.category.name }}
-                      </span>
-
+    </div>
+    <div class="block-content">
+      <div class="row g-4">
+        {% if user_assignments %}
+          {% for assignment in user_assignments %}
+            <div class="col-12 col-md-6">
+              <div class="block block-rounded border h-100 mb-0" data-assignment-id="{{ assignment.id }}">
+                <div class="block-content">
+                  <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                    <div>
+                      <div class="fs-sm fw-semibold text-uppercase text-primary mb-1">{{ assignment.category.name }}</div>
+                      <div class="h5 mb-1">{{ assignment.test.name }}</div>
+                      <div class="text-muted fs-sm">Test topshirig'i tafsilotlari quyida ko'rsatilgan.</div>
+                    </div>
+                    <div>
                       {% if assignment.attempts >= assignment.max_attempts %}
-                        <span class="badge glass-badge" style="background: rgba(217, 119, 6, 0.10); border-color: rgba(217, 119, 6, 0.18); color: rgba(217, 119, 6, 0.92);">
-                          Limit
-                        </span>
+                        <span class="badge bg-warning">Limit</span>
                       {% elif assignment.end_time < now %}
-                        <span class="badge glass-badge" style="background: rgba(2, 6, 23, 0.06); border-color: rgba(2, 6, 23, 0.10);">
-                          Tugagan
-                        </span>
+                        <span class="badge bg-dark">Tugagan</span>
                       {% else %}
-                        <span class="badge glass-badge" style="background: rgba(22, 163, 74, 0.10); border-color: rgba(22, 163, 74, 0.18); color: rgba(22, 163, 74, 0.92);">
-                          Faol
-                        </span>
+                        <span class="badge bg-success">Faol</span>
                       {% endif %}
                     </div>
+                  </div>
 
-                    <div class="mt-3">
-                      <div class="h5 mb-1 assignment-title">{{ assignment.test.name }}</div>
-                      <div class="assignment-meta">
-                        <div class="d-flex align-items-center justify-content-between py-1">
-                          <span><i class="fa fa-list-ol me-1 opacity-75"></i> Savollar</span>
-                          <span class="fw-semibold text-body">{{ assignment.total_questions }}</span>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between py-1">
-                          <span><i class="fa fa-stopwatch me-1 opacity-75"></i> Davomiylik</span>
-                          <span class="fw-semibold text-body">{{ assignment.duration }} daq</span>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between py-1">
-                          <span><i class="fa fa-redo me-1 opacity-75"></i> Urinish</span>
-                          <span class="fw-semibold text-body">{{ assignment.attempts }} / {{ assignment.max_attempts }}</span>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-between py-1">
-                          <span><i class="fa fa-hourglass-half me-1 opacity-75"></i> Qolgan vaqt</span>
-                          <span class="fw-semibold remaining-time" data-end-time="{{ assignment.end_time|date:'c' }}">00:00</span>
+                  <div class="row g-3 fs-sm">
+                    <div class="col-6">
+                      <div class="text-muted mb-1">Savollar</div>
+                      <div class="fw-semibold">{{ assignment.total_questions }}</div>
+                    </div>
+                    <div class="col-6">
+                      <div class="text-muted mb-1">Davomiylik</div>
+                      <div class="fw-semibold">{{ assignment.duration }} daqiqa</div>
+                    </div>
+                    <div class="col-6">
+                      <div class="text-muted mb-1">Urinish</div>
+                      <div class="fw-semibold">{{ assignment.attempts }} / {{ assignment.max_attempts }}</div>
+                    </div>
+                    <div class="col-6">
+                      <div class="text-muted mb-1">Qolgan vaqt</div>
+                      <div class="remaining-time-block" data-start-time="{{ assignment.start_time|date:'c' }}" data-end-time="{{ assignment.end_time|date:'c' }}">
+                        <div class="fw-semibold remaining-time">00:00</div>
+                        <div class="progress remaining-time-progress mt-2" aria-hidden="true">
+                        <div
+                            class="progress-bar remaining-progress-bar"
+                            role="progressbar"
+                            style="width: 0%;"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                            aria-valuenow="0"></div>
                         </div>
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  <div class="card-footer bg-transparent border-0 pt-0">
-                    {% if assignment.attempts >= assignment.max_attempts %}
-                      <button class="btn btn-sm w-100 btn-outline-secondary" disabled>
-                        <i class="fa fa-ban me-1"></i> Urinishlar tugadi
-                      </button>
-                    {% elif assignment.end_time < now %}
-                      <button class="btn btn-sm w-100 btn-outline-secondary" disabled>
-                        <i class="fa fa-clock me-1"></i> Muddati tugadi
-                      </button>
-                    {% else %}
-                      <a href="{% url 'start-test' assignment.id %}" class="btn btn-sm w-100 btn-primary start-test-btn">
-                        <i class="fa fa-play me-1"></i> Test ishlash
-                      </a>
-                    {% endif %}
-                  </div>
+                <div class="block-content block-content-full bg-body-light">
+                  {% if assignment.attempts >= assignment.max_attempts %}
+                    <button class="btn btn-secondary w-100" disabled>
+                      <i class="fa fa-ban me-2"></i>Urinishlar tugadi
+                    </button>
+                  {% elif assignment.end_time < now %}
+                    <button class="btn btn-secondary w-100" disabled>
+                      <i class="fa fa-clock me-2"></i>Muddati tugadi
+                    </button>
+                  {% else %}
+                    <a href="{% url 'landing:start-test' assignment.id %}" class="btn btn-primary w-100 start-test-btn">
+                      <i class="fa fa-play me-2"></i>{% if assignment.has_unfinished_attempt %}Davom ettirish{% else %}Test ishlash{% endif %}
+                    </a>
+                  {% endif %}
                 </div>
               </div>
-            {% empty %}
-              <div class="col-12">
-                <div class="glass-surface glass-surface--soft p-4 text-center">
-                  <div class="fw-semibold mb-1">Faol topshiriqlar mavjud emas</div>
-                  <div class="text-muted">Hozircha sizga biriktirilgan test topshirig'i yo'q.</div>
-                </div>
-              </div>
-            {% endfor %}
-          {% else %}
-            <div class="col-12">
-              <div class="glass-surface glass-surface--soft p-4 text-center">
-                <div class="fw-semibold mb-1">Faol topshiriqlar mavjud emas</div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="col-12">
+            <div class="block block-rounded mb-0">
+              <div class="block-content text-center py-5">
+                <img src="{% static 'img/no-data.webp' %}" alt="No Data" class="img-fluid mb-3" style="max-width: 96px;">
+                <div class="h5 mb-1">Faol topshiriqlar mavjud emas</div>
                 <div class="text-muted">Hozircha sizga biriktirilgan test topshirig'i yo'q.</div>
               </div>
             </div>
-          {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="ongoing-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Test ishlash jarayonida</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0" id="ongoing-message">Siz ushbu testni allaqachon boshlagansiz. Davom ettirishni xohlaysizmi?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-alt-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+          <button type="button" class="btn btn-primary" id="continue-test-btn">Davom ettirish</button>
         </div>
       </div>
     </div>
   </div>
-</main>
+
+  <div class="modal fade" id="restart-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Testni qayta boshlash</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">Siz ushbu testni yakunlagansiz. Qayta boshlashni xohlaysizmi?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-alt-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+          <button type="button" class="btn btn-primary" id="restart-test-btn">Qayta boshlash</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="start-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Testni boshlash</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">Siz ushbu testni hali boshlamagansiz. Ishlashni xohlaysizmi?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-alt-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+          <button type="button" class="btn btn-primary" id="start-test-btn">Ishlash</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="info-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Ma'lumot</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0" id="info-message"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Tushunarli</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="countdown-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-body py-5 text-center">
+          <div class="text-uppercase text-muted fw-semibold fs-sm mb-2">Tayyorlaning</div>
+          <div class="display-3 fw-bold text-primary mb-0" id="countdown-text">3</div>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock content %}
 
 {% block script %}
-<script>
-  let currentAssignmentId = null;
-  let currentTestUrl = null;
+  <script>
+    let currentTestUrl = null;
 
-  function updateRemainingTimes() {
-    document.querySelectorAll('.remaining-time').forEach(span => {
-      const endTimeStr = span.dataset.endTime;
-      if (!endTimeStr) {
-        span.textContent = 'Tugadi';
-        return;
-      }
-      const endTime = new Date(endTimeStr);
-      if (isNaN(endTime)) {
-        span.textContent = 'Tugadi';
-        return;
-      }
-      const diff = Math.floor((endTime - Date.now()) / 1000);
-      if (diff <= 0) {
-        span.textContent = 'Tugadi';
-        return;
-      }
-      const days = Math.floor(diff / 86400);
-      const hours = Math.floor((diff % 86400) / 3600);
-      const minutes = Math.floor((diff % 3600) / 60);
-      const seconds = diff % 60;
-      span.textContent = days > 0
+    function formatRemainingTime(totalSeconds) {
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      return days > 0
         ? `${days} kun ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
         : `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    });
-  }
-
-  updateRemainingTimes();
-  setInterval(updateRemainingTimes, 1000);
-
-  function showDialog(dialogId, message = null) {
-    const dialog = document.getElementById(dialogId);
-    const overlay = document.getElementById('dialog-overlay');
-    if (message) {
-      const messageElement = dialog.querySelector('p');
-      if (messageElement) messageElement.textContent = message;
     }
-    dialog.style.display = 'block';
-    overlay.style.display = 'block';
-  }
 
-  function closeDialog(dialogId) {
-    const dialog = document.getElementById(dialogId);
-    const overlay = document.getElementById('dialog-overlay');
-    dialog.style.display = 'none';
-    overlay.style.display = 'none';
-  }
-
-  function startCountdown() {
-    const overlay = document.getElementById('countdown-overlay');
-    const countdownText = document.getElementById('countdown-text');
-    overlay.style.display = 'flex';
-    let count = 3;
-    countdownText.textContent = count;
-    const interval = setInterval(() => {
-      count--;
-      if (count > 0) {
-        countdownText.textContent = count;
-      } else {
-        clearInterval(interval);
-        overlay.style.display = 'none';
-        if (currentTestUrl) window.location.href = currentTestUrl;
+    function getRemainingProgressColor(percent) {
+      if (percent <= 25) {
+        return 'linear-gradient(90deg, #dc3545, #f87171)';
       }
-    }, 1000);
-  }
+      if (percent <= 50) {
+        return 'linear-gradient(90deg, #f59e0b, #fbbf24)';
+      }
+      return 'linear-gradient(90deg, #16a34a, #4ade80)';
+    }
 
-  function continueTest() {
-    closeDialog('ongoing-dialog');
-    startCountdown();
-  }
+    function updateRemainingTimes() {
+      document.querySelectorAll('.remaining-time-block').forEach(function (block) {
+        const timeElement = block.querySelector('.remaining-time');
+        const progressBar = block.querySelector('.remaining-progress-bar');
+        const startTimeStr = block.dataset.startTime;
+        const endTimeStr = block.dataset.endTime;
 
-  function checkTestStatus(assignmentId, url) {
-    currentAssignmentId = assignmentId;
-    currentTestUrl = url;
-    fetch(`/check-unfinished-test/${assignmentId}/`, {
-      method: 'GET',
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.never_started) {
-          showDialog('start-dialog');
-        } else if (data.unfinished) {
-          showDialog('ongoing-dialog');
-        } else if (data.attempts_exceeded) {
-          showDialog('ongoing-dialog', 'Siz maksimal urinishlar soniga yetdingiz.');
+        if (!timeElement || !progressBar || !startTimeStr || !endTimeStr) {
+          return;
+        }
+
+        const startTime = new Date(startTimeStr);
+        const endTime = new Date(endTimeStr);
+
+        if (isNaN(startTime) || isNaN(endTime) || endTime <= startTime) {
+          timeElement.textContent = 'Tugadi';
+          progressBar.style.width = '0%';
+          progressBar.style.background = 'linear-gradient(90deg, #6b7280, #9ca3af)';
+          progressBar.setAttribute('aria-valuenow', '0');
+          return;
+        }
+
+        const totalDurationMs = endTime - startTime;
+        const remainingMs = endTime - Date.now();
+        const remainingPercent = Math.max(0, Math.min(100, Math.round((remainingMs / totalDurationMs) * 100)));
+
+        if (remainingMs <= 0) {
+          timeElement.textContent = 'Tugadi';
+          progressBar.style.width = '0%';
+          progressBar.style.background = 'linear-gradient(90deg, #dc3545, #f87171)';
+          progressBar.setAttribute('aria-valuenow', '0');
+          return;
+        }
+
+        timeElement.textContent = formatRemainingTime(Math.floor(remainingMs / 1000));
+        progressBar.style.width = `${remainingPercent}%`;
+        progressBar.style.background = getRemainingProgressColor(remainingPercent);
+        progressBar.setAttribute('aria-valuenow', String(remainingPercent));
+      });
+    }
+
+    function getModal(id) {
+      return bootstrap.Modal.getOrCreateInstance(document.getElementById(id));
+    }
+
+    function showInfo(message) {
+      document.getElementById('info-message').textContent = message;
+      getModal('info-modal').show();
+    }
+
+    function startCountdown() {
+      ['ongoing-modal', 'restart-modal', 'start-modal'].forEach(function (id) {
+        getModal(id).hide();
+      });
+
+      const countdownModal = getModal('countdown-modal');
+      const countdownText = document.getElementById('countdown-text');
+      let count = 3;
+
+      countdownText.textContent = count;
+      countdownModal.show();
+
+      const interval = setInterval(function () {
+        count -= 1;
+        if (count > 0) {
+          countdownText.textContent = count;
         } else {
-          showDialog('restart-dialog');
+          clearInterval(interval);
+          countdownModal.hide();
+          if (currentTestUrl) {
+            window.location.href = currentTestUrl;
+          }
+        }
+      }, 1000);
+    }
+
+    function checkTestStatus(assignmentId, url) {
+      currentTestUrl = url;
+      const statusUrl = "{% url 'landing:check-unfinished-test' 0 %}".replace('/0/', `/${assignmentId}/`);
+
+      fetch(statusUrl, {
+        method: 'GET',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
         }
       })
-      .catch(error => {
-        console.error('Error:', error);
-        showDialog('ongoing-dialog', 'Xatolik: Test holatini tekshirishda muammo yuz berdi.');
-      });
-  }
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (data) {
+          if (data.never_started) {
+            getModal('start-modal').show();
+          } else if (data.unfinished) {
+            document.getElementById('ongoing-message').textContent = 'Siz ushbu testni allaqachon boshlagansiz. Davom ettirishni xohlaysizmi?';
+            getModal('ongoing-modal').show();
+          } else if (data.attempts_exceeded) {
+            showInfo('Siz maksimal urinishlar soniga yetgansiz.');
+          } else {
+            getModal('restart-modal').show();
+          }
+        })
+        .catch(function () {
+          showInfo('Test holatini tekshirishda xatolik yuz berdi.');
+        });
+    }
 
-  document.querySelectorAll('.start-test-btn').forEach(button => {
-    button.addEventListener('click', function(e) {
-      e.preventDefault();
-      const card = this.closest('.test-card');
-      if (!card) {
-        console.error('Test card topilmadi');
-        return;
-      }
-      const assignmentId = card.getAttribute('data-assignment-id');
-      const url = this.getAttribute('href');
-      if (assignmentId && url) {
-        checkTestStatus(assignmentId, url);
-      } else {
-        console.error('Assignment ID yoki URL topilmadi');
-      }
+    document.addEventListener('DOMContentLoaded', function () {
+      updateRemainingTimes();
+      setInterval(updateRemainingTimes, 1000);
+
+      document.querySelectorAll('.start-test-btn').forEach(function (button) {
+        button.addEventListener('click', function (event) {
+          event.preventDefault();
+          const card = this.closest('[data-assignment-id]');
+          if (!card) return;
+
+          const assignmentId = card.getAttribute('data-assignment-id');
+          const url = this.getAttribute('href');
+
+          if (assignmentId && url) {
+            checkTestStatus(assignmentId, url);
+          }
+        });
+      });
+
+      document.getElementById('continue-test-btn').addEventListener('click', startCountdown);
+      document.getElementById('restart-test-btn').addEventListener('click', startCountdown);
+      document.getElementById('start-test-btn').addEventListener('click', startCountdown);
     });
-  });
-</script>
+  </script>
 {% endblock script %}

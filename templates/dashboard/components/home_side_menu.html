@@ -1,0 +1,136 @@
+{% load static %}
+
+<style>
+  .home-brand-card .home-brand-logo-shell {
+    width: 112px;
+    height: 112px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 28px;
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.92);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.14);
+  }
+
+  .home-brand-card .home-brand-logo {
+    max-width: 88px;
+    max-height: 88px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.16));
+  }
+
+  .home-brand-card .home-user-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
+  }
+
+  .home-brand-card .home-user-fallback {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: var(--bs-primary);
+    font-size: 2rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
+  }
+</style>
+
+<div class="block block-rounded overflow-hidden mb-4 home-brand-card">
+  <div class="block-content block-content-full bg-primary text-center py-4">
+    <a href="{% url 'landing:dashboard' %}" class="text-decoration-none text-white d-inline-flex flex-column align-items-center gap-3">
+      <span class="home-brand-logo-shell">
+        {% if system and system.logo %}
+          <img class="home-brand-logo" src="{{ system.logo.url }}" alt="{{ system.name|default:'Logo' }}">
+        {% else %}
+          <span class="fs-1 text-white">
+            <i class="fa fa-layer-group"></i>
+          </span>
+        {% endif %}
+      </span>
+      <div class="fw-semibold fs-4">{{ system.name|default:"Quiz Platform" }}</div>
+    </a>
+
+    <div class="border-top border-white border-opacity-25 my-4"></div>
+
+    <div>
+      {% if user.profile_picture %}
+        <img class="home-user-avatar" src="{{ user.profile_picture.url }}" alt="{{ user.username }}">
+      {% else %}
+        <span class="home-user-fallback">
+          {{ user.first_name|default:user.username|slice:":1" }}{{ user.second_name|default:""|slice:":1" }}
+        </span>
+      {% endif %}
+    </div>
+
+    <div class="mt-3">
+      <div class="fw-semibold fs-5 text-white">{{ user.first_name|default:user.username }} {{ user.second_name|default:"" }}</div>
+      <div class="fs-sm text-white-75">
+        {% if user.is_superuser %}
+          Superadmin
+        {% elif user.is_staff %}
+          Administrator
+        {% elif user.is_teacher %}
+          O'qituvchi
+        {% elif user.is_student %}
+          Talaba
+        {% else %}
+          Foydalanuvchi
+        {% endif %}
+      </div>
+      {% if user.group_name %}
+        <div class="fs-sm text-white-75">{{ user.group_name }}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<aside class="block block-rounded mb-0 overflow-hidden">
+  <div class="block-content">
+    <div class="list-group push mb-0">
+      <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'landing:dashboard' %}">
+        <span><i class="fa fa-house me-2"></i>Bosh sahifa</span>
+        <i class="fa fa-angle-right"></i>
+      </a>
+      <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if request.resolver_match.url_name == 'all_results' %}active{% endif %}" href="{% url 'landing:all_results' %}">
+        <span><i class="fa fa-chart-bar me-2"></i>Natijalar</span>
+        <i class="fa fa-angle-right"></i>
+      </a>
+      {% if user.is_authenticated and not request.user.is_student %}
+        <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" href="{% url 'administrator:profile' %}">
+          <span><i class="fa fa-id-card me-2"></i>Mening sahifam</span>
+          <i class="fa fa-angle-right"></i>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="block-content block-content-full bg-body-light">
+    <div class="d-grid gap-2">
+      {% if user.is_authenticated and not request.user.is_student %}
+        <a class="btn btn-alt-primary" href="{% url 'administrator:profile' %}">
+          <i class="fa fa-user me-2"></i>Profil
+        </a>
+      {% endif %}
+      {% if user.is_authenticated %}
+        <a class="btn btn-danger" href="{% url 'landing:logout' %}">
+          <i class="fa fa-sign-out-alt me-2"></i>Chiqish
+        </a>
+      {% else %}
+        <a class="btn btn-primary" href="{% url 'landing:login' %}">
+          <i class="fa fa-user-lock me-2"></i>Kirish
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</aside>

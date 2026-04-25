@@ -33,17 +33,17 @@
             <p class="mt-2 mb-0 fw-medium">{{ user.first_name }} {{ user.second_name }}</p>
           </div>
           <div class="p-2">
-            <a class="dropdown-item d-flex align-items-center justify-content-between" href="be_pages_generic_inbox.html">
+            <a class="dropdown-item d-flex align-items-center justify-content-between" href="{% url 'administrator:profile' %}">
             <span class="fs-sm fw-medium">Ma'lumotlarim</span>
-            <span class="badge rounded-pill bg-primary ms-2">3</span>
+            <span class="badge rounded-pill bg-primary ms-2">{{ user.username }}</span>
             </a>
           </div>
           <div role="separator" class="dropdown-divider m-0"></div>
           <div class="p-2">
-            <a class="dropdown-item d-flex align-items-center justify-content-between" href="{% url 'dashboard' %}">
+            <a class="dropdown-item d-flex align-items-center justify-content-between" href="{% url 'landing:dashboard' %}">
             <span class="fs-sm fw-medium">Asosiy sahifa</span>
             </a>
-            <a class="dropdown-item d-flex align-items-center justify-content-between" href="{% url 'logout' %}">
+            <a class="dropdown-item d-flex align-items-center justify-content-between" href="{% url 'landing:logout' %}">
             <span class="fs-sm fw-medium">Chiqish</span>
             </a>
           </div>

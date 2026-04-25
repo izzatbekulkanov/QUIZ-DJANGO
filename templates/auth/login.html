@@ -1,72 +1,63 @@
 {% extends 'auth/base_auth.html' %}
-{% load static %}
 
 {% block title %}Kirish{% endblock title %}
-{% block window_title %}Kirish{% endblock window_title %}
-
-{% block style %}
-<style>
-  .pw-toggle-btn {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-  }
-</style>
-{% endblock style %}
+{% block auth_footer_action %}
+  <a href="{% url 'landing:id_login' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="btn btn-light btn-lg fw-semibold w-100">
+    <i class="fa fa-id-card me-2"></i>ID orqali kirish
+  </a>
+{% endblock %}
+{% block panel_kicker %}Kirish{% endblock %}
+{% block window_title %}Hisobingizga kiring{% endblock window_title %}
+{% block window_description %}Davom etish uchun foydalanuvchi nomi va parolingizni kiriting.{% endblock %}
 
 {% block content %}
-  <div class="mb-2">
-    <span class="badge glass-badge">
-      <i class="fa fa-user-lock me-1 opacity-75"></i>
-      Kirish
-    </span>
-  </div>
-
-  <h1 class="h3 mb-1">Tizimga kirish</h1>
-  <p class="auth-subtitle mb-4">Shaxsiy kabinetga kirish uchun ma'lumotlarni kiriting.</p>
-
   {% if error %}
-    <div class="p-3 mb-3" style="border-radius: 14px; background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.16);">
-      <div class="d-flex align-items-center gap-2">
-        <i class="fa fa-triangle-exclamation" style="color: rgba(220, 38, 38, 0.92);"></i>
-        <div class="fw-semibold">{{ error }}</div>
-      </div>
+    <div class="alert alert-danger d-flex align-items-center" role="alert">
+      <i class="fa fa-triangle-exclamation me-2"></i>
+      <div>{{ error }}</div>
     </div>
   {% endif %}
 
-  <form method="POST" action="{% url 'login' %}">
-    {% csrf_token %}
-
-    <div class="mb-3">
-      <label for="login-username" class="form-label fw-semibold mb-1">Foydalanuvchi nomi</label>
-      <input type="text" class="form-control form-control-lg" id="login-username" name="username" placeholder="Username yoki ID" required>
+  {% if next %}
+    <div class="alert alert-info d-flex align-items-center" role="alert">
+      <i class="fa fa-circle-info me-2"></i>
+      <div>Davom etish uchun avval tizimga kiring.</div>
     </div>
+  {% endif %}
 
-    <div class="mb-3 position-relative">
-      <label for="login-password" class="form-label fw-semibold mb-1">Parol</label>
-      <input type="password" class="form-control form-control-lg" id="login-password" name="password" placeholder="Parol" required style="padding-right: 3.25rem;">
-      <button type="button" class="btn btn-sm btn-glass-secondary pw-toggle-btn" onclick="togglePassword()" aria-label="Parolni ko'rsatish/yashirish">
-        <i class="fa fa-eye" id="pw-icon"></i>
-      </button>
+  <form method="POST" action="{% url 'landing:login' %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+
+    <div class="mb-4">
+      <label for="login-username" class="form-label">Foydalanuvchi nomi</label>
+      <input type="text" class="form-control form-control-alt form-control-lg" id="login-username" name="username" placeholder="Username yoki ID" required>
     </div>
 
     <div class="mb-4">
+      <label for="login-password" class="form-label">Parol</label>
+      <div class="input-group input-group-lg">
+        <input type="password" class="form-control form-control-alt" id="login-password" name="password" placeholder="Parol" required>
+        <button type="button" class="btn btn-alt-secondary" id="toggle-password" aria-label="Parolni ko'rsatish yoki yashirish">
+          <i class="fa fa-eye" id="pw-icon"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
       <div class="form-check">
         <input class="form-check-input" type="checkbox" id="login-remember" name="remember_me">
         <label class="form-check-label" for="login-remember">Eslab qolish</label>
       </div>
+      <a href="{% url 'landing:id_login' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="fs-sm fw-medium">ID orqali kirish</a>
     </div>
 
     <div class="d-grid gap-2">
-      <button type="submit" class="btn btn-glass-primary btn-lg">
-        <i class="fa fa-sign-in-alt me-1 opacity-75"></i>
-        Kirish
+      <button type="submit" class="btn btn-primary btn-lg">
+        <i class="fa fa-right-to-bracket me-2"></i>Kirish
       </button>
-
-      <a href="{% url 'id_login' %}" class="btn btn-glass-secondary btn-lg">
-        <i class="fa fa-id-card me-1 opacity-75"></i>
-        ID orqali kirish
+      <a href="{% url 'landing:dashboard' %}" class="btn btn-alt-secondary btn-lg">
+        <i class="fa fa-house me-2"></i>Asosiy sahifaga o'tish
       </a>
     </div>
   </form>
@@ -74,20 +65,19 @@
 
 {% block script %}
 <script>
-  function togglePassword() {
+  document.addEventListener('DOMContentLoaded', function () {
     const passwordInput = document.getElementById('login-password');
+    const toggleButton = document.getElementById('toggle-password');
     const icon = document.getElementById('pw-icon');
-    if (!passwordInput || !icon) return;
 
-    if (passwordInput.type === 'password') {
-      passwordInput.type = 'text';
-      icon.classList.remove('fa-eye');
-      icon.classList.add('fa-eye-slash');
-    } else {
-      passwordInput.type = 'password';
-      icon.classList.remove('fa-eye-slash');
-      icon.classList.add('fa-eye');
-    }
-  }
+    if (!passwordInput || !toggleButton || !icon) return;
+
+    toggleButton.addEventListener('click', function () {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      icon.classList.toggle('fa-eye', !isPassword);
+      icon.classList.toggle('fa-eye-slash', isPassword);
+    });
+  });
 </script>
 {% endblock script %}

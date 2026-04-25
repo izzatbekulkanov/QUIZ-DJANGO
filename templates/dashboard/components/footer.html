@@ -1,18 +1,11 @@
 ﻿{% load static %}
 <footer id="page-footer" class="bg-white border-top shadow-sm mt-auto">
   <div class="content py-4">
-    <div class="row g-3 align-items-start fs-sm">
+    <div class="row g-3 align-items-center fs-sm">
       <div class="col-md-6 text-center text-md-start">
         <div class="fw-semibold mb-1">
           {{ system.name|default:"Quiz Platform" }}
           <span class="text-muted">(c) <span id="year-copy"></span></span>
-        </div>
-        <div class="text-muted">
-          {% if system and system.footer_text %}
-            {{ system.footer_text }}
-          {% else %}
-            Testlar, natijalar va shaxsiy kabinet uchun yagona platforma.
-          {% endif %}
         </div>
       </div>
 

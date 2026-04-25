@@ -8,7 +8,7 @@
       <span class="dot dot-green"></span>
     </div>
 
-    <a class="glass-brand text-decoration-none mt-3" href="{% url 'dashboard' %}">
+    <a class="glass-brand text-decoration-none mt-3" href="{% url 'landing:dashboard' %}">
       <span class="glass-brand-mark" aria-hidden="true">
         {% if system and system.logo %}
           <img src="{{ system.logo.url }}" alt="{{ system.name|default:'Logo' }}">
@@ -27,16 +27,16 @@
   </div>
 
   <nav class="glass-menu mt-3">
-    <a class="glass-menu-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+    <a class="glass-menu-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'landing:dashboard' %}">
       <i class="fa fa-home"></i>
       <span>Bosh sahifa</span>
     </a>
-    <a class="glass-menu-link {% if request.resolver_match.url_name == 'all_results' %}active{% endif %}" href="{% url 'all_results' %}">
+    <a class="glass-menu-link {% if request.resolver_match.url_name == 'all_results' %}active{% endif %}" href="{% url 'landing:all_results' %}">
       <i class="fa fa-chart-bar"></i>
       <span>Natijalar</span>
     </a>
     {% if user.is_authenticated and not request.user.is_student %}
-      <a class="glass-menu-link {% if request.resolver_match.url_name == 'main' %}active{% endif %}" href="{% url 'main' %}">
+      <a class="glass-menu-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" href="{% url 'administrator:profile' %}">
         <i class="fa fa-user"></i>
         <span>Mening sahifam</span>
       </a>
@@ -60,12 +60,12 @@
             {{ user.first_name|default:user.username }} {{ user.second_name|default:"" }}
           </span>
         </span>
-        <a class="btn btn-sm btn-glass-danger" href="{% url 'logout' %}">
+        <a class="btn btn-sm btn-glass-danger" href="{% url 'landing:logout' %}">
           <i class="fa fa-sign-out-alt"></i>
         </a>
       </div>
     {% else %}
-      <a class="btn btn-glass-primary w-100" href="{% url 'login' %}">
+      <a class="btn btn-glass-primary w-100" href="{% url 'landing:login' %}">
         <i class="fa fa-user-lock me-1 opacity-75"></i>
         Kirish
       </a>

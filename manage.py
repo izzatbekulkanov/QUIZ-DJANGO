@@ -19,6 +19,10 @@ def main():
     except Exception:
         pass
 
+    from core.startup import apply_runtime_patches
+
+    apply_runtime_patches()
+
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

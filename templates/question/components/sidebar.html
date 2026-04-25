@@ -3,7 +3,7 @@
   <!-- Side Header -->
   <div class="content-header">
     <!-- Logo -->
-    <a class="fw-semibold text-dual" href="{% url 'main' %}">
+    <a class="fw-semibold text-dual" href="{% url 'administrator:main' %}">
     <span class="smini-visible">
     <i class="fa fa-circle-notch text-primary"></i>
     </span>
@@ -28,38 +28,36 @@
     <div class="content-side">
       <ul class="nav-main">
         <li class="nav-main-item ">
+          <a class="nav-main-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}"
+             href="{% url 'administrator:profile' %}">
+            <i class="nav-main-link-icon fas fa-id-card"></i>
+            <span class="nav-main-link-name">Mening sahifam</span>
+          </a>
+        </li>
+        <li class="nav-main-item ">
           <a class="nav-main-link {% if request.resolver_match.url_name == 'users' %}active{% endif %}"
-             href="{% url 'users' %}">
+             href="{% url 'administrator:users' %}">
             <i class="nav-main-link-icon fas fa-users"></i>
             <span class="nav-main-link-name">Foydalanuvchilar</span>
           </a>
         </li>
         <li class="nav-main-item ">
           <a class="nav-main-link {% if request.resolver_match.url_name == 'categories' %}active{% endif %}"
-             href="{% url 'categories' %}">
+             href="{% url 'administrator:categories' %}">
             <i class="nav-main-link-icon fas fa-layer-group"></i>
             <span class="nav-main-link-name">Kategoriyalar</span>
           </a>
         </li>
         <li class="nav-main-item ">
           <a class="nav-main-link {% if request.resolver_match.url_name == 'question' %}active{% endif %}"
-             href="{% url 'question' %}">
+             href="{% url 'administrator:question' %}">
             <i class="nav-main-link-icon fas fa-question-circle"></i>
             <span class="nav-main-link-name">Test</span>
           </a>
         </li>
-        {% if request.user.is_superuser %}
-          <li class="nav-main-item ">
-            <a class="nav-main-link {% if request.resolver_match.url_name == 'generation' %}active{% endif %}"
-               href="{% url 'generation' %}">
-              <i class="nav-main-link-icon fas fa-magic"></i>
-              <span class="nav-main-link-name">Generatsiya</span>
-            </a>
-          </li>
-        {% endif %}
         <li class="nav-main-item ">
           <a class="nav-main-link {% if request.resolver_match.url_name == 'assign-test' %}active{% endif %}"
-             href="{% url 'assign-test' %}">
+             href="{% url 'administrator:assign-test' %}">
 
             <i class="nav-main-link-icon fas fa-tasks"></i>
             <span class="nav-main-link-name">Topshiriqlar</span>
@@ -67,7 +65,7 @@
         </li>
         <li class="nav-main-item">
           <a class="nav-main-link {% if request.resolver_match.url_name == 'results' %}active{% endif %}"
-             href="{% url 'results' %}">
+             href="{% url 'administrator:results' %}">
             <i class="nav-main-link-icon fas fa-chart-bar"></i>
             <span class="nav-main-link-name">Natijalar</span>
           </a>
@@ -75,21 +73,21 @@
         {% if request.user.is_superuser %}
           <li class="nav-main-item ">
             <a class="nav-main-link {% if request.resolver_match.url_name == 'logs' %}active{% endif %}"
-               href="{% url 'logs' %}">
+               href="{% url 'administrator:logs' %}">
               <i class="nav-main-link-icon fas fa-file-alt"></i>
               <span class="nav-main-link-name">Loglar</span>
             </a>
           </li>
           <li class="nav-main-item ">
             <a class="nav-main-link {% if request.resolver_match.url_name == 'roles' %}active{% endif %}"
-               href="{% url 'roles' %}">
+               href="{% url 'administrator:roles' %}">
               <i class="nav-main-link-icon fas fa-user-shield"></i>
               <span class="nav-main-link-name">Rollar</span>
             </a>
           </li>
           <li class="nav-main-item">
             <a class="nav-main-link {% if request.resolver_match.url_name == 'site_settings' %}active{% endif %}"
-               href="{% url 'site_settings' %}">
+               href="{% url 'administrator:site_settings' %}">
               <i class="nav-main-link-icon fas fa-cogs"></i>
               <span class="nav-main-link-name">Sozlamalar</span>
             </a>

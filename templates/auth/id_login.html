@@ -1,97 +1,66 @@
 {% extends 'auth/base_auth.html' %}
-{% load static %}
 
 {% block title %}ID orqali kirish{% endblock title %}
-{% block window_title %}ID orqali kirish{% endblock window_title %}
-
-{% block style %}
-<style>
-  .id-input-wrapper {
-    display: flex;
-    justify-content: center;
-    gap: 0.35rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .id-input-box {
-    width: 2.4rem;
-    height: 2.6rem;
-    font-size: 1.15rem;
-    text-align: center;
-    border-radius: 14px;
-    border: 1px solid rgba(15, 23, 42, 0.12);
-    background: rgba(255, 255, 255, 0.70);
-    box-shadow: none;
-  }
-
-  .id-input-box:focus {
-    outline: none;
-    border-color: rgba(37, 99, 235, 0.42);
-    box-shadow: var(--glass-ring);
-  }
-
-  .id-input-box.is-invalid {
-    border-color: rgba(220, 38, 38, 0.35);
-    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.10);
-  }
-
-  @media (max-width: 420px) {
-    .id-input-box { width: 2.05rem; height: 2.4rem; font-size: 1.05rem; }
-  }
-</style>
-{% endblock style %}
+{% block auth_kicker %}Raqamli autentifikatsiya{% endblock %}
+{% block auth_heading %}12 yoki 13 xonali ID orqali tez va aniq kirish{% endblock %}
+{% block auth_description %}ID raqam bo'yicha kirishda asosiy urg'u aniq kontrast, yirik kiritish maydonlari va oson yo'naltirishga berildi.{% endblock %}
+{% block panel_kicker %}ID login{% endblock %}
+{% block window_title %}ID raqamni kiriting{% endblock window_title %}
+{% block window_description %}12 yoki 13 xonali raqamni kataklarga kiriting yoki bir martada qo'yib yuboring. Har bir katakka bittadan raqam tushadi.{% endblock %}
 
 {% block content %}
-  <div class="mb-2">
-    <span class="badge glass-badge">
-      <i class="fa fa-id-card me-1 opacity-75"></i>
-      ID orqali kirish
-    </span>
-  </div>
-
-  <h1 class="h3 mb-1">ID raqamni kiriting</h1>
-  <p class="auth-subtitle mb-4">
-    12 xonali ID raqamingizni kiriting. Har bir katakka bitta raqam.
-  </p>
-
   {% if error %}
-    <div class="p-3 mb-3" style="border-radius: 14px; background: rgba(220, 38, 38, 0.08); border: 1px solid rgba(220, 38, 38, 0.16);">
-      <div class="d-flex align-items-center gap-2">
-        <i class="fa fa-triangle-exclamation" style="color: rgba(220, 38, 38, 0.92);"></i>
-        <div class="fw-semibold">{{ error }}</div>
-      </div>
+    <div class="alert alert-danger d-flex align-items-center" role="alert">
+      <i class="fa fa-triangle-exclamation me-2"></i>
+      <div>{{ error }}</div>
     </div>
   {% endif %}
 
-  <form id="id-login-form" method="POST" action="{% url 'id_login' %}" novalidate>
-    {% csrf_token %}
+  {% if next %}
+    <div class="alert alert-info d-flex align-items-center" role="alert">
+      <i class="fa fa-circle-info me-2"></i>
+      <div>Davom etish uchun ID orqali autentifikatsiyani yakunlang.</div>
+    </div>
+  {% endif %}
 
-    <div class="id-input-wrapper" aria-label="12 xonali ID">
-      {% for i in "0123456789ab" %}
-        <input
-          type="text"
-          maxlength="1"
-          inputmode="numeric"
-          autocomplete="one-time-code"
-          pattern="[0-9]"
-          class="id-input-box"
-          name="id_digit_{{ forloop.counter }}"
-          id="digit{{ forloop.counter }}"
-          required>
+  <div class="alert alert-secondary d-flex align-items-start" role="alert">
+    <i class="fa fa-keyboard fs-4 me-3 mt-1"></i>
+    <div>
+      <div class="fw-semibold mb-1">Kiritish qoidasi</div>
+      <div class="mb-0">Faqat raqam kiriting. Kataklar avtomatik keyingisiga o'tadi, to'liq ID esa tizim tomonidan yig'iladi.</div>
+    </div>
+  </div>
+
+  <form id="id-login-form" method="POST" action="{% url 'landing:id_login' %}" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+
+    <div class="row g-2 justify-content-center mb-3" aria-label="12 yoki 13 xonali ID">
+      {% for i in "0123456789abc" %}
+        <div class="col-2 col-sm-1">
+          <input
+            type="text"
+            maxlength="1"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            pattern="[0-9]"
+            class="form-control form-control-alt form-control-lg text-center fw-bold px-0 js-id-digit"
+            name="id_digit_{{ forloop.counter }}"
+            id="digit{{ forloop.counter }}"
+            required>
+        </div>
       {% endfor %}
     </div>
 
+    <div class="text-center text-muted fs-sm mb-4">Namuna: 123456789012 yoki 1234567890123</div>
     <input type="hidden" name="id_number" id="full-id">
 
     <div class="d-grid gap-2">
-      <button type="submit" class="btn btn-glass-primary btn-lg">
-        <i class="fa fa-sign-in-alt me-1 opacity-75"></i>
-        Kirish
+      <button type="submit" class="btn btn-primary btn-lg">
+        <i class="fa fa-right-to-bracket me-2"></i>Kirish
       </button>
-      <a href="{% url 'login' %}" class="btn btn-glass-secondary btn-lg">
-        <i class="fa fa-arrow-left me-1 opacity-75"></i>
-        Login sahifasiga qaytish
+      <a href="{% url 'landing:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="btn btn-alt-secondary btn-lg">
+        <i class="fa fa-arrow-left me-2"></i>Oddiy login sahifasi
       </a>
     </div>
   </form>
@@ -99,73 +68,96 @@
 
 {% block script %}
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const inputs = Array.from(document.querySelectorAll('.id-input-box'));
+  document.addEventListener('DOMContentLoaded', function () {
+    const inputs = Array.from(document.querySelectorAll('.js-id-digit'));
     const form = document.getElementById('id-login-form');
     const hidden = document.getElementById('full-id');
 
     function fillFromString(str) {
       const digits = (str || '').replace(/\D/g, '').slice(0, inputs.length).split('');
       if (!digits.length) return false;
-      inputs.forEach((inp, idx) => { inp.value = digits[idx] || ''; });
-      const nextIdx = Math.min(digits.length, inputs.length - 1);
-      inputs[nextIdx].focus();
-      return digits.length === inputs.length;
+
+      inputs.forEach((input, index) => {
+        input.value = digits[index] || '';
+        input.classList.remove('is-invalid');
+      });
+
+      const nextIndex = Math.min(digits.length, inputs.length - 1);
+      inputs[nextIndex].focus();
+      return true;
     }
 
     inputs.forEach((input, index) => {
-      input.addEventListener('input', () => {
+      input.addEventListener('input', function () {
         const current = input.value;
+
         if (!/^\d$/.test(current)) {
           input.value = '';
           return;
         }
-        if (index < inputs.length - 1) inputs[index + 1].focus();
+
+        input.classList.remove('is-invalid');
+
+        if (index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
       });
 
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Backspace' && !input.value && index > 0) {
+      input.addEventListener('keydown', function (event) {
+        if (event.key === 'Backspace' && !input.value && index > 0) {
           inputs[index - 1].focus();
         }
       });
 
-      input.addEventListener('paste', (e) => {
-        const text = (e.clipboardData || window.clipboardData).getData('text');
+      input.addEventListener('paste', function (event) {
+        const text = (event.clipboardData || window.clipboardData).getData('text');
         if (!text) return;
-        const ok = fillFromString(text);
-        if (ok) e.preventDefault();
+
+        if (fillFromString(text)) {
+          event.preventDefault();
+        }
       });
 
-      input.addEventListener('focus', () => {
-        for (let i = 0; i < index; i++) {
-          if (!inputs[i].value) { inputs[i].focus(); break; }
+      input.addEventListener('focus', function () {
+        for (let i = 0; i < index; i += 1) {
+          if (!inputs[i].value) {
+            inputs[i].focus();
+            break;
+          }
         }
       });
     });
 
-    if (inputs[0]) inputs[0].addEventListener('paste', (e) => {
-      const text = (e.clipboardData || window.clipboardData).getData('text');
-      if (!text) return;
-      const ok = fillFromString(text);
-      if (ok) e.preventDefault();
-    });
-
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', function (event) {
       let valid = true;
+      let seenEmpty = false;
       const digits = [];
 
-      inputs.forEach(input => {
-        if (!input.value || !/^\d$/.test(input.value)) {
+      inputs.forEach(function (input) {
+        if (!input.value) {
+          seenEmpty = true;
+          input.classList.remove('is-invalid');
+          return;
+        }
+
+        if (!/^\d$/.test(input.value) || seenEmpty) {
           input.classList.add('is-invalid');
           valid = false;
-        } else {
-          input.classList.remove('is-invalid');
-          digits.push(input.value);
+          return;
         }
+
+        input.classList.remove('is-invalid');
+        digits.push(input.value);
       });
 
+      if (digits.length < 12 || digits.length > 13) {
+        valid = false;
+        const markerIndex = Math.min(digits.length, inputs.length - 1);
+        inputs[markerIndex].classList.add('is-invalid');
+      }
+
       if (!valid) {
-        e.preventDefault();
+        event.preventDefault();
         return;
       }
 

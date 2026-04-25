@@ -43,7 +43,7 @@
 {% block content %}
 <main id="main-container">
   <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+  <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 
   <!-- Hero -->
   <div class="bg-image overflow-hidden"
@@ -55,7 +55,7 @@
             <h1 class="fw-semibold text-white mb-0">Foydalanuvchilar</h1>
           </div>
           <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="{% url 'users' %}">
+            <a class="btn btn-light btn-sm" href="{% url 'administrator:users' %}">
               <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
             </a>
           </div>
@@ -124,6 +124,12 @@
                 <i class="fa fa-user-graduate text-primary me-1"></i> Talabalar</a></li>
               <li><a class="dropdown-item" href="javascript:void(0)" onclick="showGroupImport()">
                 <i class="fa fa-users text-info me-1"></i> Guruh bo‘yicha yuklash</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <button type="button" class="dropdown-item" onclick="openExcelImport()">
+                  <i class="fa fa-file-excel text-success me-1"></i> Excel orqali yuklash
+                </button>
+              </li>
             </ul>
           </div>
           <button class="btn btn-sm btn-warning" onclick="grantAllAuth()" aria-label="Barcha foydalanuvchilarga ruxsat berish">
@@ -132,9 +138,14 @@
           <button class="btn btn-sm btn-secondary" onclick="revokeAllAuth()" aria-label="Barcha foydalanuvchilardan ruxsatni olib tashlash">
             <i class="fa fa-times-square me-1"></i> Barchasidan olib tashlash
           </button>
-          <a class="btn btn-sm btn-info" href="{% url 'add-user' %}" aria-label="Yangi foydalanuvchi qo'shish">
+          <a class="btn btn-sm btn-info" href="{% url 'administrator:add-user' %}" aria-label="Yangi foydalanuvchi qo'shish">
             <i class="fa fa-plus me-1"></i> Yangi
           </a>
+        </div>
+        <input type="file" id="excel-import-input" class="d-none" accept=".xlsx,.xlsm" onchange="handleExcelImport(event)">
+        <div class="text-muted small mb-3">
+          Excel import ustunlari: <code>username</code>, <code>O'quvchining F.I.SH.</code>, <code>akademik guruh</code>.
+          Import qilingan foydalanuvchilarning paroli <code>namdpi451</code> bo'ladi.
         </div>
 
         <!-- Guruh tanlash oynasi -->
@@ -222,7 +233,7 @@
                            {% if user.auth_is_id %}checked{% endif %} aria-label="Auth holatini o‘zgartirish">
                   </td>
                   <td>
-                    <a href="{% url 'edit-user' user.id %}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip"
+                    <a href="{% url 'administrator:edit-user' user.id %}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip"
                        title="Tahrirlash" aria-label="Foydalanuvchini tahrirlash">
                       <i class="fa fa-pencil-alt"></i>
                     </a>
@@ -308,8 +319,24 @@
 <script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
 <script>
+  function getCookie(name) {
+    const cookieValue = document.cookie
+      .split(';')
+      .map(cookie => cookie.trim())
+      .find(cookie => cookie.startsWith(`${name}=`));
+
+    if (!cookieValue) {
+      return '';
+    }
+
+    return decodeURIComponent(cookieValue.split('=').slice(1).join('='));
+  }
+
   function getCsrfToken() {
-    const token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+    const hiddenToken = document.getElementById('csrf-token')?.value?.trim() || '';
+    const cookieToken = getCookie('csrftoken');
+    const token = hiddenToken || cookieToken;
+
     if (!token) {
       Swal.fire({
         title: 'Xato!',
@@ -322,8 +349,26 @@
     return token;
   }
 
+  async function readJsonResponse(response) {
+    const contentType = response.headers.get('content-type') || '';
+
+    if (contentType.includes('application/json')) {
+      return response.json();
+    }
+
+    const text = await response.text();
+    const parser = new DOMParser();
+    const documentNode = parser.parseFromString(text, 'text/html');
+    const pageTitle = documentNode.querySelector('title')?.textContent?.trim();
+
+    return {
+      success: false,
+      message: pageTitle || `Server xatoligi (${response.status})`,
+    };
+  }
+
   function loadGroups() {
-    fetch('/question/api/groups/', {
+    fetch("{% url 'administrator:group-list' %}", {
       headers: {
         'X-Requested-With': 'XMLHttpRequest'
       }
@@ -351,12 +396,17 @@
     modal.show();
     const statusElement = document.getElementById('importStatus');
     const progressElement = document.getElementById('importProgress');
+    progressElement.classList.remove('bg-danger');
     statusElement.innerText = `${label} yuklanmoqda...`;
     progressElement.style.width = '0%';
     progressElement.innerText = '0%';
     progressElement.setAttribute('aria-valuenow', 0);
 
-    const source = new EventSource(`/question/import/${type}/`);
+    const importUrls = {
+      staff: "{% url 'administrator:import_staff' %}",
+      students: "{% url 'administrator:import_students' %}"
+    };
+    const source = new EventSource(importUrls[type]);
     source.onmessage = function(event) {
       const data = JSON.parse(event.data);
       statusElement.innerText = data.status;
@@ -396,6 +446,73 @@
     loadGroups();
   }
 
+  function openExcelImport() {
+    document.getElementById('excel-import-input').click();
+  }
+
+  function handleExcelImport(event) {
+    const fileInput = event.target;
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) {
+      return;
+    }
+
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      fileInput.value = '';
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    Swal.fire({
+      title: 'Excel import',
+      text: `${file.name} yuklanmoqda...`,
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    fetch("{% url 'administrator:import-users-excel' %}", {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: formData,
+    })
+      .then(async response => {
+        const data = await readJsonResponse(response);
+        if (!response.ok) {
+          throw data;
+        }
+        return data;
+      })
+      .then(data => {
+        Swal.fire({
+          title: 'Muvaffaqiyat!',
+          text: data.message,
+          icon: 'success',
+          confirmButtonText: 'OK',
+        }).then(() => {
+          location.reload();
+        });
+      })
+      .catch(error => {
+        Swal.fire({
+          title: 'Xato!',
+          text: error.message || 'Excel importda xatolik yuz berdi.',
+          icon: 'error',
+          confirmButtonText: 'OK',
+        });
+      })
+      .finally(() => {
+        fileInput.value = '';
+      });
+  }
+
   function startGroupImport() {
     const groupId = document.getElementById('group-select').value;
     const groupName = document.getElementById('group-select').options[document.getElementById('group-select').selectedIndex].text;
@@ -408,12 +525,14 @@
     modal.show();
     const statusElement = document.getElementById('importStatus');
     const progressElement = document.getElementById('importProgress');
+    progressElement.classList.remove('bg-danger');
     statusElement.innerText = `Guruh '${groupName}' uchun yuklanmoqda...`;
     progressElement.style.width = '0%';
     progressElement.innerText = '0%';
     progressElement.setAttribute('aria-valuenow', 0);
 
-    const source = new EventSource(`/question/import/students/by-group/?group_id=${encodeURIComponent(groupId)}`);
+    const groupImportUrl = "{% url 'administrator:import-students-by-group' %}";
+    const source = new EventSource(`${groupImportUrl}?group_id=${encodeURIComponent(groupId)}`);
     source.onmessage = function(event) {
       const data = JSON.parse(event.data);
       statusElement.innerText = data.status;
@@ -463,7 +582,8 @@
       cancelButtonText: 'Bekor',
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch(`/question/delete/${userId}/`, {
+        const deleteUserUrl = "{% url 'administrator:delete-user' 0 %}".replace("/0/", `/${userId}/`);
+        fetch(deleteUserUrl, {
           method: 'DELETE',
           headers: {
             'X-CSRFToken': csrfToken,
@@ -500,7 +620,8 @@
         const csrfToken = getCsrfToken();
         if (!csrfToken) return;
 
-        fetch(`/question/users/toggle-auth/${userId}/`, {
+        const toggleAuthUrl = "{% url 'administrator:toggle-auth' 0 %}".replace("/0/", `/${userId}/`);
+        fetch(toggleAuthUrl, {
           method: 'POST',
           headers: {
             'X-CSRFToken': csrfToken,
@@ -546,7 +667,7 @@
         const csrfToken = getCsrfToken();
         if (!csrfToken) return;
 
-        fetch('/question/users/grant-all-auth/', {
+        fetch("{% url 'administrator:grant-all-auth' %}", {
           method: 'POST',
           headers: {
             'X-CSRFToken': csrfToken,
@@ -595,7 +716,7 @@
         const csrfToken = getCsrfToken();
         if (!csrfToken) return;
 
-        fetch('/question/users/revoke-all-auth/', {
+        fetch("{% url 'administrator:revoke-all-auth' %}", {
           method: 'POST',
           headers: {
             'X-CSRFToken': csrfToken,

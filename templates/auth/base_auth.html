@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>{% block title %}Kirish{% endblock title %} | {{ system.name|default:"Quiz Platform" }}</title>
-  <meta name="description" content="Kirish sahifasi">
+  <meta name="description" content="Autentifikatsiya sahifasi">
   <meta name="robots" content="noindex, nofollow">
 
   <link rel="shortcut icon" href="{% static 'assets/media/favicons/favicon.png' %}">
@@ -13,60 +13,84 @@
   <link rel="apple-touch-icon" sizes="180x180" href="{% static 'assets/media/favicons/apple-touch-icon-180x180.png' %}">
 
   <link rel="stylesheet" id="css-main" href="{% static 'assets/css/oneui.min.css' %}">
-  <link rel="stylesheet" href="{% static 'assets/css/glass.css' %}">
-
-  <style>
-    .auth-shell { min-height: 100vh; }
-    .auth-window .glass-window-body { gap: 1.25rem; }
-    .auth-brand { display: inline-flex; align-items: center; gap: 10px; }
-    .auth-subtitle { color: rgba(2, 6, 23, 0.62); }
-  </style>
-
-  {% block style %}{% endblock style %}
+  <link rel="stylesheet" id="css-theme" href="{% static 'assets/css/themes/modern.min.css' %}">
 </head>
-
-<body class="glass-app">
+<body>
   <div id="page-container">
     <main id="main-container">
-      <div class="auth-shell d-flex align-items-center">
-        <div class="content py-4">
-          <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6 col-xl-4">
-              <div class="glass-window glass-reveal auth-window">
-                <div class="glass-window-bar">
-                  <div class="mac-dots" aria-hidden="true">
-                    <span class="dot dot-red"></span>
-                    <span class="dot dot-yellow"></span>
-                    <span class="dot dot-green"></span>
-                  </div>
-                  <div class="glass-window-title">
-                    {% block window_title %}Kirish{% endblock window_title %}
-                  </div>
-                  <div class="glass-window-actions">
-                    <span class="glass-pill d-none d-sm-inline-flex">
-                      <i class="fa fa-bolt opacity-75"></i>
-                      v1.0
-                    </span>
-                  </div>
-                </div>
+      <div class="hero-static d-flex align-items-center bg-body-extra-light">
+        <div class="content content-full">
+          <div class="row justify-content-center g-0">
+            <div class="col-lg-10 col-xl-9">
+              <div class="block block-rounded overflow-hidden shadow-sm mb-0">
+                <div class="row g-0">
+                  <div class="col-lg-6 bg-primary">
+                    <div class="block-content block-content-full p-4 p-md-5 h-100 d-flex flex-column justify-content-between">
+                      <div>
+                        <a href="{% url 'landing:dashboard' %}" class="link-fx fw-semibold fs-3 text-white d-inline-flex align-items-center mb-4">
+                          {% if system and system.logo %}
+                            <img class="img-avatar img-avatar48 img-avatar-thumb me-3" src="{{ system.logo.url }}" alt="{{ system.name|default:'Logo' }}">
+                          {% else %}
+                            <span class="fs-1 lh-1 me-3">
+                              <i class="fa fa-layer-group"></i>
+                            </span>
+                          {% endif %}
+                          <span>{{ system.name|default:"Quiz Platform" }}</span>
+                        </a>
 
-                <div class="glass-window-body">
-                  <a href="{% url 'login' %}" class="glass-brand text-decoration-none auth-brand">
-                    <span class="glass-brand-mark" aria-hidden="true">
-                      {% if system and system.logo %}
-                        <img src="{{ system.logo.url }}" alt="{{ system.name|default:'Logo' }}">
-                      {% else %}
-                        <i class="fa fa-layer-group opacity-75"></i>
-                      {% endif %}
-                    </span>
-                    <span class="glass-brand-title">{{ system.name|default:"Quiz Platform" }}</span>
-                  </a>
+                        <div class="mb-4">
+                          <div class="text-uppercase fw-semibold fs-sm text-white-50 mb-2">{% block auth_kicker %}Yagona tizim{% endblock %}</div>
+                          <h1 class="h2 fw-bold text-white mb-3">{% block auth_heading %}Testlar, natijalar va administrator paneliga bitta kirish nuqtasi{% endblock %}</h1>
+                          <p class="fs-sm text-white-75 mb-0">{% block auth_description %}Foydalanuvchi hisobingiz orqali tizimga kiring, topshiriqlarni boshqaring va natijalarni kuzating.{% endblock %}</p>
+                        </div>
 
-                  {% block content %}{% endblock content %}
+                        {% block auth_points %}
+                          <div class="row g-3">
+                            <div class="col-12">
+                              <div class="bg-black-25 rounded p-3">
+                                <div class="fw-semibold text-white mb-1">
+                                  <i class="fa fa-shield-alt me-2"></i>Xavfsiz kirish
+                                </div>
+                                <div class="fs-sm text-white-75">Administrator, o'qituvchi va talaba rollari uchun yagona autentifikatsiya oqimi.</div>
+                              </div>
+                            </div>
+                            <div class="col-12">
+                              <div class="bg-black-25 rounded p-3">
+                                <div class="fw-semibold text-white mb-1">
+                                  <i class="fa fa-chart-line me-2"></i>Tezkor boshqaruv
+                                </div>
+                                <div class="fs-sm text-white-75">Test yaratish, biriktirish va natijalarni ko'rish bir joyda jamlangan.</div>
+                              </div>
+                            </div>
+                          </div>
+                        {% endblock %}
+                      </div>
+
+                      <div class="pt-4">
+                        {% block auth_footer_action %}
+                          <a href="{% url 'landing:login' %}" class="btn btn-light btn-lg fw-semibold w-100">
+                            <i class="fa fa-arrow-left me-2"></i>Login sahifasiga qaytish
+                          </a>
+                        {% endblock %}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="block-content block-content-full p-4 p-md-5">
+                      <div class="mb-4">
+                        <div class="text-uppercase fw-semibold text-muted fs-sm mb-2">{% block panel_kicker %}Autentifikatsiya{% endblock %}</div>
+                        <h2 class="h3 fw-bold mb-2">{% block window_title %}Kirish{% endblock window_title %}</h2>
+                        <p class="text-muted mb-0">{% block window_description %}Davom etish uchun kerakli ma'lumotlarni kiriting.{% endblock %}</p>
+                      </div>
+
+                      {% block content %}{% endblock content %}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div class="text-center text-muted fs-sm mt-3">
+              <div class="fs-sm text-muted text-center mt-3">
                 v1.0 (c) <span data-toggle="year-copy"></span>
               </div>
             </div>

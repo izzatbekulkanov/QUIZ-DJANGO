@@ -2,60 +2,77 @@
 {% load static %}
 
 {% block title %}Tasdiqlash{% endblock title %}
-{% block window_title %}Tasdiqlash{% endblock window_title %}
+{% block auth_kicker %}Profil tasdigi{% endblock %}
+{% block auth_heading %}Davom etishdan oldin foydalanuvchi ma'lumotlarini tekshiring{% endblock %}
+{% block auth_description %}Bu bosqichda tizim topilgan profilni aniq va o'qilishi oson ko'rinishda ko'rsatadi. Shundan keyin ishchi panelga o'tishingiz mumkin.{% endblock %}
+{% block panel_kicker %}Tasdiqlash{% endblock %}
+{% block window_title %}Profil ma'lumotlari{% endblock window_title %}
+{% block window_description %}ID orqali topilgan foydalanuvchi hisobini ko'rib chiqing va davom etishdan oldin ma'lumotlar mos ekanini tasdiqlang.{% endblock %}
 
-{% block style %}
-<style>
-  .confirm-avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 22px;
-    object-fit: cover;
-    border: 1px solid rgba(255, 255, 255, 0.75);
-    box-shadow: 0 18px 44px rgba(2, 6, 23, 0.12);
-  }
-</style>
-{% endblock style %}
+{% block auth_footer_action %}
+  <a href="{% url 'landing:logout' %}" class="btn btn-light btn-lg fw-semibold w-100">
+    <i class="fa fa-sign-out-alt me-2"></i>Chiqish
+  </a>
+{% endblock %}
 
 {% block content %}
-  <div class="mb-2">
-    <span class="badge glass-badge">
-      <i class="fa fa-check-circle me-1 opacity-75"></i>
-      Ma'lumotlarni tekshirish
-    </span>
+  <div class="alert alert-success d-flex align-items-center" role="alert">
+    <i class="fa fa-circle-check me-2"></i>
+    <div>ID orqali kirish muvaffaqiyatli bajarildi. Endi profil ma'lumotlarini tekshiring.</div>
   </div>
 
-  <h1 class="h3 mb-1">Profil</h1>
-  <p class="auth-subtitle mb-4">
-    Davom etishdan oldin foydalanuvchi ma'lumotlarini tekshiring.
-  </p>
-
-  <div class="d-flex flex-column align-items-center text-center mb-4">
-    {% if user_data.profile_picture %}
-      <img src="{{ user_data.profile_picture.url }}" alt="Profil" class="confirm-avatar mb-3">
-    {% else %}
-      <img src="{% static 'assets/media/avatars/avatar10.jpg' %}" alt="Profil" class="confirm-avatar mb-3">
-    {% endif %}
-
-    <div class="h5 mb-1">{{ user_data.full_name|default:user_data.username }}</div>
-    <div class="text-muted">
-      {% if user_data.date_of_birth %}
-        <span class="me-2"><i class="fa fa-birthday-cake me-1 opacity-75"></i>{{ user_data.date_of_birth|date:"d-m-Y" }}</span>
+  <div class="bg-body-light border rounded p-4 mb-4">
+    <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start text-center text-sm-start gap-4">
+      {% if user_data.profile_picture %}
+        <img src="{{ user_data.profile_picture.url }}" alt="Profil" class="img-avatar img-avatar96 img-avatar-thumb">
+      {% else %}
+        <img src="{% static 'assets/media/avatars/avatar10.jpg' %}" alt="Profil" class="img-avatar img-avatar96 img-avatar-thumb">
       {% endif %}
-      {% if user_data.group_name %}
-        <span><i class="fa fa-users me-1 opacity-75"></i>{{ user_data.group_name }}</span>
-      {% endif %}
+
+      <div class="flex-grow-1">
+        <div class="h4 mb-1">{{ user_data.full_name|default:user_data.username }}</div>
+        <div class="text-muted mb-3">@{{ user_data.username }}</div>
+
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="fs-sm text-muted mb-1">Rol</div>
+            <div class="fw-semibold">
+              {% if user_data.is_superuser %}
+                Superadmin
+              {% elif user_data.is_staff %}
+                Administrator
+              {% elif user_data.is_teacher %}
+                O'qituvchi
+              {% elif user_data.is_student %}
+                Talaba
+              {% else %}
+                Foydalanuvchi
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="fs-sm text-muted mb-1">Guruh</div>
+            <div class="fw-semibold">{{ user_data.group_name|default:"Belgilanmagan" }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="fs-sm text-muted mb-1">Tug'ilgan sana</div>
+            <div class="fw-semibold">{{ user_data.date_of_birth|date:"d-m-Y"|default:"Kiritilmagan" }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="fs-sm text-muted mb-1">Telefon</div>
+            <div class="fw-semibold">{{ user_data.phone_number|default:"Kiritilmagan" }}</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="d-grid gap-2">
-    <a href="{% url 'dashboard' %}" class="btn btn-glass-primary btn-lg">
-      <i class="fa fa-sign-in-alt me-1 opacity-75"></i>
-      Davom etish
+    <a href="{% url 'landing:dashboard' %}" class="btn btn-primary btn-lg">
+      <i class="fa fa-house me-2"></i>Davom etish
     </a>
-    <a href="{% url 'logout' %}" class="btn btn-glass-secondary btn-lg">
-      <i class="fa fa-sign-out-alt me-1 opacity-75"></i>
-      Chiqish
+    <a href="{% url 'landing:logout' %}" class="btn btn-alt-secondary btn-lg">
+      <i class="fa fa-arrow-left me-2"></i>Bekor qilish va chiqish
     </a>
   </div>
 {% endblock content %}

@@ -1,227 +1,277 @@
-{% extends 'dashboard/index.html' %}
+{% extends 'dashboard/home_index.html' %}
 {% load static %}
 
 {% block style %}
 <style>
-  .result-rich img { max-width: 100%; height: auto; border-radius: 12px; }
-  .result-rich p { margin-bottom: 0.5rem; }
-  .result-rich p:last-child { margin-bottom: 0; }
   .result-rich,
   .result-rich * {
     max-width: 100%;
-    font-size: inherit;
     color: inherit;
     font-family: inherit;
+    font-size: inherit;
     overflow-wrap: anywhere;
   }
-  .result-rich img {
-    max-width: min(100%, 560px);
-    width: auto !important;
-    height: auto !important;
+
+  .result-rich p {
+    margin-bottom: 0.5rem;
   }
+
+  .result-rich p:last-child {
+    margin-bottom: 0;
+  }
+
+  .result-rich img {
+    width: auto !important;
+    max-width: min(100%, 560px);
+    height: auto !important;
+    border-radius: 12px;
+  }
+
   .result-rich table {
     width: auto;
     max-width: 100%;
     border-collapse: collapse;
   }
+
   .result-rich td,
   .result-rich th {
     padding: 0.25rem 0.4rem;
     vertical-align: middle;
     border: 1px solid rgba(15, 23, 42, 0.12);
   }
-  .result-rich sup,
-  .result-rich sub {
-    font-size: 0.78em;
-    line-height: 0;
+
+  .answer-box {
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    border-radius: 12px;
+    padding: 1rem;
   }
-  .answer-box { border-radius: 14px; border: 1px solid rgba(15, 23, 42, 0.10); }
-  .answer-box--ok { background: rgba(22, 163, 74, 0.08); border-color: rgba(22, 163, 74, 0.18); }
-  .answer-box--bad { background: rgba(220, 38, 38, 0.06); border-color: rgba(220, 38, 38, 0.16); }
+
+  .answer-box--ok {
+    background: rgba(22, 163, 74, 0.08);
+    border-color: rgba(22, 163, 74, 0.18);
+  }
+
+  .answer-box--bad {
+    background: rgba(220, 38, 38, 0.06);
+    border-color: rgba(220, 38, 38, 0.16);
+  }
+
+  .answer-box--info {
+    background: rgba(37, 99, 235, 0.06);
+    border-color: rgba(37, 99, 235, 0.14);
+  }
+
+  .result-stat-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(2, 6, 23, 0.58);
+  }
+
+  .result-stat-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: rgba(2, 6, 23, 0.92);
+  }
 </style>
 {% endblock style %}
 
 {% block content %}
-<main id="main-container">
-  <div class="content py-4">
-    <div class="glass-surface glass-reveal p-4 mb-4">
-      <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
-        <div class="min-w-0">
-          <span class="badge glass-badge mb-2">
-            <i class="fa fa-file-alt me-1 opacity-75"></i>
-            Natija
-          </span>
-          <h1 class="h3 mb-1 text-truncate">Natija tafsilotlari</h1>
-          <div class="text-muted">Savollar kesimida javoblaringiz va to'g'ri variantlar.</div>
+  <div class="block block-rounded overflow-hidden mb-4">
+    <div class="block-content block-content-full bg-primary">
+      <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+        <div>
+          <div class="text-uppercase fw-semibold fs-sm text-white-50 mb-2">Natija</div>
+          <h1 class="h3 fw-bold text-white mb-1">Natija tafsilotlari</h1>
+          <p class="text-white-75 mb-0">Savollar kesimida javoblaringiz va to'g'ri variantlar.</p>
         </div>
-        <div class="d-flex gap-2 flex-wrap">
-          <a href="{% url 'all_results' %}" class="btn btn-glass-secondary">
-            <i class="fa fa-arrow-left me-1 opacity-75"></i>
-            Ortga
+
+        <div>
+          <a href="{% url 'landing:all_results' %}" class="btn btn-light fw-semibold">
+            <i class="fa fa-arrow-left me-2"></i>Ortga
           </a>
         </div>
       </div>
     </div>
+  </div>
 
-    {% if error %}
-      <div class="glass-surface glass-surface--soft p-4">
-        <div class="d-flex align-items-center gap-2">
-          <span class="badge glass-badge" style="background: rgba(220, 38, 38, 0.10); border-color: rgba(220, 38, 38, 0.18); color: rgba(220, 38, 38, 0.92);">
-            <i class="fa fa-exclamation-triangle me-1"></i>
-            Xatolik
-          </span>
-          <div class="fw-semibold">{{ error }}</div>
+  {% if error %}
+    <div class="block block-rounded mb-0">
+      <div class="block-content py-4">
+        <div class="alert alert-danger mb-0">
+          <i class="fa fa-triangle-exclamation me-2"></i>{{ error }}
         </div>
       </div>
-    {% else %}
-      <div class="row g-3 mb-4 glass-reveal" style="--delay: 80ms;">
-        <div class="col-lg-8">
-          <div class="glass-surface glass-surface--soft p-4 h-100">
-            <div class="d-flex align-items-start justify-content-between gap-3">
-              <div class="min-w-0">
-                <div class="text-muted mb-1">Test</div>
-                <div class="h5 mb-1 text-truncate">{{ result.assignment.test.name }}</div>
-                <div class="text-muted text-truncate">
-                  <i class="fa fa-layer-group me-1 opacity-75"></i>
-                  {{ result.assignment.category.name }}
-                </div>
-              </div>
+    </div>
+  {% else %}
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-4">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full">
+            <div class="result-stat-label mb-2">Baho</div>
+            <div class="result-stat-value">{{ result.score|floatformat:2 }}%</div>
+          </div>
+        </div>
+      </div>
 
-              <div class="text-end">
-                <div class="text-muted mb-1">Baho</div>
-                <div class="h2 mb-0">{{ result.score|floatformat:2 }}%</div>
+      <div class="col-12 col-md-4">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full">
+            <div class="result-stat-label mb-2">Savollar soni</div>
+            <div class="result-stat-value">{{ questions|length }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full">
+            <div class="result-stat-label mb-2">Davomiylik</div>
+            <div class="result-stat-value">{{ result.get_duration_display }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-lg-8">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Umumiy ma'lumot</h3>
+          </div>
+          <div class="block-content">
+            <div class="mb-4">
+              <div class="text-muted mb-1">Test</div>
+              <div class="h4 mb-1">{{ result.assignment.test.name }}</div>
+              <div class="text-muted">
+                <i class="fa fa-layer-group me-1"></i>{{ result.assignment.category.name }}
               </div>
             </div>
 
-            <div class="mt-3">
-              <div class="progress" style="height: 10px; border-radius: 999px; background: rgba(2, 6, 23, 0.06);">
-                <div
-                  class="progress-bar"
-                  role="progressbar"
-                  style="width: {{ result.score|floatformat:0 }}%; background: linear-gradient(135deg, var(--glass-accent), var(--glass-accent-2)); border-radius: 999px;">
-                </div>
+            <div class="mb-4">
+              <div class="progress" style="height: 12px;">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ result.score|floatformat:0 }}%;" aria-valuenow="{{ result.score|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
               </div>
             </div>
 
-            <div class="row g-2 mt-3">
+            <div class="row g-3">
               <div class="col-sm-6 col-lg-4">
-                <div class="text-muted">Boshlash</div>
+                <div class="text-muted mb-1">Boshlash</div>
                 <div class="fw-semibold">{{ result.start_time|date:"Y-m-d H:i:s" }}</div>
               </div>
               <div class="col-sm-6 col-lg-4">
-                <div class="text-muted">Yakunlash</div>
+                <div class="text-muted mb-1">Yakunlash</div>
                 <div class="fw-semibold">{{ result.end_time|date:"Y-m-d H:i:s" }}</div>
               </div>
               <div class="col-sm-6 col-lg-4">
-                <div class="text-muted">Davomiylik</div>
-                <div class="fw-semibold">{{ result.get_duration_display }}</div>
+                <div class="text-muted mb-1">Natija ID</div>
+                <div class="fw-semibold">#{{ result.id }}</div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-4">
-          <div class="glass-surface glass-surface--soft p-4 h-100">
-            <div class="d-flex align-items-center justify-content-between mb-2">
-              <div class="fw-semibold">Statistika</div>
-              <span class="badge glass-badge">
-                <i class="fa fa-hashtag me-1 opacity-75"></i>
-                ID: {{ result.id }}
-              </span>
-            </div>
-            <div class="d-flex align-items-center justify-content-between py-2 border-bottom" style="border-color: rgba(15, 23, 42, 0.10) !important;">
-              <span class="text-muted">Savollar soni</span>
-              <span class="fw-semibold">{{ questions|length }}</span>
-            </div>
-            <div class="d-flex align-items-center justify-content-between py-2">
-              <span class="text-muted">Ko'rish</span>
-              <span class="fw-semibold">Tafsilotlar</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="glass-reveal" style="--delay: 140ms;">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-          <h2 class="h5 mb-0">Savollar va javoblar</h2>
-          <div class="text-muted fs-sm d-none d-md-block">
-            Har bir savolda siz tanlagan javob va to'g'ri variant ko'rsatiladi.
+      <div class="col-lg-4">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Qisqacha</h3>
+          </div>
+          <div class="block-content">
+            <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+              <span class="text-muted">Ko'rinish</span>
+              <span class="fw-semibold">Tafsilotlar</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+              <span class="text-muted">Kategoriya</span>
+              <span class="fw-semibold text-end">{{ result.assignment.category.name }}</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between py-2">
+              <span class="text-muted">Holat</span>
+              <span class="badge bg-success">Yakunlangan</span>
+            </div>
           </div>
         </div>
+      </div>
+    </div>
 
+    <div class="block block-rounded mb-0">
+      <div class="block-header block-header-default">
+        <div>
+          <h3 class="block-title">Savollar va javoblar</h3>
+          <div class="fs-sm text-muted">Har bir savolda siz tanlagan javob va to'g'ri variant ko'rsatiladi.</div>
+        </div>
+      </div>
+      <div class="block-content">
         {% if questions %}
           {% for question in questions %}
-            <div class="glass-surface glass-surface--soft p-4 mb-3">
-              <div class="d-flex align-items-start justify-content-between gap-3">
-                <div class="min-w-0">
-                  <div class="d-flex align-items-center gap-2 mb-2">
-                    {% if question.is_correct %}
-                      <span class="badge glass-badge" style="background: rgba(22, 163, 74, 0.12); border-color: rgba(22, 163, 74, 0.20); color: rgba(22, 163, 74, 0.92);">
-                        <i class="fa fa-check me-1"></i>
-                        To'g'ri
-                      </span>
-                    {% else %}
-                      <span class="badge glass-badge" style="background: rgba(220, 38, 38, 0.10); border-color: rgba(220, 38, 38, 0.18); color: rgba(220, 38, 38, 0.92);">
-                        <i class="fa fa-times me-1"></i>
-                        Noto'g'ri
-                      </span>
-                    {% endif %}
-                    <span class="text-muted">#{{ forloop.counter }}</span>
+            <div class="block block-rounded border mb-3">
+              <div class="block-content">
+                <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                  <div class="min-w-0">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      {% if question.is_correct %}
+                        <span class="badge bg-success">To'g'ri</span>
+                      {% else %}
+                        <span class="badge bg-danger">Noto'g'ri</span>
+                      {% endif %}
+                      <span class="text-muted">#{{ forloop.counter }}</span>
+                    </div>
+                    <div class="fw-semibold mb-2">Savol</div>
+                    <div class="result-rich">{{ question.question.text|safe }}</div>
+                  </div>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <div class="fw-semibold mb-2">Sizning javobingiz</div>
+                    <div class="answer-box {% if question.is_correct %}answer-box--ok{% else %}answer-box--bad{% endif %}">
+                      <div class="result-rich">
+                        {{ question.selected_answer.text|default:"Javob tanlanmagan"|safe }}
+                      </div>
+                    </div>
                   </div>
 
-                  <div class="fw-semibold mb-2">Savol</div>
-                  <div class="result-rich">{{ question.question.text|safe }}</div>
-                </div>
-              </div>
-
-              <div class="row g-3 mt-3">
-                <div class="col-md-6">
-                  <div class="fw-semibold mb-1">Sizning javobingiz</div>
-                  <div class="p-3 answer-box {% if question.is_correct %}answer-box--ok{% else %}answer-box--bad{% endif %}">
-                    <div class="result-rich">
-                      {{ question.selected_answer.text|default:"Javob tanlanmagan"|safe }}
+                  <div class="col-md-6">
+                    <div class="fw-semibold mb-2">To'g'ri javob(lar)</div>
+                    <div class="answer-box answer-box--info">
+                      <ul class="mb-0 ps-3">
+                        {% for answer in question.question.answers.all %}
+                          {% if answer.is_correct %}
+                            <li class="result-rich fw-semibold">{{ answer.text|safe }}</li>
+                          {% endif %}
+                        {% endfor %}
+                      </ul>
                     </div>
                   </div>
                 </div>
 
-                <div class="col-md-6">
-                  <div class="fw-semibold mb-1">To'g'ri javob(lar)</div>
-                  <div class="p-3 answer-box" style="background: rgba(37, 99, 235, 0.06); border-color: rgba(37, 99, 235, 0.14);">
-                    <ul class="mb-0">
-                      {% for answer in question.question.answers.all %}
+                <details class="mt-3">
+                  <summary class="text-muted fw-semibold" style="cursor: pointer;">Barcha variantlar</summary>
+                  <ul class="mt-2 mb-0 ps-3">
+                    {% for answer in question.question.answers.all %}
+                      <li class="{% if answer.is_correct %}fw-semibold{% else %}text-muted{% endif %}">
+                        <span class="result-rich">{{ answer.text|safe }}</span>
                         {% if answer.is_correct %}
-                          <li class="result-rich fw-semibold">{{ answer.text|safe }}</li>
+                          <span class="text-muted">(To'g'ri)</span>
                         {% endif %}
-                      {% endfor %}
-                    </ul>
-                  </div>
-                </div>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </details>
               </div>
-
-              <details class="mt-3">
-                <summary class="text-muted fw-semibold" style="cursor: pointer;">
-                  Barcha variantlar
-                </summary>
-                <ul class="mt-2 mb-0">
-                  {% for answer in question.question.answers.all %}
-                    <li class="{% if answer.is_correct %}fw-semibold{% else %}text-muted{% endif %}">
-                      <span class="result-rich">{{ answer.text|safe }}</span>
-                      {% if answer.is_correct %}
-                        <span class="text-muted">(To'g'ri)</span>
-                      {% endif %}
-                    </li>
-                  {% endfor %}
-                </ul>
-              </details>
             </div>
           {% endfor %}
         {% else %}
-          <div class="glass-surface glass-surface--soft p-4">
-            <div class="text-muted">Savollar topilmadi.</div>
+          <div class="text-center py-5">
+            <img src="{% static 'img/no-data.webp' %}" alt="No Data" class="img-fluid mb-3" style="max-width: 96px;">
+            <div class="h5 mb-1">Savollar topilmadi</div>
+            <div class="text-muted">Ushbu natija uchun savollar mavjud emas.</div>
           </div>
         {% endif %}
       </div>
-    {% endif %}
-  </div>
-</main>
+    </div>
+  {% endif %}
 {% endblock content %}

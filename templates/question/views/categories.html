@@ -34,7 +34,7 @@
 {% block content %}
 <main id="main-container">
   <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
   <!-- Hero -->
   <div class="bg-image overflow-hidden"
@@ -46,7 +46,7 @@
             <h1 class="fw-semibold text-white mb-0">Kategoriyalar</h1>
           </div>
           <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="{% url 'add-category' %}">
+            <a class="btn btn-light btn-sm" href="{% url 'administrator:add-category' %}">
               <i class="fa fa-plus me-1"></i> Qo‘shish
             </a>
           </div>
@@ -68,7 +68,7 @@
               <p class="card-text text-muted small mb-2">{{ category.description|default:"Tavsif yo‘q" }}</p>
               <p class="card-text text-muted small mb-3">Savollar: {{ category.tests.count }}</p>
               <div class="mt-auto d-flex gap-2">
-                <a href="{% url 'edit-category' category.id %}" class="btn btn-primary btn-sm w-50">
+                <a href="{% url 'administrator:edit-category' category.id %}" class="btn btn-primary btn-sm w-50">
                   <i class="fa fa-edit me-1"></i> Tahrirlash
                 </a>
                 <button class="btn btn-danger btn-sm w-50" onclick="deleteCategory({{ category.id }})">
@@ -123,7 +123,8 @@
       cancelButtonText: 'Bekor'
     }).then(result => {
       if (result.isConfirmed) {
-        fetch(`/question/categories/delete/${categoryId}/`, {
+        const deleteCategoryUrl = "{% url 'administrator:delete-category' 0 %}".replace("/0/", `/${categoryId}/`);
+        fetch(deleteCategoryUrl, {
           method: 'DELETE',
           headers: {
             'X-CSRFToken': csrfToken,

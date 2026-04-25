@@ -61,7 +61,7 @@
 {% block content %}
 <main id="main-container">
   <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
   <!-- Hero -->
   <div class="bg-image overflow-hidden"
@@ -74,7 +74,7 @@
             <h2 class="h4 fw-normal text-white-75 mb-0">Kategoriyani tahrirlash</h2>
           </div>
           <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="{% url 'categories' %}">
+            <a class="btn btn-light btn-sm" href="{% url 'administrator:categories' %}">
               <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
             </a>
           </div>
@@ -90,7 +90,7 @@
         <h3 class="h5 mb-0">Kategoriyani tahrirlash</h3>
       </div>
       <div class="card-body">
-        <form id="editCategoryForm" method="POST" action="{% url 'edit-category' category.id %}" enctype="multipart/form-data" class="row g-3">
+        <form id="editCategoryForm" method="POST" action="{% url 'administrator:edit-category' category.id %}" enctype="multipart/form-data" class="row g-3">
           {% csrf_token %}
           <!-- Kategoriya nomi -->
           <div class="col-md-6">

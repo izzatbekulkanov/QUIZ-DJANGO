@@ -91,7 +91,7 @@
 {% block content %}
 <main id="main-container">
   <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
   <!-- Hero -->
   <div class="bg-image overflow-hidden"

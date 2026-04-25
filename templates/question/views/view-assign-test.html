@@ -72,7 +72,7 @@
 {% block content %}
 <main id="main-container">
   <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
   <!-- Hero -->
   <div class="bg-image overflow-hidden"
@@ -85,7 +85,7 @@
             <h2 class="h4 fw-normal text-white-75 mb-0">Topshiriq tafsilotlari</h2>
           </div>
           <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="{% url 'assign-test' %}">
+            <a class="btn btn-light btn-sm" href="{% url 'administrator:assign-test' %}">
               <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
             </a>
           </div>
@@ -166,8 +166,8 @@
           </div>
           <div class="col-md-12 text-end">
             <button type="submit" class="btn btn-primary"><i class="fa fa-filter me-1"></i>Filtr</button>
-            <a href="{% url 'view-assign-test' assignment.id %}" class="btn btn-outline-primary"><i class="fa fa-times me-1"></i>Tozalash</a>
-            <a href="{% url 'export-assign-test' assignment.id %}?{% if request.GET %}{{ request.GET.urlencode }}{% endif %}" class="btn btn-success">
+            <a href="{% url 'administrator:view-assign-test' assignment.id %}" class="btn btn-outline-primary"><i class="fa fa-times me-1"></i>Tozalash</a>
+            <a href="{% url 'administrator:export-assign-test' assignment.id %}?{% if request.GET %}{{ request.GET.urlencode }}{% endif %}" class="btn btn-success">
               <i class="fa fa-download me-1"></i>Excelga eksport qilish
             </a>
           </div>
@@ -212,10 +212,10 @@
         </div>
 
         <div class="text-end mt-4">
-          <a href="{% url 'edit-assign-test' assignment.id %}" class="btn btn-warning me-2">
+          <a href="{% url 'administrator:edit-assign-test' assignment.id %}" class="btn btn-warning me-2">
             <i class="fa fa-edit me-1"></i>Tahrirlash
           </a>
-          <a href="{% url 'assign-test' %}" class="btn btn-outline-success">
+          <a href="{% url 'administrator:assign-test' %}" class="btn btn-outline-success">
             <i class="fa fa-arrow-left me-1"></i>Ortga
           </a>
         </div>

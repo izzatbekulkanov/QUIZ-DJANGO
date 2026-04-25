@@ -1,4 +1,4 @@
-from logs.models import Log
+from apps.logs.models import Log
 from django.utils.timezone import now, timedelta
 
 def clear_old_logs():

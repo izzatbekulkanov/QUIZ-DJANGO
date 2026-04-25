@@ -60,7 +60,7 @@
 {% block content %}
 <main id="main-container">
   <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
   <!-- Hero -->
   <div class="bg-image overflow-hidden"
@@ -89,7 +89,7 @@
         <h3 class="h5 mb-0">Testni Tahrirlash</h3>
       </div>
       <div class="card-body p-4">
-        <form method="POST" action="{% url 'edit-test' test.id %}" id="editTestForm">
+        <form method="POST" action="{% url 'administrator:edit-test' test.id %}" id="editTestForm">
           {% csrf_token %}
           <!-- Category Dropdown -->
           <div class="mb-3">
@@ -168,7 +168,7 @@
                 confirmButtonText: 'OK'
               }).then(() => {
                 if (data.success) {
-                  window.location.href = '{% url "question" %}';
+                  window.location.href = '{% url "administrator:question" %}';
                 }
               });
             })

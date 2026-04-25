@@ -53,7 +53,7 @@
         </div>
         <div class="col-lg-2 col-md-12 d-flex align-items-end gap-2">
           <button type="submit" class="btn btn-primary w-100">Filtrlash</button>
-          <a href="{% url 'results' %}" class="btn btn-alt-secondary w-100">Tozalash</a>
+          <a href="{% url 'administrator:results' %}" class="btn btn-alt-secondary w-100">Tozalash</a>
         </div>
       </div>
     </form>
@@ -100,14 +100,14 @@
                   <td>{{ test.end_time|date:"Y-m-d H:i" }}</td>
                   <td>
                     <div class="d-flex gap-2 flex-wrap">
-                      <a href="{% url 'view-test-details' test.id %}" class="btn btn-info btn-sm">
+                      <a href="{% url 'administrator:view-test-details' test.id %}" class="btn btn-info btn-sm">
                         <i class="fa fa-eye"></i> Ko'rish
                       </a>
                       {% if request.user.is_superuser or test.assignment.teacher_id == request.user.id or test.assignment.test.created_by_id == request.user.id %}
                         <button
                           type="button"
                           class="btn btn-danger btn-sm delete-result-btn"
-                          data-delete-url="{% url 'delete-student-result' test.id %}"
+                          data-delete-url="{% url 'administrator:delete-student-result' test.id %}"
                           data-student="{{ test.student.username }}"
                           data-test="{{ test.assignment.test.name }}">
                           <i class="fa fa-trash"></i> O'chirish

@@ -1,55 +1,52 @@
-# Byte-compiled / optimized / DLL files
+# Python cache and compiled files
 __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
-*.so
-
-# Distribution / packaging
+# Packaging and build artifacts
 .Python
-
-venv/
-
 build/
 dist/
+*.egg-info/
 
-# Django stuff
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Django runtime files
 *.log
 *.pot
-*.pyc
-*.pyo
-*.pyd
-
-# Django migrations
-*/migrations/*
-
-# Static files
-staticfiles/
-
-# SQLite database
 *.sqlite3
-
-# Media uploads (user-uploaded files)
+*.sqlite3-journal
+staticfiles/
 media/
 
-# VS Code settings
+# Test and coverage artifacts
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Editors and IDEs
+.idea/
 .vscode/
+*.iml
+*.sublime-project
+*.sublime-workspace
 
-# macOS
+# OS files
 .DS_Store
-
-# Windows
 Thumbs.db
 desktop.ini
 
-# IDEs and editors
-.idea/
-*.sublime-project
-*.sublime-workspace
-*.iml
-# Local scratch / cleanup
+# Local scratch files
 .trash/
-logs/runserver-*.out
-logs/runserver-*.err
+runserver-*.out
+runserver-*.err
 db.sqlite3.bak-*

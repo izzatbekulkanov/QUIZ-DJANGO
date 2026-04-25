@@ -89,7 +89,7 @@
 {% block content %}
 <main id="main-container">
   <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
   <!-- Hero -->
   <div class="bg-image overflow-hidden"
@@ -102,7 +102,7 @@
             <h2 class="h4 fw-normal text-white-75 mb-0">Topshiriqlar Ro'yxati</h2>
           </div>
           <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="{% url 'add-assign-test' %}">
+            <a class="btn btn-light btn-sm" href="{% url 'administrator:add-assign-test' %}">
               <i class="fa fa-plus me-1 opacity-50"></i> Topshiriq qo'shish
             </a>
           </div>
@@ -119,7 +119,7 @@
       </div>
       <div class="card-body">
         <!-- Filter Form -->
-        <form method="get" class="row g-3 mb-4">
+        <form method="get" class="row g-3 mb-4 pb-2">
           <div class="col-md-3">
             <label for="category" class="form-label">Kategoriya</label>
             <select class="form-select" id="category" name="category">
@@ -145,7 +145,7 @@
           </div>
           <div class="col-md-12 text-end">
             <button type="submit" class="btn btn-primary">Filtr</button>
-            <a href="{% url 'assign-test' %}" class="btn btn-outline-secondary">Tozalash</a>
+            <a href="{% url 'administrator:assign-test' %}" class="btn btn-outline-secondary">Tozalash</a>
           </div>
         </form>
 
@@ -194,10 +194,10 @@
                   </td>
                   <td class="text-center">
                     <div class="btn-group" role="group">
-                      <a href="{% url 'view-assign-test' assignment.id %}" class="btn btn-sm btn-info" title="Ko‘rish">
+                      <a href="{% url 'administrator:view-assign-test' assignment.id %}" class="btn btn-sm btn-info" title="Ko‘rish">
                         <i class="fa fa-eye"></i>
                       </a>
-                      <a href="{% url 'edit-assign-test' assignment.id %}" class="btn btn-sm btn-warning" title="Tahrirlash">
+                      <a href="{% url 'administrator:edit-assign-test' assignment.id %}" class="btn btn-sm btn-warning" title="Tahrirlash">
                         <i class="fa fa-edit"></i>
                       </a>
                       {% if not assignment.student_tests.exists %}
@@ -289,7 +289,8 @@
 
         if (result.isConfirmed) {
           try {
-            const response = await fetch(`/question/assignments/toggle-active/${assignmentId}/`, {
+            const toggleActiveUrl = "{% url 'administrator:toggle-active' 0 %}".replace("/0/", `/${assignmentId}/`);
+            const response = await fetch(toggleActiveUrl, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -348,7 +349,8 @@
 
         if (result.isConfirmed) {
           try {
-            const response = await fetch(`/question/assignments/delete/${assignmentId}/`, {
+            const deleteAssignmentUrl = "{% url 'administrator:delete-assignment' 0 %}".replace("/0/", `/${assignmentId}/`);
+            const response = await fetch(deleteAssignmentUrl, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

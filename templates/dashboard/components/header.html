@@ -5,7 +5,7 @@
   <div class="content-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <!-- Brand -->
     <div class="d-flex align-items-center gap-2 min-w-0">
-      <a class="glass-brand text-decoration-none" href="{% url 'dashboard' %}">
+      <a class="glass-brand text-decoration-none" href="{% url 'landing:dashboard' %}">
         <span class="glass-brand-mark" aria-hidden="true">
           {% if system and system.logo %}
             <img src="{{ system.logo.url }}" alt="{{ system.name|default:'Logo' }}">
@@ -33,14 +33,14 @@
       <nav class="collapse navbar-collapse d-lg-flex" id="nav-menu">
         <ul class="nav-main nav-main-horizontal nav-main-hover flex-wrap">
           <li class="nav-main-item">
-            <a class="nav-main-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+            <a class="nav-main-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'landing:dashboard' %}">
               <i class="nav-main-link-icon fa fa-home"></i>
               <span class="nav-main-link-name">Bosh sahifa</span>
             </a>
           </li>
 
           <li class="nav-main-item">
-            <a class="nav-main-link {% if request.resolver_match.url_name == 'all_results' %}active{% endif %}" href="{% url 'all_results' %}">
+            <a class="nav-main-link {% if request.resolver_match.url_name == 'all_results' %}active{% endif %}" href="{% url 'landing:all_results' %}">
               <i class="nav-main-link-icon fa fa-chart-bar"></i>
               <span class="nav-main-link-name">Natijalar</span>
             </a>
@@ -48,7 +48,7 @@
 
           {% if user.is_authenticated and not request.user.is_student %}
             <li class="nav-main-item">
-              <a class="nav-main-link {% if request.resolver_match.url_name == 'main' %}active{% endif %}" href="{% url 'main' %}">
+              <a class="nav-main-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" href="{% url 'administrator:profile' %}">
                 <i class="nav-main-link-icon fa fa-user"></i>
                 <span class="nav-main-link-name">Mening sahifam</span>
               </a>
@@ -72,13 +72,13 @@
           <span class="glass-user-name">
             {{ user.first_name|default:user.username }} {{ user.second_name|default:"" }}
           </span>
-          <a class="btn btn-sm btn-glass-danger" href="{% url 'logout' %}">
+          <a class="btn btn-sm btn-glass-danger" href="{% url 'landing:logout' %}">
             <i class="fa fa-sign-out-alt me-1"></i>
             <span class="d-none d-sm-inline">Chiqish</span>
           </a>
         </div>
       {% else %}
-        <a class="btn btn-sm btn-glass-primary" href="{% url 'login' %}">
+        <a class="btn btn-sm btn-glass-primary" href="{% url 'landing:login' %}">
           <i class="fa fa-user-lock me-1 opacity-75"></i>
           <span>Kirish</span>
         </a>

@@ -62,7 +62,7 @@
 {% block content %}
 <main id="main-container">
   <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
   <!-- Hero -->
   <div class="bg-image overflow-hidden"
@@ -95,7 +95,7 @@
           {% csrf_token %}
           <div class="mb-3">
             <label for="category_id" class="form-label"><i class="fa fa-folder-open me-2"></i>Kategoriya</label>
-            <select id="category_id" name="category_id" class="form-select" required data-url="{% url 'category-tests' %}">
+            <select id="category_id" name="category_id" class="form-select" required data-url="{% url 'administrator:category-tests' %}">
               <option value="" disabled selected>Kategoriya tanlang</option>
               {% for category in categories %}
                 <option value="{{ category.id }}">{{ category.name }}</option>
@@ -233,7 +233,7 @@
       const testId = testSelect.value;
       if (testId) {
         try {
-          const response = await fetch(`/question/test-questions-count/?test_id=${testId}`);
+          const response = await fetch(`{% url 'administrator:test-questions-count' %}?test_id=${testId}`);
           const data = await response.json();
           if (data.success) {
             maxQuestions = data.total_questions;
@@ -395,7 +395,7 @@
                   icon: 'success',
                   confirmButtonText: 'OK'
                 }).then(() => {
-                  window.location.href = '{% url 'assign-test' %}';
+                  window.location.href = '{% url 'administrator:assign-test' %}';
                 });
               } else {
                 Swal.fire({

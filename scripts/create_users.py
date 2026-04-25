@@ -1,4 +1,4 @@
-from account.models import CustomUser
+from apps.account.models import CustomUser
 
 def create_users():
     for i in range(10):

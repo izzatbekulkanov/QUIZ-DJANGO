@@ -5,157 +5,186 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test sahifasi</title>
+  <title>{{ assignment.test.name }} - Test</title>
+  <link rel="shortcut icon" href="{% static 'assets/media/favicons/favicon.png' %}">
   <link rel="stylesheet" id="css-main" href="{% static 'assets/css/oneui.min.css' %}">
-  <link rel="stylesheet" href="{% static 'assets/css/glass.css' %}">
+  <link rel="stylesheet" id="css-theme" href="{% static 'assets/css/themes/modern.min.css' %}">
   <style>
     [v-cloak] { display: none; }
 
     :root {
-      --zoom-level: 1;
+      --exam-zoom-level: 1;
     }
 
-    body.glass-app {
-      line-height: 1.6;
-      background-attachment: scroll;
-      color: var(--glass-text);
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 28%),
+        radial-gradient(circle at top right, rgba(22, 163, 74, 0.10), transparent 24%),
+        #f8fafc;
     }
 
-    body.reading-mode .question-card {
+    body.reading-mode .question-body,
+    body.reading-mode .exam-answer-item {
       font-size: 1.05rem;
-      line-height: 1.7;
+      line-height: 1.75;
+    }
+
+    body.reading-mode .question-body,
+    body.reading-mode .exam-answer-item,
+    body.reading-mode .exam-sidebar-block,
+    body.reading-mode .exam-question-shell,
+    body.reading-mode .exam-nav-shell {
       background: #ffffff;
-      border-color: rgba(15, 23, 42, 0.18);
-      color: rgba(15, 23, 42, 0.95);
-      font-weight: 600;
-      letter-spacing: 0.01em;
+      border-color: rgba(15, 23, 42, 0.16);
+      color: rgba(15, 23, 42, 0.96);
     }
 
-    body.reading-mode .answer-item {
-      font-size: 1.02rem;
-      line-height: 1.6;
-      background: #ffffff;
-      border-color: rgba(15, 23, 42, 0.18);
-      color: rgba(15, 23, 42, 0.95);
-      font-weight: 600;
-      letter-spacing: 0.01em;
-    }
-
-    body.reading-mode .glass-window,
-    body.reading-mode .exam-panel {
-      background: rgba(255, 255, 255, 0.98);
-      border-color: rgba(15, 23, 42, 0.18);
-      color: rgba(15, 23, 42, 0.95);
-    }
-
-    body.reading-mode .exam-meta {
-      color: rgba(15, 23, 42, 0.82);
+    .exam-page {
+      min-height: 100vh;
     }
 
     .exam-layout {
       display: grid;
-      grid-template-columns: 280px minmax(0, 1fr) 260px;
-      gap: 1rem;
+      grid-template-areas: "sidebar main nav";
+      grid-template-columns: 280px minmax(0, 1fr) 280px;
+      gap: 1.25rem;
       align-items: start;
     }
 
-    .exam-panel {
+    .exam-sidebar-block,
+    .exam-question-shell,
+    .exam-nav-shell {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    .exam-card-body {
+      padding: 1.5rem !important;
+    }
+
+    .exam-sidebar,
+    .exam-nav {
       position: sticky;
-      top: 1rem;
-      height: calc(100vh - 2rem);
-      overflow: auto;
-      padding: 1rem;
+      top: 1.25rem;
     }
 
-    .exam-center {
+    .exam-sidebar {
+      grid-area: sidebar;
+    }
+
+    .exam-main {
+      grid-area: main;
       min-width: 0;
-      display: flex;
-      justify-content: center;
-      --zoom-level: 1;
-      font-size: calc(1rem * var(--zoom-level));
     }
 
-    .exam-center .glass-window {
-      width: 100%;
-      max-width: 980px;
+    .exam-nav {
+      grid-area: nav;
     }
 
-    .exam-avatar-wrapper {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 0.75rem;
+    .exam-main-zoom {
+      font-size: calc(1rem * var(--exam-zoom-level));
     }
 
-    .exam-avatar {
-      width: 84px;
-      height: 84px;
+    .exam-user-avatar {
+      width: 88px;
+      height: 88px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid rgba(255, 255, 255, 0.9);
-      box-shadow: 0 10px 24px rgba(2, 6, 23, 0.14);
+      border: 3px solid rgba(255, 255, 255, 0.96);
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
     }
 
-    .exam-meta {
-      color: rgba(2, 6, 23, 0.72);
-      font-size: 0.95rem;
+    .exam-meta-line {
+      color: rgba(2, 6, 23, 0.68);
+      font-size: 0.94rem;
     }
 
-    .time-display {
-      font-size: 1.6rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      padding: 0.4rem 0.9rem;
-      border-radius: 999px;
-      background: rgba(37, 99, 235, 0.12);
-      border: 1px solid rgba(37, 99, 235, 0.18);
+    .exam-timer {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.10);
+      color: #1d4ed8;
+      border: 1px solid rgba(37, 99, 235, 0.16);
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
     }
 
-    .countdown-warning {
-      margin-top: 0.7rem;
+    .exam-timer.timer-warning {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.24);
+      color: #b45309;
+    }
+
+    .exam-timer.timer-danger {
       background: rgba(220, 38, 38, 0.12);
-      border: 1px solid rgba(220, 38, 38, 0.18);
-      color: rgba(220, 38, 38, 0.9);
-      padding: 0.5rem 0.75rem;
+      border-color: rgba(220, 38, 38, 0.24);
+      color: #b91c1c;
+    }
+
+    .exam-warning-banner {
+      margin-top: 0.9rem;
+      padding: 0.75rem 0.9rem;
       border-radius: 12px;
+      border: 1px solid rgba(220, 38, 38, 0.16);
+      background: rgba(220, 38, 38, 0.08);
+      color: #b91c1c;
       font-weight: 700;
       text-align: center;
     }
 
-    .question-card {
-      padding: 1.1rem;
-      margin-bottom: 1rem;
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid rgba(15, 23, 42, 0.10);
+    .exam-progress-track {
+      height: 10px;
+      background: rgba(15, 23, 42, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .exam-progress-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #2563eb 0%, #0f766e 100%);
+      transition: width 0.2s ease;
+    }
+
+    .question-body {
+      padding: 1.35rem;
       border-radius: 18px;
-      box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+      line-height: 1.65;
       user-select: text;
       overflow: visible;
     }
 
-    .question-card img {
+    .question-body img {
       max-width: 100%;
-      height: auto;
-      border-radius: 0;
-      box-shadow: none;
       display: inline-block;
       vertical-align: middle;
     }
 
-    .import-rich {
-      font-size: inherit;
-      line-height: inherit;
-      color: inherit;
-      overflow-wrap: anywhere;
+    .question-figure {
+      max-height: 280px;
+      width: auto;
+      max-width: 100%;
+      display: block;
+      margin: 0 auto 1rem;
+      border-radius: 16px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
     }
 
+    .import-rich,
     .import-rich * {
       max-width: 100%;
-      font-size: inherit;
       color: inherit;
       font-family: inherit;
+      font-size: inherit;
+      overflow-wrap: anywhere;
     }
 
     .import-rich p {
@@ -167,10 +196,14 @@
     }
 
     .import-rich img {
-      max-width: min(100%, 560px);
-      width: auto !important;
-      height: auto !important;
+      max-width: 100%;
       display: inline-block;
+      vertical-align: middle;
+    }
+
+    .import-rich .docx-formula {
+      display: inline-block;
+      max-width: 100%;
       vertical-align: middle;
     }
 
@@ -193,559 +226,690 @@
       line-height: 0;
     }
 
-    .question-card .question-figure {
-      max-height: 260px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(2, 6, 23, 0.12);
-      display: block;
-      margin: 0 auto 1rem;
+    .exam-answer-list {
+      display: grid;
+      gap: 0.85rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
     }
 
-    .answer-item {
+    .exam-answer-item {
       display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.65rem 0.75rem;
-      border-radius: 12px;
-      border: 1px solid rgba(15, 23, 42, 0.10);
-      background: rgba(248, 250, 252, 0.9);
-      color: var(--glass-text);
-      transition: background-color 120ms ease, border-color 120ms ease;
+      align-items: flex-start;
+      gap: 0.85rem;
+      padding: 0.9rem 1rem;
+      border-radius: 16px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(248, 250, 252, 0.95);
+      transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
       cursor: pointer;
       user-select: text;
-      overflow: visible;
     }
 
-    .answer-item:hover { background: rgba(37, 99, 235, 0.08); }
-
-    .answer-item--selected {
-      border-color: rgba(22, 163, 74, 0.35);
-      background: rgba(22, 163, 74, 0.12);
+    .exam-answer-item:hover {
+      background: rgba(37, 99, 235, 0.06);
+      border-color: rgba(37, 99, 235, 0.18);
+      transform: translateY(-1px);
     }
 
-    .question-card,
-    .question-card * ,
-    .answer-item,
-    .answer-item * {
-      -webkit-user-select: text;
-      -moz-user-select: text;
-      user-select: text;
+    .exam-answer-item.answer-selected {
+      border-color: rgba(22, 163, 74, 0.30);
+      background: rgba(22, 163, 74, 0.10);
     }
 
-    .answer-item input,
-    .answer-item input * {
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      user-select: none;
-    }
-
-    .exam-nav-btn {
-      border: 1.5px solid rgba(100, 116, 139, 0.7);
-      background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
-      color: rgba(17, 24, 39, 0.95);
-      font-weight: 600;
-      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
-    }
-
-    .exam-nav-btn:hover {
-      background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
-      border-color: rgba(71, 85, 105, 0.75);
-      color: rgba(17, 24, 39, 0.98);
-    }
-
-    .exam-nav-btn:disabled {
-      background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
-      border-color: rgba(148, 163, 184, 0.7);
-      color: rgba(100, 116, 139, 0.9);
-      box-shadow: none;
-      opacity: 0.75;
-    }
-
-    .exam-nav-btn--primary {
-      border: 1.5px solid rgba(0, 122, 255, 0.9);
-      background: linear-gradient(180deg, #4da3ff 0%, #007aff 100%);
-      color: #ffffff;
-      box-shadow: 0 10px 20px rgba(0, 122, 255, 0.25);
-    }
-
-    .exam-nav-btn--primary:hover {
-      background: linear-gradient(180deg, #2f95ff 0%, #006fe6 100%);
-      border-color: rgba(0, 95, 204, 0.95);
-      color: #ffffff;
-    }
-
-    .question-number {
-      width: 36px;
-      height: 36px;
-      font-size: 0.95rem;
-      border-radius: 999px;
+    .answer-marker {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border: 1px solid rgba(15, 23, 42, 0.10);
-      background: rgba(255, 255, 255, 0.92);
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 160ms ease, background-color 160ms ease;
+      min-width: 36px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(37, 99, 235, 0.10);
+      color: #1d4ed8;
+      font-weight: 800;
+      flex-shrink: 0;
     }
 
-    .question-number.active {
-      background: linear-gradient(135deg, rgba(37, 99, 235, 0.22), rgba(124, 58, 237, 0.18));
-      border-color: rgba(37, 99, 235, 0.32);
-      color: rgba(2, 6, 23, 0.92);
+    .answer-radio {
+      margin-top: 0.2rem;
+      flex-shrink: 0;
     }
 
-    .question-number.done {
-      background: rgba(22, 163, 74, 0.15);
-      border-color: rgba(22, 163, 74, 0.28);
-    }
-
-    .recommendation-panel {
-      padding: 0.9rem;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.92);
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      box-shadow: 0 6px 16px rgba(2, 6, 23, 0.06);
-    }
-
-    .accessibility-controls {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.5rem;
-    }
-
-    .exam-dialog {
-      width: min(92vw, 360px);
-    }
-
-    .exam-dialog input {
-      width: 100%;
-      padding: 0.65rem 0.75rem;
+    .question-index-button {
+      width: 42px;
+      height: 42px;
       border-radius: 12px;
-      border: 1px solid rgba(15, 23, 42, 0.12);
-      background: rgba(255, 255, 255, 0.95);
-    }
-
-    .exam-dialog .badge-violation {
+      border: 1px solid rgba(15, 23, 42, 0.10);
+      background: #ffffff;
+      color: rgba(15, 23, 42, 0.88);
+      font-weight: 700;
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
-      padding: 0.35rem 0.65rem;
-      border-radius: 999px;
-      background: rgba(220, 38, 38, 0.12);
-      border: 1px solid rgba(220, 38, 38, 0.22);
-      color: rgba(220, 38, 38, 0.92);
-      font-weight: 700;
-      margin-bottom: 0.75rem;
+      justify-content: center;
+      transition: all 0.15s ease;
+      cursor: pointer;
     }
 
-    .progress-track {
-      height: 8px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.08);
-      overflow: hidden;
+    .question-index-button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(37, 99, 235, 0.20);
+      background: rgba(37, 99, 235, 0.06);
     }
 
-    .progress-fill {
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(135deg, var(--glass-accent), var(--glass-accent-2));
-      transition: width 200ms ease;
+    .question-index-button.active {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      border-color: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 10px 18px rgba(37, 99, 235, 0.22);
+    }
+
+    .question-index-button.done {
+      background: rgba(22, 163, 74, 0.14);
+      border-color: rgba(22, 163, 74, 0.28);
+      color: #166534;
+    }
+
+    .exam-note {
+      border-radius: 14px;
+      background: rgba(248, 250, 252, 0.92);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      padding: 0.95rem 1rem;
+      color: rgba(2, 6, 23, 0.72);
+      font-size: 0.94rem;
+    }
+
+    .exam-control-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.65rem;
+    }
+
+    .exam-security-alert {
+      border-radius: 14px;
+      border: 1px solid rgba(220, 38, 38, 0.16);
+      background: rgba(220, 38, 38, 0.08);
+      color: #b91c1c;
+      padding: 0.85rem 1rem;
+    }
+
+    @media (max-width: 1399.98px) {
+      .exam-layout {
+        grid-template-areas: "sidebar main nav";
+        grid-template-columns: 260px minmax(0, 1fr) 260px;
+      }
     }
 
     @media (max-width: 1199.98px) {
       .exam-layout {
-        grid-template-columns: 240px minmax(0, 1fr);
+        grid-template-areas:
+          "sidebar main"
+          "nav nav";
+        grid-template-columns: 260px minmax(0, 1fr);
       }
-      .exam-panel.right {
+
+      .exam-nav {
         position: static;
-        height: auto;
+        grid-column: 1 / -1;
       }
     }
 
     @media (max-width: 991.98px) {
       .exam-layout {
+        grid-template-areas:
+          "main"
+          "nav"
+          "sidebar";
         grid-template-columns: 1fr;
       }
-      .exam-panel {
+
+      .exam-sidebar,
+      .exam-nav {
         position: static;
-        height: auto;
       }
-      .accessibility-controls {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+
+      .exam-sidebar .block-content,
+      .exam-nav .block-content,
+      .exam-main .block-content {
+        padding-left: 1rem;
+        padding-right: 1rem;
       }
     }
 
-    .exam-panel,
-    .glass-window {
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
+    @media (max-width: 575.98px) {
+      .exam-control-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .question-body {
+        padding: 1rem;
+      }
+
+      .exam-answer-item {
+        padding: 0.8rem;
+      }
+
+      .exam-layout {
+        gap: 1rem;
+      }
+
+      .exam-timer {
+        width: 100%;
+        justify-content: center;
+        font-size: 1.15rem;
+      }
+
+      .question-index-button {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .answer-item { transition: none; }
+      .exam-answer-item,
+      .question-index-button,
+      .exam-progress-fill {
+        transition: none;
+      }
     }
   </style>
 </head>
-<body class="glass-app">
-  <!-- Dialogs -->
-  <div class="ios-dialog-overlay" id="dialog-overlay" style="display: none;"></div>
+<body class="bg-body-extra-light">
+  <div id="exam-app" class="exam-page" v-cloak>
+    <div id="page-container">
+      <main id="main-container">
+        <div class="content content-full py-4">
+          <div class="exam-layout">
+            <aside class="exam-sidebar">
+              <div class="block block-rounded exam-sidebar-block mb-4">
+                <div class="block-content p-4 text-center">
+                  <img
+                    class="exam-user-avatar mb-3"
+                    src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'assets/media/avatars/avatar10.jpg' %}{% endif %}"
+                    alt="Profil rasmi">
+                  <div class="h5 mb-1">{{ user.first_name }} {{ user.second_name }}</div>
+                  <div class="exam-meta-line mb-1">{{ assignment.category.name }}</div>
+                  <div class="exam-meta-line">{{ questions|length }} savol</div>
 
-  <div class="ios-dialog exam-dialog" id="finish-dialog" style="display: none;">
-    <h3>Testni tugatishni xohlaysizmi?</h3>
-    <p>Test yakunlangach natija qayta o'zgartirilmaydi.</p>
-    <button class="confirm-btn" onclick="confirmFinish()">Ha, yakunlash</button>
-    <button class="cancel-btn" onclick="closeDialog('finish-dialog')">Bekor qilish</button>
-  </div>
+                  <div class="mt-4">
+                    <div class="exam-timer" :class="timerToneClass">
+                      <i class="fa fa-hourglass-half"></i>
+                      <span>[[ formattedTime ]]</span>
+                    </div>
+                    <div class="exam-warning-banner" v-if="showFinalCountdown">
+                      Test [[ countdown ]] soniyada yakunlanadi.
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-  <div class="ios-dialog exam-dialog" id="unanswered-dialog" style="display: none;">
-    <h3>Diqqat!</h3>
-    <p id="unanswered-message"></p>
-    <button class="confirm-btn" onclick="confirmFinish()">Davom etish</button>
-    <button class="cancel-btn" onclick="closeDialog('unanswered-dialog')">Bekor qilish</button>
-  </div>
+              <div class="block block-rounded exam-sidebar-block mb-4">
+                <div class="block-content p-4">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted">Progress</span>
+                    <span class="fw-semibold">[[ progressPercent ]]%</span>
+                  </div>
+                  <div class="exam-progress-track mb-3">
+                    <div class="exam-progress-fill" :style="{ width: progressPercent + '%' }"></div>
+                  </div>
+                  <div class="exam-note mb-3">
+                    Savollar avtomatik saqlanadi. Sahifadan chiqish yoki boshqa oynaga o'tish testni yakunlatishi mumkin.
+                  </div>
+                  <button
+                    class="btn btn-danger w-100"
+                    @click="finishTest"
+                    aria-label="Testni tugatish">
+                    <i class="fa fa-check me-2"></i>Tugatish
+                  </button>
+                </div>
+              </div>
+            </aside>
 
-  <div class="ios-dialog exam-dialog" id="leave-dialog" style="display: none;">
-    <h3>Sahifadan chiqmoqchimisiz?</h3>
-    <p>Agar boshqa sahifaga o'tsangiz, testingiz yakunlanadi.</p>
-    <button class="confirm-btn" onclick="confirmFinish()">Ha, chiqish</button>
-    <button class="cancel-btn" onclick="closeDialog('leave-dialog')">Bekor qilish</button>
-  </div>
+            <section class="exam-main">
+              <div class="block block-rounded exam-question-shell mb-4">
+                <div class="block-header block-header-default">
+                  <div>
+                    <h3 class="block-title">Savol [[ currentQuestionIndex + 1 ]] / [[ questions.length ]]</h3>
+                    <div class="fs-sm text-muted">Javob tanlang va keyingi savolga o'ting.</div>
+                  </div>
+                  <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-primary-subtle text-primary fs-sm px-3 py-2">
+                      [[ answeredCount ]] ta javob berilgan
+                    </span>
+                  </div>
+                </div>
 
-  <div class="ios-dialog exam-dialog" id="password-dialog" style="display: none;">
-    <div class="badge-violation" v-if="violationMessage" :textContent="violationMessage"></div>
-    <h3>Parolni kiriting</h3>
-    <p id="password-message">Boshqa oynaga o'tish uchun parolni kiriting.</p>
-    <input type="password" id="password-input" name="violation_password" placeholder="Parol" autocomplete="new-password" aria-label="Parol kiritish">
-    <button class="confirm-btn" onclick="checkPassword()">Tasdiqlash</button>
-  </div>
+                <div class="block-content exam-main-zoom exam-card-body">
+                  <template v-if="currentQuestion">
+                    <div class="question-body" role="region" :aria-label="'Savol ' + (currentQuestionIndex + 1)">
+                      <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge rounded-pill bg-primary">Savol [[ currentQuestionIndex + 1 ]]</span>
+                        <span class="text-muted">Variantlardan bittasini tanlang.</span>
+                      </div>
 
-  <main id="main-container" class="content py-4" v-cloak>
-    <div class="exam-layout">
-      <!-- Left panel -->
-      <aside class="glass-surface exam-panel left">
-        <div class="text-center">
-          <div class="glass-brand justify-content-center mb-2">
-            <span class="glass-brand-mark" aria-hidden="true">
-              <i class="fa fa-layer-group opacity-75"></i>
-            </span>
-            <span class="glass-brand-title">Test</span>
-          </div>
-          <div class="exam-avatar-wrapper">
-            <img
-              class="exam-avatar"
-              src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'assets/media/avatars/avatar10.jpg' %}{% endif %}"
-              alt="Profil rasmi">
-          </div>
-          <h5 class="mb-1 fw-semibold">{{ user.first_name }} {{ user.second_name }}</h5>
-          <div class="exam-meta">{{ assignment.test.name }}</div>
-          <div class="exam-meta">{{ assignment.category.name }}</div>
-          <div class="exam-meta">[[ questions.length ]] savol</div>
+                      <img
+                        v-if="currentQuestion.image"
+                        :src="currentQuestion.image"
+                        alt="Savol rasmi"
+                        class="question-figure">
 
-          <div class="mt-3 time-display">
-            <i class="fa fa-hourglass-half opacity-75"></i>
-            [[ formattedTime ]]
-          </div>
+                      <div class="import-rich mb-4" v-html="currentQuestion.text"></div>
 
-          <div class="countdown-warning" v-if="showCountdown">
-            Test [[ countdown ]] soniyada yakunlanadi!
-          </div>
-        </div>
+                      <ul class="exam-answer-list">
+                        <li v-for="(answer, answerIndex) in currentQuestion.answers" :key="answer.id">
+                          <label
+                            :class="['exam-answer-item', answer.selected ? 'answer-selected' : '']"
+                            :aria-label="'Javob ' + answerLetter(answerIndex)"
+                            @click="selectAnswer(currentQuestion.id, answer.id)">
+                            <span class="answer-marker">[[ answerLetter(answerIndex) ]]</span>
+                            <input
+                              type="radio"
+                              class="form-check-input answer-radio"
+                              :name="'question_' + currentQuestion.id"
+                              :value="answer.id"
+                              :checked="answer.selected"
+                              @change="selectAnswer(currentQuestion.id, answer.id)">
+                            <div class="flex-grow-1 import-rich" v-html="answer.text"></div>
+                          </label>
+                        </li>
+                      </ul>
+                    </div>
+                  </template>
 
-        <div class="mt-4">
-          <button
-            class="btn btn-glass-danger w-100"
-            @click="finishTest"
-            aria-label="Testni tugatish">
-            <i class="fa fa-check me-1"></i>
-            Tugatish
-          </button>
-        </div>
-      </aside>
+                  <template v-else>
+                    <div class="text-center py-5">
+                      <img src="{% static 'img/no-data.webp' %}" alt="No Data" class="img-fluid mb-3" style="max-width: 96px;">
+                      <div class="h5 mb-1">Savollar topilmadi</div>
+                      <div class="text-muted">Ushbu test uchun savollar mavjud emas.</div>
+                    </div>
+                  </template>
+                </div>
 
-      <!-- Center content -->
-      <section class="exam-center">
-        <div class="glass-window">
-          <div class="glass-window-bar">
-            <div class="mac-dots" aria-hidden="true">
-              <span class="dot dot-red"></span>
-              <span class="dot dot-yellow"></span>
-              <span class="dot dot-green"></span>
-            </div>
-            <div class="glass-window-title">Savollar</div>
-            <div class="glass-window-actions">
-              <span class="glass-pill d-none d-sm-inline-flex">
-                <i class="fa fa-list-check opacity-75"></i>
-                [[ answeredCount ]]/[[ questions.length ]]
-              </span>
-              <span class="glass-pill d-none d-sm-inline-flex">
-                <i class="fa fa-stopwatch opacity-75"></i>
-                [[ formattedTime ]]
-              </span>
-            </div>
-          </div>
+                <div class="block-content block-content-full bg-body-light border-top">
+                  <div class="d-flex justify-content-between gap-2">
+                    <button
+                      class="btn btn-alt-secondary"
+                      :disabled="currentQuestionIndex === 0"
+                      @click="setCurrentQuestion(currentQuestionIndex - 1)">
+                      <i class="fa fa-arrow-left me-2"></i>Oldingi
+                    </button>
+                    <button
+                      class="btn btn-primary"
+                      :disabled="currentQuestionIndex >= questions.length - 1"
+                      @click="setCurrentQuestion(currentQuestionIndex + 1)">
+                      Keyingi<i class="fa fa-arrow-right ms-2"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
 
-          <div class="glass-window-body">
-            <div v-if="currentQuestion" class="question-card" role="region" :aria-label="'Savol ' + (currentQuestionIndex + 1)">
-              <h5 class="text-center mb-2 fw-semibold">
-                Savol [[ currentQuestionIndex + 1 ]] / [[ questions.length ]]
-              </h5>
-              <div class="mb-3 import-rich" v-html="currentQuestion.text"></div>
-              <img v-if="currentQuestion.image" :src="currentQuestion.image" alt="Savol rasmi" class="question-figure d-block mx-auto mb-3">
+            <aside class="exam-nav">
+              <div class="block block-rounded exam-nav-shell mb-4">
+                <div class="block-header block-header-default">
+                  <h3 class="block-title">Savollar navigatsiyasi</h3>
+                </div>
+                <div class="block-content exam-card-body">
+                  <div class="d-flex flex-wrap gap-2">
+                    <button
+                      v-for="(question, index) in questions"
+                      :key="question.id"
+                      type="button"
+                      :class="[
+                        'question-index-button',
+                        currentQuestionIndex === index ? 'active' :
+                        question.answers.some(a => a.selected) ? 'done' : ''
+                      ]"
+                      :title="'Savol ' + (index + 1)"
+                      @click="setCurrentQuestion(index)">
+                      [[ index + 1 ]]
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-              <ul class="d-grid gap-2">
-                <li
-                  v-for="(answer, aIndex) in currentQuestion.answers"
-                  :key="answer.id"
-                  :class="['answer-item', answer.selected ? 'answer-item--selected' : '']"
-                  @click="selectAnswer(currentQuestion.id, answer.id)"
-                  role="option"
-                  :aria-selected="answer.selected"
-                  :aria-label="'Javob ' + (aIndex + 1)">
-                  <input
-                    type="radio"
-                    :name="'question_' + currentQuestion.id"
-                    :value="answer.id"
-                    :id="'answer_' + answer.id"
-                    class="form-check-input m-0"
-                    :checked="answer.selected"
-                    @change="selectAnswer(currentQuestion.id, answer.id)">
-                  <div class="flex-1 answer-text import-rich" v-html="answer.text"></div>
-                </li>
-              </ul>
-            </div>
-
-            <div class="d-flex justify-content-between gap-2">
-              <button class="btn btn-glass-secondary exam-nav-btn" :disabled="currentQuestionIndex === 0" @click="setCurrentQuestion(currentQuestionIndex - 1)">
-                Oldingi
-              </button>
-              <button class="btn btn-glass-secondary exam-nav-btn exam-nav-btn--primary" :disabled="currentQuestionIndex >= questions.length - 1" @click="setCurrentQuestion(currentQuestionIndex + 1)">
-                Keyingi
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Right panel -->
-      <aside class="glass-surface exam-panel right">
-        <div>
-          <div class="fw-semibold mb-2">Savollar navigatsiyasi</div>
-          <div class="d-flex flex-wrap gap-2">
-            <span
-              v-for="(question, index) in questions"
-              :key="question.id"
-              :class="[
-                'question-number',
-                currentQuestionIndex === index ? 'active' :
-                question.answers.some(a => a.selected) ? 'done' : ''
-              ]"
-              :data-question-id="question.id"
-              :title="'Savol ' + (index + 1)"
-              @click="setCurrentQuestion(index)"
-              :aria-label="'Savol ' + (index + 1)">
-              [[ index + 1 ]]
-            </span>
-          </div>
-        </div>
-
-        <div class="mt-4">
-          <div class="fw-semibold mb-2">Progress</div>
-          <div class="exam-meta mb-2">[[ answeredCount ]] / [[ questions.length ]] yakunlandi</div>
-          <div class="progress-track">
-            <div class="progress-fill" :style="{ width: progressPercent + '%' }"></div>
-          </div>
-        </div>
-
-        <div class="recommendation-panel mt-4">
-          <h6 class="fw-semibold mb-2">Tavsiya</h6>
-          <p class="exam-meta mb-0">
-            Savollarni diqqat bilan o'qing, vaqtni samarali boshqaring va javoblarni tekshirib tanlang.
-          </p>
-        </div>
-
-        <div class="mt-4">
-          <div class="fw-semibold mb-2">Korinish</div>
-          <div class="accessibility-controls">
-            <button @click="increaseZoom" class="btn btn-glass-secondary btn-sm" aria-label="Sahifani kattalashtirish">
-              <i class="fa fa-plus"></i>
-            </button>
-            <button @click="decreaseZoom" class="btn btn-glass-secondary btn-sm" aria-label="Sahifani kichiklashtirish">
-              <i class="fa fa-minus"></i>
-            </button>
-            <button @click="toggleReadingMode" class="btn btn-glass-secondary btn-sm" aria-label="O'qish oson rejimini almashtirish">
-              <i class="fa fa-book-open"></i>
-            </button>
+              <div class="block block-rounded exam-nav-shell mb-4">
+                <div class="block-header block-header-default">
+                  <h3 class="block-title">Ko'rinish</h3>
+                </div>
+                <div class="block-content exam-card-body">
+                  <div class="exam-control-grid">
+                    <button type="button" class="btn btn-alt-secondary btn-sm" @click="increaseZoom" aria-label="Kattalashtirish">
+                      <i class="fa fa-plus"></i>
+                    </button>
+                    <button type="button" class="btn btn-alt-secondary btn-sm" @click="decreaseZoom" aria-label="Kichiklashtirish">
+                      <i class="fa fa-minus"></i>
+                    </button>
+                    <button type="button" class="btn btn-alt-secondary btn-sm" @click="toggleReadingMode" aria-label="O'qish rejimi">
+                      <i class="fa fa-book-open"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="exam-security-alert mt-0 mb-4" v-if="violationCount > 0">
+                Qoidabuzarliklar soni: [[ violationCount ]]
+              </div>
+            </aside>
           </div>
         </div>
-
-        <div class="mt-4">
-          <div class="fw-semibold mb-2">Holat belgisi</div>
-          <div class="d-flex flex-column gap-2 exam-meta">
-            <span><span class="question-number done me-2"></span>Javob berilgan</span>
-            <span><span class="question-number active me-2"></span>Hozirgi savol</span>
-          </div>
-        </div>
-      </aside>
+      </main>
     </div>
-  </main>
 
+    <div class="modal fade" id="finish-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Testni yakunlash</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-0">Test yakunlangach javoblarni qayta o'zgartirib bo'lmaydi. Davom etilsinmi?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-alt-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+            <button type="button" class="btn btn-danger" @click="confirmFinish">Ha, yakunlash</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="unanswered-modal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Diqqat</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-0">[[ unansweredMessage ]]</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-alt-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+            <button type="button" class="btn btn-primary" @click="confirmFinish">Davom etish</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="password-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Parolni kiriting</h5>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-danger" v-if="violationMessage">
+              [[ violationMessage ]]
+            </div>
+            <p class="text-muted">Boshqa oynaga o'tish uchun parolni kiriting.</p>
+            <input
+              type="password"
+              class="form-control"
+              id="password-input"
+              name="violation_password"
+              placeholder="Parol"
+              autocomplete="new-password"
+              aria-label="Parol kiritish">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" @click="checkPassword">Tasdiqlash</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'assets/js/oneui.app.min.js' %}"></script>
   <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
   <script>
-    let vueApp = null;
-    let visibilityTimer = null;
+    const STORAGE_KEYS = {
+      currentQuestionIndex: 'exam_current_question_index_{{ student_test.id }}',
+      zoomLevel: 'exam_zoom_level',
+      readingMode: 'exam_reading_mode',
+      passwordDialogTriggered: 'exam_password_triggered_{{ student_test.id }}',
+      violationCount: 'exam_violation_count_{{ student_test.id }}',
+      violationMessage: 'exam_violation_message_{{ student_test.id }}'
+    };
 
     const { createApp } = Vue;
 
-    vueApp = createApp({
+    createApp({
       delimiters: ['[[', ']]'],
       data() {
         return {
           questions: {{ questions|to_json|safe }},
-          currentQuestionIndex: parseInt(localStorage.getItem('currentQuestionIndex')) || 0,
+          currentQuestionIndex: parseInt(localStorage.getItem(STORAGE_KEYS.currentQuestionIndex), 10) || 0,
           remainingTime: {{ remaining_time }},
           isTestRunning: true,
-          isPasswordDialogTriggered: localStorage.getItem('passwordDialogTriggered') === 'true',
-          violationCount: parseInt(localStorage.getItem('violationCount')) || 0,
-          violationMessage: localStorage.getItem('violationMessage') || '',
-          showCountdown: false,
+          isPasswordDialogTriggered: localStorage.getItem(STORAGE_KEYS.passwordDialogTriggered) === 'true',
+          violationCount: parseInt(localStorage.getItem(STORAGE_KEYS.violationCount), 10) || 0,
+          violationMessage: localStorage.getItem(STORAGE_KEYS.violationMessage) || '',
+          unansweredMessage: '',
           countdown: 5,
-          zoomLevel: parseFloat(localStorage.getItem('zoomLevel')) || 1,
-          readingMode: localStorage.getItem('readingMode') === 'true'
+          zoomLevel: parseFloat(localStorage.getItem(STORAGE_KEYS.zoomLevel)) || 1,
+          readingMode: localStorage.getItem(STORAGE_KEYS.readingMode) === 'true',
+          timerInterval: null,
+          visibilityTimer: null,
+          beforeUnloadHandler: null,
+          visibilityHandler: null
         };
       },
       computed: {
         formattedTime() {
-          if (this.remainingTime <= 0) return '00:00';
-          const minutes = Math.floor(this.remainingTime / 60);
+          if (this.remainingTime <= 0) {
+            return '00:00';
+          }
+
+          const hours = Math.floor(this.remainingTime / 3600);
+          const minutes = Math.floor((this.remainingTime % 3600) / 60);
           const seconds = this.remainingTime % 60;
+
+          if (hours > 0) {
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+          }
+
           return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         },
         answeredCount() {
-          return this.questions.filter(q => q.answers.some(a => a.selected)).length;
+          return this.questions.filter(question => question.answers.some(answer => answer.selected)).length;
         },
         progressPercent() {
-          if (!this.questions.length) return 0;
+          if (!this.questions.length) {
+            return 0;
+          }
           return Math.round((this.answeredCount / this.questions.length) * 100);
         },
         currentQuestion() {
           return this.questions[this.currentQuestionIndex] || null;
+        },
+        showFinalCountdown() {
+          return this.remainingTime > 0 && this.remainingTime <= 5;
+        },
+        timerToneClass() {
+          if (this.remainingTime <= 60) {
+            return 'timer-danger';
+          }
+          if (this.remainingTime <= 300) {
+            return 'timer-warning';
+          }
+          return '';
         }
       },
       methods: {
+        answerLetter(index) {
+          return String.fromCharCode(65 + index);
+        },
+        getModal(id) {
+          const element = document.getElementById(id);
+          if (!element) {
+            return null;
+          }
+          return bootstrap.Modal.getOrCreateInstance(element);
+        },
+        openModal(id) {
+          const modal = this.getModal(id);
+          if (modal) {
+            modal.show();
+          }
+        },
+        closeModal(id) {
+          const element = document.getElementById(id);
+          const instance = element ? bootstrap.Modal.getInstance(element) : null;
+          if (instance) {
+            instance.hide();
+          }
+        },
+        closeAllModals() {
+          ['finish-modal', 'unanswered-modal', 'password-modal'].forEach((id) => {
+            this.closeModal(id);
+          });
+        },
         setCurrentQuestion(index) {
           if (!this.questions.length) {
             this.currentQuestionIndex = 0;
-            localStorage.removeItem('currentQuestionIndex');
+            localStorage.removeItem(STORAGE_KEYS.currentQuestionIndex);
             return;
           }
+
           const clampedIndex = Math.min(Math.max(index, 0), this.questions.length - 1);
           this.currentQuestionIndex = clampedIndex;
-          localStorage.setItem('currentQuestionIndex', clampedIndex);
-          window.scrollTo({ top: 0, behavior: 'auto' });
+          localStorage.setItem(STORAGE_KEYS.currentQuestionIndex, String(clampedIndex));
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         },
         selectAnswer(questionId, answerId) {
-          fetch('/save-answer/', {
+          fetch("{% url 'landing:save-answer' %}", {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'X-CSRFToken': '{{ csrf_token }}',
+              'X-CSRFToken': '{{ csrf_token }}'
             },
-            body: JSON.stringify({ student_question_id: questionId, answer_id: answerId }),
+            body: JSON.stringify({
+              student_question_id: questionId,
+              answer_id: answerId
+            })
           })
-          .then(response => response.json())
-          .then(data => {
-            if (!data.success) {
-              this.showDialog('unanswered-dialog', `Xatolik: ${data.message}`);
-            } else {
-              const question = this.questions.find(q => q.id === questionId);
-              question.answers.forEach(a => a.selected = a.id === answerId);
-            }
-          })
-          .catch(() => this.showDialog('unanswered-dialog', "Xatolik: Server bilan bog'lanishda muammo."));
+            .then((response) => response.json())
+            .then((data) => {
+              if (!data.success) {
+                this.unansweredMessage = `Xatolik: ${data.message}`;
+                this.openModal('unanswered-modal');
+                return;
+              }
+
+              const question = this.questions.find((item) => item.id === questionId);
+              if (question) {
+                question.answers.forEach((answer) => {
+                  answer.selected = answer.id === answerId;
+                });
+              }
+            })
+            .catch(() => {
+              this.unansweredMessage = "Xatolik: Server bilan bog'lanishda muammo.";
+              this.openModal('unanswered-modal');
+            });
         },
         finishTest() {
-          const unansweredQuestions = this.questions.filter(q => !q.answers.some(a => a.selected));
+          const unansweredQuestions = this.questions.filter((question) => !question.answers.some((answer) => answer.selected));
           if (unansweredQuestions.length > 0) {
-            document.getElementById('unanswered-message').textContent =
-              `Siz ${unansweredQuestions.length} ta savolga javob bermadingiz. Haqiqatdan ham testni yakunlamoqchimisiz?`;
-            this.showDialog('unanswered-dialog');
-          } else {
-            this.showDialog('finish-dialog');
+            this.unansweredMessage = `Siz ${unansweredQuestions.length} ta savolga javob bermagansiz. Testni yakunlamoqchimisiz?`;
+            this.openModal('unanswered-modal');
+            return;
           }
+
+          this.openModal('finish-modal');
+        },
+        confirmFinish() {
+          this.closeAllModals();
+          this.submitTest();
         },
         submitTest() {
-          fetch(`/finish-test/{{ student_test.id }}/`, {
+          fetch("{% url 'landing:finish-test' student_test.id %}", {
             method: 'POST',
             headers: {
-              'X-CSRFToken': '{{ csrf_token }}',
-            },
-          })
-          .then(response => response.json())
-          .then(data => {
-            this.isTestRunning = false;
-            localStorage.setItem('passwordDialogTriggered', 'false');
-            localStorage.setItem('violationCount', '0');
-            localStorage.setItem('violationMessage', '');
-            if (data.success) {
-              window.location.href = data.redirect_url;
-            } else {
-              this.showDialog('unanswered-dialog', data.message);
+              'X-CSRFToken': '{{ csrf_token }}'
             }
           })
-          .catch(() => {
-            this.showDialog('unanswered-dialog', "Xatolik: Testni tugatishda muammo.");
-          });
-        },
-        showDialog(dialogId, message = null) {
-          const dialog = document.getElementById(dialogId);
-          const overlay = document.getElementById('dialog-overlay');
-          if (message) {
-            const messageElement = dialog.querySelector('p');
-            if (messageElement) messageElement.textContent = message;
-          }
-          setTimeout(() => {
-            dialog.style.display = 'block';
-            overlay.style.display = 'block';
-          }, 0);
-        },
-        closeDialog(dialogId) {
-          const dialog = document.getElementById(dialogId);
-          const overlay = document.getElementById('dialog-overlay');
-          dialog.style.display = 'none';
-          overlay.style.display = 'none';
+            .then((response) => response.json())
+            .then((data) => {
+              this.isTestRunning = false;
+              this.resetSecurityState();
+              localStorage.removeItem(STORAGE_KEYS.currentQuestionIndex);
+
+              if (data.success) {
+                window.location.href = data.redirect_url;
+                return;
+              }
+
+              this.unansweredMessage = data.message || 'Testni yakunlashda xatolik yuz berdi.';
+              this.openModal('unanswered-modal');
+            })
+            .catch(() => {
+              this.unansweredMessage = "Xatolik: Testni tugatishda muammo.";
+              this.openModal('unanswered-modal');
+            });
         },
         handleViolation(message) {
-          this.violationCount++;
+          this.violationCount += 1;
           this.isPasswordDialogTriggered = true;
-          this.violationMessage = `${message} Iltimos, test qoidalariga rioya qiling (Harakatlar: ${this.violationCount}).`;
-          localStorage.setItem('violationCount', this.violationCount);
-          localStorage.setItem('passwordDialogTriggered', 'true');
-          localStorage.setItem('violationMessage', this.violationMessage);
-          this.showDialog('password-dialog');
+          this.violationMessage = `${message} Iltimos, test qoidalariga rioya qiling. Harakatlar soni: ${this.violationCount}.`;
+
+          localStorage.setItem(STORAGE_KEYS.violationCount, String(this.violationCount));
+          localStorage.setItem(STORAGE_KEYS.passwordDialogTriggered, 'true');
+          localStorage.setItem(STORAGE_KEYS.violationMessage, this.violationMessage);
+
+          this.openModal('password-modal');
+        },
+        checkPassword() {
+          const passwordInput = document.getElementById('password-input');
+          if (!passwordInput) {
+            return;
+          }
+
+          if (passwordInput.value === '1213') {
+            this.isPasswordDialogTriggered = false;
+            this.violationCount = 0;
+            this.violationMessage = '';
+            this.resetSecurityState();
+            passwordInput.value = '';
+            this.closeModal('password-modal');
+            return;
+          }
+
+          this.violationCount += 1;
+          this.violationMessage = "Noto'g'ri parol. Iltimos, test qoidalariga rioya qiling.";
+          localStorage.setItem(STORAGE_KEYS.violationCount, String(this.violationCount));
+          localStorage.setItem(STORAGE_KEYS.violationMessage, this.violationMessage);
+          passwordInput.value = '';
+        },
+        resetSecurityState() {
+          localStorage.setItem(STORAGE_KEYS.passwordDialogTriggered, 'false');
+          localStorage.setItem(STORAGE_KEYS.violationCount, '0');
+          localStorage.setItem(STORAGE_KEYS.violationMessage, '');
         },
         toggleReadingMode() {
           this.readingMode = !this.readingMode;
-          localStorage.setItem('readingMode', this.readingMode);
+          localStorage.setItem(STORAGE_KEYS.readingMode, String(this.readingMode));
           document.body.classList.toggle('reading-mode', this.readingMode);
         },
         applyZoom() {
-          const target = document.querySelector('.exam-center');
+          const target = document.querySelector('.exam-main-zoom');
           if (target) {
-            target.style.setProperty('--zoom-level', this.zoomLevel);
+            target.style.setProperty('--exam-zoom-level', this.zoomLevel);
           }
         },
         increaseZoom() {
           if (this.zoomLevel < 1.5) {
             this.zoomLevel = Math.round((this.zoomLevel + 0.1) * 10) / 10;
-            localStorage.setItem('zoomLevel', this.zoomLevel);
+            localStorage.setItem(STORAGE_KEYS.zoomLevel, String(this.zoomLevel));
             this.applyZoom();
           }
         },
         decreaseZoom() {
           if (this.zoomLevel > 0.8) {
             this.zoomLevel = Math.round((this.zoomLevel - 0.1) * 10) / 10;
-            localStorage.setItem('zoomLevel', this.zoomLevel);
+            localStorage.setItem(STORAGE_KEYS.zoomLevel, String(this.zoomLevel));
             this.applyZoom();
           }
         }
@@ -753,20 +917,20 @@
       mounted() {
         this.applyZoom();
         document.body.classList.toggle('reading-mode', this.readingMode);
+        this.setCurrentQuestion(this.currentQuestionIndex);
 
         if (this.isPasswordDialogTriggered && this.violationCount > 0) {
-          this.showDialog('password-dialog');
+          this.openModal('password-modal');
         }
 
         this.timerInterval = setInterval(() => {
           if (this.remainingTime > 0) {
-            this.remainingTime--;
-            if (this.remainingTime <= 5) {
-              this.showCountdown = true;
+            this.remainingTime -= 1;
+            if (this.showFinalCountdown) {
               this.countdown = this.remainingTime;
-              if (this.remainingTime === 0) {
-                this.submitTest();
-              }
+            }
+            if (this.remainingTime === 0) {
+              this.submitTest();
             }
           } else {
             clearInterval(this.timerInterval);
@@ -774,75 +938,53 @@
           }
         }, 1000);
 
-        this.setCurrentQuestion(this.currentQuestionIndex);
+        this.visibilityHandler = () => {
+          if (!this.isTestRunning || this.isPasswordDialogTriggered) {
+            return;
+          }
 
-        document.addEventListener('visibilitychange', () => {
-          if (!this.isTestRunning || this.isPasswordDialogTriggered) return;
           if (document.hidden) {
-            clearTimeout(visibilityTimer);
-            visibilityTimer = setTimeout(() => {
+            clearTimeout(this.visibilityTimer);
+            this.visibilityTimer = setTimeout(() => {
               if (document.hidden) {
-                this.handleViolation('Sahifadan chiqish taqiqlangan.');
+                this.handleViolation("Sahifadan chiqish taqiqlangan.");
               }
             }, 1200);
           } else {
-            clearTimeout(visibilityTimer);
+            clearTimeout(this.visibilityTimer);
           }
-        });
+        };
 
-        window.onbeforeunload = () => {
+        document.addEventListener('visibilitychange', this.visibilityHandler);
+
+        this.beforeUnloadHandler = (event) => {
           if (this.isTestRunning && !this.isPasswordDialogTriggered) {
-            return "Test davomida sahifadan chiqish tavsiya etilmaydi.";
+            event.preventDefault();
+            event.returnValue = '';
+            return '';
           }
           return null;
         };
+
+        window.addEventListener('beforeunload', this.beforeUnloadHandler);
       },
       beforeUnmount() {
         clearInterval(this.timerInterval);
+        clearTimeout(this.visibilityTimer);
+
+        if (this.visibilityHandler) {
+          document.removeEventListener('visibilitychange', this.visibilityHandler);
+        }
+
+        if (this.beforeUnloadHandler) {
+          window.removeEventListener('beforeunload', this.beforeUnloadHandler);
+        }
+
         if (!this.isTestRunning) {
-          localStorage.setItem('passwordDialogTriggered', 'false');
-          localStorage.setItem('violationCount', '0');
-          localStorage.setItem('violationMessage', '');
+          this.resetSecurityState();
         }
       }
-    }).mount('#main-container');
-
-    function showDialog(dialogId, message = null) {
-      vueApp.showDialog(dialogId, message);
-    }
-
-    function closeDialog(dialogId) {
-      vueApp.closeDialog(dialogId);
-    }
-
-    function confirmFinish() {
-      closeDialog('finish-dialog');
-      closeDialog('unanswered-dialog');
-      closeDialog('leave-dialog');
-      vueApp.submitTest();
-    }
-
-    function checkPassword() {
-      const passwordInput = document.getElementById('password-input');
-      if (passwordInput.value === '1213') {
-        vueApp.isPasswordDialogTriggered = false;
-        vueApp.violationCount = 0;
-        vueApp.violationMessage = '';
-        localStorage.setItem('passwordDialogTriggered', 'false');
-        localStorage.setItem('violationCount', '0');
-        localStorage.setItem('violationMessage', '');
-        document.exitFullscreen().catch(() => {});
-        closeDialog('password-dialog');
-        passwordInput.value = '';
-      } else {
-        vueApp.violationMessage = 'Noto\'g\'ri parol! Iltimos, test qoidalariga rioya qiling.';
-        vueApp.violationCount++;
-        localStorage.setItem('violationCount', vueApp.violationCount);
-        localStorage.setItem('violationMessage', vueApp.violationMessage);
-        passwordInput.value = '';
-        vueApp.showDialog('password-dialog');
-      }
-    }
+    }).mount('#exam-app');
   </script>
 </body>
 </html>

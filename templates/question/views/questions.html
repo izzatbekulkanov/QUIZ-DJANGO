@@ -70,7 +70,7 @@
 {% block content %}
 <main id="main-container">
   <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
   <!-- Hero -->
   <div class="bg-image overflow-hidden"
@@ -82,8 +82,8 @@
             <h1 class="fw-semibold text-white mb-0">Testlar</h1>
             <h2 class="h4 fw-normal text-white-75 mb-0">Testlar ro'yhati</h2>
           </div>
-          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="{% url 'add-question' %}">
+          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3 d-flex flex-wrap gap-2 justify-content-center justify-content-sm-end">
+            <a class="btn btn-light btn-sm" href="{% url 'administrator:add-question' %}">
               <i class="fa fa-plus me-1 opacity-50"></i> Test qo'shish
             </a>
           </div>
@@ -97,7 +97,7 @@
     <div class="card shadow-sm">
       <div class="card-body">
         <!-- Filters -->
-        <form method="get" class="mb-4 filter-form">
+        <form method="get" class="mb-4 filter-form pb-2">
           <div class="row g-3 align-items-center">
             <!-- Category Filter -->
             <div class="col-md-3">
@@ -157,16 +157,16 @@
                 <td>{{ test.created_at|date:"Y-m-d H:i" }}</td>
                 <td class="text-center">
                   <div class="btn-group">
-                    <a href="{% url 'edit-test' test.id %}" class="btn btn-sm btn-primary" title="Tahrirlash">
+                    <a href="{% url 'administrator:edit-test' test.id %}" class="btn btn-sm btn-primary" title="Tahrirlash">
                       <i class="fa fa-pencil-alt"></i>
                     </a>
                     <button class="btn btn-sm btn-danger" title="O'chirish" onclick="deleteTest({{ test.id }})">
                       <i class="fa fa-trash"></i>
                     </button>
-                    <a href="{% url 'add-question-test' test.id %}" class="btn btn-sm btn-success" title="Savol qo'shish">
+                    <a href="{% url 'administrator:add-question-test' test.id %}" class="btn btn-sm btn-success" title="Savol qo'shish">
                       <i class="fa fa-plus"></i>
                     </a>
-                    <a href="{% url 'assign-students-to-test' test.id %}" class="btn btn-sm btn-info" title="Talabalarni biriktirish">
+                    <a href="{% url 'administrator:assign-students-to-test' test.id %}" class="btn btn-sm btn-info" title="Talabalarni biriktirish">
                       <i class="fa fa-users"></i>
                     </a>
                   </div>
@@ -230,7 +230,8 @@
       cancelButtonText: 'Bekor qilish'
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch(`/question/question/delete/${testId}/`, {
+        const deleteTestUrl = "{% url 'administrator:delete-test' 0 %}".replace("/0/", `/${testId}/`);
+        fetch(deleteTestUrl, {
           method: 'POST',
           headers: {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,

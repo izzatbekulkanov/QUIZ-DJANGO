@@ -1,6 +1,6 @@
 import csv
 from django.core.management.base import BaseCommand
-from account.models import CustomUser
+from apps.account.models import CustomUser
 
 class Command(BaseCommand):
     help = 'Export users to a CSV file'

@@ -1,5 +1,5 @@
 {% extends 'question/main.html' %}
-{% load static %}
+{% load static custom_filters %}
 
 {% block style %}
 <link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
@@ -118,10 +118,13 @@
     margin-bottom: 0;
   }
   .import-rich img {
-    max-width: min(100%, 520px);
-    width: auto !important;
-    height: auto !important;
+    max-width: 100%;
     display: inline-block;
+    vertical-align: middle;
+  }
+  .import-rich .docx-formula {
+    display: inline-block;
+    max-width: 100%;
     vertical-align: middle;
   }
   .import-rich table {
@@ -143,13 +146,115 @@
   #questions-preview li {
     margin-bottom: 0.35rem;
   }
+  .paste-editor-shell {
+    border: 1px solid #dbe4f0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  }
+  .paste-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid #e6edf5;
+    background: rgba(248, 251, 255, 0.95);
+  }
+  .paste-toolbar .btn {
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+  }
+  .paste-editor {
+    min-height: 320px;
+    padding: 1rem 1.1rem;
+    background: #fff;
+    outline: none;
+  }
+  .paste-editor:empty::before {
+    content: attr(data-placeholder);
+    color: #94a3b8;
+  }
+  .paste-editor.is-invalid {
+    box-shadow: inset 0 0 0 2px rgba(220, 53, 69, 0.2);
+  }
+  .import-side-note {
+    border: 1px solid #e5edf6;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #f7fbff 0%, #f8f9fa 100%);
+  }
+  .import-side-note ul {
+    padding-left: 1rem;
+  }
+  .preview-card {
+    border: 1px solid #e5edf6;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+    padding: 1rem;
+  }
+  .preview-answer {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid #ecf1f7;
+    border-radius: 12px;
+    background: #fbfdff;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+  .preview-answer.is-correct {
+    border-color: rgba(25, 135, 84, 0.25);
+    background: #f2fbf5;
+  }
+  .preview-answer-label {
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #eaf2fb;
+    color: #0d6efd;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .preview-answer.is-correct .preview-answer-label {
+    background: rgba(25, 135, 84, 0.12);
+    color: #198754;
+  }
+  .existing-answer {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    margin-bottom: 0.5rem;
+  }
+  .existing-answer:last-child {
+    margin-bottom: 0;
+  }
+  .existing-answer-badge {
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: #eef2f7;
+    color: #52616f;
+    flex-shrink: 0;
+  }
+  .existing-answer.is-correct .existing-answer-badge {
+    background: rgba(25, 135, 84, 0.12);
+    color: #198754;
+  }
 </style>
 {% endblock style %}
 
 {% block content %}
 <main id="main-container">
   <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
   <!-- Hero -->
   <div class="bg-image overflow-hidden"
@@ -161,8 +266,13 @@
             <h1 class="fw-semibold text-white mb-0">{{ test.name }} (Talabalar: {{ student_count }})</h1>
             <h2 class="h5 fw-normal text-white-75 mb-0"><code><i>{{ test.name }}</i></code> ga savollar biriktirish</h2>
           </div>
-          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="{% url 'question' %}">
+          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3 d-flex flex-wrap gap-2 justify-content-center justify-content-sm-end">
+            {% if request.user.is_superuser %}
+              <a class="btn btn-light btn-sm" href="{% url 'administrator:generation' %}">
+                <i class="fa fa-wand-magic-sparkles me-1 opacity-50"></i> Generatsiya
+              </a>
+            {% endif %}
+            <a class="btn btn-light btn-sm" href="{% url 'administrator:question' %}">
               <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
             </a>
           </div>
@@ -226,42 +336,86 @@
         <div class="tab-pane" id="import-question" role="tabpanel">
           <form method="POST" enctype="multipart/form-data" id="import-form">
             {% csrf_token %}
-            <div class="mb-3">
-              <label class="form-label fw-semibold" for="import-file">Word faylni yuklang (.docx, .doc)</label>
-              <div class="upload-container border rounded p-3 text-center bg-light" id="upload-container">
-                <input type="file" class="form-control d-none" id="import-file" name="import_file" accept=".docx,.doc" required>
-                <i class="fa fa-cloud-upload-alt fa-2x text-primary mb-2"></i>
-                <p class="mb-1 text-muted">Faylni bu yerga sudrab olib keling yoki <span class="text-primary fw-semibold">tanlash uchun bosing</span></p>
-                <p class="mb-0 text-muted small">.docx va .doc formatlari qabul qilinadi (maksimal 10MB)</p>
-                <p class="mt-2 mb-0 text-primary fw-semibold d-none" id="file-name">Tanlangan fayl: <span></span></p>
+            <div class="row g-4">
+              <div class="col-12">
+                <label class="form-label fw-semibold" for="paste-editor">Word hujjatdan to‘g‘ridan-to‘g‘ri paste qiling</label>
+                <div class="paste-editor-shell">
+                  <div class="paste-toolbar">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-command="bold">
+                      <i class="fa fa-bold"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-command="italic">
+                      <i class="fa fa-italic"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-command="underline">
+                      <i class="fa fa-underline"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-command="insertUnorderedList">
+                      <i class="fa fa-list-ul"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="clear-paste-editor">
+                      <i class="fa fa-eraser me-1"></i> Tozalash
+                    </button>
+                  </div>
+                  <div
+                    id="paste-editor"
+                    class="paste-editor import-rich"
+                    contenteditable="true"
+                    data-placeholder="Word ichidagi savollarni shu yerga Ctrl+V bilan qo‘ying. Rasmlar va format saqlanadi."></div>
+                </div>
+                <input type="hidden" name="pasted_html" id="pasted-html">
+                <input type="hidden" name="pasted_text" id="pasted-text">
+                <div class="invalid-feedback d-none" id="paste-invalid">
+                  Word matnini paste qiling.
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                  <div>
+                    <a href="{% url 'administrator:download-template' %}" class="btn btn-outline-secondary btn-sm me-2">
+                      <i class="fa fa-download me-1"></i> Word shablonni yuklab olish
+                    </a>
+                    <span class="text-muted small">Import qilinayotgan matnda faqat savol va variantlar bo‘lishi kifoya.</span>
+                  </div>
+                  <button type="button" class="btn btn-primary btn-sm" id="submit-paste-button">
+                    <i class="fa fa-upload me-1"></i> Import Qilish
+                  </button>
+                </div>
               </div>
-              <div class="invalid-feedback">Faylni yuklash majburiy.</div>
-            </div>
-            <div class="btn-group">
-              <a href="{% url 'download-template' %}" class="btn btn-outline-secondary btn-sm">
-                <i class="fa fa-download me-1"></i> Word shablonni yuklab olish
-              </a>
-              <button type="button" class="btn btn-primary btn-sm" disabled id="submit-button">
-                <i class="fa fa-upload me-1"></i> Import Qilish
-              </button>
             </div>
           </form>
+          <div class="mt-4 d-none" id="import-preview-section">
+            <div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center gap-2 mb-3">
+              <div>
+                <h5 class="mb-1">Import preview</h5>
+                <p class="text-muted small mb-0">Saqlashdan oldin barcha savollar va variantlar shu yerda ko‘rsatiladi.</p>
+              </div>
+              <span class="badge bg-primary-subtle text-primary px-3 py-2" id="import-preview-count">0 ta savol</span>
+            </div>
+            <div id="questions-preview" class="d-grid gap-3"></div>
+            <div class="d-flex justify-content-end gap-2 mt-3">
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="clear-import-preview">
+                <i class="fa fa-trash me-1"></i> Previewni tozalash
+              </button>
+              <button type="button" class="btn btn-primary btn-sm" id="save-questions">
+                <i class="fa fa-save me-1"></i> Barchasini saqlash
+              </button>
+            </div>
+          </div>
         </div>
         <!-- Export Qilish Tab -->
         <div class="tab-pane" id="export-question" role="tabpanel">
           <div class="mb-3">
             <p class="mb-2">Savollarni quyidagi formatlarda eksport qiling:</p>
             <div class="btn-group">
-              <a href="{% url 'export-questions' test.id 'json' %}" class="btn btn-primary btn-sm">
+              <a href="{% url 'administrator:export-questions' test.id 'json' %}" class="btn btn-primary btn-sm">
                 <i class="fa fa-download me-1"></i> JSON
               </a>
-              <a href="{% url 'export-questions' test.id 'xlsx' %}" class="btn btn-success btn-sm">
+              <a href="{% url 'administrator:export-questions' test.id 'xlsx' %}" class="btn btn-success btn-sm">
                 <i class="fa fa-download me-1"></i> Excel
               </a>
-              <a href="{% url 'export-questions' test.id 'csv' %}" class="btn btn-info btn-sm">
+              <a href="{% url 'administrator:export-questions' test.id 'csv' %}" class="btn btn-info btn-sm">
                 <i class="fa fa-download me-1"></i> CSV
               </a>
-              <a href="{% url 'export-questions' test.id 'docx' %}" class="btn btn-warning btn-sm">
+              <a href="{% url 'administrator:export-questions' test.id 'docx' %}" class="btn btn-warning btn-sm">
                 <i class="fa fa-download me-1"></i> Word
               </a>
             </div>
@@ -269,8 +423,7 @@
         </div>
       </div>
       <div class="card-body">
-        <!-- Testga tegishli savollar va to‘g‘ri javoblar -->
-        <h5 class="card-title mb-3">Savollar va To‘g‘ri Javoblar</h5>
+        <h5 class="card-title mb-3">Mavjud savollar</h5>
         {% if questions %}
           <ul class="list-group">
             {% for question in questions %}
@@ -280,28 +433,29 @@
                     <span class="badge bg-primary">{{ forloop.counter }}</span>
                   </div>
                   <div class="col-md-5">
-                    <div class="text-primary import-rich">{{ question.text|safe }}</div>
+                    <div class="text-primary import-rich">{{ question.text|clean_import_question }}</div>
                   </div>
                   <div class="col-md-4">
                     {% for answer in question.answers.all %}
-                      {% if answer.is_correct %}
-                        <div class="text-success fw-medium import-rich">{{ answer.text|safe }}</div>
-                      {% endif %}
+                      <div class="existing-answer {% if answer.is_correct %}is-correct{% endif %}">
+                        <span class="existing-answer-badge">{{ forloop.counter }}</span>
+                        <div class="import-rich {% if answer.is_correct %}text-success fw-medium{% endif %}">{{ answer.text|clean_import_answer }}</div>
+                      </div>
                     {% endfor %}
                   </div>
                   <div class="col-md-2 text-end">
                     <button
                       type="button"
                       class="btn btn-info btn-sm edit-question-btn mb-1"
-                      data-detail-url="{% url 'question-detail' test.id question.id %}"
-                      data-update-url="{% url 'question-update' test.id question.id %}">
+                      data-detail-url="{% url 'administrator:question-detail' test.id question.id %}"
+                      data-update-url="{% url 'administrator:question-update' test.id question.id %}">
                       <i class="fa fa-edit me-1"></i> Tahrirlash
                     </button>
                     <button
                       type="button"
                       class="btn btn-danger btn-sm delete-question-btn"
-                      data-delete-url="{% url 'question-delete' test.id question.id %}">
-                      <i class="fa fa-trash me-1"></i> O‘chirish
+                      data-delete-url="{% url 'administrator:question-delete' test.id question.id %}">
+                      <i class="fa fa-trash me-1"></i> O'chirish
                     </button>
                   </div>
                 </div>
@@ -351,24 +505,6 @@
       </div>
     </div>
 
-    <!-- Import Preview Modal -->
-    <div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="previewModalLabel">Yuklangan Savollar</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div id="questions-preview"></div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Bekor qilish</button>
-            <button type="button" class="btn btn-primary btn-sm" id="save-questions">Saqlash</button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </main>
 {% endblock content %}
@@ -460,11 +596,16 @@
       }
     });
 
-    // File upload handling
-    const uploadContainer = document.getElementById('upload-container');
-    const fileInput = document.getElementById('import-file');
-    const fileNameDisplay = document.getElementById('file-name');
-    const submitButton = document.getElementById('submit-button');
+    // Import helpers
+    const pasteEditor = document.getElementById('paste-editor');
+    const pastedHtmlInput = document.getElementById('pasted-html');
+    const pastedTextInput = document.getElementById('pasted-text');
+    const pasteInvalid = document.getElementById('paste-invalid');
+    const importPreviewSection = document.getElementById('import-preview-section');
+    const questionsPreviewEl = document.getElementById('questions-preview');
+    const importPreviewCountEl = document.getElementById('import-preview-count');
+    const clearImportPreviewButton = document.getElementById('clear-import-preview');
+    let importedQuestions = [];
 
     // Edit question modal
     const editModalEl = document.getElementById('editQuestionModal');
@@ -494,48 +635,202 @@
       return wrap;
     }
 
-    uploadContainer.addEventListener('click', () => fileInput.click());
+    function editorHasContent() {
+      const text = (pasteEditor.innerText || '').replace(/\u00a0/g, ' ').trim();
+      return text.length > 0 || !!pasteEditor.querySelector('img, table, math');
+    }
 
-    uploadContainer.addEventListener('dragover', e => {
-      e.preventDefault();
-      uploadContainer.classList.add('dragover');
-    });
+    function syncPasteInputs() {
+      pastedHtmlInput.value = pasteEditor.innerHTML || '';
+      pastedTextInput.value = pasteEditor.innerText || '';
+    }
 
-    uploadContainer.addEventListener('dragleave', () => {
-      uploadContainer.classList.remove('dragover');
-    });
+    function setImportValidationState(isInvalid) {
+      pasteEditor.classList.toggle('is-invalid', !!isInvalid);
+      pasteInvalid.classList.toggle('d-none', !isInvalid);
+    }
 
-    uploadContainer.addEventListener('drop', e => {
-      e.preventDefault();
-      uploadContainer.classList.remove('dragover');
-      const files = e.dataTransfer.files;
-      const allowedExt = ['.docx', '.doc'];
-      const isAllowed = (name) => {
-        const lower = (name || '').toLowerCase();
-        return allowedExt.some(ext => lower.endsWith(ext));
-      };
-      if (files.length > 0 && isAllowed(files[0].name)) {
-        fileInput.files = files;
-        fileNameDisplay.classList.remove('d-none');
-        fileNameDisplay.querySelector('span').textContent = files[0].name;
-        submitButton.disabled = false;
-        uploadContainer.classList.add('success');
-      } else {
-        Swal.fire('Xatolik!', 'Faqat .docx yoki .doc fayllar qabul qilinadi!', 'error');
+    function escapeHtml(value) {
+      return (value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function plainTextToHtml(value) {
+      return (value || '')
+        .split(/\r?\n/)
+        .filter(line => line.trim())
+        .map(line => `<p>${escapeHtml(line)}</p>`)
+        .join('');
+    }
+
+    function insertHtmlAtCursor(html) {
+      pasteEditor.focus();
+      if (document.queryCommandSupported && document.queryCommandSupported('insertHTML')) {
+        document.execCommand('insertHTML', false, html);
+        return;
+      }
+
+      const selection = window.getSelection();
+      if (!selection || !selection.rangeCount) {
+        pasteEditor.insertAdjacentHTML('beforeend', html);
+        return;
+      }
+
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = html;
+      const fragment = document.createDocumentFragment();
+      let lastNode = null;
+      while (wrapper.firstChild) {
+        lastNode = fragment.appendChild(wrapper.firstChild);
+      }
+      range.insertNode(fragment);
+      if (lastNode) {
+        const newRange = document.createRange();
+        newRange.setStartAfter(lastNode);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+      }
+    }
+
+    function normalizeImportedQuestions(questions) {
+      return (questions || []).map(question => ({
+        text: question?.text || '',
+        image_base64: question?.image_base64 || null,
+        answers: (question?.answers || []).map(answer => {
+          if (Array.isArray(answer)) {
+            return {
+              text: answer[0] || '',
+              is_correct: !!answer[1]
+            };
+          }
+          return {
+            text: answer?.text || '',
+            is_correct: !!answer?.is_correct
+          };
+        }).filter(answer => answer.text)
+      })).filter(question => question.text && question.answers.length >= 2);
+    }
+
+    function answerMarker(index) {
+      return String.fromCharCode(65 + (index % 26));
+    }
+
+    function renderImportedPreview() {
+      if (!importedQuestions.length) {
+        importPreviewSection.classList.add('d-none');
+        questionsPreviewEl.innerHTML = '';
+        importPreviewCountEl.textContent = '0 ta savol';
+        return;
+      }
+
+      importPreviewCountEl.textContent = `${importedQuestions.length} ta savol`;
+      questionsPreviewEl.innerHTML = importedQuestions.map((question, questionIndex) => `
+        <div class="preview-card">
+          <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+            <div class="fw-semibold">Savol ${questionIndex + 1}</div>
+            <span class="badge bg-light text-dark">${question.answers.length} ta variant</span>
+          </div>
+          <div class="import-rich mb-3">${question.text}</div>
+          ${question.image_base64 ? `<img src="data:image/png;base64,${question.image_base64}" class="img-fluid rounded border mb-3" style="max-width: 100%; height: auto;">` : ''}
+          <div class="d-grid gap-2">
+            ${question.answers.map((answer, answerIndex) => `
+              <label class="preview-answer ${answer.is_correct ? 'is-correct' : ''}">
+                <input
+                  type="checkbox"
+                  class="form-check-input mt-1 preview-answer-correct"
+                  data-question-index="${questionIndex}"
+                  data-answer-index="${answerIndex}"
+                  ${answer.is_correct ? 'checked' : ''}>
+                <span class="preview-answer-label">${answerMarker(answerIndex)}</span>
+                <div class="import-rich flex-grow-1 ${answer.is_correct ? 'text-success fw-medium' : ''}">${answer.text}</div>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+      importPreviewSection.classList.remove('d-none');
+    }
+
+    pasteEditor.addEventListener('input', () => {
+      syncPasteInputs();
+      if (editorHasContent()) {
+        setImportValidationState(false);
       }
     });
 
-    fileInput.addEventListener('change', () => {
-      if (fileInput.files.length > 0) {
-        fileNameDisplay.classList.remove('d-none');
-        fileNameDisplay.querySelector('span').textContent = fileInput.files[0].name;
-        submitButton.disabled = false;
-        uploadContainer.classList.add('success');
-      } else {
-        fileNameDisplay.classList.add('d-none');
-        submitButton.disabled = true;
-        uploadContainer.classList.remove('success');
+    pasteEditor.addEventListener('paste', event => {
+      const clipboard = event.clipboardData;
+      if (!clipboard) {
+        window.setTimeout(syncPasteInputs, 0);
+        return;
       }
+
+      const html = clipboard.getData('text/html');
+      const text = clipboard.getData('text/plain');
+      const imageItems = Array.from(clipboard.items || []).filter(item => item.type.startsWith('image/'));
+      const hasHtmlImages = /<img[\s>]/i.test(html || '');
+
+      if (!html && !text && !imageItems.length) {
+        window.setTimeout(syncPasteInputs, 0);
+        return;
+      }
+
+      event.preventDefault();
+
+      if (html) {
+        const parsed = new DOMParser().parseFromString(html, 'text/html');
+        insertHtmlAtCursor(parsed.body?.innerHTML || html);
+      } else if (text) {
+        insertHtmlAtCursor(plainTextToHtml(text));
+      }
+
+      if (!hasHtmlImages) {
+        imageItems.forEach(item => {
+          const file = item.getAsFile();
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            insertHtmlAtCursor(`<p><img src="${reader.result}" alt="Pasted image"></p>`);
+            syncPasteInputs();
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      window.setTimeout(() => {
+        syncPasteInputs();
+        setImportValidationState(false);
+      }, 0);
+    });
+
+    document.querySelectorAll('[data-editor-command]').forEach(button => {
+      button.addEventListener('click', () => {
+        const command = button.dataset.editorCommand;
+        pasteEditor.focus();
+        document.execCommand(command, false, null);
+        syncPasteInputs();
+      });
+    });
+
+    document.getElementById('clear-paste-editor').addEventListener('click', () => {
+      pasteEditor.innerHTML = '';
+      importedQuestions = [];
+      syncPasteInputs();
+      renderImportedPreview();
+      setImportValidationState(false);
+      pasteEditor.focus();
+    });
+
+    clearImportPreviewButton.addEventListener('click', () => {
+      importedQuestions = [];
+      renderImportedPreview();
     });
 
     // Question form submission
@@ -607,15 +902,18 @@
     });
 
     // Import form submission
-    document.getElementById('submit-button').addEventListener('click', async e => {
+    const handleImportSubmit = async e => {
       e.preventDefault();
       const form = document.getElementById('import-form');
-      if (!fileInput.files.length) {
-        fileInput.classList.add('is-invalid');
+      syncPasteInputs();
+
+      const hasPastedContent = editorHasContent();
+      if (!hasPastedContent) {
+        setImportValidationState(true);
         return;
-      } else {
-        fileInput.classList.remove('is-invalid');
       }
+
+      setImportValidationState(false);
 
       Swal.fire({
         title: 'Yuklanmoqda...',
@@ -626,7 +924,7 @@
 
       try {
         const formData = new FormData(form);
-        const response = await fetch("{% url 'import-questions' test.id %}", {
+        const response = await fetch("{% url 'administrator:import-questions' test.id %}", {
           method: 'POST',
           body: formData,
           headers: {
@@ -637,23 +935,9 @@
         Swal.close();
 
         if (data.success) {
-          const questions = data.questions;
-          let previewHtml = '';
-          questions.forEach((q, index) => {
-            previewHtml += `
-              <div class="mb-3">
-                <div class="fs-sm fw-semibold mb-1">Savol ${index + 1}:</div>
-                <div class="mb-2 import-rich">${q.text}</div>
-                ${q.image_base64 ? `<img src="data:image/png;base64,${q.image_base64}" class="img-fluid mb-2" style="max-width: 320px;">` : ''}
-                <ul class="list-unstyled">
-                  ${q.answers.map((a, i) => `
-                    <li class="${a[1] ? 'text-success fw-medium' : ''}"><div class="import-rich">${a[0]}</div></li>
-                  `).join('')}
-                </ul>
-              </div>`;
-          });
-          document.getElementById('questions-preview').innerHTML = previewHtml;
-          new bootstrap.Modal(document.getElementById('previewModal')).show();
+          importedQuestions = normalizeImportedQuestions(data.questions);
+          renderImportedPreview();
+          importPreviewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
           Swal.fire('Xatolik!', data.errors || 'Savollarni import qilishda xatolik yuz berdi.', 'error');
         }
@@ -662,10 +946,40 @@
         Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
         console.error('Error:', error);
       }
+    };
+
+    const submitPasteButton = document.getElementById('submit-paste-button');
+    if (submitPasteButton) {
+      submitPasteButton.addEventListener('click', handleImportSubmit);
+    }
+
+    questionsPreviewEl.addEventListener('change', event => {
+      const checkbox = event.target.closest('.preview-answer-correct');
+      if (!checkbox) return;
+
+      const questionIndex = parseInt(checkbox.dataset.questionIndex, 10);
+      const answerIndex = parseInt(checkbox.dataset.answerIndex, 10);
+      const question = importedQuestions[questionIndex];
+      const answer = question?.answers?.[answerIndex];
+      if (!answer) return;
+
+      answer.is_correct = checkbox.checked;
+      renderImportedPreview();
     });
 
     // Save imported questions
     document.getElementById('save-questions').addEventListener('click', async () => {
+      if (!importedQuestions.length) {
+        Swal.fire('Xatolik!', 'Saqlash uchun previewdagi savollar mavjud emas.', 'warning');
+        return;
+      }
+
+      const invalidQuestion = importedQuestions.find(question => !question.answers.some(answer => answer.is_correct));
+      if (invalidQuestion) {
+        Swal.fire('Xatolik!', 'Har bir savolda kamida bitta to‘g‘ri javob bo‘lishi kerak.', 'warning');
+        return;
+      }
+
       Swal.fire({
         title: 'Tasdiqlaysizmi?',
         text: 'Savollarni saqlamoqchimisiz?',
@@ -678,13 +992,14 @@
       }).then(async result => {
         if (result.isConfirmed) {
           try {
-            const response = await fetch("{% url 'save-imported-questions' %}", {
+            const response = await fetch("{% url 'administrator:save-imported-questions' %}", {
               method: 'POST',
               headers: {
                 'X-CSRFToken': csrfToken,
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
-              }
+              },
+              body: JSON.stringify({ questions: importedQuestions })
             });
             const data = await response.json();
             if (data.success) {

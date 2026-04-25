@@ -44,7 +44,7 @@
 <main id="main-container">
   <!-- CSRF Token -->
 
-  <input type="hidden" name="csrfmiddlewaretoken" value='{% csrf_token %}'>
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
   <!-- Hero -->
   <div class="bg-image overflow-hidden"
@@ -292,7 +292,7 @@
   }
 
   function loadGroups() {
-    fetch('/question/api/groups/', {
+    fetch('/administrator/groups/', {
       headers: {
         'X-Requested-With': 'XMLHttpRequest'
       }
@@ -327,7 +327,7 @@
     progressElement.innerText = '0%';
     progressElement.setAttribute('aria-valuenow', 0);
 
-    const source = new EventSource(`/question/generate_encodings/${type}/`);
+    const source = new EventSource(`/administrator/generate_encodings/${type}/`);
     source.onmessage = function(event) {
       const data = JSON.parse(event.data);
       statusElement.innerText = data.status;
@@ -378,7 +378,7 @@
     progressElement.innerText = '0%';
     progressElement.setAttribute('aria-valuenow', 0);
 
-    const source = new EventSource(`/question/generate_group_encodings/${encodeURIComponent(groupName)}/`);
+    const source = new EventSource(`/administrator/generate_group_encodings/${encodeURIComponent(groupName)}/`);
     source.onmessage = function(event) {
       const data = JSON.parse(event.data);
       statusElement.innerText = data.status;
@@ -437,7 +437,7 @@
         progressElement.innerText = '0%';
         progressElement.setAttribute('aria-valuenow', 0);
 
-        const source = new EventSource(`/question/generate_face_encoding/${userId}/`);
+        const source = new EventSource(`/administrator/generate_face_encoding/${userId}/`);
         source.onmessage = function(event) {
           const data = JSON.parse(event.data);
           statusElement.innerText = data.status;
@@ -489,7 +489,7 @@
       cancelButtonText: 'Bekor',
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch(`/question/delete_encoding/${userId}/`, {
+        fetch(`/administrator/delete_encoding/${userId}/`, {
           method: 'DELETE',
           headers: {
             'X-CSRFToken': csrfToken,

@@ -162,10 +162,10 @@
         <div class="content py-2">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item">
-                    <a href="{% url 'dashboard' %}" class="text-decoration-none"><i class="fa fa-home me-1"></i> Bosh sahifa</a>
+                    <a href="{% url 'landing:dashboard' %}" class="text-decoration-none"><i class="fa fa-home me-1"></i> Bosh sahifa</a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a href="{% url 'dashboard-categories' %}" class="text-decoration-none">Kategoriyalar</a>
+                    <a href="{% url 'landing:dashboard' %}" class="text-decoration-none">Topshiriqlar</a>
                 </li>
                 <li class="breadcrumb-item">
                     <a href="javascript:history.back()" class="text-decoration-none">Topshiriqlar</a>
@@ -294,13 +294,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     startButton.addEventListener('click', function () {
         const assignmentId = this.getAttribute('data-assignment-id');
+        const unfinishedStatusUrl = "{% url 'landing:check-unfinished-test' 0 %}".replace("/0/", `/${assignmentId}/`);
+        const startTestUrl = "{% url 'landing:start-test' 0 %}".replace("/0/", `/${assignmentId}/`);
 
         // LocalStorage-dan joriy test sahifasini o'chirish
         localStorage.removeItem('currentQuestionIndex');
         localStorage.removeItem('selectedAnswers');
 
         // Foydalanuvchi uchun tekshirish
-        fetch(`/check-unfinished-test/${assignmentId}/`, {
+        fetch(unfinishedStatusUrl, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -312,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     // Yakunlanmagan test mavjud bo‘lsa
                     unfinishedModal.show();
                     continueTestButton.onclick = function () {
-                        window.location.href = `/start-test/${assignmentId}/`;
+                        window.location.href = startTestUrl;
                     };
                 } else {
                     // Yangi testni boshlash
@@ -328,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             if (countdown <= 0) {
                                 clearInterval(interval);
                                 countdownModal.hide();
-                                window.location.href = `/start-test/${assignmentId}/`;
+                                window.location.href = startTestUrl;
                             } else {
                                 document.getElementById('countdown').textContent = countdown;
                             }
