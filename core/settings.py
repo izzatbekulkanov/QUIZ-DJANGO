@@ -25,6 +25,17 @@ ALLOWED_HOSTS = env_list(
 )
 
 
+def _resolve_storage_path(value: str | None, default: Path) -> Path:
+    raw_value = (value or "").strip()
+    if not raw_value:
+        return default
+
+    resolved = Path(raw_value)
+    if not resolved.is_absolute():
+        resolved = BASE_DIR / resolved
+    return resolved
+
+
 def _iter_trusted_origins_from_hosts(hosts: list[str]) -> list[str]:
     trusted: list[str] = []
     seen: set[str] = set()
@@ -245,7 +256,10 @@ USE_I18N = True
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = _resolve_storage_path(
+    env("DJANGO_STATIC_ROOT", str(BASE_DIR / "staticfiles")),
+    BASE_DIR / "staticfiles",
+)
 STORAGES = {
     "default": {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -256,8 +270,13 @@ STORAGES = {
 }
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_ROOT = _resolve_storage_path(
+    env("DJANGO_MEDIA_ROOT", str(BASE_DIR / "media")),
+    BASE_DIR / "media",
+)
 DJANGO_SERVE_MEDIA = env_bool("DJANGO_SERVE_MEDIA", default=DEBUG)
+FILE_UPLOAD_PERMISSIONS = 0o664
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o775
 
 EMAIL_BACKEND = env("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend") or (
     "django.core.mail.backends.smtp.EmailBackend"
