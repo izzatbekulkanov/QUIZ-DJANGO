@@ -302,6 +302,57 @@
     align-items: end;
   }
 
+  .office-helper-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 999px;
+    background: rgba(248, 250, 252, 0.92);
+    color: #64748b;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .office-helper-status-dot {
+    width: 0.68rem;
+    height: 0.68rem;
+    border-radius: 999px;
+    background: #94a3b8;
+    box-shadow: 0 0 0 0.28rem rgba(148, 163, 184, 0.14);
+  }
+
+  .office-helper-status.is-online {
+    color: #15803d;
+    background: rgba(240, 253, 244, 0.92);
+    border-color: rgba(22, 163, 74, 0.18);
+  }
+
+  .office-helper-status.is-online .office-helper-status-dot {
+    background: #16a34a;
+    box-shadow: 0 0 0 0.28rem rgba(22, 163, 74, 0.14);
+  }
+
+  .office-helper-status.is-offline {
+    color: #b91c1c;
+    background: rgba(254, 242, 242, 0.92);
+    border-color: rgba(220, 38, 38, 0.18);
+  }
+
+  .office-helper-status.is-offline .office-helper-status-dot {
+    background: #dc2626;
+    box-shadow: 0 0 0 0.28rem rgba(220, 38, 38, 0.14);
+  }
+
+  .office-helper-hint {
+    border: 1px solid rgba(59, 130, 246, 0.12);
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(239, 246, 255, 0.92), rgba(255, 255, 255, 0.98));
+    color: #475569;
+    padding: 0.85rem 1rem;
+  }
+
   .import-source-select {
     min-width: 260px;
   }
@@ -700,13 +751,24 @@
                       <p class="text-muted small mb-0">500-1000 ta savol bo'lsa, yordamchi dasturdan foydalaning. U kompyuterdagi ochiq Office oynalarini ko'rsatadi va tanlangan fayldagi matnni bir bosishda previewga olib keladi.</p>
                     </div>
                     <div class="question-create-toolbar">
+                      <span class="office-helper-status" id="office-helper-status">
+                        <span class="office-helper-status-dot"></span>
+                        <span id="office-helper-status-text">Holat tekshirilmoqda</span>
+                      </span>
                       <button type="button" class="btn btn-outline-primary btn-sm" id="prepare-word-helper">
                         <i class="fa fa-download me-1"></i> Yordamchi .exe ni olish
+                      </button>
+                      <button type="button" class="btn btn-outline-info btn-sm" id="open-helper-dashboard">
+                        <i class="fa fa-chart-line me-1"></i> Helper dashboard
                       </button>
                       <button type="button" class="btn btn-outline-secondary btn-sm" id="check-word-bridge">
                         <i class="fa fa-heart-pulse me-1"></i> Dastur ishlayotganini tekshirish
                       </button>
                     </div>
+                  </div>
+
+                  <div class="office-helper-hint small mb-3" id="office-helper-hint">
+                    Dastur ishlayotgan bo'lsa, yuklab olish tugmasi ko'rinmaydi. Kompyuter qayta yoqilganda ham avtomatik ishga tushishi helper dashboardidan yoqiladi.
                   </div>
 
                   <div class="row g-3 align-items-end">
@@ -958,6 +1020,7 @@ Ich bin Anna wohne.
   </div>
 
   <input type="file" id="rich-image-upload" accept="image/*" class="d-none">
+  {{ office_helper_session|json_script:"office-helper-session-data" }}
 </main>
 {% endblock content %}
 
@@ -997,6 +1060,10 @@ Ich bin Anna wohne.
     const wordBridgeUrlInput = document.getElementById('word-bridge-url');
     const prepareWordHelperButton = document.getElementById('prepare-word-helper');
     const checkWordBridgeButton = document.getElementById('check-word-bridge');
+    const openHelperDashboardButton = document.getElementById('open-helper-dashboard');
+    const officeHelperStatusEl = document.getElementById('office-helper-status');
+    const officeHelperStatusTextEl = document.getElementById('office-helper-status-text');
+    const officeHelperHintEl = document.getElementById('office-helper-hint');
     const openWordDocumentSelect = document.getElementById('open-word-document-select');
     const refreshOpenWordDocumentsButton = document.getElementById('refresh-open-word-documents');
     const importOpenWordButton = document.getElementById('import-open-word-button');
@@ -1016,9 +1083,13 @@ Ich bin Anna wohne.
     let nextAnswerEditorIndex = 0;
     const bridgeStorageKey = 'quizWordBridgeUrl';
     const wordHelperExeDownloadUrl = "{% url 'administrator:download-office-helper-exe' %}";
+    const officeHelperSessionScript = document.getElementById('office-helper-session-data');
+    const officeHelperSessionPayload = officeHelperSessionScript ? JSON.parse(officeHelperSessionScript.textContent || '{}') : {};
     const wordHelperState = {
       bridgeReachable: false,
       transport: null,
+      sessionBound: false,
+      pollTimer: null,
     };
 
     function editorHasContent(editorEl) {
@@ -1186,6 +1257,59 @@ Ich bin Anna wohne.
       return normalizeBridgeBaseUrl(wordBridgeUrlInput?.value || '');
     }
 
+    function setOfficeHelperConnectionState(isOnline, data = {}) {
+      if (officeHelperStatusEl) {
+        officeHelperStatusEl.classList.toggle('is-online', !!isOnline);
+        officeHelperStatusEl.classList.toggle('is-offline', !isOnline);
+      }
+
+      if (officeHelperStatusTextEl) {
+        officeHelperStatusTextEl.textContent = isOnline
+          ? "Yordamchi dastur online"
+          : "Yordamchi dastur offline";
+      }
+
+      if (prepareWordHelperButton) {
+        prepareWordHelperButton.classList.toggle('d-none', !!isOnline);
+      }
+
+      if (officeHelperHintEl) {
+        const device = data?.device || {};
+        const session = data?.session || {};
+        if (isOnline) {
+          const userText = session.username ? ` Tizim foydalanuvchisi: ${session.username}.` : '';
+          const deviceText = device.computer_name ? ` Kompyuter: ${device.computer_name}.` : '';
+          officeHelperHintEl.textContent = `Yordamchi dastur ishlayapti.${deviceText}${userText} Endi ochiq Office oynasini tanlab savollarni yuklashingiz mumkin.`;
+        } else {
+          officeHelperHintEl.textContent = "Katta Office faylidan olish uchun yordamchi .exe ni bir marta oching. Oddiy copy-paste usuli hozir ham ishlaydi.";
+        }
+      }
+    }
+
+    async function bindOfficeHelperSession({ force = false } = {}) {
+      if (!officeHelperSessionPayload?.session_key) {
+        return false;
+      }
+      if (wordHelperState.sessionBound && !force) {
+        return true;
+      }
+
+      try {
+        await callWordHelperDirect('/api/session/bind', {
+          method: 'POST',
+          body: {
+            ...officeHelperSessionPayload,
+            page_url: window.location.href,
+          },
+        });
+        wordHelperState.sessionBound = true;
+        return true;
+      } catch (error) {
+        wordHelperState.sessionBound = false;
+        return false;
+      }
+    }
+
     function setOpenWordDocumentPlaceholder(message) {
       if (!openWordDocumentSelect) {
         return;
@@ -1279,16 +1403,6 @@ Ich bin Anna wohne.
       }
     }
 
-    async function detectWordHelperExtension({ force = false } = {}) {
-      return false;
-    }
-
-    async function callWordHelperThroughExtension(path, { method = 'GET', body = null, headers = {} } = {}) {
-      const unsupportedError = new Error("Yordamchi dastur to'g'ridan-to'g'ri ulanadi.");
-      unsupportedError.code = 'HELPER_SETUP_REQUIRED';
-      throw unsupportedError;
-    }
-
     async function callWordHelperDirect(path, { method = 'GET', body = null, headers = {} } = {}) {
       const bridgeBaseUrl = getBridgeBaseUrl();
       if (!bridgeBaseUrl) {
@@ -1354,16 +1468,18 @@ Ich bin Anna wohne.
     }
 
     async function refreshWordHelperState({ silent = false, announceReady = false } = {}) {
-      setOpenWordDocumentPlaceholder("Yordamchi dastur ishga tushgach ochiq Office oynalari shu yerda ko'rinadi");
-
       try {
         const result = await callWordHelper('/health');
         const data = result.data || {};
         const transportLabel = "To'g'ridan-to'g'ri";
-        setImportSourceStatus(
-          `Yordamchi dastur tayyor. ${transportLabel} ulandi.`,
-          'fa-circle-check'
-        );
+        setOfficeHelperConnectionState(true, data);
+        await bindOfficeHelperSession();
+        if (!importedQuestions.length) {
+          setImportSourceStatus(
+            `Yordamchi dastur tayyor. ${transportLabel} ulandi.`,
+            'fa-circle-check'
+          );
+        }
 
         if (announceReady) {
           await Swal.fire(
@@ -1375,10 +1491,14 @@ Ich bin Anna wohne.
         return true;
       } catch (error) {
         wordHelperState.bridgeReachable = false;
-        setImportSourceStatus(
-          "Oddiy yo'l: Word ichida savollarni belgilang, Ctrl+C bosing va 'Worddan tez olish' tugmasini bosing.",
-          'fa-clipboard'
-        );
+        wordHelperState.sessionBound = false;
+        setOfficeHelperConnectionState(false);
+        if (!importedQuestions.length) {
+          setImportSourceStatus(
+            "Oddiy yo'l: Word ichida savollarni belgilang, Ctrl+C bosing va 'Worddan tez olish' tugmasini bosing.",
+            'fa-clipboard'
+          );
+        }
         return false;
       }
     }
@@ -2165,6 +2285,12 @@ Ich bin Anna wohne.
       });
     }
 
+    if (openHelperDashboardButton) {
+      openHelperDashboardButton.addEventListener('click', () => {
+        window.open(getBridgeBaseUrl() || 'http://127.0.0.1:8765', '_blank', 'noopener');
+      });
+    }
+
     if (wordBridgeUrlInput) {
       const savedBridgeUrl = localStorage.getItem(bridgeStorageKey);
       if (savedBridgeUrl) {
@@ -2359,7 +2485,15 @@ Ich bin Anna wohne.
       }
     });
 
-    refreshWordHelperState({ silent: true });
+    setOfficeHelperConnectionState(false);
+    refreshWordHelperState({ silent: true }).then((isReady) => {
+      if (isReady) {
+        loadOpenWordDocuments({ silent: true });
+      }
+    });
+    wordHelperState.pollTimer = window.setInterval(() => {
+      refreshWordHelperState({ silent: true });
+    }, 5000);
   });
 </script>
 {% endblock script %}

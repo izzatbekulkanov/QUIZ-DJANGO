@@ -70,6 +70,15 @@
             <span class="nav-main-link-name">Natijalar</span>
           </a>
         </li>
+        {% if request.user.is_help %}
+          <li class="nav-main-item">
+            <a class="nav-main-link {% if request.resolver_match.url_name == 'help-users' or request.resolver_match.url_name == 'help-user-detail' or request.resolver_match.url_name == 'help-assignment-detail' or request.resolver_match.url_name == 'help-plans' %}active{% endif %}"
+               href="{% url 'administrator:help-users' %}">
+              <i class="nav-main-link-icon fas fa-life-ring"></i>
+              <span class="nav-main-link-name">Yordam</span>
+            </a>
+          </li>
+        {% endif %}
         {% if request.user.is_superuser or perms.auth.view_group or perms.auth.change_group %}
           <li class="nav-main-item ">
             <a class="nav-main-link {% if request.resolver_match.url_name == 'logs' %}active{% endif %}"

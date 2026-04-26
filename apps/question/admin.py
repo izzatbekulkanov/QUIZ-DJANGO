@@ -3,7 +3,17 @@ from django.utils.html import format_html
 from django.urls import reverse
 from django.contrib import messages
 from django import forms
-from .models import Category, Test, Question, Answer, StudentTestAssignment, StudentTest, StudentTestQuestion, SystemSetting
+from .models import (
+    Answer,
+    Category,
+    HelpResultPlan,
+    Question,
+    StudentTest,
+    StudentTestAssignment,
+    StudentTestQuestion,
+    SystemSetting,
+    Test,
+)
 from django_ckeditor_5.widgets import CKEditor5Widget
 
 # Category uchun maxsus forma
@@ -199,6 +209,32 @@ class StudentTestQuestionAdmin(admin.ModelAdmin):
             obj.question.text[:50]
         )
     question_preview.short_description = 'Savol'
+
+
+@admin.register(HelpResultPlan)
+class HelpResultPlanAdmin(admin.ModelAdmin):
+    list_display = (
+        'student',
+        'test',
+        'assignment',
+        'target_correct_answers',
+        'total_questions',
+        'target_percent_display',
+        'status',
+        'created_by',
+        'created_at',
+        'updated_at',
+    )
+    list_filter = ('status', 'test', 'assignment', 'created_at')
+    search_fields = ('student__username', 'student__full_name', 'test__name', 'created_by__username')
+    list_select_related = ('student', 'test', 'assignment__test', 'created_by')
+    autocomplete_fields = ['student', 'test', 'assignment', 'created_by']
+    ordering = ('-created_at',)
+
+    def target_percent_display(self, obj):
+        return f"{obj.target_percent:.1f}%"
+    target_percent_display.short_description = 'Foiz'
+
 
 # SystemSetting uchun maxsus forma
 class SystemSettingAdminForm(forms.ModelForm):

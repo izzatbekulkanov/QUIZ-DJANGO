@@ -91,7 +91,10 @@
                       <i class="fa fa-clock me-2"></i>Muddati tugadi
                     </button>
                   {% else %}
-                    <a href="{% url 'landing:start-test' assignment.id %}" class="btn btn-primary w-100 start-test-btn">
+                    <a
+                      href="{{ assignment.start_url }}"
+                      class="btn btn-primary w-100 start-test-btn"
+                      data-status-url="{{ assignment.unfinished_status_url }}">
                       <i class="fa fa-play me-2"></i>{% if assignment.has_unfinished_attempt %}Davom ettirish{% else %}Test ishlash{% endif %}
                     </a>
                   {% endif %}
@@ -298,9 +301,8 @@
       }, 1000);
     }
 
-    function checkTestStatus(assignmentId, url) {
+    function checkTestStatus(statusUrl, url) {
       currentTestUrl = url;
-      const statusUrl = "{% url 'landing:check-unfinished-test' 0 %}".replace('/0/', `/${assignmentId}/`);
 
       fetch(statusUrl, {
         method: 'GET',
@@ -338,11 +340,11 @@
           const card = this.closest('[data-assignment-id]');
           if (!card) return;
 
-          const assignmentId = card.getAttribute('data-assignment-id');
           const url = this.getAttribute('href');
+          const statusUrl = this.dataset.statusUrl;
 
-          if (assignmentId && url) {
-            checkTestStatus(assignmentId, url);
+          if (statusUrl && url) {
+            checkTestStatus(statusUrl, url);
           }
         });
       });

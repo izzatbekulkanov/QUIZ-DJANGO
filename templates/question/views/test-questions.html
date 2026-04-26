@@ -26,6 +26,13 @@
     padding: 0.875rem 1rem;
   }
 
+  .question-filter-shell {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 1rem;
+    padding: 1rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
+  }
+
   .question-bank-card {
     border: 1px solid rgba(15, 23, 42, 0.08);
     border-radius: 1rem;
@@ -102,6 +109,49 @@
     color: #166534;
   }
 
+  .question-rich-editor-shell {
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 0.9rem;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .question-rich-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0.55rem;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(248, 250, 252, 0.96);
+  }
+
+  .question-rich-toolbar .btn {
+    min-width: 2rem;
+    padding: 0.35rem 0.55rem;
+  }
+
+  .question-rich-editor {
+    min-height: 132px;
+    padding: 0.85rem 0.95rem;
+    outline: none;
+  }
+
+  .question-rich-editor.answer-editor {
+    min-height: 86px;
+  }
+
+  .question-rich-editor:empty::before {
+    content: attr(data-placeholder);
+    color: #94a3b8;
+  }
+
+  .answer-edit-card {
+    border: 1px solid rgba(15, 23, 42, 0.10);
+    border-radius: 0.9rem;
+    background: #fbfdff;
+    padding: 0.75rem;
+  }
+
   .question-empty-state {
     border: 1px dashed rgba(15, 23, 42, 0.12);
     border-radius: 0.75rem;
@@ -144,6 +194,17 @@
               <a class="btn btn-sm btn-alt-primary" href="{% url 'administrator:add-question-test' test.id %}">
                 <i class="fa fa-plus me-1"></i> Savol qo'shish
               </a>
+              {% if summary.question_count %}
+                <button
+                  type="button"
+                  class="btn btn-sm btn-danger"
+                  id="bulk-delete-questions"
+                  data-delete-url="{% url 'administrator:questions-bulk-delete' test.id %}"
+                  data-question-count="{{ summary.question_count }}"
+                  data-used-count="{{ question_usage_count }}">
+                  <i class="fa fa-trash-alt me-1"></i> Barcha savollarni o'chirish
+                </button>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -217,26 +278,80 @@
       <div class="block-header block-header-default">
         <h3 class="block-title">Savollar banki</h3>
         <div class="block-options">
-          <span class="fs-sm text-muted">{{ test.category.name }} | {{ summary.student_count }} ta talaba biriktirilgan</span>
+          <span class="fs-sm text-muted">{{ filtered_question_count }} ta yozuv | {{ test.category.name }}</span>
         </div>
       </div>
       <div class="block-content block-content-full">
         <div class="question-note mb-4">
           Bu sahifa testdagi mavjud savollarni ko'rish va tahrirlash uchun ajratildi. `Savol qo'shish` sahifasi esa endi faqat yangi savol, import va export oqimiga xizmat qiladi.
+          {% if question_usage_count %}
+            <div class="mt-2 text-danger fw-semibold">
+              <i class="fa fa-lock me-1"></i>
+              {{ question_usage_count }} ta talaba test savoli natijasi mavjud. Natija bog'langan savollarni o'chirib bo'lmaydi.
+            </div>
+          {% endif %}
         </div>
 
-        {% if questions %}
+        <div class="question-filter-shell mb-4">
+          <form method="get" class="row g-3 align-items-end">
+            <div class="col-12 col-lg-7">
+              <label class="form-label" for="question-search">Savol qidiruvi</label>
+              <input
+                type="text"
+                class="form-control"
+                id="question-search"
+                name="search"
+                value="{{ filters.search|default:'' }}"
+                placeholder="Savol matni yoki ID bo'yicha qidiring"
+              >
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+              <label class="form-label" for="question-page-size">Bir sahifadagi savollar</label>
+              <select class="form-select" id="question-page-size" name="page_size">
+                <option value="20" {% if filters.page_size == "20" %}selected{% endif %}>20 ta</option>
+                <option value="40" {% if filters.page_size == "40" %}selected{% endif %}>40 ta</option>
+                <option value="80" {% if filters.page_size == "80" %}selected{% endif %}>80 ta</option>
+                <option value="120" {% if filters.page_size == "120" %}selected{% endif %}>120 ta</option>
+              </select>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-2">
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-alt-primary">
+                  <i class="fa fa-search me-1"></i> Qidirish
+                </button>
+                {% if filters.search or filters.page_size != "40" %}
+                  <a href="{% url 'administrator:test-questions' test.id %}" class="btn btn-alt-secondary">
+                    <i class="fa fa-rotate-left me-1"></i> Tozalash
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </form>
+        </div>
+
+        {% if questions.object_list %}
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div class="fs-sm text-muted">
+              {{ questions.start_index }}-{{ questions.end_index }} oralig'idagi savollar ko'rsatilmoqda
+            </div>
+            <div class="fs-sm text-muted">
+              {{ questions.paginator.num_pages }} ta sahifa | {{ summary.student_count }} ta talaba biriktirilgan
+            </div>
+          </div>
           <div class="d-grid gap-4">
             {% for question in questions %}
               <div class="question-bank-card p-3 p-lg-4" data-question-id="{{ question.id }}">
                 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3 mb-3">
                   <div class="d-flex align-items-center gap-3">
-                    <span class="badge bg-primary rounded-pill px-3 py-2">Savol {{ forloop.counter }}</span>
+                    <span class="badge bg-primary rounded-pill px-3 py-2">Savol {{ question_index_offset|add:forloop.counter }}</span>
                     <div class="fs-sm text-muted">ID: {{ question.id }}</div>
                   </div>
                   <div class="d-flex flex-wrap gap-2">
                     <span class="badge bg-body-light text-dark rounded-pill">{{ question.answer_count }} ta variant</span>
                     <span class="badge bg-success rounded-pill">{{ question.correct_answer_count }} ta to'g'ri javob</span>
+                    {% if question.usage_count %}
+                      <span class="badge bg-danger rounded-pill">{{ question.usage_count }} ta natija bor</span>
+                    {% endif %}
                     <button
                       type="button"
                       class="btn btn-sm btn-alt-primary edit-question-btn"
@@ -247,7 +362,8 @@
                     <button
                       type="button"
                       class="btn btn-sm btn-danger delete-question-btn"
-                      data-delete-url="{% url 'administrator:question-delete' test.id question.id %}">
+                      data-delete-url="{% url 'administrator:question-delete' test.id question.id %}"
+                      data-usage-count="{{ question.usage_count }}">
                       <i class="fa fa-trash me-1"></i> O'chirish
                     </button>
                   </div>
@@ -261,7 +377,7 @@
                   <div class="col-lg-7">
                     <div class="fs-sm text-muted mb-2">Variantlar</div>
                     <div class="d-grid gap-2">
-                      {% for answer in question.answers.all %}
+                      {% for answer in question.prefetched_answers %}
                         <div class="question-answer-item {% if answer.is_correct %}is-correct{% endif %}">
                           <span class="question-answer-marker">{{ forloop.counter }}</span>
                           <div class="question-rich flex-grow-1 {% if answer.is_correct %}text-success fw-medium{% endif %}">
@@ -278,13 +394,51 @@
               </div>
             {% endfor %}
           </div>
+
+          {% if questions.paginator.num_pages > 1 %}
+            <nav class="pt-4" aria-label="Questions pagination">
+              <ul class="pagination pagination-sm justify-content-center mb-0">
+                {% if questions.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page=1{% if pagination_query %}&{{ pagination_query }}{% endif %}">Birinchi</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ questions.previous_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">Oldingi</a>
+                  </li>
+                {% endif %}
+
+                {% for num in questions.paginator.page_range %}
+                  {% if num >= questions.number|add:-2 and num <= questions.number|add:2 %}
+                    <li class="page-item {% if questions.number == num %}active{% endif %}">
+                      <a class="page-link" href="?page={{ num }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">{{ num }}</a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+
+                {% if questions.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ questions.next_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">Keyingi</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ questions.paginator.num_pages }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">Oxirgi</a>
+                  </li>
+                {% endif %}
+              </ul>
+            </nav>
+          {% endif %}
         {% else %}
           <div class="question-empty-state">
             <div class="mb-3 text-muted">
               <i class="fa fa-file-alt fa-2x opacity-50"></i>
             </div>
-            <h4 class="h5 mb-2">Hali savol qo'shilmagan</h4>
-            <p class="text-muted mb-3">Test bankini shakllantirish uchun yangi savol qo'shing yoki Word orqali import qiling.</p>
+            <h4 class="h5 mb-2">{% if filters.search %}Qidiruv bo'yicha savol topilmadi{% else %}Hali savol qo'shilmagan{% endif %}</h4>
+            <p class="text-muted mb-3">
+              {% if filters.search %}
+                Qidiruv so'zini o'zgartirib ko'ring yoki filterni tozalang.
+              {% else %}
+                Test bankini shakllantirish uchun yangi savol qo'shing yoki Word orqali import qiling.
+              {% endif %}
+            </p>
             <a href="{% url 'administrator:add-question-test' test.id %}" class="btn btn-alt-primary">
               <i class="fa fa-plus me-1"></i> Savol qo'shish sahifasi
             </a>
@@ -304,8 +458,31 @@
             <form id="edit-question-form">
               <input type="hidden" id="edit-question-id" value="">
               <div class="mb-3">
-                <label class="form-label" for="edit-question-text">Savol matni</label>
-                <textarea class="form-control" id="edit-question-text" rows="5" required></textarea>
+                <label class="form-label" for="edit-question-editor">Savol matni</label>
+                <div class="question-rich-editor-shell">
+                  <div class="question-rich-toolbar" data-rich-toolbar="edit-question-editor">
+                    <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="bold" title="Qalin"><strong>B</strong></button>
+                    <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="italic" title="Kursiv"><em>I</em></button>
+                    <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="underline" title="Tagiga chizish"><u>U</u></button>
+                    <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="subscript" title="Pastki indeks">x<sub>2</sub></button>
+                    <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="superscript" title="Yuqori indeks">x<sup>2</sup></button>
+                    <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="insertUnorderedList" title="Ro'yxat"><i class="fa fa-list-ul"></i></button>
+                    <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="insertOrderedList" title="Raqamli ro'yxat"><i class="fa fa-list-ol"></i></button>
+                    <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="formatBlock" data-rich-value="h3" title="Sarlavha">H</button>
+                    <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="formatBlock" data-rich-value="p" title="Oddiy matn">P</button>
+                    <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="createLink" title="Havola"><i class="fa fa-link"></i></button>
+                    <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="insertImage" title="Rasm"><i class="fa fa-image"></i></button>
+                    <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="insertFormula" title="Formula">fx</button>
+                    <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="removeFormat" title="Formatni tozalash"><i class="fa fa-eraser"></i></button>
+                  </div>
+                  <div
+                    class="question-rich-editor"
+                    id="edit-question-editor"
+                    contenteditable="true"
+                    role="textbox"
+                    aria-multiline="true"
+                    data-placeholder="Savol matnini kiriting..."></div>
+                </div>
               </div>
 
               <div class="d-flex justify-content-between align-items-center mb-2">
@@ -346,24 +523,153 @@
     const editModalEl = document.getElementById('editQuestionModal');
     const editModal = new bootstrap.Modal(editModalEl);
     const editQuestionIdEl = document.getElementById('edit-question-id');
-    const editQuestionTextEl = document.getElementById('edit-question-text');
+    const editQuestionEditorEl = document.getElementById('edit-question-editor');
     const editAnswersSection = document.getElementById('edit-answers-section');
+    let answerEditorCounter = 0;
+
+    function escapeHtml(value) {
+      const temp = document.createElement('div');
+      temp.textContent = value || '';
+      return temp.innerHTML;
+    }
+
+    function readInt(value) {
+      const parsed = parseInt(value || '0', 10);
+      return Number.isNaN(parsed) ? 0 : parsed;
+    }
+
+    async function readJsonResponse(response) {
+      try {
+        return await response.json();
+      } catch (error) {
+        return {
+          success: false,
+          errors: "Serverdan kutilmagan javob keldi. Sahifani yangilab qayta urinib ko'ring.",
+        };
+      }
+    }
+
+    function editorHasContent(editor) {
+      if (!editor) {
+        return false;
+      }
+      const plainText = (editor.textContent || '').replace(/\u200B/g, '').trim();
+      return !!plainText || !!editor.querySelector('img, table');
+    }
+
+    function getRichEditorHtml(editor) {
+      return editorHasContent(editor) ? (editor.innerHTML || '').trim() : '';
+    }
+
+    function setRichEditorHtml(editor, html) {
+      if (!editor) {
+        return;
+      }
+      editor.innerHTML = html || '';
+    }
+
+    function createRichToolbar(targetId) {
+      return `
+        <div class="question-rich-toolbar" data-rich-toolbar="${targetId}">
+          <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="bold" title="Qalin"><strong>B</strong></button>
+          <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="italic" title="Kursiv"><em>I</em></button>
+          <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="underline" title="Tagiga chizish"><u>U</u></button>
+          <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="subscript" title="Pastki indeks">x<sub>2</sub></button>
+          <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="superscript" title="Yuqori indeks">x<sup>2</sup></button>
+          <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="insertUnorderedList" title="Ro'yxat"><i class="fa fa-list-ul"></i></button>
+          <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="insertOrderedList" title="Raqamli ro'yxat"><i class="fa fa-list-ol"></i></button>
+          <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="formatBlock" data-rich-value="h3" title="Sarlavha">H</button>
+          <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="formatBlock" data-rich-value="p" title="Oddiy matn">P</button>
+          <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="createLink" title="Havola"><i class="fa fa-link"></i></button>
+          <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="insertImage" title="Rasm"><i class="fa fa-image"></i></button>
+          <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="insertFormula" title="Formula">fx</button>
+          <button type="button" class="btn btn-sm btn-alt-secondary" data-rich-command="removeFormat" title="Formatni tozalash"><i class="fa fa-eraser"></i></button>
+        </div>`;
+    }
+
+    function applyRichCommand(editor, command, value = null) {
+      if (!editor || !command) {
+        return;
+      }
+      editor.focus();
+
+      if (command === 'createLink') {
+        const url = window.prompt('Havola manzilini kiriting');
+        if (url) {
+          document.execCommand('createLink', false, url);
+        }
+        return;
+      }
+
+      if (command === 'insertImage') {
+        const imageUrl = window.prompt('Rasm havolasini kiriting');
+        if (imageUrl) {
+          document.execCommand('insertImage', false, imageUrl);
+        }
+        return;
+      }
+
+      if (command === 'insertFormula') {
+        const formula = window.prompt('Formula matnini kiriting');
+        if (formula) {
+          document.execCommand('insertHTML', false, `<span class="docx-formula">${escapeHtml(formula)}</span>`);
+        }
+        return;
+      }
+
+      if (command === 'formatBlock') {
+        document.execCommand('formatBlock', false, value || 'p');
+        return;
+      }
+
+      document.execCommand(command, false, value);
+    }
+
+    document.addEventListener('mousedown', (event) => {
+      if (event.target.closest('[data-rich-command]')) {
+        event.preventDefault();
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      const commandButton = event.target.closest('[data-rich-command]');
+      if (!commandButton) {
+        return;
+      }
+      const toolbar = commandButton.closest('[data-rich-toolbar]');
+      const targetId = toolbar?.dataset.richToolbar;
+      const editor = targetId ? document.getElementById(targetId) : null;
+      applyRichCommand(editor, commandButton.dataset.richCommand, commandButton.dataset.richValue || null);
+    });
 
     function createEditAnswerItem(answer = null) {
+      answerEditorCounter += 1;
+      const editorId = `edit-answer-editor-${answerEditorCounter}`;
       const wrap = document.createElement('div');
-      wrap.className = 'answer-item d-flex mb-2';
+      wrap.className = 'answer-item answer-edit-card mb-3';
       wrap.dataset.answerId = answer?.id ? String(answer.id) : '';
       wrap.innerHTML = `
-        <textarea class="form-control me-2 edit-answer-text" rows="2" placeholder="Variant matni" required></textarea>
-        <div class="form-check form-switch mt-1">
-          <input type="checkbox" class="form-check-input edit-answer-correct">
-          <label class="form-check-label">To'g'ri</label>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+          <div class="form-check form-switch mb-0">
+            <input type="checkbox" class="form-check-input edit-answer-correct" id="${editorId}-correct">
+            <label class="form-check-label" for="${editorId}-correct">To'g'ri javob</label>
+          </div>
+          <button type="button" class="btn btn-danger btn-sm edit-remove-answer">
+            <i class="fa fa-trash me-1"></i> O'chirish
+          </button>
         </div>
-        <button type="button" class="btn btn-danger btn-sm ms-2 edit-remove-answer">
-          <i class="fa fa-trash"></i>
-        </button>`;
+        <div class="question-rich-editor-shell">
+          ${createRichToolbar(editorId)}
+          <div
+            class="question-rich-editor answer-editor edit-answer-editor"
+            id="${editorId}"
+            contenteditable="true"
+            role="textbox"
+            aria-multiline="true"
+            data-placeholder="Variant matnini kiriting..."></div>
+        </div>`;
 
-      wrap.querySelector('.edit-answer-text').value = answer?.text || '';
+      setRichEditorHtml(wrap.querySelector('.edit-answer-editor'), answer?.text || '');
       wrap.querySelector('.edit-answer-correct').checked = !!answer?.is_correct;
       return wrap;
     }
@@ -398,8 +704,9 @@
           }
 
           editQuestionIdEl.value = data.question.id;
-          editQuestionTextEl.value = data.question.text || '';
+          setRichEditorHtml(editQuestionEditorEl, data.question.text || '');
           editAnswersSection.innerHTML = '';
+          answerEditorCounter = 0;
 
           (data.question.answers || []).forEach((answer) => {
             editAnswersSection.appendChild(createEditAnswerItem(answer));
@@ -410,6 +717,7 @@
           }
 
           editModal.show();
+          setTimeout(() => editQuestionEditorEl?.focus(), 150);
         } catch (error) {
           Swal.close();
           Swal.fire('Xatolik!', "Server bilan bog'lanishda xatolik yuz berdi.", 'error');
@@ -439,12 +747,13 @@
         return;
       }
 
-      const text = (editQuestionTextEl.value || '').trim();
+      const text = getRichEditorHtml(editQuestionEditorEl);
       const answers = Array.from(editAnswersSection.querySelectorAll('.answer-item')).map((item) => {
         const idRaw = item.dataset.answerId;
+        const answerEditor = item.querySelector('.edit-answer-editor');
         return {
           id: idRaw ? parseInt(idRaw, 10) : null,
-          text: (item.querySelector('.edit-answer-text')?.value || '').trim(),
+          text: getRichEditorHtml(answerEditor),
           is_correct: !!item.querySelector('.edit-answer-correct')?.checked,
         };
       }).filter((answer) => answer.text);
@@ -487,7 +796,7 @@
           },
           body: JSON.stringify({ text, answers }),
         });
-        const data = await response.json();
+        const data = await readJsonResponse(response);
         if (data.success) {
           editModal.hide();
           await Swal.fire('Muvaffaqiyatli!', data.message, 'success');
@@ -504,6 +813,16 @@
       button.addEventListener('click', async () => {
         const deleteUrl = button.dataset.deleteUrl;
         if (!deleteUrl) {
+          return;
+        }
+
+        const usageCount = readInt(button.dataset.usageCount);
+        if (usageCount > 0) {
+          Swal.fire(
+            "O'chirib bo'lmaydi",
+            `${usageCount} ta talaba natijasi ushbu savolga bog'langan. Natijalar saqlanishi uchun savol o'chirilmaydi.`,
+            'warning'
+          );
           return;
         }
 
@@ -530,7 +849,7 @@
               'X-Requested-With': 'XMLHttpRequest',
             },
           });
-          const data = await response.json();
+          const data = await readJsonResponse(response);
           if (data.success) {
             await Swal.fire('Muvaffaqiyatli!', data.message, 'success');
             window.location.reload();
@@ -542,6 +861,77 @@
         }
       });
     });
+
+    const bulkDeleteButton = document.getElementById('bulk-delete-questions');
+    if (bulkDeleteButton) {
+      bulkDeleteButton.addEventListener('click', async () => {
+        const deleteUrl = bulkDeleteButton.dataset.deleteUrl;
+        const questionCount = readInt(bulkDeleteButton.dataset.questionCount);
+        const usedCount = readInt(bulkDeleteButton.dataset.usedCount);
+
+        if (!deleteUrl || !questionCount) {
+          return;
+        }
+
+        if (usedCount > 0) {
+          Swal.fire(
+            "Barchasini o'chirib bo'lmaydi",
+            `${usedCount} ta talaba natijasi ushbu test savollariga bog'langan. Natija mavjud bo'lsa savollarni ommaviy o'chirish bloklanadi.`,
+            'warning'
+          );
+          return;
+        }
+
+        const confirmResult = await Swal.fire({
+          title: "Barcha savollarni o'chirish",
+          html: `
+            <div class="text-start">
+              <p class="mb-2"><strong>${questionCount}</strong> ta savol va ularning variantlari o'chiriladi.</p>
+              <p class="mb-0">Davom etish uchun pastdagi maydonga <code>DELETE</code> yozing.</p>
+            </div>`,
+          icon: 'warning',
+          input: 'text',
+          inputPlaceholder: 'DELETE',
+          showCancelButton: true,
+          confirmButtonColor: '#d61f47',
+          cancelButtonColor: '#64748b',
+          confirmButtonText: "Ha, barchasini o'chirish",
+          cancelButtonText: 'Bekor qilish',
+          preConfirm: (value) => {
+            if (value !== 'DELETE') {
+              Swal.showValidationMessage("O'chirish uchun DELETE so'zini aniq yozing.");
+              return false;
+            }
+            return value;
+          },
+        });
+
+        if (!confirmResult.isConfirmed) {
+          return;
+        }
+
+        try {
+          const response = await fetch(deleteUrl, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': csrfToken,
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: JSON.stringify({ confirmation: 'DELETE' }),
+          });
+          const data = await readJsonResponse(response);
+          if (data.success) {
+            await Swal.fire('Muvaffaqiyatli!', data.message, 'success');
+            window.location.reload();
+          } else {
+            Swal.fire('Xatolik!', data.errors || "Savollarni o'chirishda xatolik yuz berdi.", 'error');
+          }
+        } catch (error) {
+          Swal.fire('Xatolik!', "Server bilan bog'lanishda xatolik yuz berdi.", 'error');
+        }
+      });
+    }
   });
 </script>
 {% endblock script %}

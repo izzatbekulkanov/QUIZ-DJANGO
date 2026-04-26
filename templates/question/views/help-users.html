@@ -1,0 +1,306 @@
+{% extends 'question/main.html' %}
+{% load static %}
+
+{% block style %}
+<style>
+  .help-summary-card,
+  .help-filter-shell,
+  .help-table-shell {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 1rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(255, 255, 255, 0.98));
+  }
+
+  .help-summary-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.05;
+  }
+
+  .help-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .help-role-chip,
+  .help-flag-chip,
+  .help-group-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.38rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .help-role-chip.student {
+    background: rgba(34, 197, 94, 0.12);
+    color: #166534;
+  }
+
+  .help-role-chip.teacher {
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+  }
+
+  .help-role-chip.other {
+    background: rgba(100, 116, 139, 0.12);
+    color: #475569;
+  }
+
+  .help-flag-chip.on {
+    background: rgba(14, 165, 233, 0.12);
+    color: #0369a1;
+  }
+
+  .help-flag-chip.off {
+    background: rgba(148, 163, 184, 0.12);
+    color: #475569;
+  }
+
+  .help-group-chip {
+    background: rgba(99, 102, 241, 0.1);
+    color: #4338ca;
+  }
+
+  .help-group-chip.none {
+    background: rgba(148, 163, 184, 0.12);
+    color: #475569;
+  }
+
+  .help-table-shell table th {
+    white-space: nowrap;
+  }
+
+  .help-page-spacing {
+    padding-bottom: 1.5rem;
+  }
+
+  .help-page-spacing > .block:last-child,
+  .help-page-spacing > .row:last-child {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .help-page-spacing .block-content:not(.block-content-full) {
+    padding-bottom: 1.25rem;
+  }
+</style>
+{% endblock style %}
+
+{% block content %}
+<main id="main-container">
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+    <div class="bg-primary-dark-op">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-1">Yordam bo'limi</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">Akademik guruhi, testlari va topshiriqlari bo'yicha foydalanuvchilarni tez tahlil qiling</h2>
+          </div>
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <a href="{% url 'administrator:help-plans' %}" class="btn btn-sm btn-alt-primary">
+              <i class="fa fa-list-check me-1"></i> Yordam qaydlari
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content content-boxed help-page-spacing">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded help-summary-card h-100 mb-0">
+          <div class="block-content block-content-full">
+            <div class="fs-sm text-muted text-uppercase fw-semibold mb-2">Jami foydalanuvchilar</div>
+            <div class="help-summary-value">{{ total_users_count }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded help-summary-card h-100 mb-0">
+          <div class="block-content block-content-full">
+            <div class="fs-sm text-muted text-uppercase fw-semibold mb-2">Guruhsiz foydalanuvchilar</div>
+            <div class="help-summary-value">{{ ungrouped_users_count }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded help-summary-card h-100 mb-0">
+          <div class="block-content block-content-full">
+            <div class="fs-sm text-muted text-uppercase fw-semibold mb-2">Yordam yoqilgan</div>
+            <div class="help-summary-value">{{ help_enabled_count }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded help-summary-card h-100 mb-0">
+          <div class="block-content block-content-full">
+            <div class="fs-sm text-muted text-uppercase fw-semibold mb-2">Joriy natija</div>
+            <div class="help-summary-value">{{ filtered_users_count }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block block-rounded help-filter-shell mb-4">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Filterlar</h3>
+      </div>
+      <div class="block-content block-content-full">
+        <form method="get" class="row g-3 align-items-end">
+          <div class="col-12 col-lg-5">
+            <label class="form-label" for="help-search">Ism yoki username</label>
+            <input type="text" class="form-control" id="help-search" name="search" value="{{ search_query }}" placeholder="Masalan: ali yoki student01">
+          </div>
+          <div class="col-12 col-lg-4">
+            <label class="form-label" for="help-group">Akademik guruh</label>
+            <select class="form-select" id="help-group" name="group_name">
+              <option value="__ungrouped__" {% if group_name == "__ungrouped__" %}selected{% endif %}>Faqat biriktirilmaganlar</option>
+              <option value="__all__" {% if group_name == "__all__" %}selected{% endif %}>Barcha guruhlar</option>
+              {% for option in group_options %}
+                <option value="{{ option }}" {% if group_name == option %}selected{% endif %}>{{ option }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-12 col-lg-3">
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-alt-primary flex-fill">
+                <i class="fa fa-filter me-1"></i> Qo'llash
+              </button>
+              <a href="{% url 'administrator:help-users' %}" class="btn btn-alt-secondary">
+                <i class="fa fa-rotate-left"></i>
+              </a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="block block-rounded help-table-shell mb-4">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Foydalanuvchilar ro'yxati</h3>
+        <div class="block-options">
+          <span class="fs-sm text-muted">Jami: {{ filtered_users_count }} ta</span>
+        </div>
+      </div>
+      <div class="block-content block-content-full">
+        <div class="table-responsive">
+          <table class="table table-vcenter table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th style="width: 64px;">#</th>
+                <th>Foydalanuvchi</th>
+                <th>Akademik guruh</th>
+                <th>Holati</th>
+                <th class="text-center">Biriktirilgan test</th>
+                <th class="text-center">Natijalar</th>
+                <th class="text-center">Yordam</th>
+                <th class="text-end" style="width: 150px;">Harakat</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for user in users %}
+                <tr>
+                  <td class="text-muted">{{ users.start_index|add:forloop.counter0 }}</td>
+                  <td>
+                    <div class="d-flex align-items-center gap-3">
+                      <img
+                        src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
+                        alt="{{ user.username }}"
+                        class="help-avatar"
+                        loading="lazy"
+                        decoding="async"
+                      >
+                      <div class="min-w-0">
+                        <div class="fw-semibold">
+                          {% if user.full_name %}
+                            {{ user.full_name }}
+                          {% elif user.first_name or user.second_name %}
+                            {{ user.first_name }} {{ user.second_name }}
+                          {% else %}
+                            {{ user.username }}
+                          {% endif %}
+                        </div>
+                        <div class="fs-sm text-muted">@{{ user.username }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    {% if user.group_name %}
+                      <span class="help-group-chip"><i class="fa fa-layer-group"></i> {{ user.group_name }}</span>
+                    {% else %}
+                      <span class="help-group-chip none"><i class="fa fa-ban"></i> Biriktirilmagan</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if user.is_student %}
+                      <span class="help-role-chip student"><i class="fa fa-user-graduate"></i> Talaba</span>
+                    {% elif user.is_teacher %}
+                      <span class="help-role-chip teacher"><i class="fa fa-user-tie"></i> Hodim</span>
+                    {% else %}
+                      <span class="help-role-chip other"><i class="fa fa-user"></i> Boshqa</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-center fw-semibold">{{ user.assigned_tests_count }}</td>
+                  <td class="text-center fw-semibold">{{ user.student_results_count }}</td>
+                  <td class="text-center">
+                    {% if user.is_help %}
+                      <span class="help-flag-chip on"><i class="fa fa-life-ring"></i> Yoqilgan</span>
+                    {% else %}
+                      <span class="help-flag-chip off"><i class="fa fa-ban"></i> Ochiq emas</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end">
+                    <a href="{% url 'administrator:help-user-detail' user.id %}" class="btn btn-sm btn-alt-primary">
+                      <i class="fa fa-life-ring me-1"></i> Yordam
+                    </a>
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="8" class="text-center text-muted py-5">
+                    <div class="mb-2"><i class="fa fa-inbox fa-2x opacity-50"></i></div>
+                    Foydalanuvchilar topilmadi.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% if users.paginator.num_pages > 1 %}
+          <nav class="d-flex justify-content-end mt-4">
+            <ul class="pagination pagination-sm mb-0">
+              {% with current=users.number total=users.paginator.num_pages %}
+                {% if users.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ users.previous_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">&laquo;</a>
+                  </li>
+                {% endif %}
+                {% for num in users.paginator.page_range %}
+                  {% if num >= current|add:'-2' and num <= current|add:'2' %}
+                    <li class="page-item {% if num == current %}active{% endif %}">
+                      <a class="page-link" href="?page={{ num }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">{{ num }}</a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+                {% if users.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ users.next_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">&raquo;</a>
+                  </li>
+                {% endif %}
+              {% endwith %}
+            </ul>
+          </nav>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock content %}

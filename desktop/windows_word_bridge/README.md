@@ -15,7 +15,7 @@ Ubuntu server foydalanuvchining Windows kompyuteridagi ochiq `Microsoft Office` 
 
 1. [build_exe.bat](D:/Github/QUIZ-DJANGO/desktop/windows_word_bridge/build_exe.bat) yoki [build_exe.ps1](D:/Github/QUIZ-DJANGO/desktop/windows_word_bridge/build_exe.ps1) bilan `dist\QuizOfficeHelper.exe` ni yig'ing.
 2. `QuizOfficeHelper.exe` ni ishga tushiring.
-3. Dastur system tray ichida orqa fonda ishlaydi.
+3. Dastur system tray ichida orqa fonda ishlaydi va Windows qayta yoqilganda avtomatik ishga tushishga o'zini qo'shadi.
 4. `/administrator/tests/<id>/questions/add/` sahifasiga qayting.
 5. `Ochiq oynalarni yangilash` ni bosing.
 6. Kerakli Office faylini tanlab `Tanlangan oynadan olish` ni bosing.
@@ -41,9 +41,28 @@ Yoki yanada osoni:
 
 ## Endpointlar
 
+- `GET /`
 - `GET /health`
+- `GET /api/status`
+- `GET /api/session`
+- `POST /api/session/bind`
+- `POST /api/session/heartbeat`
+- `POST /api/session/unbind`
+- `GET /api/startup/status`
+- `POST /api/startup/enable`
+- `POST /api/startup/disable`
 - `GET /api/office/windows`
 - `POST /api/office/document-content`
+
+Dashboard `http://127.0.0.1:8765/` da chiroyli interfeys bilan ochiladi. Unda kompyuter, IP/MAC, session bog'lanishi, startup holati va ochiq Office oynalari ko'rinadi.
+
+## Tizim bilan bog'lanish
+
+Helper domen nomiga bog'lanib qolmaydi. Django sahifasi `localhost` helperga joriy tizim domeni, sahifa URLi va login sessionini yuboradi. Shu sabab `test.namspi.uz`, `test.uz` yoki boshqa production domenlarida ham bir xil ishlaydi.
+
+Foydalanuvchi tizimdan chiqsa, web sahifa helperga `POST /api/session/unbind` yuboradi. Shundan keyin helper dashboardida holat `Test tizimiga login qilinishini kutmoqda` bo'ladi va yangi login bo'lmaguncha sessionga bog'langan deb hisoblanmaydi.
+
+Tizim 30 daqiqa faoliyatsizlikdan keyin sessionni tugatadi. Web sahifa faqat foydalanuvchi real harakat qilganda Django session holatini tekshiradi va helperga `POST /api/session/heartbeat` yuboradi. Agar harakat bo'lmasa, helper o'zidagi `expires_at` vaqti tugagach sessionni avtomatik `session-timeout` sifatida ajratadi.
 
 ## Frontend bilan ishlash
 

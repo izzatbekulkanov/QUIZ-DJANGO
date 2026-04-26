@@ -1,0 +1,381 @@
+{% extends 'question/main.html' %}
+{% load static %}
+
+{% block style %}
+<style>
+  .help-assignment-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 1rem;
+  }
+
+  .help-assignment-percent-box {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.375rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .help-assignment-summary-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  }
+
+  .help-assignment-summary-item:last-child {
+    border-bottom: 0;
+  }
+
+  .help-assignment-table th {
+    white-space: nowrap;
+  }
+
+  .help-page-spacing {
+    padding-bottom: 1.5rem;
+  }
+
+  .help-page-spacing > .block:last-child,
+  .help-page-spacing > .row:last-child {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .help-page-spacing .block-content:not(.block-content-full) {
+    padding-bottom: 1.25rem;
+  }
+</style>
+{% endblock style %}
+
+{% block content %}
+<main id="main-container">
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+    <div class="bg-primary-dark-op">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-1">Topshiriq ko'rish</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">{{ assignment.test.name }} bo'yicha yordam natija qaydlari va foiz hisoblagich</h2>
+          </div>
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <a href="{% url 'administrator:help-user-detail' target_user.id %}?test_id={{ assignment.test_id }}" class="btn btn-sm btn-alt-secondary">
+              <i class="fa fa-arrow-left me-1"></i> Yordam tafsilotiga qaytish
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content content-boxed help-page-spacing">
+    <div class="block block-rounded mb-4">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">
+          <i class="fa fa-calculator text-primary me-2"></i> Tez foiz hisoblagich
+        </h3>
+        <div class="block-options">
+          <span class="badge rounded-pill bg-primary me-1">{{ assignment.total_questions }} ta random savol</span>
+          <span class="badge rounded-pill bg-secondary">Bankda {{ assignment.question_bank_count }} ta</span>
+        </div>
+      </div>
+      <div class="block-content block-content-full">
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3 align-items-end">
+            <div class="col-12 col-lg-3">
+              <label class="form-label" for="help-total-questions">Beriladigan random savollar</label>
+              <input
+                type="number"
+                class="form-control form-control-lg fw-semibold bg-body-light"
+                id="help-total-questions"
+                value="{{ assignment.total_questions }}"
+                readonly
+              >
+            </div>
+            <div class="col-12 col-lg-3">
+              <label class="form-label" for="help-scored-questions">Kiritiladigan savollar soni</label>
+              <input
+                type="number"
+                class="form-control form-control-lg fw-semibold"
+                id="help-scored-questions"
+                name="target_correct_answers"
+                min="0"
+                max="{{ assignment.total_questions }}"
+                step="1"
+                value="0"
+                inputmode="numeric"
+                data-max-questions="{{ assignment.total_questions }}"
+                required
+              >
+            </div>
+            <div class="col-12 col-lg-2">
+              <label class="form-label" for="help-plan-status">Status</label>
+              <select class="form-select form-select-lg" id="help-plan-status" name="status">
+                {% for value, label in status_choices %}
+                  <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 col-lg-2">
+              <label class="form-label" for="help-score-percent">Foiz natijasi</label>
+              <div class="help-assignment-percent-box bg-primary text-white" id="help-score-percent">0%</div>
+            </div>
+            <div class="col-12 col-lg-2">
+              <button type="submit" class="btn btn-lg btn-alt-primary w-100">
+                <i class="fa fa-save me-1"></i> Saqlash
+              </button>
+            </div>
+          </div>
+          <div class="progress mt-3" style="height: 10px;" aria-hidden="true">
+            <div class="progress-bar bg-primary" id="help-score-progress" role="progressbar" style="width: 0%;"></div>
+          </div>
+          <div class="form-text mt-2">
+            Kiritilgan son random savollar sonidan oshsa avtomatik limitga tushiriladi. Saqlangan qaydlar pastdagi ro'yxatda ko'rinadi.
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Qaydlar</div>
+              <div class="fs-2 fw-semibold">{{ stats.records_count }}</div>
+            </div>
+            <div class="help-assignment-stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa fa-redo"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Kutilmoqda</div>
+              <div class="fs-2 fw-semibold">{{ stats.pending_count }}</div>
+            </div>
+            <div class="help-assignment-stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa fa-clock"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Bajarildi</div>
+              <div class="fs-2 fw-semibold">{{ stats.completed_count }}</div>
+            </div>
+            <div class="help-assignment-stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa fa-check-circle"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Eng yuqori reja</div>
+              <div class="fs-2 fw-semibold">
+                {% if stats.best_plan %}{{ stats.best_plan.target_percent|floatformat:1 }}%{% else %}-{% endif %}
+              </div>
+            </div>
+            <div class="help-assignment-stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa fa-trophy"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-xl-4">
+        <div class="block block-rounded h-100 mb-4">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Asosiy ma'lumotlar</h3>
+          </div>
+          <div class="block-content">
+            <div class="help-assignment-summary-item">
+              <div class="fs-sm text-muted text-uppercase fw-semibold mb-1">Foydalanuvchi</div>
+              <div class="fw-semibold">
+                {% if target_user.full_name %}
+                  {{ target_user.full_name }}
+                {% elif target_user.first_name or target_user.second_name %}
+                  {{ target_user.first_name }} {{ target_user.second_name }}
+                {% else %}
+                  {{ target_user.username }}
+                {% endif %}
+              </div>
+              <div class="fs-sm text-muted">@{{ target_user.username }}</div>
+              {% if target_user.group_name %}
+                <span class="badge rounded-pill bg-primary mt-2">
+                  <i class="fa fa-layer-group me-1"></i> {{ target_user.group_name }}
+                </span>
+              {% endif %}
+            </div>
+
+            <div class="help-assignment-summary-item">
+              <div class="fs-sm text-muted text-uppercase fw-semibold mb-1">Test va kategoriya</div>
+              <div class="fw-semibold">{{ assignment.test.name }}</div>
+              <div class="fs-sm text-muted">{{ assignment.category.name }}</div>
+            </div>
+
+            <div class="help-assignment-summary-item">
+              <div class="fs-sm text-muted text-uppercase fw-semibold mb-2">Limitlar</div>
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge rounded-pill bg-primary">
+                  <i class="fa fa-question-circle me-1"></i> {{ assignment.total_questions }} ta savol
+                </span>
+                <span class="badge rounded-pill bg-warning text-dark">
+                  <i class="fa fa-redo me-1"></i> {{ assignment.attempts }} urinish
+                </span>
+                <span class="badge rounded-pill bg-secondary">
+                  <i class="fa fa-clock me-1"></i> {{ assignment.duration }} daqiqa
+                </span>
+              </div>
+            </div>
+
+            <div class="help-assignment-summary-item">
+              <div class="fs-sm text-muted text-uppercase fw-semibold mb-2">Vaqt oynasi</div>
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge rounded-pill bg-success">
+                  <i class="fa fa-play me-1"></i> {{ assignment.start_time|date:"Y-m-d H:i" }}
+                </span>
+                <span class="badge rounded-pill bg-secondary">
+                  <i class="fa fa-flag-checkered me-1"></i> {{ assignment.end_time|date:"Y-m-d H:i" }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-8">
+        <div class="block block-rounded mb-4">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Yordam natija qaydlari</h3>
+            <div class="block-options">
+              <span class="fs-sm text-muted">Jami: {{ stats.records_count }} ta</span>
+            </div>
+          </div>
+          <div class="block-content block-content-full">
+            {% if help_result_plans %}
+              <div class="table-responsive">
+                <table class="table table-vcenter table-hover table-striped align-middle help-assignment-table mb-0">
+                  <thead>
+                    <tr>
+                      <th style="width: 64px;">#</th>
+                      <th>Test va topshiriq</th>
+                      <th>Natija rejasi</th>
+                      <th>Holat</th>
+                      <th>Kim saqladi</th>
+                      <th>Vaqtlar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for plan in help_result_plans %}
+                      <tr>
+                        <td class="text-muted">{{ forloop.counter }}</td>
+                        <td>
+                          <div class="fw-semibold">{{ plan.test.name }}</div>
+                          <div class="fs-sm text-muted">Topshiriq #{{ plan.assignment_id }}</div>
+                        </td>
+                        <td>
+                          <div class="d-flex flex-wrap gap-2">
+                            <span class="badge rounded-pill bg-primary">
+                              {{ plan.target_correct_answers }} / {{ plan.total_questions }} ta
+                            </span>
+                            <span class="badge rounded-pill bg-info">
+                              {{ plan.target_percent|floatformat:1 }}%
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          {% if plan.status == "completed" %}
+                            <span class="badge rounded-pill bg-success">
+                              <i class="fa fa-check-circle me-1"></i> {{ plan.get_status_display }}
+                            </span>
+                          {% else %}
+                            <span class="badge rounded-pill bg-warning text-dark">
+                              <i class="fa fa-clock me-1"></i> {{ plan.get_status_display }}
+                            </span>
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if plan.created_by %}
+                            <div class="fw-semibold">{{ plan.created_by.full_name|default:plan.created_by.username }}</div>
+                            <div class="fs-sm text-muted">@{{ plan.created_by.username }}</div>
+                          {% else %}
+                            <span class="text-muted">-</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                          <div class="fw-semibold">{{ plan.created_at|date:"Y-m-d H:i" }}</div>
+                          <div class="fs-sm text-muted">Yangilangan: {{ plan.updated_at|date:"Y-m-d H:i" }}</div>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <div class="text-center text-muted py-5">
+                <div class="mb-2"><i class="fa fa-inbox fa-2x opacity-50"></i></div>
+                Bu foydalanuvchi uchun ushbu topshiriq bo'yicha yordam natija qaydi hali saqlanmagan.
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock content %}
+
+{% block script %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('help-scored-questions');
+    const percentOutput = document.getElementById('help-score-percent');
+    const progress = document.getElementById('help-score-progress');
+
+    if (!input || !percentOutput || !progress) {
+      return;
+    }
+
+    const maxQuestions = Math.max(Number.parseInt(input.dataset.maxQuestions || '0', 10), 0);
+    const formatPercent = (value) => (Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1));
+
+    const updatePercent = () => {
+      let scoredQuestions = Number.parseInt(input.value || '0', 10);
+
+      if (Number.isNaN(scoredQuestions) || scoredQuestions < 0) {
+        scoredQuestions = 0;
+      }
+
+      if (maxQuestions && scoredQuestions > maxQuestions) {
+        scoredQuestions = maxQuestions;
+        input.value = maxQuestions;
+      }
+
+      const percent = maxQuestions ? (scoredQuestions / maxQuestions) * 100 : 0;
+      percentOutput.textContent = `${formatPercent(percent)}%`;
+      progress.style.width = `${Math.min(percent, 100)}%`;
+      progress.setAttribute('aria-valuenow', String(Math.min(percent, 100)));
+    };
+
+    input.addEventListener('input', updatePercent);
+    input.addEventListener('change', updatePercent);
+    updatePercent();
+  });
+</script>
+{% endblock script %}

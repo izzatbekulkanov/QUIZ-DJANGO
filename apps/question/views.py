@@ -741,6 +741,9 @@ class ViewTestDetailsView(View):
     template_name = 'question/views/test_details.html'
 
     def get(self, request, test_id):
+        from apps.question.utils.schema import ensure_student_test_question_proctoring_schema
+
+        ensure_student_test_question_proctoring_schema()
         test = get_object_or_404(
             StudentTest.objects.select_related(
                 'student',

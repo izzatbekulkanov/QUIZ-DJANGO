@@ -1,18 +1,22 @@
 import io
 import json
 import random
+import base64
+import uuid
 from datetime import datetime
+from pathlib import Path
 from urllib.parse import urlencode
 
 import openpyxl
-from django.db.models import F, Q
+from django.db.models import F, Q, Prefetch
 from django.db import transaction
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from django.core.paginator import Paginator
 from django.db.models import Count, Avg, Max
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
@@ -24,8 +28,11 @@ from django.views.decorators.http import require_POST
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 
+from apps.common.context_processors import build_office_helper_session_payload
 from apps.question.forms import TestForm, AddQuestionForm
-from apps.question.models import Test, Category, Question, Answer, StudentTestAssignment, StudentTest, StudentTestQuestion
+from apps.question.models import Test, Category, Question, Answer, StudentTestAssignment, StudentTest, StudentTestQuestion, HelpResultPlan
+from apps.question.utils.access import resolve_assignment_access
+from apps.question.utils.schema import ensure_help_result_plan_schema, ensure_student_test_question_proctoring_schema
 from apps.question.utils.utils import clean_import_answer_text, clean_import_question_text
 
 
@@ -33,13 +40,28 @@ TEST_STUDENT_THROUGH = Test.students.through
 
 
 def build_test_management_summary(test):
-    question_queryset = Question.objects.filter(test=test)
+    question_summary = Question.objects.filter(test=test).aggregate(
+        question_count=Count('id'),
+        latest_question_update=Max('updated_at'),
+    )
     return {
-        'question_count': question_queryset.count(),
+        'question_count': question_summary['question_count'] or 0,
         'student_count': test.students.count(),
         'assignment_count': test.assignments.count(),
-        'latest_question_update': question_queryset.order_by('-updated_at').values_list('updated_at', flat=True).first(),
+        'latest_question_update': question_summary['latest_question_update'],
     }
+
+
+def user_can_manage_test_questions(user, test):
+    return bool(user.is_superuser or test.created_by_id == user.id)
+
+
+def get_test_question_usage_count(test_id):
+    return StudentTestQuestion.objects.filter(question__test_id=test_id).count()
+
+
+def get_question_usage_count(question_id):
+    return StudentTestQuestion.objects.filter(question_id=question_id).count()
 
 
 def attach_test_listing_counts(test_items):
@@ -267,6 +289,7 @@ class AddQuestionTestView(View):
             'form': form,
             'test': test,
             'summary': build_test_management_summary(test),
+            'office_helper_session': build_office_helper_session_payload(request),
         }
         return render(request, self.template_name, context)
 
@@ -297,25 +320,105 @@ class AddQuestionTestView(View):
 @method_decorator(login_required, name='dispatch')
 class TestQuestionsView(View):
     template_name = 'question/views/test-questions.html'
+    default_page_size = 40
+    allowed_page_sizes = (20, 40, 80, 120)
 
     def get(self, request, test_id):
         test = get_object_or_404(Test.objects.select_related('category', 'created_by'), id=test_id)
-        questions = (
-            test.questions
-            .prefetch_related('answers')
-            .annotate(
-                answer_count=Count('answers', distinct=True),
-                correct_answer_count=Count('answers', filter=Q(answers__is_correct=True), distinct=True),
-            )
+
+        search_query = (request.GET.get('search') or '').strip()
+        try:
+            page_size = int(request.GET.get('page_size') or self.default_page_size)
+        except (TypeError, ValueError):
+            page_size = self.default_page_size
+        if page_size not in self.allowed_page_sizes:
+            page_size = self.default_page_size
+
+        questions_queryset = (
+            Question.objects
+            .filter(test=test)
+            .only('id', 'test_id', 'text', 'updated_at')
             .order_by('id')
         )
+
+        if search_query:
+            search_filter = Q(text__icontains=search_query)
+            if search_query.isdigit():
+                search_filter |= Q(id=int(search_query))
+            questions_queryset = questions_queryset.filter(search_filter)
+
+        paginator = Paginator(questions_queryset, page_size)
+        questions = paginator.get_page(request.GET.get('page'))
+        paginated_questions = list(questions.object_list)
+        question_ids = [question.id for question in paginated_questions]
+
+        answer_counts = {}
+        correct_answer_counts = {}
+        usage_counts = {}
+        answers_by_question = {}
+
+        if question_ids:
+            for item in (
+                Answer.objects
+                .filter(question_id__in=question_ids)
+                .values('question_id')
+                .annotate(
+                    total=Count('id'),
+                    correct_total=Count('id', filter=Q(is_correct=True)),
+                )
+            ):
+                answer_counts[item['question_id']] = item['total']
+                correct_answer_counts[item['question_id']] = item['correct_total']
+
+            usage_counts = {
+                item['question_id']: item['total']
+                for item in (
+                    StudentTestQuestion.objects
+                    .filter(question_id__in=question_ids)
+                    .values('question_id')
+                    .annotate(total=Count('id'))
+                )
+            }
+
+            for answer in (
+                Answer.objects
+                .filter(question_id__in=question_ids)
+                .only('id', 'question_id', 'text', 'is_correct')
+                .order_by('id')
+            ):
+                answers_by_question.setdefault(answer.question_id, []).append(answer)
+
+        for question in paginated_questions:
+            question.answer_count = answer_counts.get(question.id, 0)
+            question.correct_answer_count = correct_answer_counts.get(question.id, 0)
+            question.usage_count = usage_counts.get(question.id, 0)
+            question.prefetched_answers = answers_by_question.get(question.id, [])
+
+        questions.object_list = paginated_questions
+        question_usage_count = get_test_question_usage_count(test.id)
+        summary = build_test_management_summary(test)
+        answer_summary = Answer.objects.filter(question__test=test).aggregate(
+            total_answers_count=Count('id'),
+            total_correct_answer_count=Count('id', filter=Q(is_correct=True)),
+        )
+        query_params = request.GET.copy()
+        query_params.pop('page', None)
 
         context = {
             'test': test,
             'questions': questions,
-            'summary': build_test_management_summary(test),
-            'total_answers_count': Answer.objects.filter(question__test=test).count(),
-            'total_correct_answer_count': Answer.objects.filter(question__test=test, is_correct=True).count(),
+            'summary': summary,
+            'total_answers_count': answer_summary['total_answers_count'] or 0,
+            'total_correct_answer_count': answer_summary['total_correct_answer_count'] or 0,
+            'question_usage_count': question_usage_count,
+            'can_delete_all_questions': bool(summary['question_count']) and question_usage_count == 0,
+            'filtered_question_count': paginator.count,
+            'filters': {
+                'search': search_query,
+                'page_size': str(page_size),
+            },
+            'pagination_query': urlencode(query_params, doseq=True),
+            'question_index_offset': questions.start_index() - 1 if paginator.count else 0,
         }
         return render(request, self.template_name, context)
 
@@ -326,7 +429,7 @@ class QuestionDetailApiView(View):
         question = get_object_or_404(Question, id=question_id, test_id=test_id)
 
         # Basic ownership check: test creator or superuser can edit.
-        if not (request.user.is_superuser or question.test.created_by_id == request.user.id):
+        if not user_can_manage_test_questions(request.user, question.test):
             return JsonResponse({"success": False, "errors": "Ruxsat yo'q"}, status=403)
 
         answers = [
@@ -352,7 +455,7 @@ class QuestionUpdateApiView(View):
     def post(self, request, test_id, question_id):
         question = get_object_or_404(Question, id=question_id, test_id=test_id)
 
-        if not (request.user.is_superuser or question.test.created_by_id == request.user.id):
+        if not user_can_manage_test_questions(request.user, question.test):
             return JsonResponse({"success": False, "errors": "Ruxsat yo'q"}, status=403)
 
         try:
@@ -432,11 +535,75 @@ class QuestionDeleteApiView(View):
     def post(self, request, test_id, question_id):
         question = get_object_or_404(Question, id=question_id, test_id=test_id)
 
-        if not (request.user.is_superuser or question.test.created_by_id == request.user.id):
+        if not user_can_manage_test_questions(request.user, question.test):
             return JsonResponse({"success": False, "errors": "Ruxsat yo'q"}, status=403)
+
+        usage_count = get_question_usage_count(question.id)
+        if usage_count:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": (
+                        "Bu savol asosida talaba test ishlagan. "
+                        "Natijalar mavjud bo'lgani uchun savolni o'chirib bo'lmaydi."
+                    ),
+                    "used_count": usage_count,
+                },
+                status=409,
+            )
 
         question.delete()
         return JsonResponse({"success": True, "message": "Savol muvaffaqiyatli o'chirildi!"})
+
+
+@method_decorator(login_required, name='dispatch')
+class QuestionsBulkDeleteApiView(View):
+    def post(self, request, test_id):
+        test = get_object_or_404(Test, id=test_id)
+
+        if not user_can_manage_test_questions(request.user, test):
+            return JsonResponse({"success": False, "errors": "Ruxsat yo'q"}, status=403)
+
+        try:
+            payload = json.loads(request.body.decode('utf-8') or '{}')
+        except Exception:
+            payload = {}
+
+        if payload.get("confirmation") != "DELETE":
+            return JsonResponse(
+                {"success": False, "errors": "O'chirish uchun DELETE so'zini aniq kiriting."},
+                status=400,
+            )
+
+        question_count = Question.objects.filter(test=test).count()
+        if not question_count:
+            return JsonResponse({"success": False, "errors": "O'chirish uchun savollar topilmadi."}, status=404)
+
+        usage_count = get_test_question_usage_count(test.id)
+        if usage_count:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": (
+                        "Bu test savollari asosida talaba test ishlagan. "
+                        "Natijalar mavjud bo'lgani uchun barcha savollarni o'chirib bo'lmaydi."
+                    ),
+                    "used_count": usage_count,
+                },
+                status=409,
+            )
+
+        with transaction.atomic():
+            deleted_count, _ = Question.objects.filter(test=test).delete()
+
+        return JsonResponse(
+            {
+                "success": True,
+                "deleted_questions": question_count,
+                "deleted_objects": deleted_count,
+                "message": f"{question_count} ta savol muvaffaqiyatli o'chirildi.",
+            }
+        )
 
 @method_decorator(login_required, name='dispatch')
 class AssignTestView(View):
@@ -1191,15 +1358,220 @@ class ToggleActiveView(View):
         })
 
 
+def _build_secure_assignment_redirect(user, route_name, assignment_id):
+    from apps.question.utils.access import build_assignment_access_token
+
+    return reverse(route_name, args=[build_assignment_access_token(user.id, assignment_id)])
+
+
+def _ordered_student_question_answers(student_question):
+    answers = list(student_question.question.answers.all())
+    shuffler = random.Random(f"{student_question.student_test_id}:{student_question.id}:{student_question.question_id}")
+    shuffler.shuffle(answers)
+    return answers
+
+
+def _serialize_student_question(student_question):
+    answers = _ordered_student_question_answers(student_question)
+    return {
+        'id': student_question.id,
+        'text': student_question.question.text,
+        'image': student_question.question.image.url if student_question.question.image else None,
+        'answers': [
+            {
+                'id': answer.id,
+                'text': answer.text,
+                'selected': student_question.selected_answer_id == answer.id,
+            }
+            for answer in answers
+        ],
+    }
+
+
+def _student_question_queryset(student_test_id):
+    answer_queryset = Answer.objects.only('id', 'question_id', 'text').order_by('id')
+    return (
+        StudentTestQuestion.objects
+        .filter(student_test_id=student_test_id)
+        .select_related('question')
+        .only(
+            'id',
+            'student_test_id',
+            'question_id',
+            'selected_answer_id',
+            'order',
+            'question__id',
+            'question__text',
+            'question__image',
+        )
+        .prefetch_related(Prefetch('question__answers', queryset=answer_queryset))
+        .order_by('order')
+    )
+
+
+def _parse_save_answer_request(request):
+    content_type = (request.content_type or '').split(';', 1)[0].strip().lower()
+
+    if content_type == 'application/json':
+        try:
+            payload = json.loads(request.body or '{}')
+        except json.JSONDecodeError as exc:
+            raise ValidationError("Javob ma'lumotlarini o'qib bo'lmadi.") from exc
+
+        return {
+            'student_question_id': payload.get('student_question_id'),
+            'answer_id': payload.get('answer_id'),
+            'camera_snapshot_data_url': payload.get('camera_snapshot'),
+            'camera_snapshot_file': None,
+        }
+
+    return {
+        'student_question_id': request.POST.get('student_question_id'),
+        'answer_id': request.POST.get('answer_id'),
+        'camera_snapshot_data_url': '',
+        'camera_snapshot_file': request.FILES.get('camera_snapshot'),
+    }
+
+
+def _save_student_answer_snapshot(student_question, snapshot_data_url='', snapshot_file=None):
+    if snapshot_file:
+        mime_type = (getattr(snapshot_file, 'content_type', '') or '').strip().lower()
+        allowed_snapshot_types = {
+            'image/jpeg': 'jpg',
+            'image/jpg': 'jpg',
+            'image/png': 'png',
+            'image/webp': 'webp',
+        }
+        if mime_type and mime_type not in allowed_snapshot_types:
+            raise ValidationError("Camera snapshot turi qo'llab-quvvatlanmaydi.")
+
+        extension = Path(getattr(snapshot_file, 'name', '') or '').suffix.lower().lstrip('.')
+        if extension == 'jpeg':
+            extension = 'jpg'
+        if not extension:
+            extension = allowed_snapshot_types.get(mime_type, 'jpg')
+
+        if student_question.answer_snapshot:
+            student_question.answer_snapshot.delete(save=False)
+
+        file_name = f"question_answer_{student_question.id}_{uuid.uuid4().hex[:10]}.{extension}"
+        student_question.answer_snapshot.save(file_name, snapshot_file, save=False)
+        return True
+
+    if not snapshot_data_url or not isinstance(snapshot_data_url, str):
+        return False
+
+    if not snapshot_data_url.startswith('data:image/'):
+        raise ValidationError("Camera snapshot formati noto'g'ri.")
+
+    try:
+        header, encoded = snapshot_data_url.split(';base64,', 1)
+    except ValueError as exc:
+        raise ValidationError("Camera snapshotni o'qib bo'lmadi.") from exc
+
+    mime_type = header.replace('data:', '', 1).strip().lower()
+    extension = {
+        'image/jpeg': 'jpg',
+        'image/jpg': 'jpg',
+        'image/png': 'png',
+        'image/webp': 'webp',
+    }.get(mime_type)
+    if not extension:
+        raise ValidationError("Camera snapshot turi qo'llab-quvvatlanmaydi.")
+
+    try:
+        decoded_file = base64.b64decode(encoded)
+    except Exception as exc:
+        raise ValidationError("Camera snapshotni dekod qilishda xatolik yuz berdi.") from exc
+
+    if student_question.answer_snapshot:
+        student_question.answer_snapshot.delete(save=False)
+
+    file_name = f"question_answer_{student_question.id}_{uuid.uuid4().hex[:10]}.{extension}"
+    student_question.answer_snapshot.save(file_name, ContentFile(decoded_file), save=False)
+    return True
+
+
+def _apply_pending_help_result_plan(student_test):
+    if not ensure_help_result_plan_schema():
+        return None
+
+    plan = (
+        HelpResultPlan.objects
+        .select_for_update()
+        .filter(
+            student_id=student_test.student_id,
+            assignment_id=student_test.assignment_id,
+            status=HelpResultPlan.STATUS_PENDING,
+        )
+        .order_by('-created_at', '-id')
+        .first()
+    )
+    if not plan:
+        return None
+
+    answered_questions = list(
+        StudentTestQuestion.objects
+        .select_for_update()
+        .filter(student_test=student_test, selected_answer__isnull=False)
+        .only('id', 'student_test_id', 'question_id', 'selected_answer_id', 'is_correct', 'order')
+        .order_by('order', 'id')
+    )
+
+    answered_count = len(answered_questions)
+    target_correct_count = min(plan.target_correct_answers, answered_count)
+    current_correct_count = sum(1 for item in answered_questions if item.is_correct)
+
+    if current_correct_count < target_correct_count:
+        needed_correct_count = target_correct_count - current_correct_count
+        incorrect_questions = [item for item in answered_questions if not item.is_correct]
+        random.shuffle(incorrect_questions)
+
+        correct_answer_by_question = {}
+        question_ids = [item.question_id for item in incorrect_questions]
+        if question_ids:
+            for question_id, answer_id in (
+                Answer.objects
+                .filter(question_id__in=question_ids, is_correct=True)
+                .order_by('question_id', 'id')
+                .values_list('question_id', 'id')
+            ):
+                correct_answer_by_question.setdefault(question_id, answer_id)
+
+        changed_questions = []
+        for student_question in incorrect_questions:
+            correct_answer_id = correct_answer_by_question.get(student_question.question_id)
+            if not correct_answer_id:
+                continue
+
+            student_question.selected_answer_id = correct_answer_id
+            student_question.is_correct = True
+            changed_questions.append(student_question)
+
+            if len(changed_questions) >= needed_correct_count:
+                break
+
+        if changed_questions:
+            StudentTestQuestion.objects.bulk_update(
+                changed_questions,
+                ['selected_answer', 'is_correct'],
+                batch_size=200,
+            )
+
+    plan.status = HelpResultPlan.STATUS_COMPLETED
+    plan.save(update_fields=['status', 'updated_at'])
+    return plan
+
+
 @method_decorator(login_required, name='dispatch')
 class StartTestDetailView(View):
     template_name = 'test/start_test_detail.html'
 
     def get(self, request, assignment_id):
-        # StudentTestAssignment obyektini olish
-        assignment = get_object_or_404(StudentTestAssignment, id=assignment_id)
+        assignment, assignment_token, is_legacy = resolve_assignment_access(request.user, str(assignment_id))
+        if is_legacy:
+            return HttpResponseRedirect(_build_secure_assignment_redirect(request.user, 'landing:start-test-detail', assignment.id))
 
-        # Tegishli test, kategoriya va o‘qituvchi maʼlumotlarini olish
         assignment_data = {
             'id': assignment.id,
             'test_name': assignment.test.name,
@@ -1212,9 +1584,11 @@ class StartTestDetailView(View):
             'status': assignment.status,
             'is_active': assignment.is_active,
             'created_at': assignment.created_at,
+            'token': assignment_token,
+            'start_url': reverse('landing:start-test', args=[assignment_token]),
+            'unfinished_status_url': reverse('landing:check-unfinished-test', args=[assignment_token]),
         }
 
-        # Render qilish
         return render(request, self.template_name, {'assignment': assignment_data})
 
 @method_decorator(login_required, name='dispatch')
@@ -1222,10 +1596,11 @@ class StartTestView(View):
     template_name = 'test/start_test.html'
 
     def get(self, request, assignment_id):
-        # StudentTestAssignment ni olish
-        assignment = get_object_or_404(StudentTestAssignment, id=assignment_id)
+        ensure_student_test_question_proctoring_schema()
+        assignment, assignment_token, is_legacy = resolve_assignment_access(request.user, str(assignment_id))
+        if is_legacy:
+            return HttpResponseRedirect(_build_secure_assignment_redirect(request.user, 'landing:start-test', assignment.id))
 
-        # Foydalanuvchiga tegishli yakunlanmagan testni qidirish
         unfinished_test = StudentTest.objects.filter(
             student=request.user,
             assignment=assignment,
@@ -1237,72 +1612,57 @@ class StartTestView(View):
             elapsed_time = (now() - unfinished_test.start_time).seconds
             remaining_time = max(0, assignment.duration * 60 - elapsed_time)  # Sekundlarda
 
-            questions_data = []
-            for student_question in unfinished_test.student_questions.order_by('order').all():
-                answers = list(student_question.question.answers.all())
-                questions_data.append({
-                    'id': student_question.id,
-                    'text': student_question.question.text,
-                    'image': student_question.question.image.url if student_question.question.image else None,
-                    'answers': [
-                        {
-                            'id': answer.id,
-                            'text': answer.text,
-                            'selected': student_question.selected_answer == answer  # Tanlanganmi yoki yo'q
-                        }
-                        for answer in answers
-                    ]
-                })
+            questions_data = [
+                _serialize_student_question(student_question)
+                for student_question in _student_question_queryset(unfinished_test.id)
+            ]
 
             context = {
                 'assignment': assignment,
                 'student_test': unfinished_test,
                 'questions': questions_data,
                 'remaining_time': remaining_time,  # Qolgan vaqtni yuborish
+                'assignment_token': assignment_token,
             }
         else:
-            # Yangi test yaratish
-            student_test = StudentTest.objects.create(
-                student=request.user,
-                assignment=assignment,
-                start_time=now()
+            available_question_ids = list(
+                Question.objects
+                .filter(test_id=assignment.test_id)
+                .values_list('id', flat=True)
             )
-
-            # Savollarni generatsiya qilish va tartibini saqlash
-            available_questions = list(assignment.test.questions.all())
-            if len(available_questions) < assignment.total_questions:
+            if len(available_question_ids) < assignment.total_questions:
                 return JsonResponse({'success': False, 'message': 'Yetarli savollar mavjud emas.'}, status=400)
 
-            selected_questions = random.sample(available_questions, assignment.total_questions)
-            for index, question in enumerate(selected_questions, start=1):
-                StudentTestQuestion.objects.create(
-                    student_test=student_test,
-                    question=question,
-                    order=index  # Tartibini saqlash
+            with transaction.atomic():
+                student_test = StudentTest.objects.create(
+                    student=request.user,
+                    assignment=assignment,
+                    start_time=now()
+                )
+                selected_question_ids = random.sample(available_question_ids, assignment.total_questions)
+                StudentTestQuestion.objects.bulk_create(
+                    [
+                        StudentTestQuestion(
+                            student_test=student_test,
+                            question_id=question_id,
+                            order=index,
+                        )
+                        for index, question_id in enumerate(selected_question_ids, start=1)
+                    ],
+                    batch_size=200,
                 )
 
-            questions_data = []
-            for student_question in student_test.student_questions.order_by('order').all():
-                answers = list(student_question.question.answers.all())
-                questions_data.append({
-                    'id': student_question.id,
-                    'text': student_question.question.text,
-                    'image': student_question.question.image.url if student_question.question.image else None,
-                    'answers': [
-                        {
-                            'id': answer.id,
-                            'text': answer.text,
-                            'selected': False  # Yangi test uchun tanlanmagan
-                        }
-                        for answer in answers
-                    ]
-                })
+            questions_data = [
+                _serialize_student_question(student_question)
+                for student_question in _student_question_queryset(student_test.id)
+            ]
 
             context = {
                 'assignment': assignment,
                 'student_test': student_test,
                 'questions': questions_data,
                 'remaining_time': assignment.duration * 60,  # To'liq vaqt
+                'assignment_token': assignment_token,
             }
 
         return render(request, self.template_name, context)
@@ -1323,39 +1683,73 @@ class GetRemainingTimeView(View):
 @method_decorator(login_required, name='dispatch')
 class SaveAnswerView(View):
     def post(self, request):
+        ensure_student_test_question_proctoring_schema()
         try:
-            data = json.loads(request.body)
-            student_question_id = data.get('student_question_id')
-            answer_id = data.get('answer_id')
+            payload = _parse_save_answer_request(request)
+            student_question_id = payload.get('student_question_id')
+            answer_id = payload.get('answer_id')
+            camera_snapshot = payload.get('camera_snapshot_data_url')
+            camera_snapshot_file = payload.get('camera_snapshot_file')
 
-            # StudentTestQuestion obyektini olish
-            student_question = get_object_or_404(StudentTestQuestion, id=student_question_id)
-            selected_answer = get_object_or_404(Answer, id=answer_id)
+            student_question = get_object_or_404(
+                StudentTestQuestion.objects.select_related('student_test', 'question'),
+                id=student_question_id,
+            )
+            if student_question.student_test.student_id != request.user.id:
+                return JsonResponse({'success': False, 'message': "Bu savolga javob saqlash uchun ruxsat yo'q."}, status=403)
+            if student_question.student_test.completed:
+                return JsonResponse({'success': False, 'message': "Yakunlangan testga javob saqlab bo'lmaydi."}, status=400)
 
-            # Javobni saqlash
+            selected_answer = get_object_or_404(Answer, id=answer_id, question_id=student_question.question_id)
+
             student_question.selected_answer = selected_answer
             student_question.is_correct = selected_answer.is_correct
-            student_question.save()
+            student_question.answered_at = timezone.now()
+            snapshot_saved = _save_student_answer_snapshot(
+                student_question,
+                snapshot_data_url=camera_snapshot,
+                snapshot_file=camera_snapshot_file,
+            )
+            update_fields = ['selected_answer', 'is_correct', 'answered_at']
+            if snapshot_saved:
+                update_fields.append('answer_snapshot')
+            student_question.save(update_fields=update_fields)
 
-            return JsonResponse({'success': True, 'message': 'Javob muvaffaqiyatli saqlandi!'})
+            return JsonResponse({
+                'success': True,
+                'message': 'Javob muvaffaqiyatli saqlandi!',
+                'answered_at': student_question.answered_at.isoformat() if student_question.answered_at else None,
+                'snapshot_url': student_question.answer_snapshot.url if student_question.answer_snapshot else None,
+            })
+        except ValidationError as exc:
+            return JsonResponse({'success': False, 'message': str(exc)}, status=400)
         except Exception as e:
             return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
 @method_decorator(login_required, name='dispatch')
 class FinishTestView(View):
     def post(self, request, test_id):
-        student_test = get_object_or_404(StudentTest, id=test_id, student=request.user)
+        ensure_help_result_plan_schema()
 
-        # Testni yakunlash
-        correct_answers = student_test.student_questions.filter(is_correct=True).count()
-        total_questions = student_test.student_questions.count()
-        score = (correct_answers / total_questions * 100) if total_questions > 0 else 0.0
+        with transaction.atomic():
+            student_test = get_object_or_404(
+                StudentTest.objects.select_for_update(),
+                id=test_id,
+                student=request.user,
+            )
 
-        student_test.completed = True
-        student_test.end_time = timezone.now()
-        student_test.duration = (student_test.end_time - student_test.start_time).seconds  # Soniyalarda
-        student_test.score = score
-        student_test.save()
+            _apply_pending_help_result_plan(student_test)
+
+            # Testni yakunlash
+            correct_answers = student_test.student_questions.filter(is_correct=True).count()
+            total_questions = student_test.student_questions.count()
+            score = (correct_answers / total_questions * 100) if total_questions > 0 else 0.0
+
+            student_test.completed = True
+            student_test.end_time = timezone.now()
+            student_test.duration = (student_test.end_time - student_test.start_time).seconds  # Soniyalarda
+            student_test.score = score
+            student_test.save()
 
         # Natija sahifasiga yo'naltirish uchun natija URLini qaytarish
         result_url = reverse('landing:view_result', args=[student_test.id])

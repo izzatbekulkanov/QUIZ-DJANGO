@@ -52,6 +52,7 @@ class UsersView(View):
         'group_name',
         'is_student',
         'is_teacher',
+        'is_help',
         'level_name',
         'staff_position',
         'date_of_birth',
@@ -286,6 +287,7 @@ class EditUserView(View):
         user.is_student = request.POST.get('is_student') == 'on'
         user.is_teacher = request.POST.get('is_teacher') == 'on'
         user.auth_is_id = request.POST.get('auth_is_id') == 'on'
+        user.is_help = request.POST.get('is_help') == 'on'
 
         if request.FILES.get('profile_picture'):
             user.profile_picture = request.FILES['profile_picture']

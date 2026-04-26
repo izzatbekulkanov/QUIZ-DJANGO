@@ -7,6 +7,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 
 from apps.question.models import Category, StudentTestAssignment, StudentTest, Test, StudentTestQuestion
+from apps.question.utils.access import build_assignment_access_urls, resolve_assignment_access
 
 
 @method_decorator(login_required, name='dispatch')
@@ -106,6 +107,7 @@ class DashboardView(View):
                     # Foydalanuvchi urinishlari
                     'max_attempts': a.attempts,  # Maksimal urinishlar
                     'has_unfinished_attempt': assignment_attempts.get(a.id, {}).get('has_unfinished', False),
+                    **build_assignment_access_urls(user, a),
                 } for a in user_assignments
             ]
         }
@@ -115,28 +117,24 @@ class DashboardView(View):
 @method_decorator(login_required, name='dispatch')
 class CheckUnfinishedTestView(View):
     def get(self, request, assignment_id):
-        # Topshiriqni olish
-        assignment = get_object_or_404(StudentTestAssignment, id=assignment_id)
+        assignment, _, _ = resolve_assignment_access(request.user, str(assignment_id))
 
-        # Foydalanuvchiga tegishli test holatini tekshirish
         test_exists = StudentTest.objects.filter(
             student=request.user,
-            assignment_id=assignment_id
+            assignment=assignment
         ).exists()
 
         unfinished_test = StudentTest.objects.filter(
             student=request.user,
-            assignment_id=assignment_id,
+            assignment=assignment,
             completed=False
         ).exists()
 
-        # Urinishlar sonini tekshirish
         attempts_count = StudentTest.objects.filter(
             student=request.user,
-            assignment_id=assignment_id
+            assignment=assignment
         ).count()
 
-        # Agar urinishlar soni maksimaldan oshsa
         if attempts_count >= assignment.attempts:
             return JsonResponse({
                 'never_started': False,
@@ -144,21 +142,18 @@ class CheckUnfinishedTestView(View):
                 'attempts_exceeded': True
             })
 
-        # Agar test umuman boshlanmagan bo'lsa
         if not test_exists:
             return JsonResponse({
                 'never_started': True,
                 'unfinished': False,
                 'attempts_exceeded': False
             })
-        # Agar test boshlangan, lekin yakunlanmagan bo'lsa
         elif unfinished_test:
             return JsonResponse({
                 'never_started': False,
                 'unfinished': True,
                 'attempts_exceeded': False
             })
-        # Agar test yakunlangan bo'lsa
         else:
             return JsonResponse({
                 'never_started': False,
@@ -198,15 +193,26 @@ def all_results(request):
     return render(request, 'test/all_results.html', context)
 
 
+@method_decorator(login_required, name='dispatch')
 class ViewResultView(View):
     template_name = 'test/result.html'
 
     def get(self, request, result_id):
         try:
-            result = StudentTest.objects.get(id=result_id, student=request.user)
-            questions = StudentTestQuestion.objects.filter(student_test=result).select_related('question',
-                                                                                               'selected_answer').prefetch_related(
-                'question__answers').order_by('order')
+            from apps.question.utils.schema import ensure_student_test_question_proctoring_schema
+
+            ensure_student_test_question_proctoring_schema()
+            result = StudentTest.objects.select_related(
+                'assignment__category',
+                'assignment__test',
+            ).get(id=result_id, student=request.user)
+            questions = (
+                StudentTestQuestion.objects
+                .filter(student_test=result)
+                .select_related('question', 'selected_answer')
+                .prefetch_related('question__answers')
+                .order_by('order')
+            )
             context = {
                 'result': result,
                 'questions': questions,

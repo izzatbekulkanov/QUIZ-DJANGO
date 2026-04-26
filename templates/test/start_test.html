@@ -14,9 +14,17 @@
 
     :root {
       --exam-zoom-level: 1;
+      --exam-transition-fast: 160ms ease;
+    }
+
+    html,
+    body {
+      height: 100%;
     }
 
     body {
+      margin: 0;
+      overflow: hidden;
       background:
         radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 28%),
         radial-gradient(circle at top right, rgba(22, 163, 74, 0.10), transparent 24%),
@@ -29,6 +37,32 @@
       line-height: 1.75;
     }
 
+    body.exam-invert-mode {
+      background:
+        radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(16, 185, 129, 0.14), transparent 24%),
+        #020617;
+      color: rgba(226, 232, 240, 0.94);
+    }
+
+    .exam-page,
+    .exam-page * {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .exam-page input,
+    .exam-page textarea,
+    .exam-page [contenteditable="true"] {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    .exam-submit-loader .spinner-border {
+      width: 2.75rem;
+      height: 2.75rem;
+    }
+
     body.reading-mode .question-body,
     body.reading-mode .exam-answer-item,
     body.reading-mode .exam-sidebar-block,
@@ -39,16 +73,62 @@
       color: rgba(15, 23, 42, 0.96);
     }
 
+    body.exam-invert-mode .exam-sidebar-block,
+    body.exam-invert-mode .exam-question-shell,
+    body.exam-invert-mode .exam-nav-shell {
+      background: rgba(2, 6, 23, 0.92);
+      border-color: rgba(148, 163, 184, 0.18);
+      box-shadow: 0 16px 40px rgba(2, 6, 23, 0.42);
+      color: rgba(226, 232, 240, 0.94);
+    }
+
+    body.exam-invert-mode .exam-sidebar-block .block-header-default,
+    body.exam-invert-mode .exam-question-shell .block-header-default,
+    body.exam-invert-mode .exam-nav-shell .block-header-default {
+      background: rgba(15, 23, 42, 0.76);
+      border-bottom-color: rgba(148, 163, 184, 0.14);
+      color: rgba(241, 245, 249, 0.96);
+    }
+
+    body.exam-invert-mode .exam-question-shell .bg-body-light,
+    body.exam-invert-mode .exam-nav-shell .bg-body-light,
+    body.exam-invert-mode .exam-sidebar-block .bg-body-light {
+      background: rgba(15, 23, 42, 0.72) !important;
+      border-top-color: rgba(148, 163, 184, 0.14) !important;
+    }
+
+    body.exam-invert-mode .exam-meta-line,
+    body.exam-invert-mode .text-muted,
+    body.exam-invert-mode .fs-sm.text-muted {
+      color: rgba(148, 163, 184, 0.92) !important;
+    }
+
     .exam-page {
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #page-container,
+    #main-container {
+      height: 100%;
+    }
+
+    .exam-shell {
+      height: 100%;
+      padding: 0.8rem !important;
+      display: flex;
+      min-height: 0;
     }
 
     .exam-layout {
       display: grid;
       grid-template-areas: "sidebar main nav";
-      grid-template-columns: 280px minmax(0, 1fr) 280px;
-      gap: 1.25rem;
-      align-items: start;
+      grid-template-columns: 232px minmax(0, 1fr) 232px;
+      gap: 0.8rem;
+      align-items: stretch;
+      min-height: 0;
+      height: 100%;
+      width: 100%;
     }
 
     .exam-sidebar-block,
@@ -57,16 +137,33 @@
       background: rgba(255, 255, 255, 0.96);
       border: 1px solid rgba(15, 23, 42, 0.08);
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      margin-bottom: 0 !important;
+      contain: layout paint style;
     }
 
     .exam-card-body {
-      padding: 1.5rem !important;
+      padding: 1rem !important;
+    }
+
+    body.exam-compact-mode .exam-card-body {
+      padding: 0.8rem !important;
+    }
+
+    body.exam-compact-mode .block-header {
+      padding-top: 0.7rem;
+      padding-bottom: 0.7rem;
     }
 
     .exam-sidebar,
+    .exam-main,
     .exam-nav {
-      position: sticky;
-      top: 1.25rem;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
     }
 
     .exam-sidebar {
@@ -82,13 +179,38 @@
       grid-area: nav;
     }
 
+    .exam-main > .exam-question-shell:first-child,
+    .exam-nav > .exam-nav-shell:first-child,
+    .exam-sidebar > .exam-sidebar-block:last-child {
+      flex: 1 1 auto;
+    }
+
+    .exam-sidebar-scroll,
+    .exam-question-scroll,
+    .exam-nav-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+    }
+
+    .exam-question-scroll {
+      padding-top: 0.95rem !important;
+      padding-bottom: 0.95rem !important;
+    }
+
+    .exam-nav-scroll {
+      padding-top: 0.9rem !important;
+      padding-bottom: 0.9rem !important;
+    }
+
     .exam-main-zoom {
       font-size: calc(1rem * var(--exam-zoom-level));
     }
 
     .exam-user-avatar {
-      width: 88px;
-      height: 88px;
+      width: 62px;
+      height: 62px;
       border-radius: 50%;
       object-fit: cover;
       border: 3px solid rgba(255, 255, 255, 0.96);
@@ -104,12 +226,12 @@
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.75rem 1rem;
+      padding: 0.58rem 0.9rem;
       border-radius: 999px;
       background: rgba(37, 99, 235, 0.10);
       color: #1d4ed8;
       border: 1px solid rgba(37, 99, 235, 0.16);
-      font-size: 1.35rem;
+      font-size: 1.05rem;
       font-weight: 800;
       letter-spacing: -0.02em;
     }
@@ -127,14 +249,15 @@
     }
 
     .exam-warning-banner {
-      margin-top: 0.9rem;
-      padding: 0.75rem 0.9rem;
+      margin-top: 0.65rem;
+      padding: 0.55rem 0.75rem;
       border-radius: 12px;
       border: 1px solid rgba(220, 38, 38, 0.16);
       background: rgba(220, 38, 38, 0.08);
       color: #b91c1c;
       font-weight: 700;
       text-align: center;
+      font-size: 0.84rem;
     }
 
     .exam-progress-track {
@@ -152,14 +275,54 @@
     }
 
     .question-body {
-      padding: 1.35rem;
+      padding: 0.95rem;
       border-radius: 18px;
       background: rgba(255, 255, 255, 0.96);
       border: 1px solid rgba(15, 23, 42, 0.08);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
-      line-height: 1.65;
-      user-select: text;
+      line-height: 1.52;
+      user-select: none;
       overflow: visible;
+    }
+
+    .question-copy-panel {
+      margin-bottom: 0.85rem;
+      padding: 0.9rem 1rem;
+      border-radius: 18px;
+      border: 1px solid rgba(37, 99, 235, 0.12);
+      background:
+        linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(255, 255, 255, 0.96) 48%),
+        rgba(255, 255, 255, 0.98);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    }
+
+    .question-copy-panel .import-rich {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.62;
+      color: rgba(15, 23, 42, 0.96);
+    }
+
+    body.exam-invert-mode .question-body {
+      background: rgba(15, 23, 42, 0.88);
+      border-color: rgba(148, 163, 184, 0.16);
+      color: rgba(241, 245, 249, 0.96);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    body.exam-invert-mode .question-copy-panel {
+      border-color: rgba(96, 165, 250, 0.24);
+      background:
+        linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(15, 23, 42, 0.9) 54%),
+        rgba(15, 23, 42, 0.92);
+    }
+
+    body.exam-invert-mode .question-copy-panel .import-rich {
+      color: rgba(241, 245, 249, 0.98);
+    }
+
+    body.exam-compact-mode .question-body {
+      padding: 0.8rem;
     }
 
     .question-body img {
@@ -169,11 +332,11 @@
     }
 
     .question-figure {
-      max-height: 280px;
+      max-height: 150px;
       width: auto;
       max-width: 100%;
       display: block;
-      margin: 0 auto 1rem;
+      margin: 0 auto 0.7rem;
       border-radius: 16px;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
     }
@@ -228,59 +391,230 @@
 
     .exam-answer-list {
       display: grid;
-      gap: 0.85rem;
+      gap: 0.65rem;
       margin: 0;
       padding: 0;
       list-style: none;
     }
 
+    body.exam-compact-mode .exam-answer-list {
+      gap: 0.55rem;
+    }
+
     .exam-answer-item {
-      display: flex;
+      position: relative;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
       align-items: flex-start;
-      gap: 0.85rem;
-      padding: 0.9rem 1rem;
-      border-radius: 16px;
+      gap: 0.8rem;
+      padding: 0.75rem 0.85rem;
+      border-radius: 18px;
       border: 1px solid rgba(15, 23, 42, 0.08);
-      background: rgba(248, 250, 252, 0.95);
-      transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96)),
+        rgba(248, 250, 252, 0.95);
+      box-shadow:
+        0 10px 22px rgba(15, 23, 42, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.72);
+      transition:
+        border-color 120ms ease,
+        background-color var(--exam-transition-fast),
+        box-shadow 120ms ease;
       cursor: pointer;
-      user-select: text;
+      user-select: none;
+      overflow: hidden;
+      isolation: isolate;
+      contain: layout paint style;
+    }
+
+    .exam-answer-item::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(37, 99, 235, 0.08), transparent 38%, rgba(14, 165, 233, 0.07) 100%);
+      opacity: 0;
+      transition: opacity var(--exam-transition-fast);
+      pointer-events: none;
     }
 
     .exam-answer-item:hover {
-      background: rgba(37, 99, 235, 0.06);
       border-color: rgba(37, 99, 235, 0.18);
-      transform: translateY(-1px);
+      box-shadow:
+        0 14px 24px rgba(37, 99, 235, 0.10),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .exam-answer-item:hover::before,
+    .exam-answer-item.answer-selected::before {
+      opacity: 1;
     }
 
     .exam-answer-item.answer-selected {
-      border-color: rgba(22, 163, 74, 0.30);
-      background: rgba(22, 163, 74, 0.10);
+      border-color: rgba(22, 163, 74, 0.34);
+      background:
+        linear-gradient(145deg, rgba(240, 253, 244, 0.98), rgba(220, 252, 231, 0.94)),
+        rgba(22, 163, 74, 0.10);
+      box-shadow:
+        0 14px 28px rgba(22, 163, 74, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.76);
     }
 
-    .answer-marker {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 36px;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(37, 99, 235, 0.10);
-      color: #1d4ed8;
-      font-weight: 800;
-      flex-shrink: 0;
+    .exam-answer-item.answer-saving {
+      opacity: 1;
+      pointer-events: none;
     }
 
     .answer-radio {
-      margin-top: 0.2rem;
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .answer-choice-dot {
+      width: 1rem;
+      height: 1rem;
+      margin-top: 0.45rem;
+      border-radius: 50%;
+      border: 2px solid rgba(37, 99, 235, 0.24);
+      background: rgba(255, 255, 255, 0.98);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+      box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+      transition:
+        border-color var(--exam-transition-fast),
+        background-color var(--exam-transition-fast),
+        transform var(--exam-transition-fast);
+    }
+
+    .answer-choice-dot::after {
+      content: "";
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2563eb 0%, #0f766e 100%);
+      transform: scale(0);
+      transition: transform var(--exam-transition-fast);
+    }
+
+    .answer-content {
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+      display: block;
+      padding-right: 3.6rem;
+    }
+
+    .answer-title-row {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .answer-shortcut-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.22rem 0.48rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.26);
+      background: rgba(255, 255, 255, 0.84);
+      color: rgba(15, 23, 42, 0.72);
+      font-size: 0.68rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .answer-saving-indicator {
+      position: absolute;
+      right: 0.75rem;
+      bottom: 0.65rem;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.28rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(37, 99, 235, 0.10);
+      color: #1d4ed8;
+      font-size: 0.7rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .answer-saving-indicator .spinner-border {
+      width: 0.85rem;
+      height: 0.85rem;
+      border-width: 0.14rem;
+    }
+
+    .exam-answer-item.answer-selected .answer-choice-dot {
+      border-color: rgba(22, 163, 74, 0.44);
+      background: rgba(240, 253, 244, 0.98);
+      transform: scale(1.04);
+    }
+
+    .exam-answer-item.answer-selected .answer-choice-dot::after {
+      transform: scale(1);
+    }
+
+    body.exam-invert-mode .exam-answer-item {
+      background:
+        linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.94)),
+        rgba(15, 23, 42, 0.96);
+      border-color: rgba(148, 163, 184, 0.16);
+      color: rgba(226, 232, 240, 0.96);
+      box-shadow:
+        0 20px 36px rgba(2, 6, 23, 0.30),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    body.exam-invert-mode .exam-answer-item:hover {
+      border-color: rgba(96, 165, 250, 0.34);
+      box-shadow:
+        0 22px 40px rgba(15, 23, 42, 0.34),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    body.exam-invert-mode .exam-answer-item.answer-selected {
+      background:
+        linear-gradient(145deg, rgba(20, 83, 45, 0.96), rgba(22, 101, 52, 0.88)),
+        rgba(20, 83, 45, 0.94);
+      border-color: rgba(74, 222, 128, 0.34);
+      box-shadow:
+        0 22px 44px rgba(22, 101, 52, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    body.exam-invert-mode .answer-shortcut-hint,
+    body.exam-invert-mode .answer-choice-dot,
+    body.exam-invert-mode .answer-saving-indicator {
+      background: rgba(15, 23, 42, 0.86);
+      border-color: rgba(148, 163, 184, 0.24);
+      color: rgba(226, 232, 240, 0.9);
+    }
+
+    body.exam-compact-mode .exam-answer-item {
+      padding: 0.85rem 0.95rem;
+      gap: 0.8rem;
+    }
+
+    body.exam-compact-mode .answer-content {
+      padding-right: 3.2rem;
     }
 
     .question-index-button {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
+      width: 100%;
+      height: 32px;
+      border-radius: 8px;
       border: 1px solid rgba(15, 23, 42, 0.10);
       background: #ffffff;
       color: rgba(15, 23, 42, 0.88);
@@ -290,6 +624,25 @@
       justify-content: center;
       transition: all 0.15s ease;
       cursor: pointer;
+    }
+
+    .exam-question-nav-grid {
+      width: 100%;
+      display: grid !important;
+      grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      grid-auto-flow: row;
+      align-content: start;
+      gap: 0.45rem;
+    }
+
+    .exam-question-nav-grid > .question-index-button {
+      min-width: 0;
+    }
+
+    body.exam-invert-mode .question-index-button {
+      background: rgba(15, 23, 42, 0.86);
+      color: rgba(226, 232, 240, 0.92);
+      border-color: rgba(148, 163, 184, 0.18);
     }
 
     .question-index-button:hover {
@@ -322,8 +675,71 @@
 
     .exam-control-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 0.65rem;
+    }
+
+    .view-control-button {
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 14px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
+      box-shadow:
+        0 12px 26px rgba(15, 23, 42, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.74);
+      padding: 0.65rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition:
+        transform var(--exam-transition-fast),
+        box-shadow var(--exam-transition-fast),
+        border-color var(--exam-transition-fast);
+    }
+
+    .view-control-button:hover {
+      transform: translateY(-2px);
+      border-color: rgba(37, 99, 235, 0.18);
+      box-shadow:
+        0 18px 32px rgba(37, 99, 235, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.84);
+    }
+
+    .view-control-button.active {
+      border-color: rgba(37, 99, 235, 0.24);
+      background: linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%);
+      color: #ffffff;
+      box-shadow: 0 22px 38px rgba(29, 78, 216, 0.22);
+    }
+
+    .control-icon {
+      width: 2.1rem;
+      height: 2.1rem;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(37, 99, 235, 0.10);
+      color: #1d4ed8;
+      flex-shrink: 0;
+      font-size: 1rem;
+    }
+
+    .view-control-button.active .control-icon {
+      background: rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+    }
+
+    body.exam-invert-mode .view-control-button {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.92));
+      border-color: rgba(148, 163, 184, 0.18);
+      box-shadow:
+        0 18px 32px rgba(2, 6, 23, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    body.exam-invert-mode .control-icon {
+      background: rgba(30, 41, 59, 0.92);
+      color: rgba(147, 197, 253, 0.96);
     }
 
     .exam-security-alert {
@@ -334,14 +750,116 @@
       padding: 0.85rem 1rem;
     }
 
+    .camera-panel {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(15, 23, 42, 0.98);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .camera-frame {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      background:
+        radial-gradient(circle at top, rgba(59, 130, 246, 0.32), transparent 38%),
+        #020617;
+      overflow: hidden;
+      contain: layout paint style;
+    }
+
+    .camera-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1);
+    }
+
+    .camera-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      color: rgba(226, 232, 240, 0.92);
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .camera-status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+      background: #94a3b8;
+    }
+
+    .camera-status-indicator {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      width: 0.9rem;
+      height: 0.9rem;
+      border-radius: 999px;
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      background: #ef4444;
+      box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.18);
+      z-index: 3;
+    }
+
+    .camera-status-indicator.online {
+      background: #22c55e;
+      box-shadow: 0 0 0 8px rgba(34, 197, 94, 0.16);
+    }
+
+    .camera-status-dot.online {
+      background: #22c55e;
+      box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.14);
+    }
+
+    .camera-meta {
+      color: rgba(226, 232, 240, 0.82);
+      font-size: 0.88rem;
+    }
+
+    .camera-toolbar {
+      display: grid;
+      gap: 0.45rem;
+      padding: 0.7rem;
+      background: rgba(15, 23, 42, 0.98);
+    }
+
+    .camera-requirement {
+      border-radius: 14px;
+      border: 1px solid rgba(37, 99, 235, 0.14);
+      background: rgba(37, 99, 235, 0.08);
+      color: #1d4ed8;
+      padding: 0.9rem 1rem;
+    }
+
     @media (max-width: 1399.98px) {
       .exam-layout {
         grid-template-areas: "sidebar main nav";
-        grid-template-columns: 260px minmax(0, 1fr) 260px;
+        grid-template-columns: 212px minmax(0, 1fr) 212px;
       }
     }
 
     @media (max-width: 1199.98px) {
+      body {
+        overflow: auto;
+      }
+
+      .exam-page,
+      #page-container,
+      #main-container,
+      .exam-shell,
+      .exam-layout {
+        height: auto;
+        overflow: visible;
+      }
+
       .exam-layout {
         grid-template-areas:
           "sidebar main"
@@ -367,6 +885,16 @@
       .exam-sidebar,
       .exam-nav {
         position: static;
+      }
+
+      .exam-main > .exam-question-shell:first-child,
+      .exam-nav > .exam-nav-shell:first-child,
+      .exam-sidebar > .exam-sidebar-block:last-child,
+      .exam-sidebar-scroll,
+      .exam-question-scroll,
+      .exam-nav-scroll {
+        min-height: auto;
+        overflow: visible;
       }
 
       .exam-sidebar .block-content,
@@ -401,9 +929,8 @@
       }
 
       .question-index-button {
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
+        height: 30px;
+        border-radius: 8px;
       }
     }
 
@@ -417,23 +944,23 @@
   </style>
 </head>
 <body class="bg-body-extra-light">
-  <div id="exam-app" class="exam-page" v-cloak>
+  <div id="exam-app" class="exam-page" v-cloak tabindex="-1">
     <div id="page-container">
       <main id="main-container">
-        <div class="content content-full py-4">
+        <div class="content content-full py-4 exam-shell">
           <div class="exam-layout">
             <aside class="exam-sidebar">
               <div class="block block-rounded exam-sidebar-block mb-4">
-                <div class="block-content p-4 text-center">
+                <div class="block-content p-3 text-center">
                   <img
-                    class="exam-user-avatar mb-3"
+                    class="exam-user-avatar mb-2"
                     src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'assets/media/avatars/avatar10.jpg' %}{% endif %}"
                     alt="Profil rasmi">
                   <div class="h5 mb-1">{{ user.first_name }} {{ user.second_name }}</div>
                   <div class="exam-meta-line mb-1">{{ assignment.category.name }}</div>
                   <div class="exam-meta-line">{{ questions|length }} savol</div>
 
-                  <div class="mt-4">
+                  <div class="mt-3">
                     <div class="exam-timer" :class="timerToneClass">
                       <i class="fa fa-hourglass-half"></i>
                       <span>[[ formattedTime ]]</span>
@@ -446,23 +973,41 @@
               </div>
 
               <div class="block block-rounded exam-sidebar-block mb-4">
-                <div class="block-content p-4">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="text-muted">Progress</span>
-                    <span class="fw-semibold">[[ progressPercent ]]%</span>
+                <div class="block-header block-header-default">
+                  <h3 class="block-title">Kamera nazorati</h3>
+                </div>
+                <div class="block-content p-3 exam-sidebar-scroll">
+                  <div class="camera-panel">
+                    <div class="camera-frame">
+                      <span :class="['camera-status-indicator', cameraReady ? 'online' : 'offline']" aria-hidden="true"></span>
+                      <video
+                        ref="cameraVideo"
+                        class="camera-video"
+                        autoplay
+                        muted
+                        playsinline
+                        v-show="cameraReady"></video>
+                      <div class="camera-placeholder" v-if="!cameraReady">
+                        <div class="fs-2 opacity-75"><i class="fa fa-camera"></i></div>
+                        <div class="fw-semibold">Kamera hali ulanmagan</div>
+                        <div class="camera-meta">Javoblarni saqlash uchun kamera ruxsati kerak bo'ladi.</div>
+                      </div>
+                    </div>
+                    <div class="camera-toolbar">
+                      <button
+                        v-if="!cameraReady"
+                        type="button"
+                        class="btn btn-alt-primary btn-sm"
+                        @click="requestCameraAccess"
+                        :disabled="cameraLoading">
+                        <i class="fa fa-video me-1"></i> [[ cameraLoading ? 'Ulanmoqda...' : 'Kamerani yoqish' ]]
+                      </button>
+                      <div class="camera-meta text-danger" v-if="cameraError">
+                        [[ cameraError ]]
+                      </div>
+                    </div>
                   </div>
-                  <div class="exam-progress-track mb-3">
-                    <div class="exam-progress-fill" :style="{ width: progressPercent + '%' }"></div>
-                  </div>
-                  <div class="exam-note mb-3">
-                    Savollar avtomatik saqlanadi. Sahifadan chiqish yoki boshqa oynaga o'tish testni yakunlatishi mumkin.
-                  </div>
-                  <button
-                    class="btn btn-danger w-100"
-                    @click="finishTest"
-                    aria-label="Testni tugatish">
-                    <i class="fa fa-check me-2"></i>Tugatish
-                  </button>
+                  <canvas ref="cameraCanvas" class="d-none"></canvas>
                 </div>
               </div>
             </aside>
@@ -472,7 +1017,6 @@
                 <div class="block-header block-header-default">
                   <div>
                     <h3 class="block-title">Savol [[ currentQuestionIndex + 1 ]] / [[ questions.length ]]</h3>
-                    <div class="fs-sm text-muted">Javob tanlang va keyingi savolga o'ting.</div>
                   </div>
                   <div class="d-flex flex-wrap gap-2">
                     <span class="badge bg-primary-subtle text-primary fs-sm px-3 py-2">
@@ -481,29 +1025,28 @@
                   </div>
                 </div>
 
-                <div class="block-content exam-main-zoom exam-card-body">
+                <div class="block-content exam-main-zoom exam-card-body exam-question-scroll">
                   <template v-if="currentQuestion">
                     <div class="question-body" role="region" :aria-label="'Savol ' + (currentQuestionIndex + 1)">
-                      <div class="d-flex align-items-center gap-2 mb-3">
-                        <span class="badge rounded-pill bg-primary">Savol [[ currentQuestionIndex + 1 ]]</span>
-                        <span class="text-muted">Variantlardan bittasini tanlang.</span>
-                      </div>
-
                       <img
                         v-if="currentQuestion.image"
                         :src="currentQuestion.image"
                         alt="Savol rasmi"
                         class="question-figure">
 
-                      <div class="import-rich mb-4" v-html="currentQuestion.text"></div>
+                      <div class="question-copy-panel">
+                        <div class="import-rich" v-html="currentQuestion.text"></div>
+                      </div>
 
                       <ul class="exam-answer-list">
                         <li v-for="(answer, answerIndex) in currentQuestion.answers" :key="answer.id">
                           <label
-                            :class="['exam-answer-item', answer.selected ? 'answer-selected' : '']"
-                            :aria-label="'Javob ' + answerLetter(answerIndex)"
-                            @click="selectAnswer(currentQuestion.id, answer.id)">
-                            <span class="answer-marker">[[ answerLetter(answerIndex) ]]</span>
+                            :class="[
+                              'exam-answer-item',
+                              answer.selected ? 'answer-selected' : '',
+                              isSavingCurrentQuestion ? 'answer-saving' : ''
+                            ]"
+                            :aria-label="'Javob ' + answerShortcut(answerIndex)">
                             <input
                               type="radio"
                               class="form-check-input answer-radio"
@@ -511,7 +1054,20 @@
                               :value="answer.id"
                               :checked="answer.selected"
                               @change="selectAnswer(currentQuestion.id, answer.id)">
-                            <div class="flex-grow-1 import-rich" v-html="answer.text"></div>
+                            <span class="answer-choice-dot" aria-hidden="true"></span>
+                            <div class="answer-content">
+                              <div class="answer-title-row">
+                                <span class="answer-shortcut-hint">
+                                  <i class="fa fa-keyboard"></i>
+                                  [[ answerShortcut(answerIndex) ]]
+                                </span>
+                              </div>
+                              <div class="import-rich" v-html="answer.text"></div>
+                            </div>
+                            <span class="answer-saving-indicator" v-if="isSavingCurrentQuestion && answer.selected">
+                              <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                              Saqlanmoqda
+                            </span>
                           </label>
                         </li>
                       </ul>
@@ -544,6 +1100,29 @@
                   </div>
                 </div>
               </div>
+
+              <div class="block block-rounded exam-question-shell mb-4">
+                <div class="block-content p-3">
+                  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                    <div>
+                      <div class="fw-semibold">Progress</div>
+                      <div class="fs-sm text-muted">Savol [[ currentQuestionIndex + 1 ]] / [[ questions.length ]]</div>
+                    </div>
+                    <span class="fw-semibold">[[ progressPercent ]]%</span>
+                  </div>
+                  <div class="exam-progress-track mb-3">
+                    <div class="exam-progress-fill" :style="{ width: progressPercent + '%' }"></div>
+                  </div>
+                    <button
+                      class="btn btn-danger w-100"
+                      @click="finishTest"
+                      :disabled="isSubmittingTest"
+                      aria-label="Testni tugatish">
+                    <span v-if="isSubmittingTest" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                    <i v-else class="fa fa-check me-2"></i>[[ isSubmittingTest ? 'Yakunlanmoqda' : 'Tugatish' ]]
+                  </button>
+                </div>
+              </div>
             </section>
 
             <aside class="exam-nav">
@@ -551,8 +1130,8 @@
                 <div class="block-header block-header-default">
                   <h3 class="block-title">Savollar navigatsiyasi</h3>
                 </div>
-                <div class="block-content exam-card-body">
-                  <div class="d-flex flex-wrap gap-2">
+                <div class="block-content exam-card-body exam-nav-scroll">
+                  <div class="exam-question-nav-grid">
                     <button
                       v-for="(question, index) in questions"
                       :key="question.id"
@@ -576,14 +1155,25 @@
                 </div>
                 <div class="block-content exam-card-body">
                   <div class="exam-control-grid">
-                    <button type="button" class="btn btn-alt-secondary btn-sm" @click="increaseZoom" aria-label="Kattalashtirish">
-                      <i class="fa fa-plus"></i>
+                    <button type="button" class="view-control-button" @click="increaseZoom" aria-label="Kattalashtirish">
+                      <span class="control-icon"><i class="fa fa-plus"></i></span>
                     </button>
-                    <button type="button" class="btn btn-alt-secondary btn-sm" @click="decreaseZoom" aria-label="Kichiklashtirish">
-                      <i class="fa fa-minus"></i>
+                    <button type="button" class="view-control-button" @click="decreaseZoom" aria-label="Kichiklashtirish">
+                      <span class="control-icon"><i class="fa fa-minus"></i></span>
                     </button>
-                    <button type="button" class="btn btn-alt-secondary btn-sm" @click="toggleReadingMode" aria-label="O'qish rejimi">
-                      <i class="fa fa-book-open"></i>
+                    <button
+                      type="button"
+                      :class="['view-control-button', readingMode ? 'active' : '']"
+                      @click="toggleReadingMode"
+                      aria-label="O'qish rejimi">
+                      <span class="control-icon"><i class="fa fa-book-open"></i></span>
+                    </button>
+                    <button
+                      type="button"
+                      :class="['view-control-button', invertMode ? 'active' : '']"
+                      @click="toggleInvertMode"
+                      aria-label="Invert rang">
+                      <span class="control-icon"><i class="fa fa-adjust"></i></span>
                     </button>
                   </div>
                 </div>
@@ -602,14 +1192,41 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Testni yakunlash</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish" :disabled="isSubmittingTest"></button>
           </div>
           <div class="modal-body">
-            <p class="mb-0">Test yakunlangach javoblarni qayta o'zgartirib bo'lmaydi. Davom etilsinmi?</p>
+            <div v-if="isSubmittingTest" class="exam-submit-loader text-center py-3" role="status" aria-live="polite">
+              <div class="spinner-border text-primary mb-3" aria-hidden="true"></div>
+              <div class="h5 mb-1">Natija tayyorlanmoqda</div>
+              <div class="text-muted">Javoblar tekshirilmoqda, iltimos kuting.</div>
+            </div>
+            <p v-else class="mb-0">Test yakunlangach javoblarni qayta o'zgartirib bo'lmaydi. Davom etilsinmi?</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-alt-secondary" data-bs-dismiss="modal">Bekor qilish</button>
-            <button type="button" class="btn btn-danger" @click="confirmFinish">Ha, yakunlash</button>
+            <button v-if="!isSubmittingTest" type="button" class="btn btn-alt-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+            <button v-if="!isSubmittingTest" type="button" class="btn btn-danger" @click="confirmFinish">
+              <span v-if="isSubmittingTest" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+              Ha, yakunlash
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="camera-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Требуется доступ</h5>
+          </div>
+          <div class="modal-body">
+            <p class="mb-0 text-muted">Для продолжения разрешите доступ к камере устройства.</p>
+            <div class="text-danger mt-3" v-if="cameraError">[[ cameraError ]]</div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" @click="requestCameraAccess" :disabled="cameraLoading">
+              [[ cameraLoading ? 'Подождите...' : 'Разрешить доступ' ]]
+            </button>
           </div>
         </div>
       </div>
@@ -626,8 +1243,11 @@
             <p class="mb-0">[[ unansweredMessage ]]</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-alt-secondary" data-bs-dismiss="modal">Bekor qilish</button>
-            <button type="button" class="btn btn-primary" @click="confirmFinish">Davom etish</button>
+            <button type="button" class="btn btn-alt-secondary" data-bs-dismiss="modal" :disabled="isSubmittingTest">Bekor qilish</button>
+            <button type="button" class="btn btn-primary" @click="confirmFinish" :disabled="isSubmittingTest">
+              <span v-if="isSubmittingTest" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+              Davom etish
+            </button>
           </div>
         </div>
       </div>
@@ -662,12 +1282,14 @@
   </div>
 
   <script src="{% static 'assets/js/oneui.app.min.js' %}"></script>
+  {% include 'common/office-helper-bridge.html' %}
   <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.prod.js"></script>
   <script>
     const STORAGE_KEYS = {
       currentQuestionIndex: 'exam_current_question_index_{{ student_test.id }}',
       zoomLevel: 'exam_zoom_level',
       readingMode: 'exam_reading_mode',
+      invertMode: 'exam_invert_mode',
       passwordDialogTriggered: 'exam_password_triggered_{{ student_test.id }}',
       violationCount: 'exam_violation_count_{{ student_test.id }}',
       violationMessage: 'exam_violation_message_{{ student_test.id }}'
@@ -690,10 +1312,19 @@
           countdown: 5,
           zoomLevel: parseFloat(localStorage.getItem(STORAGE_KEYS.zoomLevel)) || 1,
           readingMode: localStorage.getItem(STORAGE_KEYS.readingMode) === 'true',
+          invertMode: localStorage.getItem(STORAGE_KEYS.invertMode) === 'true',
+          cameraReady: false,
+          cameraLoading: false,
+          cameraError: '',
+          cameraStream: null,
+          savingQuestionMap: {},
+          isSubmittingTest: false,
           timerInterval: null,
           visibilityTimer: null,
           beforeUnloadHandler: null,
-          visibilityHandler: null
+          visibilityHandler: null,
+          keydownHandler: null,
+          copyGuardHandlers: []
         };
       },
       computed: {
@@ -735,11 +1366,27 @@
             return 'timer-warning';
           }
           return '';
+        },
+        isSavingCurrentQuestion() {
+          if (!this.currentQuestion) {
+            return false;
+          }
+          return this.isQuestionSaving(this.currentQuestion.id);
         }
       },
       methods: {
-        answerLetter(index) {
-          return String.fromCharCode(65 + index);
+        answerShortcut(index) {
+          return `F${index + 1}`;
+        },
+        isQuestionSaving(questionId) {
+          return Boolean(this.savingQuestionMap[questionId]);
+        },
+        isAnswerSelected(questionId, answerId) {
+          const question = this.questions.find((item) => item.id === questionId);
+          if (!question) {
+            return false;
+          }
+          return question.answers.some((answer) => answer.id === answerId && answer.selected);
         },
         getModal(id) {
           const element = document.getElementById(id);
@@ -762,7 +1409,7 @@
           }
         },
         closeAllModals() {
-          ['finish-modal', 'unanswered-modal', 'password-modal'].forEach((id) => {
+          ['finish-modal', 'unanswered-modal', 'password-modal', 'camera-modal'].forEach((id) => {
             this.closeModal(id);
           });
         },
@@ -776,41 +1423,209 @@
           const clampedIndex = Math.min(Math.max(index, 0), this.questions.length - 1);
           this.currentQuestionIndex = clampedIndex;
           localStorage.setItem(STORAGE_KEYS.currentQuestionIndex, String(clampedIndex));
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+          });
         },
-        selectAnswer(questionId, answerId) {
-          fetch("{% url 'landing:save-answer' %}", {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-              student_question_id: questionId,
-              answer_id: answerId
-            })
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (!data.success) {
-                this.unansweredMessage = `Xatolik: ${data.message}`;
-                this.openModal('unanswered-modal');
+        markQuestionSaving(questionId, isSaving) {
+          if (isSaving) {
+            this.savingQuestionMap[questionId] = true;
+            return;
+          }
+          delete this.savingQuestionMap[questionId];
+        },
+        updateSelectedAnswer(questionId, answerId) {
+          const question = this.questions.find((item) => item.id === questionId);
+          if (!question) {
+            return null;
+          }
+
+          const previousAnswerId = question.answers.find((answer) => answer.selected)?.id || null;
+          question.answers.forEach((answer) => {
+            answer.selected = answer.id === answerId;
+          });
+          return previousAnswerId;
+        },
+        async requestCameraAccess() {
+          if (this.cameraLoading) {
+            return;
+          }
+          if (!window.isSecureContext) {
+            this.cameraError = "Камера работает только через защищенное соединение HTTPS.";
+            this.openModal('camera-modal');
+            return;
+          }
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            this.cameraError = "Браузер не поддерживает доступ к камере.";
+            this.openModal('camera-modal');
+            return;
+          }
+
+          this.cameraLoading = true;
+          this.cameraError = '';
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                facingMode: 'user',
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+              },
+              audio: false
+            });
+
+            this.stopCameraStream();
+            this.cameraStream = stream;
+            const video = this.$refs.cameraVideo;
+            if (video) {
+              video.srcObject = stream;
+              await video.play();
+            }
+            this.cameraReady = true;
+            this.closeModal('camera-modal');
+          } catch (error) {
+            this.cameraReady = false;
+            this.cameraError = "Доступ к камере не предоставлен.";
+            this.openModal('camera-modal');
+          } finally {
+            this.cameraLoading = false;
+          }
+        },
+        stopCameraStream() {
+          if (this.cameraStream) {
+            this.cameraStream.getTracks().forEach((track) => track.stop());
+            this.cameraStream = null;
+          }
+        },
+        dataUrlToBlob(dataUrl) {
+          const [header, encoded] = (dataUrl || '').split(',', 2);
+          if (!header || !encoded) {
+            throw new Error("Kameradan rasm olishning imkoni bo'lmadi.");
+          }
+
+          const mimeTypeMatch = /data:([^;]+)/.exec(header);
+          const mimeType = mimeTypeMatch ? mimeTypeMatch[1] : 'image/jpeg';
+          const binary = window.atob(encoded);
+          const bytes = new Uint8Array(binary.length);
+          for (let index = 0; index < binary.length; index += 1) {
+            bytes[index] = binary.charCodeAt(index);
+          }
+          return new Blob([bytes], { type: mimeType });
+        },
+        waitForNextPaint() {
+          return new Promise((resolve) => {
+            window.requestAnimationFrame(() => {
+              window.requestAnimationFrame(resolve);
+            });
+          });
+        },
+        captureCameraSnapshotBlob() {
+          if (!this.cameraReady) {
+            throw new Error("Kamera hali tayyor emas.");
+          }
+
+          const video = this.$refs.cameraVideo;
+          const canvas = this.$refs.cameraCanvas;
+          if (!video || !canvas || !video.videoWidth || !video.videoHeight) {
+            throw new Error("Kameradan rasm olishning imkoni bo'lmadi.");
+          }
+
+          const targetWidth = 200;
+          const targetHeight = Math.max(150, Math.round((video.videoHeight / video.videoWidth) * targetWidth));
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+          const context = canvas.getContext('2d', { alpha: false, desynchronized: true }) || canvas.getContext('2d');
+          context.imageSmoothingEnabled = true;
+          context.imageSmoothingQuality = 'medium';
+          context.drawImage(video, 0, 0, targetWidth, targetHeight);
+
+          return new Promise((resolve, reject) => {
+            if (typeof canvas.toBlob !== 'function') {
+              try {
+                resolve(this.dataUrlToBlob(canvas.toDataURL('image/jpeg', 0.56)));
+              } catch (error) {
+                reject(error);
+              }
+              return;
+            }
+
+            canvas.toBlob((blob) => {
+              if (!blob) {
+                reject(new Error("Kameradan rasm olishning imkoni bo'lmadi."));
                 return;
               }
+              resolve(blob);
+            }, 'image/jpeg', 0.56);
+          });
+        },
+        async parseJsonResponse(response) {
+          const contentType = response.headers.get('content-type') || '';
+          if (!contentType.includes('application/json')) {
+            throw new Error("Sessiya yoki server javobini tekshirish kerak. Sahifani yangilang.");
+          }
+          return response.json();
+        },
+        async selectAnswer(questionId, answerId) {
+          if (this.isSubmittingTest) {
+            return;
+          }
+          if (this.isQuestionSaving(questionId) || this.isAnswerSelected(questionId, answerId)) {
+            return;
+          }
+          if (!this.cameraReady) {
+            this.cameraError = "Сначала разрешите доступ к камере.";
+            this.openModal('camera-modal');
+            return;
+          }
 
-              const question = this.questions.find((item) => item.id === questionId);
-              if (question) {
-                question.answers.forEach((answer) => {
-                  answer.selected = answer.id === answerId;
-                });
-              }
-            })
-            .catch(() => {
-              this.unansweredMessage = "Xatolik: Server bilan bog'lanishda muammo.";
-              this.openModal('unanswered-modal');
+          const previousAnswerId = this.updateSelectedAnswer(questionId, answerId);
+          this.markQuestionSaving(questionId, true);
+
+          let cameraSnapshotFile = null;
+          try {
+            await this.waitForNextPaint();
+            cameraSnapshotFile = await this.captureCameraSnapshotBlob();
+          } catch (error) {
+            this.updateSelectedAnswer(questionId, previousAnswerId);
+            this.markQuestionSaving(questionId, false);
+            this.cameraError = error.message || "Не удалось получить изображение с камеры.";
+            this.openModal('camera-modal');
+            return;
+          }
+
+          const formData = new FormData();
+          formData.append('student_question_id', String(questionId));
+          formData.append('answer_id', String(answerId));
+          if (cameraSnapshotFile) {
+            formData.append('camera_snapshot', cameraSnapshotFile, `answer_${questionId}.jpg`);
+          }
+
+          try {
+            const response = await fetch("{% url 'landing:save-answer' %}", {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+              },
+              body: formData
             });
+            const data = await this.parseJsonResponse(response);
+
+            if (!response.ok || !data.success) {
+              this.updateSelectedAnswer(questionId, previousAnswerId);
+              this.unansweredMessage = `Xatolik: ${data.message || "Javob saqlanmadi."}`;
+              this.openModal('unanswered-modal');
+            }
+          } catch (error) {
+            this.updateSelectedAnswer(questionId, previousAnswerId);
+            this.unansweredMessage = `Xatolik: ${error.message || "Server bilan bog'lanishda muammo."}`;
+            this.openModal('unanswered-modal');
+          } finally {
+            this.markQuestionSaving(questionId, false);
+          }
         },
         finishTest() {
+          if (this.isSubmittingTest) {
+            return;
+          }
           const unansweredQuestions = this.questions.filter((question) => !question.answers.some((answer) => answer.selected));
           if (unansweredQuestions.length > 0) {
             this.unansweredMessage = `Siz ${unansweredQuestions.length} ta savolga javob bermagansiz. Testni yakunlamoqchimisiz?`;
@@ -821,34 +1636,52 @@
           this.openModal('finish-modal');
         },
         confirmFinish() {
-          this.closeAllModals();
+          if (this.isSubmittingTest) {
+            return;
+          }
+          this.closeModal('unanswered-modal');
+          this.openModal('finish-modal');
           this.submitTest();
         },
-        submitTest() {
-          fetch("{% url 'landing:finish-test' student_test.id %}", {
-            method: 'POST',
-            headers: {
-              'X-CSRFToken': '{{ csrf_token }}'
-            }
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              this.isTestRunning = false;
-              this.resetSecurityState();
-              localStorage.removeItem(STORAGE_KEYS.currentQuestionIndex);
+        async submitTest() {
+          if (this.isSubmittingTest) {
+            return;
+          }
 
-              if (data.success) {
-                window.location.href = data.redirect_url;
-                return;
+          this.isSubmittingTest = true;
+          this.isTestRunning = false;
+          this.closeModal('unanswered-modal');
+          this.openModal('finish-modal');
+
+          try {
+            const response = await fetch("{% url 'landing:finish-test' student_test.id %}", {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
               }
+            });
+            const data = await this.parseJsonResponse(response);
 
+            if (!response.ok || !data.success) {
+              this.isSubmittingTest = false;
+              this.isTestRunning = true;
+              this.closeModal('finish-modal');
               this.unansweredMessage = data.message || 'Testni yakunlashda xatolik yuz berdi.';
               this.openModal('unanswered-modal');
-            })
-            .catch(() => {
-              this.unansweredMessage = "Xatolik: Testni tugatishda muammo.";
-              this.openModal('unanswered-modal');
-            });
+              return;
+            }
+
+            this.stopCameraStream();
+            this.resetSecurityState();
+            localStorage.removeItem(STORAGE_KEYS.currentQuestionIndex);
+            window.location.href = data.redirect_url;
+          } catch (error) {
+            this.isSubmittingTest = false;
+            this.isTestRunning = true;
+            this.closeModal('finish-modal');
+            this.unansweredMessage = `Xatolik: ${error.message || "Testni tugatishda muammo."}`;
+            this.openModal('unanswered-modal');
+          }
         },
         handleViolation(message) {
           this.violationCount += 1;
@@ -888,10 +1721,20 @@
           localStorage.setItem(STORAGE_KEYS.violationCount, '0');
           localStorage.setItem(STORAGE_KEYS.violationMessage, '');
         },
+        applyAppearanceClasses() {
+          document.body.classList.toggle('reading-mode', this.readingMode);
+          document.body.classList.toggle('exam-invert-mode', this.invertMode);
+          document.body.classList.add('exam-compact-mode');
+        },
         toggleReadingMode() {
           this.readingMode = !this.readingMode;
           localStorage.setItem(STORAGE_KEYS.readingMode, String(this.readingMode));
-          document.body.classList.toggle('reading-mode', this.readingMode);
+          this.applyAppearanceClasses();
+        },
+        toggleInvertMode() {
+          this.invertMode = !this.invertMode;
+          localStorage.setItem(STORAGE_KEYS.invertMode, String(this.invertMode));
+          this.applyAppearanceClasses();
         },
         applyZoom() {
           const target = document.querySelector('.exam-main-zoom');
@@ -912,12 +1755,120 @@
             localStorage.setItem(STORAGE_KEYS.zoomLevel, String(this.zoomLevel));
             this.applyZoom();
           }
+        },
+        handleKeyboardNavigation(event) {
+          if (!this.isTestRunning || !this.currentQuestion) {
+            return;
+          }
+
+          if (document.querySelector('.modal.show')) {
+            return;
+          }
+
+          const target = event.target;
+          const tagName = target?.tagName?.toLowerCase();
+          if (tagName === 'input' || tagName === 'textarea' || target?.isContentEditable) {
+            return;
+          }
+
+          const key = event.key || '';
+          const code = event.code || '';
+
+          if (key === 'ArrowLeft' || key === 'Left' || code === 'ArrowLeft') {
+            event.preventDefault();
+            this.setCurrentQuestion(this.currentQuestionIndex - 1);
+            return;
+          }
+
+          if (key === 'ArrowRight' || key === 'Right' || code === 'ArrowRight') {
+            event.preventDefault();
+            this.setCurrentQuestion(this.currentQuestionIndex + 1);
+            return;
+          }
+
+          const functionMatch = /^F(\d{1,2})$/i.exec(key || code || '');
+          if (!functionMatch) {
+            return;
+          }
+
+          const answerIndex = parseInt(functionMatch[1], 10) - 1;
+          if (answerIndex < 0 || answerIndex >= this.currentQuestion.answers.length) {
+            return;
+          }
+
+          event.preventDefault();
+          const answer = this.currentQuestion.answers[answerIndex];
+          if (answer) {
+            this.selectAnswer(this.currentQuestion.id, answer.id);
+          }
+        },
+        installCopyGuards() {
+          const root = document.getElementById('exam-app');
+          if (!root) {
+            return;
+          }
+
+          const blockEvent = (event) => {
+            const target = event.target;
+            const tagName = target?.tagName?.toLowerCase();
+            if (tagName === 'input' || tagName === 'textarea' || target?.isContentEditable) {
+              return;
+            }
+            event.preventDefault();
+          };
+
+          const blockKeyCopy = (event) => {
+            const target = event.target;
+            const tagName = target?.tagName?.toLowerCase();
+            if (tagName === 'input' || tagName === 'textarea' || target?.isContentEditable) {
+              return;
+            }
+
+            if ((event.ctrlKey || event.metaKey) && ['a', 'c', 'x'].includes((event.key || '').toLowerCase())) {
+              event.preventDefault();
+            }
+          };
+
+          const listeners = [
+            ['copy', blockEvent],
+            ['cut', blockEvent],
+            ['contextmenu', blockEvent],
+            ['selectstart', blockEvent],
+            ['dragstart', blockEvent],
+          ];
+
+          listeners.forEach(([eventName, handler]) => {
+            root.addEventListener(eventName, handler);
+          });
+          window.addEventListener('keydown', blockKeyCopy);
+
+          this.copyGuardHandlers = [...listeners, ['keydown', blockKeyCopy]];
+        },
+        removeCopyGuards() {
+          const root = document.getElementById('exam-app');
+          this.copyGuardHandlers.forEach(([eventName, handler]) => {
+            if (eventName === 'keydown') {
+              window.removeEventListener(eventName, handler);
+            } else if (root) {
+              root.removeEventListener(eventName, handler);
+            }
+          });
+          this.copyGuardHandlers = [];
         }
       },
       mounted() {
         this.applyZoom();
-        document.body.classList.toggle('reading-mode', this.readingMode);
+        this.applyAppearanceClasses();
         this.setCurrentQuestion(this.currentQuestionIndex);
+        this.installCopyGuards();
+        this.$nextTick(() => {
+          const root = document.getElementById('exam-app');
+          if (root) {
+            root.focus({ preventScroll: true });
+          }
+        });
+        this.openModal('camera-modal');
+        this.requestCameraAccess();
 
         if (this.isPasswordDialogTriggered && this.violationCount > 0) {
           this.openModal('password-modal');
@@ -957,6 +1908,11 @@
 
         document.addEventListener('visibilitychange', this.visibilityHandler);
 
+        this.keydownHandler = (event) => {
+          this.handleKeyboardNavigation(event);
+        };
+        document.addEventListener('keydown', this.keydownHandler, true);
+
         this.beforeUnloadHandler = (event) => {
           if (this.isTestRunning && !this.isPasswordDialogTriggered) {
             event.preventDefault();
@@ -971,6 +1927,7 @@
       beforeUnmount() {
         clearInterval(this.timerInterval);
         clearTimeout(this.visibilityTimer);
+        this.stopCameraStream();
 
         if (this.visibilityHandler) {
           document.removeEventListener('visibilitychange', this.visibilityHandler);
@@ -979,6 +1936,12 @@
         if (this.beforeUnloadHandler) {
           window.removeEventListener('beforeunload', this.beforeUnloadHandler);
         }
+
+        if (this.keydownHandler) {
+          document.removeEventListener('keydown', this.keydownHandler, true);
+        }
+
+        this.removeCopyGuards();
 
         if (!this.isTestRunning) {
           this.resetSecurityState();

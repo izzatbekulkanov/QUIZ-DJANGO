@@ -1,5 +1,6 @@
 ﻿# account/views.py
 import logging
+from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, logout, login
@@ -9,12 +10,16 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import View
 
+from apps.common.context_processors import build_office_helper_session_payload
+from apps.question.models import SystemSetting
 from apps.account.models import CustomUser
 
 
 def get_default_redirect(user):
     if user.is_superuser or user.is_staff or getattr(user, "is_teacher", False):
         return reverse("administrator:main")
+    if getattr(user, "is_help", False):
+        return reverse("administrator:help-users")
     return reverse("landing:dashboard")
 
 
@@ -169,8 +174,24 @@ def check_username(request):
     return JsonResponse({'is_taken': is_taken})
 
 
+class OfficeHelperSessionStateView(View):
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return JsonResponse({
+                "authenticated": False,
+                "reason": "session-expired",
+            })
+
+        setting = SystemSetting.objects.filter(is_active=True).first()
+        return JsonResponse({
+            "authenticated": True,
+            "session": build_office_helper_session_payload(request, setting),
+        })
+
+
 class LogoutView(View):
     def get(self, request):
         logout(request)
-        return redirect('landing:login')
+        login_url = f"{reverse('landing:login')}?{urlencode({'helper_logout': '1'})}"
+        return redirect(login_url)
 

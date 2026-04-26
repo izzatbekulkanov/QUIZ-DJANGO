@@ -362,20 +362,27 @@
                         loading="lazy"
                         decoding="async"
                       >
-                      <div class="min-w-0">
-                        <div class="fw-semibold">
-                          {% if user.full_name %}
-                            {{ user.full_name }}
-                          {% elif user.first_name or user.second_name %}
-                            {{ user.first_name }} {{ user.second_name }}
-                          {% else %}
-                            {{ user.username }}
-                          {% endif %}
+                        <div class="min-w-0">
+                          <div class="fw-semibold">
+                            {% if user.full_name %}
+                              {{ user.full_name }}
+                            {% elif user.first_name or user.second_name %}
+                              {{ user.first_name }} {{ user.second_name }}
+                            {% else %}
+                              {{ user.username }}
+                            {% endif %}
+                          </div>
+                          <div class="fs-sm text-muted d-flex flex-wrap align-items-center gap-2">
+                            <span>@{{ user.username }}</span>
+                            {% if user.is_help %}
+                              <span class="users-group-pill" style="max-width:none; background: rgba(14, 165, 233, 0.12); color: #0369a1;">
+                                <i class="fa fa-life-ring"></i> Yordam
+                              </span>
+                            {% endif %}
+                          </div>
                         </div>
-                        <div class="fs-sm text-muted">@{{ user.username }}</div>
                       </div>
-                    </div>
-                  </td>
+                    </td>
                   <td>
                     {% if user.group_name %}
                       <span class="users-group-pill" title="{{ user.group_name }}">

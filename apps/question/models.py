@@ -1,6 +1,7 @@
 # question/models.py
 import random
 from datetime import timedelta
+from pathlib import Path
 
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -124,15 +125,105 @@ class StudentTest(models.Model):
         return f"{minutes:02d}:{seconds:02d}"
 
 
+def student_test_answer_snapshot_upload_to(instance, filename):
+    extension = Path(filename or "").suffix.lower() or ".jpg"
+    timestamp = timezone.now().strftime("%Y%m%d%H%M%S")
+    return (
+        f"student_tests/{instance.student_test_id}/answers/"
+        f"question_{instance.question_id}_{timestamp}{extension}"
+    )
+
+
 class StudentTestQuestion(models.Model):
     student_test = models.ForeignKey(StudentTest, on_delete=models.CASCADE, related_name='student_questions')
     question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='student_test_questions')
     selected_answer = models.ForeignKey('Answer', on_delete=models.SET_NULL, null=True, blank=True)
     is_correct = models.BooleanField(default=False)
+    answered_at = models.DateTimeField(null=True, blank=True)
+    answer_snapshot = models.ImageField(
+        upload_to=student_test_answer_snapshot_upload_to,
+        null=True,
+        blank=True,
+    )
     order = models.PositiveIntegerField()  # Savollar tartibini saqlash
 
     def __str__(self):
         return f"{self.student_test.student.username} - {self.question.text[:50]}"
+
+
+class HelpResultPlan(models.Model):
+    STATUS_PENDING = "pending"
+    STATUS_COMPLETED = "completed"
+    STATUS_CHOICES = (
+        (STATUS_PENDING, "Kutilmoqda"),
+        (STATUS_COMPLETED, "Bajarildi"),
+    )
+
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="help_result_plans",
+    )
+    test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name="help_result_plans")
+    assignment = models.ForeignKey(
+        StudentTestAssignment,
+        on_delete=models.CASCADE,
+        related_name="help_result_plans",
+    )
+    total_questions = models.PositiveIntegerField()
+    target_correct_answers = models.PositiveIntegerField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="created_help_result_plans",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ("-created_at", "-id")
+        indexes = [
+            models.Index(fields=["student", "assignment", "status"]),
+            models.Index(fields=["created_at"]),
+        ]
+
+    @property
+    def target_percent(self):
+        if not self.total_questions:
+            return 0
+        return self.target_correct_answers / self.total_questions * 100
+
+    def clean(self):
+        if self.assignment_id and self.test_id and self.assignment.test_id != self.test_id:
+            raise ValidationError("Topshiriq va test bir-biriga mos bo'lishi kerak.")
+
+        if self.assignment_id:
+            self.total_questions = self.assignment.total_questions
+
+        if self.target_correct_answers > self.total_questions:
+            raise ValidationError(
+                {
+                    "target_correct_answers": (
+                        "Kiritilgan savollar soni topshiriqdagi random savollar sonidan oshmasligi kerak."
+                    )
+                }
+            )
+
+    def save(self, *args, **kwargs):
+        if self.assignment_id:
+            self.test_id = self.assignment.test_id
+            self.total_questions = self.assignment.total_questions
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return (
+            f"{self.student} - {self.assignment.test.name}: "
+            f"{self.target_correct_answers}/{self.total_questions}"
+        )
 
 
 class SystemSetting(models.Model):

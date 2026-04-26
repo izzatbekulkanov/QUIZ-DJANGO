@@ -13,7 +13,6 @@ import shutil
 import subprocess
 import mimetypes
 import html as std_html
-import zipfile
 from urllib.parse import unquote
 from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
@@ -58,9 +57,9 @@ BROWSER_SAFE_IMAGE_MIME_TYPES = {
 IMPORT_SEPARATOR_RE = re.compile(r"^(?:\++|-{3,})$")
 IMPORT_ANSWER_PREFIX_RE = re.compile(r"^=+\s*")
 IMPORT_CORRECT_PREFIX_RE = re.compile(r"^#+\s*")
+IMPORT_INLINE_MARKER_RE = re.compile(r"(\+{2,}|={2,}-?)")
 REPO_ROOT = Path(__file__).resolve().parents[3]
 WORD_HELPER_BRIDGE_DIR = REPO_ROOT / "desktop" / "windows_word_bridge"
-WORD_HELPER_EXTENSION_DIR = REPO_ROOT / "desktop" / "browser_extension" / "quiz_word_helper"
 OFFICE_HELPER_EXE_PATH = WORD_HELPER_BRIDGE_DIR / "dist" / "QuizOfficeHelper.exe"
 
 
@@ -474,6 +473,9 @@ def _coerce_import_questions(raw_questions):
                 "is_correct": is_correct,
             })
 
+        if len(answers) < 2 or not any(answer["is_correct"] for answer in answers):
+            continue
+
         normalized_questions.append({
             "text": question_text,
             "image_base64": image_base64,
@@ -726,7 +728,123 @@ def _extract_import_questions_from_html(raw_html):
 
     body_list = root.xpath("//body")
     body = body_list[0] if body_list else root
-    return _extract_import_questions_from_body(body)
+    html_questions = _extract_import_questions_from_body(body)
+    text_questions = _parse_import_questions_from_text(body.text_content() or "")
+    if _score_import_questions(text_questions) > _score_import_questions(html_questions):
+        return text_questions
+    return html_questions
+
+
+def _text_to_import_html_line(value):
+    return _normalize_import_fragment(f"<p>{std_html.escape(_cleanup_import_html(value or '').strip())}</p>")
+
+
+def _is_text_question_separator_token(value):
+    text = (value or "").strip()
+    return bool(text and re.fullmatch(r"\++|-{3,}", text))
+
+
+def _is_text_answer_separator_token(value):
+    text = (value or "").strip()
+    return bool(text and re.fullmatch(r"=+-?", text))
+
+
+def _iter_text_import_tokens(raw_text):
+    for raw_line in (raw_text or "").replace("\r", "\n").split("\n"):
+        line = raw_line.replace("\xa0", " ").strip()
+        if not line:
+            continue
+
+        if _is_text_question_separator_token(line):
+            yield "question_separator", line
+            continue
+
+        if _is_text_answer_separator_token(line):
+            yield "answer_separator", line
+            continue
+
+        cursor = 0
+        for match in IMPORT_INLINE_MARKER_RE.finditer(line):
+            before = line[cursor:match.start()].strip()
+            if before:
+                yield "text", before
+
+            marker = match.group(0)
+            if marker.startswith("+"):
+                yield "question_separator", marker
+            else:
+                yield "answer_separator", marker
+            cursor = match.end()
+
+        after = line[cursor:].strip()
+        if after:
+            yield "text", after
+
+
+def _parse_import_questions_from_text(raw_text):
+    questions = []
+    current_q_text = []
+    current_answers = []
+    expecting_answer = False
+
+    def flush_current_question():
+        nonlocal current_q_text, current_answers, expecting_answer
+        if (
+            current_q_text
+            and len(current_answers) >= 2
+            and any(answer[1] for answer in current_answers)
+        ):
+            questions.append({
+                "text": "\n".join(current_q_text),
+                "image_base64": None,
+                "answers": current_answers,
+            })
+        current_q_text = []
+        current_answers = []
+        expecting_answer = False
+
+    for token_type, token_value in _iter_text_import_tokens(raw_text):
+        if token_type == "question_separator":
+            flush_current_question()
+            continue
+
+        if token_type == "answer_separator":
+            if current_q_text:
+                expecting_answer = True
+            continue
+
+        text = _cleanup_import_html((token_value or "").replace("\xa0", " ")).strip()
+        if not text:
+            continue
+
+        if not current_q_text:
+            if IMPORT_CORRECT_PREFIX_RE.match(text):
+                continue
+            current_q_text.append(_text_to_import_html_line(text))
+            expecting_answer = False
+            continue
+
+        should_treat_as_answer = (
+            expecting_answer
+            or bool(current_answers)
+            or bool(IMPORT_CORRECT_PREFIX_RE.match(text))
+        )
+
+        if should_treat_as_answer:
+            is_correct = bool(IMPORT_CORRECT_PREFIX_RE.match(text))
+            if is_correct:
+                text = IMPORT_CORRECT_PREFIX_RE.sub("", text, count=1).strip()
+            answer_html = _text_to_import_html_line(text)
+            if answer_html:
+                current_answers.append((answer_html, is_correct))
+            expecting_answer = False
+            continue
+
+        current_q_text.append(_text_to_import_html_line(text))
+        expecting_answer = False
+
+    flush_current_question()
+    return questions
 
 
 def _score_import_questions(questions):
@@ -752,7 +870,9 @@ def parse_pasted_questions(pasted_html, pasted_text=""):
         return []
 
     html_questions = _extract_import_questions_from_html(raw_html) if raw_html else []
-    text_questions = _extract_import_questions_from_html(_build_import_html_from_text(raw_text)) if raw_text else []
+    text_questions = _parse_import_questions_from_text(raw_text) if raw_text else []
+    if not text_questions and raw_text:
+        text_questions = _extract_import_questions_from_html(_build_import_html_from_text(raw_text))
 
     if _score_import_questions(text_questions) > _score_import_questions(html_questions):
         return text_questions
@@ -1343,51 +1463,6 @@ def _bulk_save_import_questions(test, questions):
     }
 
 
-def _iter_helper_archive_files(base_dir):
-    for file_path in base_dir.rglob("*"):
-        if file_path.is_dir():
-            continue
-        if any(part in {"__pycache__", ".venv"} for part in file_path.parts):
-            continue
-        if file_path.suffix.lower() == ".pyc":
-            continue
-        yield file_path
-
-
-def _zip_directory_response(archive_name, directory_mappings, extra_files=None):
-    buffer = BytesIO()
-    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
-        for archive_root, base_dir in directory_mappings:
-            if not base_dir.exists():
-                continue
-            for file_path in _iter_helper_archive_files(base_dir):
-                relative_path = file_path.relative_to(base_dir)
-                archive_path = Path(archive_root) / relative_path
-                archive.write(file_path, str(archive_path).replace("\\", "/"))
-
-        for archive_path, content in extra_files or []:
-            archive.writestr(archive_path, content)
-
-    buffer.seek(0)
-    response = HttpResponse(buffer.getvalue(), content_type="application/zip")
-    response["Content-Disposition"] = f'attachment; filename="{archive_name}"'
-    return response
-
-
-def _word_helper_kit_readme():
-    return (
-        "Quiz Word yordamchisi paketi\n"
-        "=============================\n\n"
-        "1. ZIP faylni oching.\n"
-        "2. windows_word_bridge\\start_bridge.bat faylini ikki marta bosing.\n"
-        "3. Word ichida savollar yozilgan faylni ochiq qoldiring.\n"
-        "4. Brauzerda test sahifasiga qayting va \"Hujjatlar ro'yxatini yangilash\" tugmasini bosing.\n\n"
-        "Agar brauzer Word yordamchisi bilan to'g'ridan-to'g'ri ishlamasa:\n"
-        "5. browser_extension\\quiz_word_helper papkasini Chrome yoki Edge brauzeriga qo'shing.\n"
-        "6. Sahifani yangilang va qayta urinib ko'ring.\n"
-    )
-
-
 def _get_word_application():
     try:
         import pythoncom
@@ -1606,28 +1681,6 @@ class ImportOpenWordDocumentView(View):
                 },
                 status=500,
             )
-
-
-@method_decorator(login_required, name='dispatch')
-class DownloadWordHelperKitView(View):
-    def get(self, request):
-        return _zip_directory_response(
-            "quiz-word-helper-kit.zip",
-            [
-                ("windows_word_bridge", WORD_HELPER_BRIDGE_DIR),
-                ("browser_extension/quiz_word_helper", WORD_HELPER_EXTENSION_DIR),
-            ],
-            extra_files=[("README.txt", _word_helper_kit_readme())],
-        )
-
-
-@method_decorator(login_required, name='dispatch')
-class DownloadWordHelperExtensionView(View):
-    def get(self, request):
-        return _zip_directory_response(
-            "quiz-word-browser-extension.zip",
-            [("quiz_word_helper", WORD_HELPER_EXTENSION_DIR)],
-        )
 
 
 @method_decorator(login_required, name='dispatch')

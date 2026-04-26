@@ -56,3 +56,41 @@ class CheckUsernameViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()["is_taken"])
+
+
+class LogoutViewTests(TestCase):
+    def test_logout_redirects_with_helper_logout_signal(self):
+        user = CustomUser.objects.create_user(
+            username="logout-user",
+            password="secret123",
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("landing:logout"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("helper_logout=1", response["Location"])
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+
+class OfficeHelperSessionStateViewTests(TestCase):
+    def test_session_state_returns_not_authenticated_after_logout(self):
+        response = self.client.get(reverse("landing:office-helper-session-state"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.json()["authenticated"])
+
+    def test_session_state_returns_current_session_payload(self):
+        user = CustomUser.objects.create_user(
+            username="helper-user",
+            password="secret123",
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("landing:office-helper-session-state"))
+        payload = response.json()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(payload["authenticated"])
+        self.assertEqual(payload["session"]["username"], user.username)
+        self.assertEqual(payload["session"]["expires_in_seconds"], 1800)

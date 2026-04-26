@@ -3,12 +3,8 @@
 
 {% block style %}
 <style>
-  .details-balanced-body {
-    padding-bottom: 1.5rem !important;
-  }
-
-  .question-content,
-  .question-content * {
+  .result-rich,
+  .result-rich * {
     max-width: 100%;
     color: inherit;
     font-family: inherit;
@@ -16,32 +12,302 @@
     overflow-wrap: anywhere;
   }
 
-  .question-content p {
+  .result-rich p {
     margin-bottom: 0.5rem;
   }
 
-  .question-content p:last-child {
+  .result-rich p:last-child {
     margin-bottom: 0;
   }
 
-  .question-content img {
+  .result-rich img {
     width: auto !important;
-    max-width: min(100%, 520px);
+    max-width: min(100%, 560px);
     height: auto !important;
-    border-radius: 8px;
+    border-radius: 12px;
   }
 
-  .question-content table {
+  .result-rich table {
     width: auto;
     max-width: 100%;
     border-collapse: collapse;
   }
 
-  .question-content td,
-  .question-content th {
+  .result-rich td,
+  .result-rich th {
     padding: 0.25rem 0.4rem;
     vertical-align: middle;
     border: 1px solid rgba(15, 23, 42, 0.12);
+  }
+
+  .result-stat-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(2, 6, 23, 0.58);
+  }
+
+  .result-stat-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: rgba(2, 6, 23, 0.92);
+  }
+
+  .result-summary-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.05);
+  }
+
+  .result-summary-card .block-content,
+  .result-summary-card .block-content-full {
+    padding-bottom: 1.25rem;
+  }
+
+  .result-question-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 22px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
+  }
+
+  .result-question-card + .result-question-card {
+    margin-top: 1rem;
+  }
+
+  .result-question-head {
+    padding: 1.25rem 1.35rem 0.95rem;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    background:
+      radial-gradient(circle at top right, rgba(37, 99, 235, 0.08), transparent 34%),
+      rgba(255, 255, 255, 0.92);
+  }
+
+  .result-question-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.72rem;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.1);
+    color: #1d4ed8;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .result-question-title {
+    margin-top: 0.9rem;
+    line-height: 1.7;
+  }
+
+  .result-answers-shell {
+    padding: 1rem 1.1rem 1.15rem;
+  }
+
+  .result-answer-list {
+    display: grid;
+    gap: 0.72rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .result-answer-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 0.95rem 1rem;
+    border-radius: 18px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+
+  .result-answer-item--selected-correct {
+    border-color: rgba(22, 163, 74, 0.26);
+    background: linear-gradient(135deg, rgba(220, 252, 231, 0.82), rgba(240, 253, 244, 0.96));
+  }
+
+  .result-answer-item--selected-wrong {
+    border-color: rgba(220, 38, 38, 0.22);
+    background: linear-gradient(135deg, rgba(254, 226, 226, 0.78), rgba(254, 242, 242, 0.94));
+  }
+
+  .result-answer-item--correct {
+    border-color: rgba(37, 99, 235, 0.12);
+    background: linear-gradient(135deg, rgba(239, 246, 255, 0.72), rgba(255, 255, 255, 0.96));
+  }
+
+  .result-answer-marker {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(37, 99, 235, 0.08);
+    color: #1d4ed8;
+    font-size: 0.82rem;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .result-answer-item--selected-correct .result-answer-marker {
+    background: rgba(22, 163, 74, 0.14);
+    color: #166534;
+  }
+
+  .result-answer-item--selected-wrong .result-answer-marker {
+    background: rgba(220, 38, 38, 0.14);
+    color: #b91c1c;
+  }
+
+  .result-answer-copy {
+    min-width: 0;
+  }
+
+  .result-answer-copy .result-rich {
+    line-height: 1.6;
+  }
+
+  .result-answer-tail {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.55rem;
+    min-width: 0;
+  }
+
+  .result-answer-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+  }
+
+  .result-answer-status--correct {
+    color: #15803d;
+    background: rgba(22, 163, 74, 0.12);
+  }
+
+  .result-answer-status--selected {
+    color: #ffffff;
+    background: rgba(37, 99, 235, 0.94);
+  }
+
+  .result-answer-status--wrong {
+    color: #b91c1c;
+    background: rgba(220, 38, 38, 0.12);
+  }
+
+  .result-answer-status-stack {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .result-answer-evidence {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.45rem;
+  }
+
+  .result-answer-time {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.72rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.06);
+    color: rgba(15, 23, 42, 0.78);
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .result-answer-thumb-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  .result-answer-thumb {
+    width: 74px;
+    height: 74px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .result-overview-grid {
+    display: grid;
+    gap: 0.9rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .result-overview-item {
+    padding: 0.95rem 1rem;
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(248, 250, 252, 0.88);
+  }
+
+  .result-overview-item-label {
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgba(15, 23, 42, 0.52);
+    margin-bottom: 0.35rem;
+  }
+
+  .result-overview-item-value {
+    color: rgba(2, 6, 23, 0.92);
+    font-weight: 700;
+    line-height: 1.5;
+  }
+
+  .snapshot-preview-image {
+    width: 100%;
+    max-height: 76vh;
+    object-fit: contain;
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.03);
+  }
+
+  @media (max-width: 767.98px) {
+    .result-answer-item {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .result-answer-tail {
+      grid-column: 1 / -1;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 2.85rem;
+      width: 100%;
+    }
+
+    .result-answer-evidence {
+      align-items: flex-start;
+    }
   }
 </style>
 {% endblock style %}
@@ -54,11 +320,11 @@
       <div class="content content-full">
         <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
           <div class="flex-grow-1">
-            <h1 class="fw-semibold text-white mb-0">Natija Tafsiloti</h1>
+            <h1 class="fw-semibold text-white mb-0">Natija tafsiloti</h1>
             <h2 class="h4 fw-normal text-white-75 mb-0">{{ test.assignment.test.name }}</h2>
           </div>
           <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a href="{% url 'administrator:results' %}" class="btn btn-light btn-sm">
+            <a href="{% url 'administrator:results' %}" class="btn btn-light btn-sm fw-semibold">
               <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
             </a>
           </div>
@@ -68,28 +334,23 @@
   </div>
 
   <div class="content">
-    <div class="row g-3">
-      <div class="col-sm-6 col-xl-3">
-        <div class="block block-rounded h-100 mb-0">
-          <div class="block-content block-content-full text-center">
-            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Holat</div>
-            <div class="fs-3 fw-bold mb-2">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="block block-rounded result-summary-card h-100 mb-0">
+          <div class="block-content block-content-full">
+            <div class="result-stat-label mb-2">Holat</div>
+            <div class="result-stat-value">
               {% if test.completed %}Yakunlangan{% else %}Jarayonda{% endif %}
             </div>
-            {% if test.completed %}
-              <span class="badge bg-success">Yakunlangan</span>
-            {% else %}
-              <span class="badge bg-warning text-dark">Yakunlanmagan</span>
-            {% endif %}
           </div>
         </div>
       </div>
 
-      <div class="col-sm-6 col-xl-3">
-        <div class="block block-rounded h-100 mb-0">
-          <div class="block-content block-content-full text-center">
-            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Natija</div>
-            <div class="fs-3 fw-bold">
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="block block-rounded result-summary-card h-100 mb-0">
+          <div class="block-content block-content-full">
+            <div class="result-stat-label mb-2">Natija</div>
+            <div class="result-stat-value">
               {% if test.completed %}
                 {{ test.score|floatformat:2 }}%
               {% else %}
@@ -100,21 +361,20 @@
         </div>
       </div>
 
-      <div class="col-sm-6 col-xl-3">
-        <div class="block block-rounded h-100 mb-0">
-          <div class="block-content block-content-full text-center">
-            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Javoblar</div>
-            <div class="fs-3 fw-bold">{{ answered_count }}/{{ total_questions }}</div>
-            <div class="fs-sm text-muted mt-2">{{ unanswered_count }} ta javobsiz</div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="block block-rounded result-summary-card h-100 mb-0">
+          <div class="block-content block-content-full">
+            <div class="result-stat-label mb-2">Javoblar</div>
+            <div class="result-stat-value">{{ answered_count }}/{{ total_questions }}</div>
           </div>
         </div>
       </div>
 
-      <div class="col-sm-6 col-xl-3">
-        <div class="block block-rounded h-100 mb-0">
-          <div class="block-content block-content-full text-center">
-            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Davomiylik</div>
-            <div class="fs-3 fw-bold">
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="block block-rounded result-summary-card h-100 mb-0">
+          <div class="block-content block-content-full">
+            <div class="result-stat-label mb-2">Davomiylik</div>
+            <div class="result-stat-value">
               {% if test.duration %}
                 {{ test.get_duration_display }}
               {% else %}
@@ -126,17 +386,17 @@
       </div>
     </div>
 
-    <div class="row g-4 mt-1">
+    <div class="row g-4 mb-4">
       <div class="col-xl-8">
-        <div class="block block-rounded h-100 mb-0">
+        <div class="block block-rounded result-summary-card h-100 mb-0">
           <div class="block-header block-header-default">
-            <h3 class="block-title">Umumiy Ma'lumot</h3>
+            <h3 class="block-title">Umumiy ma'lumot</h3>
           </div>
-          <div class="block-content details-balanced-body">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <div class="fs-sm text-muted mb-1">Foydalanuvchi</div>
-                <div class="fw-semibold">
+          <div class="block-content">
+            <div class="result-overview-grid">
+              <div class="result-overview-item">
+                <div class="result-overview-item-label">Foydalanuvchi</div>
+                <div class="result-overview-item-value">
                   {% if test.student.full_name %}
                     {{ test.student.full_name }}
                   {% elif test.student.first_name or test.student.second_name %}
@@ -146,25 +406,25 @@
                   {% endif %}
                 </div>
               </div>
-              <div class="col-md-6">
-                <div class="fs-sm text-muted mb-1">Username</div>
-                <div class="fw-semibold">@{{ test.student.username }}</div>
+              <div class="result-overview-item">
+                <div class="result-overview-item-label">Username</div>
+                <div class="result-overview-item-value">@{{ test.student.username }}</div>
               </div>
-              <div class="col-md-6">
-                <div class="fs-sm text-muted mb-1">Kategoriya</div>
-                <div class="fw-semibold">{{ test.assignment.category.name }}</div>
+              <div class="result-overview-item">
+                <div class="result-overview-item-label">Kategoriya</div>
+                <div class="result-overview-item-value">{{ test.assignment.category.name }}</div>
               </div>
-              <div class="col-md-6">
-                <div class="fs-sm text-muted mb-1">Natija ID</div>
-                <div class="fw-semibold">#{{ test.id }}</div>
+              <div class="result-overview-item">
+                <div class="result-overview-item-label">Natija ID</div>
+                <div class="result-overview-item-value">#{{ test.id }}</div>
               </div>
-              <div class="col-md-6">
-                <div class="fs-sm text-muted mb-1">Boshlangan Vaqt</div>
-                <div class="fw-semibold">{{ test.start_time|date:"Y-m-d H:i:s" }}</div>
+              <div class="result-overview-item">
+                <div class="result-overview-item-label">Boshlangan vaqt</div>
+                <div class="result-overview-item-value">{{ test.start_time|date:"Y-m-d H:i:s" }}</div>
               </div>
-              <div class="col-md-6">
-                <div class="fs-sm text-muted mb-1">Tugagan Vaqt</div>
-                <div class="fw-semibold">
+              <div class="result-overview-item">
+                <div class="result-overview-item-label">Tugagan vaqt</div>
+                <div class="result-overview-item-value">
                   {% if test.end_time %}
                     {{ test.end_time|date:"Y-m-d H:i:s" }}
                   {% else %}
@@ -172,13 +432,13 @@
                   {% endif %}
                 </div>
               </div>
-              <div class="col-md-6">
-                <div class="fs-sm text-muted mb-1">Biriktirgan O'qituvchi</div>
-                <div class="fw-semibold">{{ test.assignment.teacher.username }}</div>
+              <div class="result-overview-item">
+                <div class="result-overview-item-label">Biriktirgan o'qituvchi</div>
+                <div class="result-overview-item-value">{{ test.assignment.teacher.username }}</div>
               </div>
-              <div class="col-md-6">
-                <div class="fs-sm text-muted mb-1">Test Oynasi</div>
-                <div class="fw-semibold">
+              <div class="result-overview-item">
+                <div class="result-overview-item-label">Test oynasi</div>
+                <div class="result-overview-item-value">
                   {{ test.assignment.start_time|date:"Y-m-d H:i" }} -
                   {{ test.assignment.end_time|date:"Y-m-d H:i" }}
                 </div>
@@ -210,129 +470,173 @@
       </div>
 
       <div class="col-xl-4">
-        <div class="block block-rounded h-100 mb-0">
+        <div class="block block-rounded result-summary-card h-100 mb-0">
           <div class="block-header block-header-default">
-            <h3 class="block-title">Qisqacha Xulosa</h3>
+            <h3 class="block-title">Qisqacha</h3>
           </div>
           <div class="block-content">
-            <ul class="list-group push">
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                To'g'ri javoblar
-                <span class="badge bg-success rounded-pill">{{ correct_answers }}</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                Noto'g'ri javoblar
-                <span class="badge bg-danger rounded-pill">{{ incorrect_answers }}</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                Javob berilmagan
-                <span class="badge bg-warning text-dark rounded-pill">{{ unanswered_count }}</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                Savollar soni
-                <span class="badge bg-primary rounded-pill">{{ total_questions }}</span>
-              </li>
-            </ul>
+            <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+              <span class="text-muted">To'g'ri javoblar</span>
+              <span class="badge bg-success rounded-pill">{{ correct_answers }}</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+              <span class="text-muted">Noto'g'ri javoblar</span>
+              <span class="badge bg-danger rounded-pill">{{ incorrect_answers }}</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+              <span class="text-muted">Javobsiz</span>
+              <span class="badge bg-warning text-dark rounded-pill">{{ unanswered_count }}</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between py-2">
+              <span class="text-muted">Savollar soni</span>
+              <span class="badge bg-primary rounded-pill">{{ total_questions }}</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="block block-rounded mt-4">
+    <div class="block block-rounded mb-0">
       <div class="block-header block-header-default">
         <div>
-          <h3 class="block-title">Savollar Va Javoblar</h3>
-          <div class="fs-sm text-muted">Har bir savolda foydalanuvchi javobi va to'g'ri variantlar ko'rsatiladi.</div>
+          <h3 class="block-title">Savollar va javoblar</h3>
+          <div class="fs-sm text-muted">Har bir savolda barcha variantlar, tanlangan javob, belgilangan vaqt va snapshot ko'rsatiladi.</div>
         </div>
       </div>
       <div class="block-content">
         {% if question_rows %}
-          <div class="accordion" id="question-details-list">
-            {% for student_question in question_rows %}
-              <div class="block block-rounded block-bordered mb-3">
-                <div class="block-content block-content-full">
-                  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
-                    <div class="d-flex align-items-center gap-3">
-                      <span class="badge bg-primary">#{{ forloop.counter }}</span>
-                      <div class="fw-semibold">Savol {{ forloop.counter }}</div>
-                    </div>
-                    <div class="d-flex flex-wrap gap-2">
-                      {% if student_question.selected_answer %}
-                        {% if student_question.is_correct %}
-                          <span class="badge bg-success">To'g'ri javob berilgan</span>
-                        {% else %}
-                          <span class="badge bg-danger">Noto'g'ri javob berilgan</span>
-                        {% endif %}
-                      {% else %}
-                        <span class="badge bg-secondary">Javob berilmagan</span>
-                      {% endif %}
-                    </div>
-                  </div>
-
-                  <div class="mb-3">
-                    <div class="fs-sm text-muted mb-1">Savol matni</div>
-                    <div class="question-content">{{ student_question.question.text|safe }}</div>
-                  </div>
-
-                  <div class="row g-3">
-                    <div class="col-lg-6">
-                      <div class="block block-rounded bg-body-light mb-0">
-                        <div class="block-header block-header-default">
-                          <h4 class="block-title">Foydalanuvchi javobi</h4>
-                        </div>
-                        <div class="block-content">
-                          {% if student_question.selected_answer %}
-                            <div class="question-content">{{ student_question.selected_answer.text|safe }}</div>
-                          {% else %}
-                            <span class="text-muted">Bu savolga javob berilmagan.</span>
-                          {% endif %}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="col-lg-6">
-                      <div class="block block-rounded bg-body-light mb-0">
-                        <div class="block-header block-header-default">
-                          <h4 class="block-title">To'g'ri javob(lar)</h4>
-                        </div>
-                        <div class="block-content">
-                          <ul class="mb-0 ps-3">
-                            {% for answer in student_question.question.answers.all %}
-                              {% if answer.is_correct %}
-                                <li class="question-content">{{ answer.text|safe }}</li>
-                              {% endif %}
-                            {% endfor %}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <details class="mt-3">
-                    <summary class="fs-sm fw-semibold text-muted" style="cursor: pointer;">Barcha variantlar</summary>
-                    <ul class="mt-3 mb-0 ps-3">
-                      {% for answer in student_question.question.answers.all %}
-                        <li class="mb-2">
-                          <span class="question-content">{{ answer.text|safe }}</span>
-                          {% if answer.is_correct %}
-                            <span class="badge bg-success ms-2">To'g'ri</span>
-                          {% endif %}
-                          {% if student_question.selected_answer_id == answer.id %}
-                            <span class="badge bg-primary ms-2">Tanlangan</span>
-                          {% endif %}
-                        </li>
-                      {% endfor %}
-                    </ul>
-                  </details>
+          {% for student_question in question_rows %}
+            <div class="result-question-card">
+              <div class="result-question-head">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                  <span class="result-question-label">
+                    <i class="fa fa-circle-question"></i> Savol {{ forloop.counter }}
+                  </span>
+                  {% if student_question.is_correct and student_question.selected_answer %}
+                    <span class="badge bg-success">To'g'ri topilgan</span>
+                  {% elif student_question.selected_answer %}
+                    <span class="badge bg-danger">Noto'g'ri topilgan</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Javob berilmagan</span>
+                  {% endif %}
                 </div>
+                <div class="result-question-title result-rich">{{ student_question.question.text|safe }}</div>
               </div>
-            {% endfor %}
-          </div>
+
+              <div class="result-answers-shell">
+                <ul class="result-answer-list">
+                  {% for answer in student_question.question.answers.all %}
+                    <li class="result-answer-item{% if student_question.selected_answer_id == answer.id and answer.is_correct %} result-answer-item--selected-correct{% elif student_question.selected_answer_id == answer.id %} result-answer-item--selected-wrong{% elif answer.is_correct %} result-answer-item--correct{% endif %}">
+                      <span class="result-answer-marker">{{ forloop.counter }}</span>
+                      <div class="result-answer-copy">
+                        <div class="result-rich">{{ answer.text|safe }}</div>
+                      </div>
+                      <div class="result-answer-tail">
+                        <span class="result-answer-status-stack">
+                          {% if student_question.selected_answer_id == answer.id %}
+                            <span class="result-answer-status {% if answer.is_correct %}result-answer-status--selected{% else %}result-answer-status--wrong{% endif %}" title="Tanlangan javob">
+                              <i class="fa {% if answer.is_correct %}fa-check{% else %}fa-xmark{% endif %}"></i>
+                            </span>
+                          {% endif %}
+                          {% if answer.is_correct %}
+                            <span class="result-answer-status result-answer-status--correct" title="To'g'ri javob">
+                              <i class="fa fa-check"></i>
+                            </span>
+                          {% endif %}
+                        </span>
+
+                        {% if student_question.selected_answer_id == answer.id %}
+                          {% if student_question.answered_at or student_question.answer_snapshot %}
+                            <div class="result-answer-evidence">
+                              {% if student_question.answered_at %}
+                                <span class="result-answer-time">
+                                  <i class="fa fa-clock me-1"></i>{{ student_question.answered_at|date:"Y-m-d H:i:s" }}
+                                </span>
+                              {% endif %}
+                              {% if student_question.answer_snapshot %}
+                                <button type="button"
+                                        class="result-answer-thumb-button"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#answerSnapshotPreview"
+                                        data-snapshot-url="{{ student_question.answer_snapshot.url }}"
+                                        data-snapshot-label="Savol {{ forloop.parentloop.counter }} snapshoti">
+                                  <img src="{{ student_question.answer_snapshot.url }}"
+                                       alt="Savol {{ forloop.parentloop.counter }} snapshoti"
+                                       class="result-answer-thumb">
+                                </button>
+                              {% endif %}
+                            </div>
+                          {% endif %}
+                        {% endif %}
+                      </div>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          {% endfor %}
         {% else %}
-          <div class="text-center text-muted py-4">Bu natija uchun savollar topilmadi.</div>
+          <div class="text-center py-5">
+            <img src="{% static 'img/no-data.webp' %}" alt="No Data" class="img-fluid mb-3" style="max-width: 96px;">
+            <div class="h5 mb-1">Savollar topilmadi</div>
+            <div class="text-muted">Ushbu natija uchun savollar mavjud emas.</div>
+          </div>
         {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="answerSnapshotPreview" tabindex="-1" aria-labelledby="answerSnapshotPreviewTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header">
+          <h5 class="modal-title" id="answerSnapshotPreviewTitle">Snapshot preview</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+        </div>
+        <div class="modal-body p-3 p-lg-4">
+          <img id="answerSnapshotPreviewImage" src="" alt="Snapshot preview" class="snapshot-preview-image">
+        </div>
       </div>
     </div>
   </div>
 </main>
 {% endblock content %}
+
+{% block script %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const snapshotModal = document.getElementById('answerSnapshotPreview');
+    if (!snapshotModal) {
+      return;
+    }
+
+    const snapshotImage = document.getElementById('answerSnapshotPreviewImage');
+    const snapshotTitle = document.getElementById('answerSnapshotPreviewTitle');
+    const defaultTitle = snapshotTitle ? snapshotTitle.textContent : 'Snapshot preview';
+
+    snapshotModal.addEventListener('show.bs.modal', (event) => {
+      const trigger = event.relatedTarget;
+      if (!trigger || !snapshotImage || !snapshotTitle) {
+        return;
+      }
+
+      const imageUrl = trigger.getAttribute('data-snapshot-url') || '';
+      const imageLabel = trigger.getAttribute('data-snapshot-label') || defaultTitle;
+
+      snapshotImage.src = imageUrl;
+      snapshotImage.alt = imageLabel;
+      snapshotTitle.textContent = imageLabel;
+    });
+
+    snapshotModal.addEventListener('hidden.bs.modal', () => {
+      if (!snapshotImage || !snapshotTitle) {
+        return;
+      }
+
+      snapshotImage.src = '';
+      snapshotImage.alt = defaultTitle;
+      snapshotTitle.textContent = defaultTitle;
+    });
+  });
+</script>
+{% endblock script %}

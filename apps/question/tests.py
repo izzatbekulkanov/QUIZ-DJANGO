@@ -1,5 +1,6 @@
 import json
 import tempfile
+import base64
 from io import BytesIO
 from datetime import timedelta
 from pathlib import Path
@@ -7,16 +8,28 @@ from unittest.mock import patch
 
 from django.contrib.auth.models import Group, Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import SimpleTestCase, TestCase
+from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.urls import reverse
 from django.utils import timezone
 from openpyxl import Workbook
 
 from apps.account.models import CustomUser
 from apps.logs.models import Log
-from apps.question.models import Answer, Category, Question, StudentTest, StudentTestAssignment, StudentTestQuestion, Test
+from apps.question.models import (
+    Answer,
+    Category,
+    HelpResultPlan,
+    Question,
+    StudentTest,
+    StudentTestAssignment,
+    StudentTestQuestion,
+    Test,
+)
+from apps.question.utils.access import build_assignment_access_token
 from apps.question.utils.utils import _coerce_import_questions, parse_pasted_questions
+from apps.question.view.test import _ordered_student_question_answers
 from apps.question.views import _delete_excel_import_preview
+from core.error_views import render_error_page
 
 
 class ImportParserTests(SimpleTestCase):
@@ -142,6 +155,86 @@ Danke
         self.assertIn(">bin<", questions[0]["answers"][0]["text"])
         self.assertIn("Auf Wiedersehen", questions[1]["answers"][0]["text"])
 
+    def test_parse_pasted_questions_handles_inline_markers_and_skips_without_correct_answer(self):
+        pasted_text = """
+Mukarrama Turg‘unboyeva …….. yilda Farg‘onada da dunyoga kelgan
+
+#Yunus Rajabiy.====
+
+G‘ani Xoliqov.====
+
+To‘xtasin Jalilov.====
+
+Muxtor Ashrafiy.++++
+
+Xorazm maqomni kim yaratgan?====
+
+#Niyozjon Xo‘ja====
+
+Yu.Rajabiy====
+
+Fitrat====
+
+Furqat++++
+
+Maqom so‘zi qanday so‘zdan olingan va qanday ma’noni anglatadi?====
+
+#Maqom arabcha so‘z bo‘lib, o‘rin joy “makon”, “parda” ma’nolarini anglatadi.====
+
+Maqom grekcha so‘z bo‘lib, o‘rin joy “makon”, “parda” ma’nolarini anglatadi.====
+
+Maqom forscha so‘z bo‘lib, o‘rin joy “makon”, “parda” ma’nolarini anglatadi.====
+
+Maqom ingiliz tilidan olingan bo‘lib, “makon”, “parda” ma’nolarini anglatadi.++++
+
+“Dugoh xusayn” qaysi maqom yo‘nalishiga kiradi? ====
+
+#Farg‘ona – Toshkent.====
+
+Xorazm.====
+
+Qashqadaryo – Surxandaryo.====
+
+Samarqand – Buxoro.++++
+
+Xorazm maqomlari kim tamonidan notaga olingan?
+
+#Matniyoz Yusupov.====
+
+Quvondiq Iskandarov.====
+
+Komiljon Otaniyozov.====
+
+Ortiq Otajonov.++++
+
+Xorazmda qanday ashula turkumi mavjud?
+
+#Suvvora.===-
+
+Katta ashula.=====
+
+Yalla ijrochiligi.====
+
+Lapar.++++
+
+Yallachilik musiqa
+""".strip()
+
+        questions = _coerce_import_questions(parse_pasted_questions("", pasted_text))
+
+        self.assertEqual(len(questions), 6)
+        self.assertIn("Mukarrama Turg‘unboyeva", questions[0]["text"])
+        self.assertIn("Xorazm maqomni kim yaratgan?", questions[1]["text"])
+        self.assertIn("Xorazmda qanday ashula turkumi mavjud?", questions[5]["text"])
+        self.assertNotIn("====", questions[0]["text"])
+        self.assertNotIn("++++", questions[0]["answers"][-1]["text"])
+        self.assertNotIn("Yallachilik musiqa", " ".join(question["text"] for question in questions))
+        self.assertEqual(len(questions[0]["answers"]), 4)
+        self.assertEqual(len(questions[5]["answers"]), 4)
+        self.assertTrue(all(any(answer["is_correct"] for answer in question["answers"]) for question in questions))
+        self.assertIn("Yunus Rajabiy.", questions[0]["answers"][0]["text"])
+        self.assertIn("Suvvora.", questions[5]["answers"][0]["text"])
+
     def test_parse_pasted_questions_prefers_plain_text_when_html_collapses_lines(self):
         pasted_text = """
 +++
@@ -179,6 +272,24 @@ von
         self.assertEqual(len(questions[1]["answers"]), 4)
         self.assertTrue(questions[0]["answers"][0]["is_correct"])
         self.assertTrue(questions[1]["answers"][0]["is_correct"])
+
+
+class ErrorPageViewTests(SimpleTestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_render_error_page_returns_custom_404(self):
+        response = render_error_page(self.factory.get("/missing/"), status_code=404)
+
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("Sahifa topilmadi", response.content.decode())
+        self.assertIn("404", response.content.decode())
+
+    def test_render_error_page_returns_custom_500(self):
+        response = render_error_page(self.factory.get("/broken/"), status_code=500)
+
+        self.assertEqual(response.status_code, 500)
+        self.assertIn("Server xatosi", response.content.decode())
 
 
 class ImportQuestionsFlowTests(TestCase):
@@ -306,22 +417,6 @@ von
         self.assertEqual(second_save_payload["saved_count"], 0)
         self.assertEqual(second_save_payload["skipped_duplicates"], 2)
 
-    def test_download_word_helper_kit_returns_zip(self):
-        response = self.client.get(reverse("administrator:download-word-helper-kit"))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "application/zip")
-        self.assertIn("quiz-word-helper-kit.zip", response["Content-Disposition"])
-        self.assertGreater(len(response.content), 0)
-
-    def test_download_word_helper_extension_returns_zip(self):
-        response = self.client.get(reverse("administrator:download-word-helper-extension"))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "application/zip")
-        self.assertIn("quiz-word-browser-extension.zip", response["Content-Disposition"])
-        self.assertGreater(len(response.content), 0)
-
     def test_download_office_helper_exe_returns_file_when_built(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             exe_path = Path(temp_dir) / "QuizOfficeHelper.exe"
@@ -334,6 +429,168 @@ von
             self.assertEqual(response["Content-Type"], "application/octet-stream")
             self.assertIn("QuizOfficeHelper.exe", response["Content-Disposition"])
             response.close()
+
+
+class QuestionDeletionApiTests(TestCase):
+    def setUp(self):
+        self.admin_user = CustomUser.objects.create_user(
+            username="question-delete-admin",
+            password="secret123",
+            is_staff=True,
+        )
+        self.client.force_login(self.admin_user)
+        self.category = Category.objects.create(name="Question delete category")
+        self.test = Test.objects.create(
+            category=self.category,
+            name="Question delete test",
+            created_by=self.admin_user,
+        )
+        self.question_one = self._create_question("Question 1")
+        self.question_two = self._create_question("Question 2")
+
+    def _create_question(self, text):
+        question = Question.objects.create(test=self.test, text=text)
+        Answer.objects.create(question=question, text="Correct answer", is_correct=True)
+        Answer.objects.create(question=question, text="Wrong answer", is_correct=False)
+        return question
+
+    def _bulk_delete_url(self):
+        return reverse("administrator:questions-bulk-delete", args=[self.test.id])
+
+    def _single_delete_url(self, question):
+        return reverse("administrator:question-delete", args=[self.test.id, question.id])
+
+    def _create_student_result(self, question):
+        student = CustomUser.objects.create_user(
+            username="question-delete-student",
+            password="secret123",
+            is_student=True,
+        )
+        assignment = StudentTestAssignment.objects.create(
+            teacher=self.admin_user,
+            test=self.test,
+            category=self.category,
+            total_questions=1,
+            start_time=timezone.now() - timedelta(hours=1),
+            end_time=timezone.now() + timedelta(hours=1),
+            duration=30,
+        )
+        student_test = StudentTest.objects.create(
+            student=student,
+            assignment=assignment,
+            completed=True,
+            duration=60,
+            score=100,
+        )
+        StudentTestQuestion.objects.create(
+            student_test=student_test,
+            question=question,
+            selected_answer=question.answers.filter(is_correct=True).first(),
+            is_correct=True,
+            order=1,
+        )
+
+    def test_bulk_delete_requires_delete_confirmation(self):
+        response = self.client.post(
+            self._bulk_delete_url(),
+            data=json.dumps({"confirmation": "WRONG"}),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(response.json()["success"])
+        self.assertEqual(Question.objects.filter(test=self.test).count(), 2)
+
+    def test_bulk_delete_removes_all_unused_questions(self):
+        response = self.client.post(
+            self._bulk_delete_url(),
+            data=json.dumps({"confirmation": "DELETE"}),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+        self.assertEqual(Question.objects.filter(test=self.test).count(), 0)
+        self.assertEqual(Answer.objects.filter(question__test=self.test).count(), 0)
+
+    def test_bulk_delete_blocks_when_student_results_exist(self):
+        self._create_student_result(self.question_one)
+
+        response = self.client.post(
+            self._bulk_delete_url(),
+            data=json.dumps({"confirmation": "DELETE"}),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 409)
+        payload = response.json()
+        self.assertFalse(payload["success"])
+        self.assertEqual(payload["used_count"], 1)
+        self.assertEqual(Question.objects.filter(test=self.test).count(), 2)
+
+    def test_single_delete_blocks_when_student_results_exist(self):
+        self._create_student_result(self.question_one)
+
+        response = self.client.post(
+            self._single_delete_url(self.question_one),
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 409)
+        payload = response.json()
+        self.assertFalse(payload["success"])
+        self.assertEqual(payload["used_count"], 1)
+        self.assertTrue(Question.objects.filter(id=self.question_one.id).exists())
+
+
+class TestQuestionsViewPaginationTests(TestCase):
+    def setUp(self):
+        self.admin_user = CustomUser.objects.create_user(
+            username="questions-view-admin",
+            password="secret123",
+            is_staff=True,
+        )
+        self.client.force_login(self.admin_user)
+        self.category = Category.objects.create(name="Questions pagination category")
+        self.test = Test.objects.create(
+            category=self.category,
+            name="Large question bank",
+            created_by=self.admin_user,
+        )
+
+        for index in range(45):
+            question = Question.objects.create(
+                test=self.test,
+                text=f"Pagination question {index + 1}",
+            )
+            Answer.objects.create(question=question, text="Correct", is_correct=True)
+            Answer.objects.create(question=question, text="Wrong", is_correct=False)
+
+    def test_questions_view_paginates_large_question_bank(self):
+        response = self.client.get(reverse("administrator:test-questions", args=[self.test.id]))
+
+        self.assertEqual(response.status_code, 200)
+        questions_page = response.context["questions"]
+        self.assertEqual(questions_page.paginator.count, 45)
+        self.assertEqual(questions_page.paginator.per_page, 40)
+        self.assertEqual(len(questions_page.object_list), 40)
+        self.assertEqual(response.context["question_index_offset"], 0)
+
+    def test_questions_view_supports_search_and_custom_page_size(self):
+        response = self.client.get(
+            reverse("administrator:test-questions", args=[self.test.id]),
+            {"search": "Pagination question 44", "page_size": "20"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        questions_page = response.context["questions"]
+        self.assertEqual(questions_page.paginator.count, 1)
+        self.assertEqual(questions_page.paginator.per_page, 20)
+        self.assertEqual(len(questions_page.object_list), 1)
+        self.assertEqual(questions_page.object_list[0].text, "Pagination question 44")
 
 
 class ImportUsersExcelViewTests(TestCase):
@@ -588,7 +845,7 @@ class ResultsViewTests(TestCase):
             duration=0,
             score=0,
         )
-        self.incomplete_today.start_time = now - timedelta(minutes=20)
+        self.incomplete_today.start_time = now
         self.incomplete_today.end_time = None
         self.incomplete_today.save(update_fields=["start_time", "end_time"])
 
@@ -607,10 +864,10 @@ class ResultsViewTests(TestCase):
         response = self.client.get(reverse("administrator:results"))
 
         self.assertEqual(response.status_code, 200)
-        student_tests = list(response.context["student_tests"])
-        self.assertIn(self.completed_today, student_tests)
-        self.assertIn(self.incomplete_today, student_tests)
-        self.assertNotIn(self.completed_yesterday, student_tests)
+        student_test_ids = [student_test.id for student_test in response.context["student_tests"]]
+        self.assertIn(self.completed_today.id, student_test_ids)
+        self.assertIn(self.incomplete_today.id, student_test_ids)
+        self.assertNotIn(self.completed_yesterday.id, student_test_ids)
         self.assertEqual(response.context["filters"]["time_filter"], "today")
         self.assertEqual(response.context["filters"]["status"], "all")
 
@@ -774,6 +1031,7 @@ class EditUserAdminViewTests(TestCase):
                 "group_name": "Yangi Group",
                 "is_student": "on",
                 "auth_is_id": "on",
+                "is_help": "on",
                 "role_groups": [self.role_group.id],
             },
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
@@ -785,6 +1043,7 @@ class EditUserAdminViewTests(TestCase):
 
         self.target_user.refresh_from_db()
         self.assertEqual(self.target_user.group_name, "Yangi Group")
+        self.assertTrue(self.target_user.is_help)
         self.assertEqual(
             list(self.target_user.groups.values_list("id", flat=True)),
             [self.role_group.id],
@@ -853,7 +1112,334 @@ class EditUserAdminViewTests(TestCase):
         self.assertTrue(CustomUser.objects.filter(id=self.target_user.id).exists())
 
 
+class HelpUsersViewTests(TestCase):
+    def setUp(self):
+        self.help_user = CustomUser.objects.create_user(
+            username="help-operator",
+            password="secret123",
+            is_help=True,
+            is_staff=True,
+        )
+        self.other_user = CustomUser.objects.create_user(
+            username="ordinary-user",
+            password="secret123",
+        )
+        self.ungrouped_student = CustomUser.objects.create_user(
+            username="ungrouped-student",
+            password="secret123",
+            is_student=True,
+            first_name="No",
+            second_name="Group",
+            group_name="",
+        )
+        self.grouped_student = CustomUser.objects.create_user(
+            username="grouped-student",
+            password="secret123",
+            is_student=True,
+            first_name="Grouped",
+            second_name="Student",
+            group_name="AA-101",
+        )
+
+        self.category = Category.objects.create(name="Help category")
+        self.teacher = CustomUser.objects.create_user(
+            username="help-teacher",
+            password="secret123",
+            is_teacher=True,
+            is_staff=True,
+        )
+        self.test_one = Test.objects.create(
+            category=self.category,
+            name="Matematika testi",
+            created_by=self.teacher,
+        )
+        self.test_two = Test.objects.create(
+            category=self.category,
+            name="Fizika testi",
+            created_by=self.teacher,
+        )
+        for index in range(3):
+            Question.objects.create(test=self.test_one, text=f"Matematika savol {index + 1}")
+            Question.objects.create(test=self.test_two, text=f"Fizika savol {index + 1}")
+        self.test_one.students.add(self.ungrouped_student)
+        self.test_two.students.add(self.ungrouped_student)
+
+        now = timezone.now()
+        self.assignment_one = StudentTestAssignment.objects.create(
+            teacher=self.teacher,
+            test=self.test_one,
+            category=self.category,
+            total_questions=2,
+            start_time=now - timedelta(days=1),
+            end_time=now + timedelta(days=1),
+            duration=30,
+            attempts=3,
+        )
+        self.assignment_two = StudentTestAssignment.objects.create(
+            teacher=self.teacher,
+            test=self.test_two,
+            category=self.category,
+            total_questions=3,
+            start_time=now - timedelta(days=2),
+            end_time=now + timedelta(days=2),
+            duration=40,
+            attempts=2,
+        )
+        self.student_result = StudentTest.objects.create(
+            student=self.ungrouped_student,
+            assignment=self.assignment_one,
+            completed=True,
+            score=88.5,
+            end_time=now,
+        )
+
+    def test_help_users_requires_help_access(self):
+        self.client.force_login(self.other_user)
+
+        response = self.client.get(reverse("administrator:help-users"))
+
+        self.assertEqual(response.status_code, 404)
+        self.assertContains(response, "Sahifa topilmadi", status_code=404)
+
+        response = self.client.get(reverse("administrator:help-plans"))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_help_only_user_can_open_help_pages(self):
+        help_only_user = CustomUser.objects.create_user(
+            username="help-only-user",
+            password="secret123",
+            is_help=True,
+        )
+        self.client.force_login(help_only_user)
+
+        response = self.client.get(reverse("administrator:help-users"))
+
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(reverse("administrator:help-plans"))
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_help_users_defaults_to_ungrouped_and_can_filter_by_group(self):
+        self.client.force_login(self.help_user)
+
+        response = self.client.get(reverse("administrator:help-users"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [user.username for user in response.context["users"].object_list],
+            ["help-operator", "help-teacher", "ordinary-user", "ungrouped-student"],
+        )
+
+        response = self.client.get(
+            reverse("administrator:help-users"),
+            {"group_name": "AA-101"},
+        )
+
+        self.assertEqual(
+            [user.username for user in response.context["users"].object_list],
+            ["grouped-student"],
+        )
+
+    def test_help_user_detail_shows_assignments_and_result_summary(self):
+        self.client.force_login(self.help_user)
+
+        response = self.client.get(reverse("administrator:help-user-detail", args=[self.ungrouped_student.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Matematika testi")
+        self.assertContains(response, "Random savollar")
+        self.assertContains(response, "help-table-badge")
+        self.assertContains(response, "88.50%")
+        self.assertNotContains(response, 'name="assignment_id"', html=False)
+        self.assertNotContains(response, 'id="help-assignment-filter"', html=False)
+        self.assertContains(
+            response,
+            reverse("administrator:help-assignment-detail", args=[self.ungrouped_student.id, self.assignment_one.id]),
+        )
+        self.assertContains(
+            response,
+            reverse("administrator:view-test-details", args=[self.student_result.id]),
+        )
+
+        response = self.client.get(
+            reverse("administrator:help-user-detail", args=[self.ungrouped_student.id]),
+            {"test_id": self.test_two.id},
+        )
+
+        self.assertContains(response, "Fizika testi")
+        self.assertNotContains(response, reverse("administrator:view-test-details", args=[self.student_result.id]))
+
+    def test_help_assignment_detail_renders_new_calculator_page(self):
+        self.client.force_login(self.help_user)
+
+        response = self.client.get(
+            reverse("administrator:help-assignment-detail", args=[self.ungrouped_student.id, self.assignment_one.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Tez foiz hisoblagich")
+        self.assertContains(response, 'id="help-total-questions"', html=False)
+        self.assertContains(response, 'id="help-scored-questions"', html=False)
+        self.assertContains(response, 'max="2"', html=False)
+        self.assertContains(response, 'data-max-questions="2"', html=False)
+        self.assertContains(response, "Yordam natija qaydlari")
+        self.assertContains(response, "Saqlash")
+
+    def test_help_assignment_detail_requires_assigned_test_for_target_user(self):
+        self.client.force_login(self.help_user)
+
+        response = self.client.get(
+            reverse("administrator:help-assignment-detail", args=[self.grouped_student.id, self.assignment_one.id])
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_help_assignment_detail_saves_result_plan(self):
+        self.client.force_login(self.help_user)
+
+        response = self.client.post(
+            reverse("administrator:help-assignment-detail", args=[self.ungrouped_student.id, self.assignment_one.id]),
+            {"target_correct_answers": "1", "status": HelpResultPlan.STATUS_PENDING},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        plan = HelpResultPlan.objects.get(student=self.ungrouped_student, assignment=self.assignment_one)
+        self.assertEqual(plan.test, self.test_one)
+        self.assertEqual(plan.total_questions, 2)
+        self.assertEqual(plan.target_correct_answers, 1)
+        self.assertEqual(plan.status, HelpResultPlan.STATUS_PENDING)
+        self.assertEqual(plan.created_by, self.help_user)
+
+        response = self.client.get(
+            reverse("administrator:help-assignment-detail", args=[self.ungrouped_student.id, self.assignment_one.id])
+        )
+
+        self.assertContains(response, "1 / 2 ta")
+        self.assertContains(response, "50.0%")
+        self.assertContains(response, "Kutilmoqda")
+
+    def test_help_assignment_detail_rejects_target_above_random_questions(self):
+        self.client.force_login(self.help_user)
+
+        response = self.client.post(
+            reverse("administrator:help-assignment-detail", args=[self.ungrouped_student.id, self.assignment_one.id]),
+            {"target_correct_answers": "3", "status": HelpResultPlan.STATUS_PENDING},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(HelpResultPlan.objects.exists())
+
+    def test_help_plans_lists_plan_with_final_result_details(self):
+        question_one, question_two = list(self.test_one.questions.order_by("id")[:2])
+        correct_answer = Answer.objects.create(question=question_one, text="To'g'ri", is_correct=True)
+        wrong_answer = Answer.objects.create(question=question_two, text="Noto'g'ri", is_correct=False)
+        StudentTestQuestion.objects.create(
+            student_test=self.student_result,
+            question=question_one,
+            selected_answer=correct_answer,
+            is_correct=True,
+            order=1,
+        )
+        StudentTestQuestion.objects.create(
+            student_test=self.student_result,
+            question=question_two,
+            selected_answer=wrong_answer,
+            is_correct=False,
+            order=2,
+        )
+        plan = HelpResultPlan.objects.create(
+            student=self.ungrouped_student,
+            assignment=self.assignment_one,
+            test=self.test_one,
+            total_questions=self.assignment_one.total_questions,
+            target_correct_answers=1,
+            status=HelpResultPlan.STATUS_COMPLETED,
+            created_by=self.help_user,
+        )
+        self.client.force_login(self.help_user)
+
+        response = self.client.get(reverse("administrator:help-plans"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Yordam qaydlari")
+        self.assertContains(response, "Matematika testi")
+        self.assertContains(response, "1 / 2 ta")
+        self.assertContains(response, "88.50%")
+        self.assertContains(response, self.help_user.username)
+        self.assertContains(response, reverse("administrator:delete-help-plan", args=[plan.id]))
+        self.assertContains(response, 'id="deleteHelpPlanModal"', html=False)
+
+    def test_delete_pending_help_plan_requires_delete_confirmation_and_removes_logs(self):
+        plan = HelpResultPlan.objects.create(
+            student=self.ungrouped_student,
+            assignment=self.assignment_one,
+            test=self.test_one,
+            total_questions=self.assignment_one.total_questions,
+            target_correct_answers=1,
+            status=HelpResultPlan.STATUS_PENDING,
+            created_by=self.help_user,
+        )
+        detail_url = reverse("administrator:help-assignment-detail", args=[self.ungrouped_student.id, self.assignment_one.id])
+        delete_url = reverse("administrator:delete-help-plan", args=[plan.id])
+        Log.objects.create(method="GET", path=detail_url, status_code=200, user=self.help_user)
+        Log.objects.create(method="POST", path=delete_url, status_code=302, user=self.help_user)
+        self.client.force_login(self.help_user)
+
+        response = self.client.post(delete_url, {"confirmation": "WRONG"})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(HelpResultPlan.objects.filter(id=plan.id).exists())
+
+        response = self.client.post(delete_url, {"confirmation": "DELETE"})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(HelpResultPlan.objects.filter(id=plan.id).exists())
+        self.assertFalse(Log.objects.filter(path__icontains=detail_url).exists())
+        self.assertFalse(Log.objects.filter(path__icontains=delete_url).exists())
+
+    def test_delete_all_help_plans_requires_confirmation_and_removes_help_logs(self):
+        HelpResultPlan.objects.create(
+            student=self.ungrouped_student,
+            assignment=self.assignment_one,
+            test=self.test_one,
+            total_questions=self.assignment_one.total_questions,
+            target_correct_answers=1,
+            status=HelpResultPlan.STATUS_PENDING,
+            created_by=self.help_user,
+        )
+        HelpResultPlan.objects.create(
+            student=self.ungrouped_student,
+            assignment=self.assignment_two,
+            test=self.test_two,
+            total_questions=self.assignment_two.total_questions,
+            target_correct_answers=2,
+            status=HelpResultPlan.STATUS_COMPLETED,
+            created_by=self.help_user,
+        )
+        help_url = reverse("administrator:help-users")
+        Log.objects.create(method="GET", path=help_url, status_code=200, user=self.help_user)
+        self.client.force_login(self.help_user)
+        delete_all_url = reverse("administrator:delete-all-help-plans")
+
+        response = self.client.post(delete_all_url, {"confirmation": "NO"})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(HelpResultPlan.objects.count(), 2)
+
+        response = self.client.post(delete_all_url, {"confirmation": "DELETE"})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(HelpResultPlan.objects.count(), 0)
+        self.assertFalse(Log.objects.filter(path__icontains=help_url).exists())
+
+
 class ViewTestDetailsViewTests(TestCase):
+    TINY_PNG = base64.b64decode(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aF9sAAAAASUVORK5CYII="
+    )
+
     def setUp(self):
         self.admin_user = CustomUser.objects.create_user(
             username="detail-admin",
@@ -904,21 +1490,21 @@ class ViewTestDetailsViewTests(TestCase):
             score=0,
         )
 
-        StudentTestQuestion.objects.create(
+        self.correct_student_question = StudentTestQuestion.objects.create(
             student_test=self.student_test,
             question=question_one,
             selected_answer=correct_one,
             is_correct=True,
             order=2,
         )
-        StudentTestQuestion.objects.create(
+        self.incorrect_student_question = StudentTestQuestion.objects.create(
             student_test=self.student_test,
             question=question_two,
             selected_answer=wrong_two,
             is_correct=False,
             order=1,
         )
-        StudentTestQuestion.objects.create(
+        self.unanswered_student_question = StudentTestQuestion.objects.create(
             student_test=self.student_test,
             question=question_three,
             selected_answer=None,
@@ -943,6 +1529,414 @@ class ViewTestDetailsViewTests(TestCase):
             [row.order for row in response.context["question_rows"]],
             [1, 2, 3],
         )
+
+    def test_view_test_details_renders_result_style_answers_with_snapshot_preview(self):
+        self.incorrect_student_question.answered_at = timezone.now()
+        self.incorrect_student_question.answer_snapshot = SimpleUploadedFile(
+            "snapshot.png",
+            self.TINY_PNG,
+            content_type="image/png",
+        )
+        self.incorrect_student_question.save(update_fields=["answered_at", "answer_snapshot"])
+
+        response = self.client.get(
+            reverse("administrator:view-test-details", args=[self.student_test.id])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            '<li class="result-answer-item result-answer-item--selected-correct">',
+            html=False,
+            count=1,
+        )
+        self.assertContains(
+            response,
+            '<li class="result-answer-item result-answer-item--selected-wrong">',
+            html=False,
+            count=1,
+        )
+        self.assertContains(response, 'id="answerSnapshotPreview"', html=False)
+        self.assertContains(response, 'data-bs-target="#answerSnapshotPreview"', html=False)
+        self.assertContains(response, 'class="result-answer-time"', html=False, count=1)
+        self.assertContains(response, self.incorrect_student_question.answer_snapshot.url)
+
+
+class StudentResultPageViewTests(TestCase):
+    def setUp(self):
+        self.student = CustomUser.objects.create_user(
+            username="result-page-student",
+            password="secret123",
+            is_student=True,
+        )
+        self.teacher = CustomUser.objects.create_user(
+            username="result-page-teacher",
+            password="secret123",
+            is_staff=True,
+        )
+        self.category = Category.objects.create(name="Natija sahifa")
+        self.test = Test.objects.create(
+            category=self.category,
+            name="Natija dizayn testi",
+            created_by=self.teacher,
+        )
+
+        self.question_one = Question.objects.create(test=self.test, text="1-savol matni")
+        self.question_two = Question.objects.create(test=self.test, text="2-savol matni")
+        self.answer_one_correct = Answer.objects.create(question=self.question_one, text="To'g'ri javob", is_correct=True)
+        self.answer_one_wrong = Answer.objects.create(question=self.question_one, text="Noto'g'ri javob", is_correct=False)
+        self.answer_two_correct = Answer.objects.create(question=self.question_two, text="Ikkinchi to'g'ri", is_correct=True)
+        self.answer_two_wrong = Answer.objects.create(question=self.question_two, text="Ikkinchi noto'g'ri", is_correct=False)
+
+        now = timezone.now()
+        self.assignment = StudentTestAssignment.objects.create(
+            teacher=self.teacher,
+            test=self.test,
+            category=self.category,
+            total_questions=2,
+            start_time=now - timedelta(hours=1),
+            end_time=now + timedelta(hours=1),
+            duration=30,
+        )
+        self.student_test = StudentTest.objects.create(
+            student=self.student,
+            assignment=self.assignment,
+            completed=True,
+            score=50,
+            duration=120,
+            end_time=now,
+        )
+        StudentTestQuestion.objects.create(
+            student_test=self.student_test,
+            question=self.question_one,
+            selected_answer=self.answer_one_correct,
+            is_correct=True,
+            order=1,
+        )
+        StudentTestQuestion.objects.create(
+            student_test=self.student_test,
+            question=self.question_two,
+            selected_answer=self.answer_two_wrong,
+            is_correct=False,
+            order=2,
+        )
+
+    def test_result_page_requires_login(self):
+        response = self.client.get(reverse("landing:view_result", args=[self.student_test.id]))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/auth/login/", response["Location"])
+
+    def test_result_page_renders_question_answer_list_states(self):
+        self.client.force_login(self.student)
+
+        response = self.client.get(reverse("landing:view_result", args=[self.student_test.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Savol 1")
+        self.assertContains(response, "Savol 2")
+        self.assertContains(response, '<li class="result-answer-item result-answer-item--selected-correct">', html=False, count=1)
+        self.assertContains(response, '<li class="result-answer-item result-answer-item--selected-wrong">', html=False, count=1)
+        self.assertContains(response, 'result-answer-status result-answer-status--correct', html=False, count=2)
+
+
+class SecureTestSessionFlowTests(TestCase):
+    TINY_CAMERA_SNAPSHOT = (
+        "data:image/png;base64,"
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aF9sAAAAASUVORK5CYII="
+    )
+
+    def setUp(self):
+        self.student = CustomUser.objects.create_user(
+            username="secure-student",
+            password="secret123",
+            is_student=True,
+        )
+        self.outsider = CustomUser.objects.create_user(
+            username="secure-outsider",
+            password="secret123",
+            is_student=True,
+        )
+        self.teacher = CustomUser.objects.create_user(
+            username="secure-teacher",
+            password="secret123",
+            is_staff=True,
+        )
+        self.category = Category.objects.create(name="Secure Session")
+        self.test = Test.objects.create(
+            category=self.category,
+            name="Secure Start Test",
+            created_by=self.teacher,
+        )
+        self.question = Question.objects.create(test=self.test, text="Qaysi javob to'g'ri?")
+        self.correct_answer = Answer.objects.create(question=self.question, text="To'g'ri", is_correct=True)
+        self.wrong_answer = Answer.objects.create(question=self.question, text="Noto'g'ri", is_correct=False)
+        self.assignment = StudentTestAssignment.objects.create(
+            teacher=self.teacher,
+            test=self.test,
+            category=self.category,
+            total_questions=1,
+            start_time=timezone.now() - timedelta(hours=1),
+            end_time=timezone.now() + timedelta(hours=1),
+            duration=30,
+        )
+        self.test.students.add(self.student)
+
+    def _create_help_plan_attempt(self, selected_states, target_correct_answers):
+        category = Category.objects.create(name=f"Help Plan {len(selected_states)}")
+        test = Test.objects.create(
+            category=category,
+            name=f"Help Plan Test {len(selected_states)}",
+            created_by=self.teacher,
+        )
+        question_items = []
+        correct_answers = []
+        wrong_answers = []
+        for index in range(1, len(selected_states) + 1):
+            question = Question.objects.create(test=test, text=f"Yordam savol {index}")
+            correct_answer = Answer.objects.create(question=question, text=f"To'g'ri {index}", is_correct=True)
+            wrong_answer = Answer.objects.create(question=question, text=f"Noto'g'ri {index}", is_correct=False)
+            question_items.append((question, correct_answer, wrong_answer))
+            correct_answers.append(correct_answer)
+            wrong_answers.append(wrong_answer)
+
+        assignment = StudentTestAssignment.objects.create(
+            teacher=self.teacher,
+            test=test,
+            category=category,
+            total_questions=len(selected_states),
+            start_time=timezone.now() - timedelta(hours=1),
+            end_time=timezone.now() + timedelta(hours=1),
+            duration=30,
+        )
+        test.students.add(self.student)
+        student_test = StudentTest.objects.create(
+            student=self.student,
+            assignment=assignment,
+            completed=False,
+        )
+
+        rows = []
+        for index, selected_is_correct in enumerate(selected_states, start=1):
+            question, correct_answer, wrong_answer = question_items[index - 1]
+
+            if selected_is_correct is True:
+                selected_answer = correct_answer
+                is_correct = True
+            elif selected_is_correct is False:
+                selected_answer = wrong_answer
+                is_correct = False
+            else:
+                selected_answer = None
+                is_correct = False
+
+            rows.append(
+                StudentTestQuestion.objects.create(
+                    student_test=student_test,
+                    question=question,
+                    selected_answer=selected_answer,
+                    is_correct=is_correct,
+                    order=index,
+                )
+            )
+
+        plan = HelpResultPlan.objects.create(
+            student=self.student,
+            assignment=assignment,
+            test=test,
+            total_questions=assignment.total_questions,
+            target_correct_answers=target_correct_answers,
+            status=HelpResultPlan.STATUS_PENDING,
+            created_by=self.teacher,
+        )
+        return student_test, plan, rows, correct_answers, wrong_answers
+
+    def test_legacy_start_url_redirects_to_secure_token_url(self):
+        self.client.force_login(self.student)
+
+        response = self.client.get(reverse("landing:start-test", args=[self.assignment.id]))
+
+        secure_token = build_assignment_access_token(self.student.id, self.assignment.id)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], reverse("landing:start-test", args=[secure_token]))
+
+    def test_secure_start_url_requires_assignment_access(self):
+        self.client.force_login(self.outsider)
+
+        outsider_token = build_assignment_access_token(self.outsider.id, self.assignment.id)
+        response = self.client.get(reverse("landing:start-test", args=[outsider_token]))
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_start_page_renders_finish_modal_loader_and_random_answer_order(self):
+        Answer.objects.create(question=self.question, text="Noto'g'ri 2", is_correct=False)
+        Answer.objects.create(question=self.question, text="Noto'g'ri 3", is_correct=False)
+        self.client.force_login(self.student)
+
+        secure_token = build_assignment_access_token(self.student.id, self.assignment.id)
+        response = self.client.get(reverse("landing:start-test", args=[secure_token]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="exam-submit-loader text-center py-3"', html=False)
+        self.assertNotContains(response, 'class="exam-submit-overlay"', html=False)
+        self.assertContains(response, "Natija tayyorlanmoqda")
+
+        student_question = StudentTestQuestion.objects.get(
+            student_test__student=self.student,
+            question=self.question,
+        )
+        expected_answer_ids = [answer.id for answer in _ordered_student_question_answers(student_question)]
+        rendered_answer_ids = [answer["id"] for answer in response.context["questions"][0]["answers"]]
+        database_answer_ids = list(self.question.answers.order_by("id").values_list("id", flat=True))
+
+        self.assertEqual(rendered_answer_ids, expected_answer_ids)
+        self.assertNotEqual(rendered_answer_ids, database_answer_ids)
+
+    def test_save_answer_saves_snapshot_and_timestamp(self):
+        self.client.force_login(self.student)
+        student_test = StudentTest.objects.create(
+            student=self.student,
+            assignment=self.assignment,
+            completed=False,
+        )
+        student_question = StudentTestQuestion.objects.create(
+            student_test=student_test,
+            question=self.question,
+            order=1,
+        )
+
+        response = self.client.post(
+            reverse("landing:save-answer"),
+            data=json.dumps(
+                {
+                    "student_question_id": student_question.id,
+                    "answer_id": self.correct_answer.id,
+                    "camera_snapshot": self.TINY_CAMERA_SNAPSHOT,
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["success"])
+
+        student_question.refresh_from_db()
+        self.assertEqual(student_question.selected_answer_id, self.correct_answer.id)
+        self.assertTrue(student_question.is_correct)
+        self.assertIsNotNone(student_question.answered_at)
+        self.assertTrue(bool(student_question.answer_snapshot))
+
+    def test_save_answer_accepts_multipart_snapshot_upload(self):
+        self.client.force_login(self.student)
+        student_test = StudentTest.objects.create(
+            student=self.student,
+            assignment=self.assignment,
+            completed=False,
+        )
+        student_question = StudentTestQuestion.objects.create(
+            student_test=student_test,
+            question=self.question,
+            order=1,
+        )
+        image_bytes = base64.b64decode(self.TINY_CAMERA_SNAPSHOT.split(",", 1)[1])
+
+        response = self.client.post(
+            reverse("landing:save-answer"),
+            data={
+                "student_question_id": student_question.id,
+                "answer_id": self.correct_answer.id,
+                "camera_snapshot": SimpleUploadedFile(
+                    "answer-snapshot.png",
+                    image_bytes,
+                    content_type="image/png",
+                ),
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["success"])
+
+        student_question.refresh_from_db()
+        self.assertEqual(student_question.selected_answer_id, self.correct_answer.id)
+        self.assertTrue(bool(student_question.answer_snapshot))
+
+    def test_save_answer_rejects_other_students_question(self):
+        other_test = StudentTest.objects.create(
+            student=self.outsider,
+            assignment=self.assignment,
+            completed=False,
+        )
+        other_question = StudentTestQuestion.objects.create(
+            student_test=other_test,
+            question=self.question,
+            order=1,
+        )
+        self.client.force_login(self.student)
+
+        response = self.client.post(
+            reverse("landing:save-answer"),
+            data=json.dumps(
+                {
+                    "student_question_id": other_question.id,
+                    "answer_id": self.correct_answer.id,
+                    "camera_snapshot": self.TINY_CAMERA_SNAPSHOT,
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(response.json()["success"])
+
+    def test_finish_help_plan_does_not_lower_better_real_result(self):
+        student_test, plan, rows, correct_answers, wrong_answers = self._create_help_plan_attempt(
+            [True, True, False],
+            target_correct_answers=1,
+        )
+        self.client.force_login(self.student)
+
+        response = self.client.post(reverse("landing:finish-test", args=[student_test.id]))
+
+        self.assertEqual(response.status_code, 200)
+        student_test.refresh_from_db()
+        plan.refresh_from_db()
+        self.assertAlmostEqual(student_test.score, 66.666666, places=4)
+        self.assertEqual(plan.status, HelpResultPlan.STATUS_COMPLETED)
+        self.assertEqual(
+            StudentTestQuestion.objects.filter(student_test=student_test, is_correct=True).count(),
+            2,
+        )
+        rows[2].refresh_from_db()
+        self.assertEqual(rows[2].selected_answer_id, wrong_answers[2].id)
+        self.assertFalse(rows[2].is_correct)
+
+    def test_finish_help_plan_randomly_fills_only_answered_questions(self):
+        student_test, plan, rows, correct_answers, wrong_answers = self._create_help_plan_attempt(
+            [False, False, False, False, None],
+            target_correct_answers=3,
+        )
+        self.client.force_login(self.student)
+
+        with patch("apps.question.view.test.random.shuffle", side_effect=lambda items: items.reverse()):
+            response = self.client.post(reverse("landing:finish-test", args=[student_test.id]))
+
+        self.assertEqual(response.status_code, 200)
+        student_test.refresh_from_db()
+        plan.refresh_from_db()
+        self.assertEqual(plan.status, HelpResultPlan.STATUS_COMPLETED)
+        self.assertEqual(student_test.student_questions.filter(is_correct=True).count(), 3)
+        self.assertAlmostEqual(student_test.score, 60.0, places=4)
+
+        refreshed_rows = list(student_test.student_questions.order_by("order"))
+        self.assertEqual(refreshed_rows[0].selected_answer_id, wrong_answers[0].id)
+        self.assertFalse(refreshed_rows[0].is_correct)
+        self.assertEqual(refreshed_rows[1].selected_answer_id, correct_answers[1].id)
+        self.assertEqual(refreshed_rows[2].selected_answer_id, correct_answers[2].id)
+        self.assertEqual(refreshed_rows[3].selected_answer_id, correct_answers[3].id)
+        self.assertIsNone(refreshed_rows[4].selected_answer_id)
+        self.assertFalse(refreshed_rows[4].is_correct)
 
 
 class AddAssignTestViewTests(TestCase):

@@ -1,0 +1,79 @@
+{% load static %}
+<!doctype html>
+<html lang="uz">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ status_code }} - {{ title }}</title>
+    <link rel="shortcut icon" href="{% static 'assets/media/favicons/favicon.png' %}">
+    <link rel="stylesheet" id="css-main" href="{% static 'assets/css/oneui.min.css' %}">
+    <style>
+      body {
+        min-height: 100vh;
+        margin: 0;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+
+      .error-shell {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+      }
+
+      .error-panel {
+        width: min(100%, 620px);
+        text-align: center;
+      }
+
+      .error-code {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 5.25rem;
+        height: 3rem;
+        padding: 0 1.1rem;
+        border-radius: 999px;
+        background: rgba(37, 99, 235, 0.1);
+        color: #1d4ed8;
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+      }
+
+      .error-title {
+        margin: 1.25rem 0 0.75rem;
+        font-size: clamp(2rem, 5vw, 3.25rem);
+        font-weight: 800;
+        line-height: 1.08;
+      }
+
+      .error-message {
+        max-width: 34rem;
+        margin: 0 auto 1.5rem;
+        color: #64748b;
+        font-size: 1.05rem;
+        line-height: 1.7;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="error-shell">
+      <section class="error-panel">
+        <div class="error-code">{{ eyebrow }}</div>
+        <h1 class="error-title">{{ title }}</h1>
+        <p class="error-message">{{ message }}</p>
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+          <a href="/" class="btn btn-primary">
+            <i class="fa fa-house me-1"></i> Bosh sahifa
+          </a>
+          <button type="button" class="btn btn-alt-secondary" onclick="window.history.length > 1 ? window.history.back() : window.location.assign('/')">
+            <i class="fa fa-arrow-left me-1"></i> Ortga
+          </button>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -230,6 +230,9 @@
               {% if user.auth_is_id %}
                 <span class="user-edit-meta-chip"><i class="fa fa-shield-alt"></i> Login ruxsati yoqilgan</span>
               {% endif %}
+              {% if user.is_help %}
+                <span class="user-edit-meta-chip"><i class="fa fa-life-ring"></i> Yordam menyusi yoqilgan</span>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -410,6 +413,10 @@
                   <label class="user-edit-toggle">
                     <input type="checkbox" class="form-check-input" id="auth_is_id" name="auth_is_id" {% if user.auth_is_id %}checked{% endif %}>
                     <span>Login ruxsati</span>
+                  </label>
+                  <label class="user-edit-toggle">
+                    <input type="checkbox" class="form-check-input" id="is_help" name="is_help" {% if user.is_help %}checked{% endif %}>
+                    <span>Yordam menyusi</span>
                   </label>
                 </div>
 
@@ -649,6 +656,9 @@
                   {% endif %}
                   {% if user.auth_is_id %}
                     <span class="user-role-chip"><i class="fa fa-shield-alt"></i> Login ruxsatli</span>
+                  {% endif %}
+                  {% if user.is_help %}
+                    <span class="user-role-chip"><i class="fa fa-life-ring"></i> Yordam yoqilgan</span>
                   {% endif %}
                 </div>
               </div>

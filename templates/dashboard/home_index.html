@@ -13,17 +13,51 @@
 
   <link rel="stylesheet" id="css-main" href="{% static 'assets/css/oneui.min.css' %}">
   <link rel="stylesheet" id="css-theme" href="{% static 'assets/css/themes/modern.min.css' %}">
+  <style>
+    @media (min-width: 1200px) {
+      .home-layout-row {
+        align-items: stretch;
+      }
+
+      .home-layout-sidebar-col {
+        align-self: stretch;
+      }
+
+      .home-layout-sidebar {
+        position: sticky;
+        top: 1rem;
+        max-height: calc(100vh - 2rem);
+        overflow-y: auto;
+        padding-right: 0.25rem;
+      }
+
+      .home-layout-content {
+        min-width: 0;
+      }
+
+      .home-layout-sidebar::-webkit-scrollbar {
+        width: 0.45rem;
+      }
+
+      .home-layout-sidebar::-webkit-scrollbar-thumb {
+        background: rgba(100, 116, 139, 0.32);
+        border-radius: 999px;
+      }
+    }
+  </style>
   {% block style %}{% endblock style %}
 </head>
 <body>
   <div id="page-container">
     <main id="main-container" class="bg-body-extra-light">
       <div class="content content-full py-4">
-        <div class="row g-4 align-items-start">
-          <div class="col-12 col-xl-3">
-            {% include 'dashboard/components/home_side_menu.html' %}
+        <div class="row g-4 home-layout-row">
+          <div class="col-12 col-xl-3 home-layout-sidebar-col">
+            <div class="home-layout-sidebar">
+              {% include 'dashboard/components/home_side_menu.html' %}
+            </div>
           </div>
-          <div class="col-12 col-xl-9">
+          <div class="col-12 col-xl-9 home-layout-content">
             {% block content %}{% endblock content %}
           </div>
         </div>
@@ -34,6 +68,7 @@
   </div>
 
   <script src="{% static 'assets/js/oneui.app.min.js' %}"></script>
+  {% include 'common/office-helper-bridge.html' %}
   {% block script %}{% endblock script %}
 </body>
 </html>

@@ -51,6 +51,7 @@ class CustomUser(AbstractUser):
 
     # Autentifikatsiya nazorati
     auth_is_id = models.BooleanField(default=False, help_text="Foydalanuvchi username orqali kirishga ruxsat berish")
+    is_help = models.BooleanField(default=False, help_text="Yordam menyusini ko'rsatish")
 
     # Boshqa
     bio = models.TextField(null=True, blank=True)

@@ -17,6 +17,9 @@ class LogMiddleware:
         response = self.get_response(request)
         request_path = request.get_full_path()
 
+        if getattr(request, "skip_request_log", False):
+            return response
+
         if request.path.rstrip("/").endswith("/logs/clear"):
             return response
 

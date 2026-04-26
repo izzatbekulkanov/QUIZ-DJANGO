@@ -1,0 +1,153 @@
+{% if office_helper_session or office_helper_logout_signal %}
+  {{ office_helper_session|json_script:"office-helper-global-session-data" }}
+  {{ office_helper_base_url|json_script:"office-helper-global-base-url" }}
+  {{ office_helper_session_state_url|json_script:"office-helper-session-state-url" }}
+  <script>
+    (function () {
+      if (window.QuizOfficeHelperBridgeInitialized) {
+        return;
+      }
+      window.QuizOfficeHelperBridgeInitialized = true;
+
+      const sessionScript = document.getElementById('office-helper-global-session-data');
+      const baseUrlScript = document.getElementById('office-helper-global-base-url');
+      const sessionStateUrlScript = document.getElementById('office-helper-session-state-url');
+      const sessionPayload = sessionScript ? JSON.parse(sessionScript.textContent || '{}') : {};
+      const configuredBaseUrl = baseUrlScript ? JSON.parse(baseUrlScript.textContent || '""') : '';
+      const sessionStateUrl = sessionStateUrlScript ? JSON.parse(sessionStateUrlScript.textContent || '""') : '';
+      const helperBaseUrl = (localStorage.getItem('quizWordBridgeUrl') || configuredBaseUrl || 'http://127.0.0.1:8765').replace(/\/+$/, '');
+      const logoutSignal = {{ office_helper_logout_signal|yesno:"true,false" }};
+      const activeWindowMs = 60000;
+      const minSessionCheckGapMs = 30000;
+      let lastUserActivityAt = Date.now();
+      let lastSessionCheckAt = 0;
+      let sessionCheckInFlight = false;
+
+      function postToHelper(path, body, keepalive) {
+        if (!helperBaseUrl) {
+          return Promise.resolve(false);
+        }
+
+        return fetch(`${helperBaseUrl}${path}`, {
+          method: 'POST',
+          mode: 'cors',
+          keepalive: !!keepalive,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: JSON.stringify(body || {}),
+        }).then(() => true).catch(() => false);
+      }
+
+      function unbind(reason, keepalive) {
+        if (navigator.sendBeacon && keepalive) {
+          try {
+            const payload = new Blob([JSON.stringify({ reason: reason || 'logout' })], { type: 'application/json' });
+            if (navigator.sendBeacon(`${helperBaseUrl}/api/session/unbind`, payload)) {
+              return Promise.resolve(true);
+            }
+          } catch (error) {
+            // Fall back to fetch below.
+          }
+        }
+        return postToHelper('/api/session/unbind', { reason: reason || 'logout' }, keepalive);
+      }
+
+      function bind() {
+        if (!sessionPayload || !sessionPayload.session_key) {
+          return Promise.resolve(false);
+        }
+        return postToHelper('/api/session/bind', {
+          ...sessionPayload,
+          page_url: window.location.href,
+          system_origin: window.location.origin,
+        });
+      }
+
+      function heartbeat(payload) {
+        if (!payload || !payload.session_key) {
+          return Promise.resolve(false);
+        }
+        return postToHelper('/api/session/heartbeat', {
+          ...payload,
+          page_url: window.location.href,
+          system_origin: window.location.origin,
+        });
+      }
+
+      async function refreshSessionFromServer(force) {
+        if (!sessionStateUrl || logoutSignal) {
+          return false;
+        }
+        const now = Date.now();
+        if (!force && sessionCheckInFlight) {
+          return false;
+        }
+        if (!force && now - lastSessionCheckAt < minSessionCheckGapMs) {
+          return false;
+        }
+        if (!force && now - lastUserActivityAt > activeWindowMs) {
+          return false;
+        }
+
+        sessionCheckInFlight = true;
+        lastSessionCheckAt = now;
+        try {
+          const response = await fetch(sessionStateUrl, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: {
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+          });
+          const data = await response.json().catch(() => ({ authenticated: false }));
+          if (!response.ok || !data.authenticated) {
+            await unbind(data.reason || 'session-expired', false);
+            return false;
+          }
+          await heartbeat(data.session || sessionPayload);
+          return true;
+        } catch (error) {
+          return false;
+        } finally {
+          sessionCheckInFlight = false;
+        }
+      }
+
+      function markUserActivity() {
+        lastUserActivityAt = Date.now();
+        refreshSessionFromServer(false);
+      }
+
+      window.QuizOfficeHelperBridge = {
+        bind,
+        heartbeat,
+        unbind,
+        refreshSessionFromServer,
+        baseUrl: helperBaseUrl,
+      };
+
+      document.addEventListener('click', function (event) {
+        const logoutLink = event.target.closest('a[href*="/logout/"]');
+        if (logoutLink) {
+          unbind('logout-link', true);
+        }
+      }, true);
+
+      if (logoutSignal) {
+        unbind('server-logout', false);
+        return;
+      }
+
+      bind();
+      ['pointerdown', 'keydown', 'wheel', 'touchstart', 'focus'].forEach((eventName) => {
+        window.addEventListener(eventName, markUserActivity, { passive: true });
+      });
+      window.setInterval(() => {
+        refreshSessionFromServer(false);
+      }, minSessionCheckGapMs);
+    })();
+  </script>
+{% endif %}
