@@ -49,9 +49,9 @@ BROWSER_SAFE_IMAGE_MIME_TYPES = {
     "image/webp",
 }
 
-IMPORT_SEPARATOR_RE = re.compile(r"^(?:\+{4,}|[=\-]{10,})$")
-IMPORT_ANSWER_PREFIX_RE = re.compile(r"^={4,}\s*")
-IMPORT_CORRECT_PREFIX_RE = re.compile(r"^#\s*")
+IMPORT_SEPARATOR_RE = re.compile(r"^(?:\++|-{3,})$")
+IMPORT_ANSWER_PREFIX_RE = re.compile(r"^=+\s*")
+IMPORT_CORRECT_PREFIX_RE = re.compile(r"^#+\s*")
 
 
 def _local_name(tag):
@@ -272,15 +272,23 @@ def _cleanup_import_html(value):
 
 
 IMPORT_ALLOWED_TAGS = {
+    "a",
     "b",
+    "blockquote",
     "br",
     "div",
     "em",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "hr",
     "i",
     "img",
     "li",
     "ol",
     "p",
+    "span",
     "strong",
     "sub",
     "sup",
@@ -295,7 +303,9 @@ IMPORT_ALLOWED_TAGS = {
 }
 
 IMPORT_ALLOWED_ATTRIBUTES = {
+    "a": {"href", "rel", "target"},
     "img": {"alt", "src"},
+    "span": {"class"},
     "td": {"colspan", "rowspan"},
     "th": {"colspan", "rowspan"},
 }
@@ -339,12 +349,17 @@ def _normalize_import_fragment(value):
             continue
 
         if tag in {"font", "span"}:
+            classes = set(filter(None, (element.get("class") or "").split()))
             if "vertical-align: super" in style:
                 element.tag = "sup"
                 tag = "sup"
             elif "vertical-align: sub" in style:
                 element.tag = "sub"
                 tag = "sub"
+            elif tag == "span" and "docx-formula" in classes:
+                element.attrib.clear()
+                element.set("class", "docx-formula")
+                continue
             else:
                 element.drop_tag()
                 continue
@@ -364,6 +379,15 @@ def _normalize_import_fragment(value):
                 element.drop_tree()
                 continue
             element.set("alt", _cleanup_import_html(element.get("alt") or "image"))
+        elif tag == "a":
+            href = (element.get("href") or "").strip()
+            if href.lower().startswith("javascript:"):
+                element.drop_tag()
+                continue
+            if href:
+                element.set("href", href)
+                element.set("target", "_blank")
+                element.set("rel", "noopener noreferrer")
 
     for element in list(root.iter())[::-1]:
         if element is root or not isinstance(element.tag, str):
@@ -501,6 +525,8 @@ def _parse_prefixed_import_answer(compact_text, block_html):
         return None
 
     answer_text = compact_text[prefix_match.end():].strip()
+    if not answer_text:
+        return None
     is_correct = answer_text.startswith("#")
 
     clean_html = _strip_import_prefix(block_html, IMPORT_ANSWER_PREFIX_RE)
@@ -510,116 +536,19 @@ def _parse_prefixed_import_answer(compact_text, block_html):
     return clean_html, is_correct
 
 
-def parse_pasted_questions(pasted_html, pasted_text=""):
-    raw_html = (pasted_html or "").strip()
-    raw_text = (pasted_text or "").strip()
-    if not raw_html and not raw_text:
-        return []
+def _is_answer_prefix_only(compact_text):
+    compact_text = (compact_text or "").strip()
+    if not compact_text:
+        return False
 
-    if not raw_html and raw_text:
-        paragraphs = []
-        for line in raw_text.splitlines():
-            clean_line = line.strip()
-            if clean_line:
-                paragraphs.append(f"<p>{std_html.escape(clean_line)}</p>")
-        raw_html = "".join(paragraphs)
+    prefix_match = IMPORT_ANSWER_PREFIX_RE.match(compact_text)
+    if not prefix_match:
+        return False
 
-    try:
-        root = lxml_html.fromstring(raw_html)
-    except Exception:
-        root = lxml_html.fromstring(f"<div>{raw_html}</div>")
+    return not compact_text[prefix_match.end():].strip()
 
-    body_list = root.xpath("//body")
-    if body_list:
-        body = body_list[0]
-    else:
-        body = root
 
-    q_re = re.compile(r"^Savol\s*(\d+)\s*[:.)]?\s*", re.IGNORECASE)
-    v_re = re.compile(r"^Variant\s*(\d+)\b", re.IGNORECASE)
-
-    questions = []
-    current_q_text = []
-    current_answers = []
-
-    def iter_blocks(el):
-        for child in el.iterchildren():
-            tag = str(child.tag).lower()
-            if "}" in tag: tag = tag.split("}", 1)[1]
-            if tag in ("p", "h1", "h2", "h3", "h4", "table", "div", "li"):
-                yield child
-            elif tag in ("ul", "ol"):
-                for li in child.xpath(".//*[local-name()='li']"):
-                    yield li
-            else:
-                yield from iter_blocks(child)
-
-    for block in iter_blocks(body):
-        text = _cleanup_import_html(" ".join((block.text_content() or "").split()))
-        has_img = bool(block.xpath(".//*[local-name()='img']") or block.xpath(".//*[local-name()='math']") or block.xpath(".//*[local-name()='imagedata']"))
-        if not text and not has_img:
-            continue
-
-        block_html = _normalize_import_fragment(
-            lxml_html.tostring(block, encoding="unicode", method="html")
-        )
-        if not block_html and not has_img:
-            continue
-
-        compact_text = text.strip()
-
-        # Separator
-        if _is_import_separator(compact_text):
-            if current_q_text and current_answers:
-                questions.append({
-                    "text": "\n".join(current_q_text),
-                    "image_base64": None,
-                    "answers": current_answers
-                })
-            current_q_text = []
-            current_answers = []
-            continue
-
-        # Variant (Eski)
-        vm = v_re.match(compact_text)
-        if vm:
-            vnum = int(vm.group(1))
-            t_low = compact_text.lower()
-            is_correct = (vnum == 1) or ("to'g'ri" in t_low) or ("togri" in t_low)
-            current_answers.append((block_html, is_correct))
-            continue
-
-        # Yangi Format
-        parsed_answer = _parse_prefixed_import_answer(compact_text, block_html)
-        if parsed_answer:
-            current_answers.append(parsed_answer)
-            continue
-
-        # Savol bormi
-        if q_re.match(compact_text):
-            if current_q_text and current_answers:
-                questions.append({
-                    "text": "\n".join(current_q_text),
-                    "image_base64": None,
-                    "answers": current_answers
-                })
-            current_q_text = [block_html]
-            current_answers = []
-            continue
-
-        current_q_text.append(block_html)
-
-    if current_q_text and current_answers:
-        questions.append({
-            "text": "\n".join(current_q_text),
-            "image_base64": None,
-            "answers": current_answers
-        })
-
-    if questions:
-        return questions
-
-    # Fallback jadvali
+def _extract_table_fallback_questions(body):
     tables = body.xpath(".//*[local-name()='table']")
     out2 = []
     for table in tables:
@@ -666,6 +595,160 @@ def parse_pasted_questions(pasted_html, pasted_text=""):
             })
 
     return out2
+
+
+def _extract_import_questions_from_body(body):
+    q_re = re.compile(r"^Savol\s*(\d+)\s*[:.)]?\s*", re.IGNORECASE)
+    q_label_only_re = re.compile(r"^Savol\s*\d+\s*[:.)]?\s*$", re.IGNORECASE)
+    v_re = re.compile(r"^Variant\s*(\d+)\b[\s:.)-]*", re.IGNORECASE)
+
+    questions = []
+    current_q_text = []
+    current_answers = []
+    waiting_for_answer_content = False
+
+    def flush_current_question():
+        nonlocal current_q_text, current_answers
+        if current_q_text and current_answers:
+            questions.append({
+                "text": "\n".join(current_q_text),
+                "image_base64": None,
+                "answers": current_answers,
+            })
+        current_q_text = []
+        current_answers = []
+
+    for block in _iter_import_blocks(body):
+        text = _cleanup_import_html(" ".join((block.text_content() or "").split()))
+        has_img = bool(
+            block.xpath(".//*[local-name()='img']")
+            or block.xpath(".//*[local-name()='math']")
+            or block.xpath(".//*[local-name()='imagedata']")
+        )
+        if not text and not has_img:
+            continue
+
+        block_html = _normalize_import_fragment(
+            lxml_html.tostring(block, encoding="unicode", method="html")
+        )
+        if not block_html and not has_img:
+            continue
+
+        compact_text = text.strip()
+
+        if _is_import_separator(compact_text):
+            flush_current_question()
+            waiting_for_answer_content = False
+            continue
+
+        if q_label_only_re.match(compact_text):
+            flush_current_question()
+            waiting_for_answer_content = False
+            continue
+
+        if q_re.match(compact_text):
+            flush_current_question()
+            clean_question_html = _strip_import_prefix(block_html, q_re)
+            if clean_question_html:
+                current_q_text = [clean_question_html]
+            waiting_for_answer_content = False
+            continue
+
+        if current_q_text:
+            vm = v_re.match(compact_text)
+            if vm:
+                vnum = int(vm.group(1))
+                t_low = compact_text.lower()
+                is_correct = (vnum == 1) or ("to'g'ri" in t_low) or ("togri" in t_low)
+                clean_answer_html = _strip_import_prefix(block_html, v_re)
+                current_answers.append((clean_answer_html, is_correct))
+                waiting_for_answer_content = False
+                continue
+
+            parsed_answer = _parse_prefixed_import_answer(compact_text, block_html)
+            if parsed_answer:
+                current_answers.append(parsed_answer)
+                waiting_for_answer_content = False
+                continue
+
+            if _is_answer_prefix_only(compact_text):
+                waiting_for_answer_content = True
+                continue
+
+            if waiting_for_answer_content:
+                is_correct = bool(IMPORT_CORRECT_PREFIX_RE.match(compact_text))
+                clean_html = block_html
+                if is_correct:
+                    clean_html = _strip_import_prefix(clean_html, IMPORT_CORRECT_PREFIX_RE)
+                if clean_html:
+                    current_answers.append((clean_html, is_correct))
+                waiting_for_answer_content = False
+                continue
+
+        current_q_text.append(block_html)
+        waiting_for_answer_content = False
+
+    flush_current_question()
+    if questions:
+        return questions
+
+    return _extract_table_fallback_questions(body)
+
+
+def _build_import_html_from_text(raw_text):
+    paragraphs = []
+    for line in (raw_text or "").splitlines():
+        clean_line = line.strip()
+        if clean_line:
+            paragraphs.append(f"<p>{std_html.escape(clean_line)}</p>")
+    return "".join(paragraphs)
+
+
+def _extract_import_questions_from_html(raw_html):
+    raw_html = (raw_html or "").strip()
+    if not raw_html:
+        return []
+
+    try:
+        root = lxml_html.fromstring(raw_html)
+    except Exception:
+        root = lxml_html.fromstring(f"<div>{raw_html}</div>")
+
+    body_list = root.xpath("//body")
+    body = body_list[0] if body_list else root
+    return _extract_import_questions_from_body(body)
+
+
+def _score_import_questions(questions):
+    total_answers = 0
+    total_question_length = 0
+
+    for question in questions or []:
+        answers = question.get("answers") or []
+        total_answers += len(answers)
+        total_question_length += len(_cleanup_import_html(question.get("text") or ""))
+
+    return (
+        len(questions or []),
+        total_answers,
+        total_question_length,
+    )
+
+
+def parse_pasted_questions(pasted_html, pasted_text=""):
+    raw_html = (pasted_html or "").strip()
+    raw_text = (pasted_text or "").strip()
+    if not raw_html and not raw_text:
+        return []
+
+    html_questions = _extract_import_questions_from_html(raw_html) if raw_html else []
+    text_questions = _extract_import_questions_from_html(_build_import_html_from_text(raw_text)) if raw_text else []
+
+    if _score_import_questions(text_questions) > _score_import_questions(html_questions):
+        return text_questions
+    if html_questions:
+        return html_questions
+    return text_questions
 
 
 def has_meaningful_import_content(pasted_html="", pasted_text=""):
@@ -930,7 +1013,6 @@ def _docx_to_html_embedded(docx_path):
 
 def parse_word(file) -> list[dict]:
     import tempfile
-    import re
     from pathlib import Path
     from lxml import html as lxml_html
 
@@ -965,136 +1047,7 @@ def parse_word(file) -> list[dict]:
         if not body_list:
             return []
         body = body_list[0]
-
-        q_re = re.compile(r"^Savol\s*(\d+)\s*[:.)]?\s*", re.IGNORECASE)
-        v_re = re.compile(r"^Variant\s*(\d+)\b", re.IGNORECASE)
-
-        questions = []
-        current_q_text = []
-        current_answers = []
-
-        def iter_blocks(el):
-            for child in el.iterchildren():
-                tag = str(child.tag).lower()
-                if "}" in tag: tag = tag.split("}", 1)[1]
-                if tag in ("p", "h1", "h2", "h3", "h4", "table", "div"):
-                    yield child
-                elif tag in ("ul", "ol"):
-                    for li in child.xpath(".//*[local-name()='li']"):
-                        yield li
-                else:
-                    yield from iter_blocks(child)
-
-        for block in iter_blocks(body):
-            text = _cleanup_import_html(" ".join((block.text_content() or "").split()))
-            has_img = bool(block.xpath(".//*[local-name()='img']") or block.xpath(".//*[local-name()='math']") or block.xpath(".//*[local-name()='imagedata']"))
-            if not text and not has_img:
-                continue
-
-            block_html = _normalize_import_fragment(
-                lxml_html.tostring(block, encoding="unicode", method="html")
-            )
-            if not block_html and not has_img:
-                continue
-
-            # Separator
-            if _is_import_separator(text):
-                if current_q_text and current_answers:
-                    questions.append({
-                        "text": "\n".join(current_q_text),
-                        "image_base64": None,
-                        "answers": current_answers
-                    })
-                current_q_text = []
-                current_answers = []
-                continue
-
-            # Variant (Eski)
-            vm = v_re.match(text)
-            if vm:
-                vnum = int(vm.group(1))
-                t_low = text.lower()
-                is_correct = (vnum == 1) or ("to'g'ri" in t_low) or ("togri" in t_low)
-                current_answers.append((block_html, is_correct))
-                continue
-
-            # Yangi Format
-            parsed_answer = _parse_prefixed_import_answer(text, block_html)
-            if parsed_answer:
-                current_answers.append(parsed_answer)
-                continue
-
-            # Savol bormi
-            if q_re.match(text):
-                if current_q_text and current_answers:
-                    questions.append({
-                        "text": "\n".join(current_q_text),
-                        "image_base64": None,
-                        "answers": current_answers
-                    })
-                current_q_text = [block_html]
-                current_answers = []
-                continue
-
-            current_q_text.append(block_html)
-
-        if current_q_text and current_answers:
-            questions.append({
-                "text": "\n".join(current_q_text),
-                "image_base64": None,
-                "answers": current_answers
-            })
-
-        if questions:
-            return questions
-
-        # Fallback jadvali
-        tables = body.xpath(".//*[local-name()='table']")
-        out2 = []
-        for table in tables:
-            for tr in table.xpath(".//tr"):
-                cells = tr.xpath("./th|./td")
-                if len(cells) < 3:
-                    continue
-                
-                stem_cell = cells[0]
-                option_cells = cells[1:5]
-                
-                def cell_to_html(cell):
-                    parts = []
-                    for child in cell:
-                        parts.append(_normalize_import_fragment(
-                            lxml_html.tostring(child, encoding="unicode", method="html")
-                        ))
-                    inner = "".join(parts).strip()
-                    if not inner:
-                        txt = " ".join((cell.text_content() or "").split())
-                        if txt:
-                            inner = _normalize_import_fragment(f"<p>{std_html.escape(_cleanup_import_html(txt))}</p>")
-                    return inner if inner else ""
-                
-                q_html = cell_to_html(stem_cell)
-                if not q_html: continue
-                
-                answers = []
-                last_txt = None
-                for c in option_cells:
-                    c_html = cell_to_html(c)
-                    if c_html and c_html != last_txt:
-                        answers.append((c_html, False))
-                        last_txt = c_html
-                        
-                if len(answers) < 2:
-                    continue
-                    
-                answers[0] = (answers[0][0], True)
-                out2.append({
-                    "text": q_html,
-                    "image_base64": None,
-                    "answers": answers
-                })
-
-        return out2
+        return _extract_import_questions_from_body(body)
 
 from apps.question.models import Test, Question, Answer
 
@@ -1172,48 +1125,23 @@ def parse_excel(file, additional_files=None):
 @method_decorator(login_required, name='dispatch')
 class ImportQuestionsView(View):
     def post(self, request, test_id):
-        print(f"Import request: test_id={test_id}, user={request.user}")
         test = get_object_or_404(Test, id=test_id)
-        print(f"Test found: {test.name} (ID: {test_id})")
 
         try:
             pasted_html = (request.POST.get("pasted_html") or "").strip()
             pasted_text = (request.POST.get("pasted_text") or "").strip()
-            file = request.FILES.get("import_file")
             has_pasted_content = has_meaningful_import_content(pasted_html, pasted_text)
 
-            if file:
-                print(f"File: {file.name if file else 'no file'}")
-                name = (file.name or "").lower()
-                is_word = name.endswith(".docx") or name.endswith(".doc")
-                if not is_word:
-                    return JsonResponse({
-                        "success": False,
-                        "errors": "Faqat .docx yoki .doc fayllar qabul qilinadi",
-                    })
-
-                if file.size > 10 * 1024 * 1024:
-                    print(f"Error: file size {file.size} bytes is larger than 10MB")
-                    return JsonResponse({
-                        "success": False,
-                        "errors": "Fayl hajmi 10MB dan kichik bo'lishi kerak",
-                    })
-
-                print("Word faylini parsing boshlandi...")
-                questions = parse_word(file)
-            elif has_pasted_content:
-                print("Pasted content parsing boshlandi...")
+            if has_pasted_content:
                 questions = parse_pasted_questions(pasted_html, pasted_text)
             else:
                 return JsonResponse({
                     "success": False,
-                    "errors": "Word matnini paste qiling yoki .docx/.doc fayl yuklang",
+                    "errors": "Savollar matnini paste qiling",
                 })
 
             questions = _coerce_import_questions(questions)
-            print(f"Parsing natijasi: {len(questions)} ta savol topildi")
             if not questions:
-                print("Xato: Savollar topilmadi")
                 return JsonResponse({
                     "success": False,
                     "errors": "Savollar topilmadi. Formatni tekshirib qayta paste qiling.",
@@ -1222,7 +1150,6 @@ class ImportQuestionsView(View):
             request.session["imported_questions"] = questions
             request.session["test_id"] = test_id
             request.session.modified = True
-            print(f"Saved in session: {len(questions)} questions, test_id={test_id}")
 
             return JsonResponse({
                 "success": True,
@@ -1230,7 +1157,6 @@ class ImportQuestionsView(View):
                 "message": "Savollar muvaffaqiyatli o'qildi va preview tayyorlandi!",
             })
         except Exception as e:
-            print(f"Xato yuz berdi: {str(e)}")
             return JsonResponse({"success": False, "errors": f"Importda xato: {str(e)}"})
 
 
@@ -1239,11 +1165,16 @@ class DownloadTemplateView(View):
     def get(self, request):
         document = Document()
         for line in [
-            "1. Misol savol matni",
-            "==== #To'g'ri javob",
-            "==== Noto'g'ri javob 1",
-            "==== Noto'g'ri javob 2",
-            "==== Noto'g'ri javob 3",
+            "++++",
+            "Savol matni shu yerda",
+            "====",
+            "#To'g'ri javob",
+            "====",
+            "Javob 1",
+            "====",
+            "Javob 2",
+            "====",
+            "Javob 3",
             "++++",
         ]:
             document.add_paragraph(line)
@@ -1353,12 +1284,17 @@ class DownloadTemplateView(View):
     def get(self, request):
         document = Document()
         for line in [
-            "1. Misol savol matni",
-            "===== #To'g'ri javob",
-            "===== Noto'g'ri javob 1",
-            "===== Noto'g'ri javob 2",
-            "===== Noto'g'ri javob 3",
-            "+++++",
+            "++++",
+            "Savol matni shu yerda",
+            "====",
+            "#To'g'ri javob",
+            "====",
+            "Javob 1",
+            "====",
+            "Javob 2",
+            "====",
+            "Javob 3",
+            "++++",
         ]:
             document.add_paragraph(line)
 

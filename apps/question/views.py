@@ -2,23 +2,30 @@ import json
 import os
 import pickle
 import re
+import tempfile
+import time
 import unicodedata
+import uuid
 from urllib.parse import urlencode
 
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import Group
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Avg, Q, Prefetch
-from django.http import JsonResponse, StreamingHttpResponse
+from django.db.models import Avg, Count, Q, Prefetch
+from django.db.models.functions import Coalesce
+from django.http import HttpResponseForbidden, JsonResponse, StreamingHttpResponse
 from django.middleware.csrf import get_token
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.views import View
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from datetime import date, timedelta, datetime
 from openpyxl import load_workbook
@@ -29,6 +36,8 @@ from apps.question.models import StudentTest, Category, StudentTestQuestion, Tes
 
 
 DEFAULT_USER_PASSWORD = "namdpi451"
+USERS_STATS_CACHE_TTL = 120
+USERS_GROUPS_CACHE_TTL = 300
 
 
 @method_decorator(login_required, name='dispatch')
@@ -167,22 +176,78 @@ class RevokeAllAuthView(View):
 @method_decorator(login_required, name='dispatch')
 class UsersView(View):
     template_name = 'question/views/users.html'
+    page_size = 30
+    list_fields = (
+        'id',
+        'username',
+        'first_name',
+        'second_name',
+        'full_name',
+        'group_name',
+        'is_student',
+        'is_teacher',
+        'level_name',
+        'staff_position',
+        'date_of_birth',
+        'auth_is_id',
+        'profile_picture',
+    )
+
+    def _base_queryset(self):
+        return CustomUser.objects.only(*self.list_fields)
+
+    def _get_group_names(self):
+        cache_key = "administrator_users_group_names"
+        cached_groups = cache.get(cache_key)
+        if cached_groups is not None:
+            return cached_groups
+
+        groups = self._get_group_names()
+        cache.set(cache_key, groups, USERS_GROUPS_CACHE_TTL)
+        return groups
+
+    def _get_summary_stats(self):
+        today = timezone.localdate()
+        yesterday = today - timedelta(days=1)
+        month_start = today.replace(day=1)
+        cache_key = f"administrator_users_stats:{today.isoformat()}"
+        cached_stats = cache.get(cache_key)
+        if cached_stats is not None:
+            return cached_stats
+
+        stats = CustomUser.objects.aggregate(
+            total_users_count=Count('id'),
+            student_users_count=Count('id', filter=Q(is_student=True)),
+            teacher_users_count=Count('id', filter=Q(is_teacher=True)),
+            auth_enabled_count=Count('id', filter=Q(auth_is_id=True)),
+            today_users_count=Count('id', filter=Q(date_joined__date=today)),
+            yesterday_users_count=Count('id', filter=Q(date_joined__date=yesterday)),
+            month_users_count=Count(
+                'id',
+                filter=Q(date_joined__date__gte=month_start, date_joined__date__lte=today),
+            ),
+        )
+        cache.set(cache_key, stats, USERS_STATS_CACHE_TTL)
+        return stats
 
     def get(self, request):
-        search_query = request.GET.get('search', '')
-        filter_type = request.GET.get('filter_type', '')
-        group_name = request.GET.get('group_name', '')
+        search_query = (request.GET.get('search') or '').strip()
+        filter_type = (request.GET.get('filter_type') or '').strip()
+        group_name = (request.GET.get('group_name') or request.GET.get('group_id') or '').strip()
 
-        users_queryset = CustomUser.objects.all()
+        users_queryset = self._base_queryset()
 
         # Qidiruv (to‘liq, username ham kiritilgan)
         if search_query:
             users_queryset = users_queryset.filter(
+                Q(full_name__icontains=search_query) |
                 Q(first_name__icontains=search_query) |
                 Q(second_name__icontains=search_query) |
+                Q(third_name__icontains=search_query) |
                 Q(username__icontains=search_query) |  # ✅ Username bo‘yicha qidiruv
                 Q(phone_number__icontains=search_query) |
-                Q(address__icontains=search_query)
+                Q(address__icontains=search_query) |
+                Q(group_name__icontains=search_query)
             )
 
         # Filtrlash
@@ -196,26 +261,27 @@ class UsersView(View):
             users_queryset = users_queryset.filter(group_name=group_name)
 
         # Saralash
-        users_queryset = users_queryset.order_by('second_name', 'group_name')
+        users_queryset = users_queryset.order_by('group_name', 'second_name', 'first_name', 'username')
 
         # Guruhlar ro‘yxati
-        groups = CustomUser.objects.filter(group_name__isnull=False).values('group_name').distinct().order_by(
-            'group_name')
+        groups = list(
+            CustomUser.objects.exclude(group_name__isnull=True)
+            .exclude(group_name__exact='')
+            .values_list('group_name', flat=True)
+            .distinct()
+            .order_by('group_name')
+        )
 
         # Pagination
-        paginator = Paginator(users_queryset, 50)
+        paginator = Paginator(users_queryset, self.page_size)
         page_number = request.GET.get('page')
         users = paginator.get_page(page_number)
 
         # Statistik ma'lumotlar
-        today = date.today()
-        yesterday = today - timedelta(days=1)
-        current_month = today.month
+        stats = self._get_summary_stats()
 
-        total_users_count = CustomUser.objects.count()
-        today_users_count = CustomUser.objects.filter(date_joined__date=today).count()
-        yesterday_users_count = CustomUser.objects.filter(date_joined__date=yesterday).count()
-        month_users_count = CustomUser.objects.filter(date_joined__month=current_month).count()
+        query_params = request.GET.copy()
+        query_params.pop('page', None)
 
         context = {
             'users': users,
@@ -223,10 +289,14 @@ class UsersView(View):
             'filter_type': filter_type,
             'group_name': group_name,
             'groups': groups,
-            'total_users_count': total_users_count,
-            'today_users_count': today_users_count,
-            'yesterday_users_count': yesterday_users_count,
-            'month_users_count': month_users_count,
+            'total_users_count': stats['total_users_count'],
+            'student_users_count': stats['student_users_count'],
+            'teacher_users_count': stats['teacher_users_count'],
+            'auth_enabled_count': stats['auth_enabled_count'],
+            'today_users_count': stats['today_users_count'],
+            'yesterday_users_count': stats['yesterday_users_count'],
+            'month_users_count': stats['month_users_count'],
+            'pagination_query': query_params.urlencode(),
         }
         return render(request, self.template_name, context)
 
@@ -548,26 +618,40 @@ class EditUserView(View):
 @method_decorator(login_required, name='dispatch')
 class ResultsView(View):
     template_name = 'question/views/results.html'
+    valid_status_filters = {'all', 'completed', 'incomplete'}
+    valid_time_filters = {'today', 'yesterday', 'week', 'month', 'all'}
 
     def get(self, request):
-        # Filters
         category_id = request.GET.get('category', '').strip()
         test_name = request.GET.get('test', '').strip()
         username = request.GET.get('username', '').strip()
         full_name = request.GET.get('full_name', '').strip()
+        status_filter = (request.GET.get('status') or 'all').strip().lower() or 'all'
+        time_filter = (request.GET.get('time_filter') or 'today').strip().lower() or 'today'
 
-        # Base query
-        completed_tests = StudentTest.objects.filter(completed=True).select_related(
-            'student', 'assignment__teacher', 'assignment__test', 'assignment__test__created_by', 'assignment__category'
-        ).order_by('-end_time')
+        if status_filter not in self.valid_status_filters:
+            status_filter = 'all'
+        if time_filter not in self.valid_time_filters:
+            time_filter = 'today'
 
-        # Apply filters
+        student_tests = (
+            StudentTest.objects.select_related(
+                'student',
+                'assignment__teacher',
+                'assignment__test',
+                'assignment__test__created_by',
+                'assignment__category',
+            )
+            .annotate(activity_time=Coalesce('end_time', 'start_time'))
+            .order_by('-activity_time', '-id')
+        )
+
         if category_id:
-            completed_tests = completed_tests.filter(assignment__category_id=category_id)
+            student_tests = student_tests.filter(assignment__category_id=category_id)
         if test_name:
-            completed_tests = completed_tests.filter(assignment__test__name__icontains=test_name)
+            student_tests = student_tests.filter(assignment__test__name__icontains=test_name)
         if username:
-            completed_tests = completed_tests.filter(student__username__icontains=username)
+            student_tests = student_tests.filter(student__username__icontains=username)
         if full_name:
             name_query = Q(student__full_name__icontains=full_name)
             for term in full_name.split():
@@ -576,19 +660,49 @@ class ResultsView(View):
                     | Q(student__second_name__icontains=term)
                     | Q(student__third_name__icontains=term)
                 )
-            completed_tests = completed_tests.filter(name_query)
+            student_tests = student_tests.filter(name_query)
 
-        # Fetch categories for the filter dropdown
-        categories = Category.objects.all()
+        if status_filter == 'completed':
+            student_tests = student_tests.filter(completed=True)
+        elif status_filter == 'incomplete':
+            student_tests = student_tests.filter(completed=False)
+
+        today = timezone.localdate()
+        if time_filter == 'today':
+            student_tests = student_tests.filter(activity_time__date=today)
+        elif time_filter == 'yesterday':
+            student_tests = student_tests.filter(activity_time__date=today - timedelta(days=1))
+        elif time_filter == 'week':
+            week_start = today - timedelta(days=today.weekday())
+            student_tests = student_tests.filter(activity_time__date__gte=week_start, activity_time__date__lte=today)
+        elif time_filter == 'month':
+            month_start = today.replace(day=1)
+            student_tests = student_tests.filter(activity_time__date__gte=month_start, activity_time__date__lte=today)
+
+        categories = Category.objects.all().order_by('name')
+        paginator = Paginator(student_tests, 25)
+        page_number = request.GET.get('page')
+        paginated_student_tests = paginator.get_page(page_number)
+        completed_queryset = student_tests.filter(completed=True)
+        query_params = request.GET.copy()
+        query_params.pop('page', None)
 
         context = {
-            'completed_tests': completed_tests,
+            'student_tests': paginated_student_tests,
             'categories': categories,
+            'total_results_count': StudentTest.objects.count(),
+            'filtered_results_count': paginator.count,
+            'completed_results_count': student_tests.filter(completed=True).count(),
+            'incomplete_results_count': student_tests.filter(completed=False).count(),
+            'average_score': completed_queryset.aggregate(avg_score=Avg('score'))['avg_score'],
+            'pagination_query': query_params.urlencode(),
             'filters': {
                 'category': category_id,
                 'test': test_name,
                 'username': username,
                 'full_name': full_name,
+                'status': status_filter,
+                'time_filter': time_filter,
             },
         }
         return render(request, self.template_name, context)
@@ -627,39 +741,62 @@ class ViewTestDetailsView(View):
     template_name = 'question/views/test_details.html'
 
     def get(self, request, test_id):
-        # Fetch the StudentTest object
         test = get_object_or_404(
-            StudentTest.objects.prefetch_related(
+            StudentTest.objects.select_related(
+                'student',
+                'assignment__teacher',
+                'assignment__test',
+                'assignment__test__created_by',
+                'assignment__category',
+            ).prefetch_related(
                 Prefetch(
                     'student_questions',
                     queryset=StudentTestQuestion.objects.select_related(
                         'question', 'selected_answer'
                     ).prefetch_related(
                         'question__answers'
-                    )
+                    ).order_by('order')
                 )
             ),
             id=test_id
         )
 
-        # Calculate statistics
-        total_questions = test.student_questions.count()
-        correct_answers = test.student_questions.filter(is_correct=True).count()
-        incorrect_answers = total_questions - correct_answers
+        allowed = (
+            request.user.is_superuser
+            or test.assignment.teacher_id == request.user.id
+            or test.assignment.test.created_by_id == request.user.id
+        )
+        if not allowed:
+            return HttpResponseForbidden("Bu natijani ko'rish uchun ruxsat yo'q.")
+
+        question_rows = list(test.student_questions.all())
+        total_questions = len(question_rows)
+        answered_count = sum(1 for question in question_rows if question.selected_answer_id)
+        correct_answers = sum(1 for question in question_rows if question.selected_answer_id and question.is_correct)
+        incorrect_answers = answered_count - correct_answers
+        unanswered_count = total_questions - answered_count
+        progress_percent = round((answered_count / total_questions) * 100, 1) if total_questions else 0
+        accuracy_percent = round((correct_answers / answered_count) * 100, 1) if answered_count else 0
 
         context = {
             'test': test,
+            'question_rows': question_rows,
             'total_questions': total_questions,
+            'answered_count': answered_count,
             'correct_answers': correct_answers,
             'incorrect_answers': incorrect_answers,
+            'unanswered_count': unanswered_count,
+            'progress_percent': progress_percent,
+            'accuracy_percent': accuracy_percent,
         }
 
         return render(request, self.template_name, context)
 
 
 def assign_students_to_test(request, test_id):
-    test = get_object_or_404(Test, id=test_id)
+    test = get_object_or_404(Test.objects.select_related('category', 'created_by'), id=test_id)
     students = CustomUser.objects.filter(is_student=True).exclude(assigned_tests=test).order_by('group_name', 'second_name', 'first_name', 'username')
+    available_students_total = students.count()
 
     group_filter = request.GET.get('group', '')
     search_query = request.GET.get('search', '')
@@ -680,12 +817,15 @@ def assign_students_to_test(request, test_id):
         .order_by('group_name')
     )
     groups = list(groups_qs.values_list('group_name', flat=True).distinct())
+    filtered_students_count = students.count()
 
     paginator = Paginator(students, 40)
     page_number = request.GET.get('page')
     students_page = paginator.get_page(page_number)
 
-    assigned_students = test.students.all()
+    assigned_students = test.students.order_by('group_name', 'second_name', 'first_name', 'username')
+    query_params = request.GET.copy()
+    query_params.pop('page', None)
 
     if request.method == 'POST':
         query_params = {}
@@ -732,6 +872,12 @@ def assign_students_to_test(request, test_id):
         'group_filter': group_filter,
         'search_query': search_query,
         'alert': alert,
+        'pagination_query': query_params.urlencode(),
+        'assigned_students_count': assigned_students.count(),
+        'available_students_total': available_students_total,
+        'filtered_students_count': filtered_students_count,
+        'groups_count': len(groups),
+        'question_count': test.questions.count(),
     })
 
 EXCEL_IMPORT_COLUMN_ALIASES = {
@@ -817,147 +963,456 @@ def _resolve_excel_columns(columns):
     return resolved
 
 
-@method_decorator(login_required, name='dispatch')
-class ImportUsersExcelView(View):
-    required_columns = ("username", "full_name", "group_name")
+EXCEL_IMPORT_REQUIRED_COLUMNS = ("username", "full_name", "group_name")
+EXCEL_IMPORT_PREVIEW_LIMIT = 12
+EXCEL_IMPORT_BATCH_SIZE = 100
+EXCEL_IMPORT_TOKEN_TTL_SECONDS = 30 * 60
+EXCEL_IMPORT_HEADER_SCAN_LIMIT = 25
+EXCEL_IMPORT_UPDATE_FIELDS = [
+    "username",
+    "student_id_number",
+    "first_name",
+    "second_name",
+    "third_name",
+    "full_name",
+    "group_name",
+    "is_student",
+    "auth_is_id",
+    "password",
+]
 
+
+def _get_excel_import_field_labels():
+    return {
+        "username": "username yoki talaba ID",
+        "full_name": "O'quvchining F.I.SH.",
+        "group_name": "akademik guruh",
+    }
+
+
+def _validate_excel_import_file(excel_file):
+    if not excel_file:
+        raise ValidationError("Excel fayl yuklanmadi.")
+    if not str(excel_file.name or "").lower().endswith((".xlsx", ".xlsm")):
+        raise ValidationError("Faqat .xlsx yoki .xlsm formatdagi Excel fayl yuklang.")
+
+
+def _parse_excel_users_file(excel_file):
+    _validate_excel_import_file(excel_file)
+
+    workbook = load_workbook(excel_file, read_only=True, data_only=True)
+    try:
+        worksheet = None
+        headers = None
+        header_row_index = None
+        column_map = None
+
+        for candidate_sheet in workbook.worksheets:
+            for row_index, row in enumerate(candidate_sheet.iter_rows(values_only=True), start=1):
+                if row_index > EXCEL_IMPORT_HEADER_SCAN_LIMIT:
+                    break
+
+                candidate_headers = [header if header is not None else "" for header in row]
+                if not any(_clean_excel_value(value) for value in candidate_headers):
+                    continue
+
+                candidate_column_map = _resolve_excel_columns(candidate_headers)
+                missing_columns = [
+                    column for column in EXCEL_IMPORT_REQUIRED_COLUMNS if column not in candidate_column_map
+                ]
+                if not missing_columns:
+                    worksheet = candidate_sheet
+                    headers = candidate_headers
+                    header_row_index = row_index
+                    column_map = candidate_column_map
+                    break
+
+            if worksheet is not None:
+                break
+
+        if worksheet is None or headers is None or header_row_index is None or column_map is None:
+            field_labels = _get_excel_import_field_labels()
+            missing_labels = ", ".join(field_labels[column] for column in EXCEL_IMPORT_REQUIRED_COLUMNS)
+            raise ValidationError(
+                f"Excel ichidan kerakli ustunlar topilmadi: {missing_labels}. "
+                f"Sarlavha qatori birinchi {EXCEL_IMPORT_HEADER_SCAN_LIMIT} qatorda bo'lishi kerak."
+            )
+
+        prepared_users = {}
+        skipped_count = 0
+        duplicate_count = 0
+
+        for row in worksheet.iter_rows(min_row=header_row_index + 1, values_only=True):
+            row_data = dict(zip(headers, row))
+            username = _coerce_excel_username(row_data.get(column_map["username"]))
+            full_name = _clean_excel_value(row_data.get(column_map["full_name"]))
+            group_name = _clean_excel_value(row_data.get(column_map["group_name"])) or None
+
+            if not username or not full_name:
+                skipped_count += 1
+                continue
+
+            first_name, second_name, third_name = _split_student_full_name(full_name)
+            if username in prepared_users:
+                duplicate_count += 1
+
+            prepared_users[username] = {
+                "username": username,
+                "student_id_number": username,
+                "first_name": first_name,
+                "second_name": second_name,
+                "third_name": third_name,
+                "full_name": full_name,
+                "group_name": group_name,
+                "is_student": True,
+                "auth_is_id": True,
+            }
+
+        if not prepared_users:
+            raise ValidationError("Import uchun yaroqli foydalanuvchi topilmadi.")
+
+        return {
+            "headers": headers,
+            "prepared_users": list(prepared_users.values()),
+            "skipped_count": skipped_count,
+            "duplicate_count": duplicate_count,
+        }
+    finally:
+        workbook.close()
+
+
+def _get_excel_import_preview_dir():
+    directory = os.path.join(tempfile.gettempdir(), "quiz_django_excel_imports")
+    os.makedirs(directory, exist_ok=True)
+    return directory
+
+
+def _cleanup_expired_excel_import_previews():
+    now = time.time()
+    directory = _get_excel_import_preview_dir()
+    for file_name in os.listdir(directory):
+        if not file_name.endswith(".json"):
+            continue
+        file_path = os.path.join(directory, file_name)
+        try:
+            if now - os.path.getmtime(file_path) > EXCEL_IMPORT_TOKEN_TTL_SECONDS:
+                os.remove(file_path)
+        except OSError:
+            continue
+
+
+def _get_excel_import_preview_path(token):
+    if not re.fullmatch(r"[a-f0-9]{32}", token or ""):
+        raise ValidationError("Import token noto'g'ri.")
+    return os.path.join(_get_excel_import_preview_dir(), f"{token}.json")
+
+
+def _save_excel_import_preview(payload):
+    _cleanup_expired_excel_import_previews()
+    token = uuid.uuid4().hex
+    file_path = _get_excel_import_preview_path(token)
+    with open(file_path, "w", encoding="utf-8") as preview_file:
+        json.dump(payload, preview_file, ensure_ascii=False)
+    return token
+
+
+def _load_excel_import_preview(token):
+    file_path = _get_excel_import_preview_path(token)
+    if not os.path.exists(file_path):
+        raise ValidationError("Import preview topilmadi yoki muddati tugagan.")
+
+    with open(file_path, "r", encoding="utf-8") as preview_file:
+        payload = json.load(preview_file)
+
+    created_at = float(payload.get("created_at") or 0)
+    if not created_at or time.time() - created_at > EXCEL_IMPORT_TOKEN_TTL_SECONDS:
+        try:
+            os.remove(file_path)
+        except OSError:
+            pass
+        raise ValidationError("Import preview muddati tugagan. Excel faylni qayta tanlang.")
+
+    return payload
+
+
+def _delete_excel_import_preview(token):
+    try:
+        os.remove(_get_excel_import_preview_path(token))
+    except (OSError, ValidationError):
+        pass
+
+
+def _build_excel_import_preview_payload(parsed_payload, requested_by, file_name):
+    prepared_users = parsed_payload["prepared_users"]
+    usernames = [item["username"] for item in prepared_users]
+    existing_usernames = set(
+        CustomUser.objects.filter(username__in=usernames).values_list("username", flat=True)
+    )
+
+    preview_rows = []
+    for index, row in enumerate(prepared_users[:EXCEL_IMPORT_PREVIEW_LIMIT], start=1):
+        is_update = row["username"] in existing_usernames
+        preview_rows.append(
+            {
+                "index": index,
+                "username": row["username"],
+                "full_name": row["full_name"],
+                "group_name": row["group_name"] or "-",
+                "status": "update" if is_update else "create",
+                "status_label": "Yangilanadi" if is_update else "Yangi qo'shiladi",
+            }
+        )
+
+    return {
+        "created_at": time.time(),
+        "requested_by": requested_by,
+        "file_name": file_name,
+        "prepared_users": prepared_users,
+        "summary": {
+            "total_valid": len(prepared_users),
+            "new_count": sum(1 for item in prepared_users if item["username"] not in existing_usernames),
+            "update_count": sum(1 for item in prepared_users if item["username"] in existing_usernames),
+            "skipped_count": parsed_payload["skipped_count"],
+            "duplicate_count": parsed_payload["duplicate_count"],
+        },
+        "preview_rows": preview_rows,
+    }
+
+
+def _execute_excel_import(prepared_users, progress_callback=None):
+    usernames = [item["username"] for item in prepared_users]
+    existing_users = {
+        user.username: user
+        for user in CustomUser.objects.filter(username__in=usernames)
+    }
+    default_password_hash = make_password(DEFAULT_USER_PASSWORD)
+
+    created_count = 0
+    updated_count = 0
+    processed_count = 0
+    total_count = len(prepared_users)
+
+    for start in range(0, total_count, EXCEL_IMPORT_BATCH_SIZE):
+        batch = prepared_users[start:start + EXCEL_IMPORT_BATCH_SIZE]
+        users_to_create = []
+        users_to_update = []
+
+        for payload in batch:
+            username = payload["username"]
+            if username in existing_users:
+                user = existing_users[username]
+                for field_name, value in payload.items():
+                    setattr(user, field_name, value)
+                user.password = default_password_hash
+                users_to_update.append(user)
+            else:
+                users_to_create.append(CustomUser(password=default_password_hash, **payload))
+
+        with transaction.atomic():
+            if users_to_create:
+                CustomUser.objects.bulk_create(users_to_create, batch_size=EXCEL_IMPORT_BATCH_SIZE)
+            if users_to_update:
+                CustomUser.objects.bulk_update(
+                    users_to_update,
+                    EXCEL_IMPORT_UPDATE_FIELDS,
+                    batch_size=EXCEL_IMPORT_BATCH_SIZE,
+                )
+
+        created_count += len(users_to_create)
+        updated_count += len(users_to_update)
+        processed_count += len(batch)
+
+        if progress_callback:
+            progress_callback(processed_count, total_count, created_count, updated_count)
+
+    return {
+        "created_count": created_count,
+        "updated_count": updated_count,
+        "processed_count": processed_count,
+    }
+
+
+@method_decorator(login_required, name='dispatch')
+class ImportUsersExcelPreviewView(View):
     def post(self, request):
-        excel_file = request.FILES.get("file")
-        if not excel_file:
-            return JsonResponse({"success": False, "message": "Excel fayl yuklanmadi."}, status=400)
-        if not str(excel_file.name or "").lower().endswith((".xlsx", ".xlsm")):
+        try:
+            parsed_payload = _parse_excel_users_file(request.FILES.get("file"))
+            preview_payload = _build_excel_import_preview_payload(
+                parsed_payload,
+                requested_by=request.user.id,
+                file_name=request.FILES["file"].name,
+            )
+            token = _save_excel_import_preview(preview_payload)
+            return JsonResponse(
+                {
+                    "success": True,
+                    "token": token,
+                    "file_name": preview_payload["file_name"],
+                    "summary": preview_payload["summary"],
+                    "preview_rows": preview_payload["preview_rows"],
+                    "has_more_rows": preview_payload["summary"]["total_valid"] > len(preview_payload["preview_rows"]),
+                    "preview_limit": EXCEL_IMPORT_PREVIEW_LIMIT,
+                }
+            )
+        except ValidationError as error:
+            return JsonResponse({"success": False, "message": str(error)}, status=400)
+        except Exception as error:
             return JsonResponse(
                 {
                     "success": False,
-                    "message": "Faqat .xlsx yoki .xlsm formatdagi Excel fayl yuklang.",
+                    "message": f"Preview tayyorlashda xatolik yuz berdi: {error}",
                 },
-                status=400,
+                status=500,
             )
 
+
+@method_decorator(login_required, name='dispatch')
+class ImportUsersExcelStreamView(View):
+    def get(self, request):
+        token = (request.GET.get("token") or "").strip()
+
         try:
-            workbook = load_workbook(excel_file, read_only=True, data_only=True)
-            worksheet = workbook.active
-            row_iterator = worksheet.iter_rows(values_only=True)
-            headers_row = next(row_iterator, None)
+            preview_payload = _load_excel_import_preview(token)
+            if preview_payload.get("requested_by") != request.user.id:
+                raise ValidationError("Bu import preview sizga tegishli emas.")
+        except ValidationError as error:
+            return JsonResponse({"success": False, "message": str(error)}, status=400)
 
-            if not headers_row:
-                workbook.close()
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "message": "Excel fayl bo'sh.",
-                    },
-                    status=400,
-                )
+        prepared_users = preview_payload["prepared_users"]
+        summary = preview_payload["summary"]
 
-            headers = [header if header is not None else "" for header in headers_row]
-            column_map = _resolve_excel_columns(headers)
-
-            missing_columns = [column for column in self.required_columns if column not in column_map]
-            if missing_columns:
-                workbook.close()
-                field_labels = {
-                    "username": "username yoki talaba ID",
-                    "full_name": "O'quvchining F.I.SH.",
-                    "group_name": "akademik guruh",
-                }
-                missing_labels = ", ".join(field_labels[column] for column in missing_columns)
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "message": f"Excel ustunlari topilmadi: {missing_labels}.",
-                    },
-                    status=400,
-                )
-
-            prepared_users = {}
-            skipped_count = 0
-
-            for row in row_iterator:
-                row_data = dict(zip(headers, row))
-                username = _coerce_excel_username(row_data.get(column_map["username"]))
-                full_name = _clean_excel_value(row_data.get(column_map["full_name"]))
-                group_name = _clean_excel_value(row_data.get(column_map["group_name"])) or None
-
-                if not username or not full_name:
-                    skipped_count += 1
-                    continue
-
-                first_name, second_name, third_name = _split_student_full_name(full_name)
-                prepared_users[username] = {
-                    "username": username,
-                    "student_id_number": username,
-                    "first_name": first_name,
-                    "second_name": second_name,
-                    "third_name": third_name,
-                    "full_name": full_name,
-                    "group_name": group_name,
-                    "is_student": True,
-                    "auth_is_id": True,
-                }
-
-            workbook.close()
-
-            if not prepared_users:
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "message": "Import uchun yaroqli foydalanuvchi topilmadi.",
-                    },
-                    status=400,
-                )
-
-            existing_users = {
-                user.username: user
-                for user in CustomUser.objects.filter(username__in=prepared_users.keys())
-            }
-
-            users_to_create = []
-            users_to_update = []
-            default_password_hash = make_password(DEFAULT_USER_PASSWORD)
-
-            with transaction.atomic():
-                for username, payload in prepared_users.items():
-                    if username in existing_users:
-                        user = existing_users[username]
-                        for field_name, value in payload.items():
-                            setattr(user, field_name, value)
-                        user.password = default_password_hash
-                        users_to_update.append(user)
-                    else:
-                        user = CustomUser(password=default_password_hash, **payload)
-                        users_to_create.append(user)
-
-                if users_to_create:
-                    CustomUser.objects.bulk_create(users_to_create, batch_size=500)
-
-                if users_to_update:
-                    CustomUser.objects.bulk_update(
-                        users_to_update,
-                        [
-                            "username",
-                            "student_id_number",
-                            "first_name",
-                            "second_name",
-                            "third_name",
-                            "full_name",
-                            "group_name",
-                            "is_student",
-                            "auth_is_id",
-                            "password",
-                        ],
-                        batch_size=500,
+        def stream():
+            try:
+                yield (
+                    "data: "
+                    + json.dumps(
+                        {
+                            "progress": 0,
+                            "status": f"{preview_payload['file_name']} importga tayyorlanmoqda...",
+                        },
+                        ensure_ascii=False,
                     )
+                    + "\n\n"
+                )
+                usernames = [item["username"] for item in prepared_users]
+                existing_users = {
+                    user.username: user
+                    for user in CustomUser.objects.filter(username__in=usernames)
+                }
+                default_password_hash = make_password(DEFAULT_USER_PASSWORD)
+                created_count = 0
+                updated_count = 0
+                processed_count = 0
+                total_count = len(prepared_users)
+
+                for start in range(0, total_count, EXCEL_IMPORT_BATCH_SIZE):
+                    batch = prepared_users[start:start + EXCEL_IMPORT_BATCH_SIZE]
+                    users_to_create = []
+                    users_to_update = []
+
+                    for payload in batch:
+                        username = payload["username"]
+                        if username in existing_users:
+                            user = existing_users[username]
+                            for field_name, value in payload.items():
+                                setattr(user, field_name, value)
+                            user.password = default_password_hash
+                            users_to_update.append(user)
+                        else:
+                            users_to_create.append(CustomUser(password=default_password_hash, **payload))
+
+                    with transaction.atomic():
+                        if users_to_create:
+                            CustomUser.objects.bulk_create(users_to_create, batch_size=EXCEL_IMPORT_BATCH_SIZE)
+                        if users_to_update:
+                            CustomUser.objects.bulk_update(
+                                users_to_update,
+                                EXCEL_IMPORT_UPDATE_FIELDS,
+                                batch_size=EXCEL_IMPORT_BATCH_SIZE,
+                            )
+
+                    created_count += len(users_to_create)
+                    updated_count += len(users_to_update)
+                    processed_count += len(batch)
+
+                    yield (
+                        "data: "
+                        + json.dumps(
+                            {
+                                "progress": round((processed_count / total_count) * 100) if total_count else 100,
+                                "processed_count": processed_count,
+                                "total_count": total_count,
+                                "created_count": created_count,
+                                "updated_count": updated_count,
+                                "status": (
+                                    f"{processed_count}/{total_count} ta foydalanuvchi qayta ishladi. "
+                                    f"Yangi: {created_count}, yangilandi: {updated_count}."
+                                ),
+                            },
+                            ensure_ascii=False,
+                        )
+                        + "\n\n"
+                    )
+
+                yield (
+                    "data: "
+                    + json.dumps(
+                        {
+                            "progress": 100,
+                            "success": True,
+                            "created_count": created_count,
+                            "updated_count": updated_count,
+                            "skipped_count": summary["skipped_count"],
+                            "duplicate_count": summary["duplicate_count"],
+                            "status": (
+                                f"Import yakunlandi: {created_count} ta qo'shildi, "
+                                f"{updated_count} ta yangilandi, "
+                                f"{summary['skipped_count']} ta o'tkazib yuborildi."
+                            ),
+                        },
+                        ensure_ascii=False,
+                    )
+                    + "\n\n"
+                )
+            except Exception as error:
+                yield (
+                    "data: "
+                    + json.dumps(
+                        {
+                            "progress": 100,
+                            "success": False,
+                            "error": True,
+                            "status": f"Importda xatolik yuz berdi: {error}",
+                        },
+                        ensure_ascii=False,
+                    )
+                    + "\n\n"
+                )
+            finally:
+                _delete_excel_import_preview(token)
+
+        return StreamingHttpResponse(stream(), content_type="text/event-stream")
+
+
+@method_decorator(login_required, name='dispatch')
+class ImportUsersExcelView(View):
+    def post(self, request):
+        try:
+            parsed_payload = _parse_excel_users_file(request.FILES.get("file"))
+            result = _execute_excel_import(parsed_payload["prepared_users"])
 
             return JsonResponse(
                 {
                     "success": True,
                     "message": (
-                        f"Import yakunlandi: {len(users_to_create)} ta qo'shildi, "
-                        f"{len(users_to_update)} ta yangilandi, {skipped_count} ta o'tkazib yuborildi."
+                        f"Import yakunlandi: {result['created_count']} ta qo'shildi, "
+                        f"{result['updated_count']} ta yangilandi, "
+                        f"{parsed_payload['skipped_count']} ta o'tkazib yuborildi."
                     ),
                 }
             )
+        except ValidationError as error:
+            return JsonResponse({"success": False, "message": str(error)}, status=400)
         except Exception as error:
             return JsonResponse(
                 {

@@ -1,0 +1,547 @@
+{% extends 'question/main.html' %}
+{% load static custom_filters %}
+
+{% block style %}
+<style>
+  .question-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 1rem;
+  }
+
+  .question-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .question-note {
+    border: 1px dashed rgba(15, 23, 42, 0.14);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.9);
+    padding: 0.875rem 1rem;
+  }
+
+  .question-bank-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+  }
+
+  .question-rich,
+  .question-rich * {
+    max-width: 100%;
+    color: inherit;
+    font-family: inherit;
+    font-size: inherit;
+    overflow-wrap: anywhere;
+  }
+
+  .question-rich p {
+    margin-bottom: 0.5rem;
+  }
+
+  .question-rich p:last-child {
+    margin-bottom: 0;
+  }
+
+  .question-rich img {
+    max-width: min(100%, 520px);
+    height: auto !important;
+    border-radius: 0.75rem;
+  }
+
+  .question-rich table {
+    width: auto;
+    max-width: 100%;
+    border-collapse: collapse;
+  }
+
+  .question-rich td,
+  .question-rich th {
+    padding: 0.25rem 0.4rem;
+    vertical-align: middle;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+  }
+
+  .question-answer-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.8rem 0.95rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.85rem;
+    background: #fbfdff;
+  }
+
+  .question-answer-item.is-correct {
+    border-color: rgba(34, 197, 94, 0.24);
+    background: rgba(240, 253, 244, 0.96);
+  }
+
+  .question-answer-marker {
+    width: 1.8rem;
+    height: 1.8rem;
+    flex-shrink: 0;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .question-answer-item.is-correct .question-answer-marker {
+    background: rgba(34, 197, 94, 0.16);
+    color: #166534;
+  }
+
+  .question-empty-state {
+    border: 1px dashed rgba(15, 23, 42, 0.12);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.72);
+    padding: 3rem 1.5rem;
+    text-align: center;
+  }
+
+  @media (max-width: 767.98px) {
+    .question-toolbar {
+      justify-content: center;
+    }
+  }
+</style>
+{% endblock style %}
+
+{% block content %}
+<main id="main-container">
+  <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+    <div class="bg-primary-dark-op">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-1">{{ test.name }}</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">Mavjud savollarni ko'rish, tahrirlash va test bankini nazorat qilish</h2>
+          </div>
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <div class="question-toolbar justify-content-center justify-content-lg-end">
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:question' %}">
+                <i class="fa fa-arrow-left me-1"></i> Testlar
+              </a>
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:edit-test' test.id %}">
+                <i class="fa fa-pencil-alt me-1"></i> Tahrirlash
+              </a>
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:assign-students-to-test' test.id %}">
+                <i class="fa fa-users me-1"></i> Talabalar
+              </a>
+              <a class="btn btn-sm btn-alt-primary" href="{% url 'administrator:add-question-test' test.id %}">
+                <i class="fa fa-plus me-1"></i> Savol qo'shish
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content content-boxed">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Savollar soni</div>
+              <div class="fs-2 fw-semibold">{{ summary.question_count }}</div>
+            </div>
+            <div class="question-stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa fa-question-circle"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Jami variantlar</div>
+              <div class="fs-2 fw-semibold">{{ total_answers_count }}</div>
+            </div>
+            <div class="question-stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa fa-list"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">To'g'ri javoblar</div>
+              <div class="fs-2 fw-semibold">{{ total_correct_answer_count }}</div>
+            </div>
+            <div class="question-stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa fa-check"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">So'nggi yangilanish</div>
+              <div class="fs-6 fw-semibold">
+                {% if summary.latest_question_update %}
+                  {{ summary.latest_question_update|date:"Y-m-d H:i" }}
+                {% else %}
+                  Hali mavjud emas
+                {% endif %}
+              </div>
+            </div>
+            <div class="question-stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa fa-clock"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block block-rounded">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Savollar banki</h3>
+        <div class="block-options">
+          <span class="fs-sm text-muted">{{ test.category.name }} | {{ summary.student_count }} ta talaba biriktirilgan</span>
+        </div>
+      </div>
+      <div class="block-content block-content-full">
+        <div class="question-note mb-4">
+          Bu sahifa testdagi mavjud savollarni ko'rish va tahrirlash uchun ajratildi. `Savol qo'shish` sahifasi esa endi faqat yangi savol, import va export oqimiga xizmat qiladi.
+        </div>
+
+        {% if questions %}
+          <div class="d-grid gap-4">
+            {% for question in questions %}
+              <div class="question-bank-card p-3 p-lg-4" data-question-id="{{ question.id }}">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3 mb-3">
+                  <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-primary rounded-pill px-3 py-2">Savol {{ forloop.counter }}</span>
+                    <div class="fs-sm text-muted">ID: {{ question.id }}</div>
+                  </div>
+                  <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-body-light text-dark rounded-pill">{{ question.answer_count }} ta variant</span>
+                    <span class="badge bg-success rounded-pill">{{ question.correct_answer_count }} ta to'g'ri javob</span>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-alt-primary edit-question-btn"
+                      data-detail-url="{% url 'administrator:question-detail' test.id question.id %}"
+                      data-update-url="{% url 'administrator:question-update' test.id question.id %}">
+                      <i class="fa fa-pencil-alt me-1"></i> Tahrirlash
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-danger delete-question-btn"
+                      data-delete-url="{% url 'administrator:question-delete' test.id question.id %}">
+                      <i class="fa fa-trash me-1"></i> O'chirish
+                    </button>
+                  </div>
+                </div>
+
+                <div class="row g-4">
+                  <div class="col-lg-5">
+                    <div class="fs-sm text-muted mb-2">Savol matni</div>
+                    <div class="question-rich fw-medium">{{ question.text|clean_import_question }}</div>
+                  </div>
+                  <div class="col-lg-7">
+                    <div class="fs-sm text-muted mb-2">Variantlar</div>
+                    <div class="d-grid gap-2">
+                      {% for answer in question.answers.all %}
+                        <div class="question-answer-item {% if answer.is_correct %}is-correct{% endif %}">
+                          <span class="question-answer-marker">{{ forloop.counter }}</span>
+                          <div class="question-rich flex-grow-1 {% if answer.is_correct %}text-success fw-medium{% endif %}">
+                            {{ answer.text|clean_import_answer }}
+                          </div>
+                          {% if answer.is_correct %}
+                            <span class="badge bg-success rounded-pill">To'g'ri</span>
+                          {% endif %}
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="question-empty-state">
+            <div class="mb-3 text-muted">
+              <i class="fa fa-file-alt fa-2x opacity-50"></i>
+            </div>
+            <h4 class="h5 mb-2">Hali savol qo'shilmagan</h4>
+            <p class="text-muted mb-3">Test bankini shakllantirish uchun yangi savol qo'shing yoki Word orqali import qiling.</p>
+            <a href="{% url 'administrator:add-question-test' test.id %}" class="btn btn-alt-primary">
+              <i class="fa fa-plus me-1"></i> Savol qo'shish sahifasi
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="modal fade" id="editQuestionModal" tabindex="-1" aria-labelledby="editQuestionModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editQuestionModalLabel">Savolni tahrirlash</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="edit-question-form">
+              <input type="hidden" id="edit-question-id" value="">
+              <div class="mb-3">
+                <label class="form-label" for="edit-question-text">Savol matni</label>
+                <textarea class="form-control" id="edit-question-text" rows="5" required></textarea>
+              </div>
+
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label mb-0">Variantlar</label>
+                <button type="button" class="btn btn-success btn-sm" id="edit-add-answer">
+                  <i class="fa fa-plus"></i> Variant qo'shish
+                </button>
+              </div>
+              <div id="edit-answers-section"></div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Bekor qilish</button>
+            <button type="button" class="btn btn-alt-primary btn-sm" id="save-edit-question">
+              <i class="fa fa-save me-1"></i> Saqlash
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock content %}
+
+{% block script %}
+<script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+<script>
+  function getCookie(name) {
+    const cookieValue = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith(`${name}=`))
+      ?.split('=')[1];
+    return cookieValue ? decodeURIComponent(cookieValue) : '';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const csrfToken = getCookie('csrftoken') || document.getElementById('csrf-token')?.value || '';
+    const editModalEl = document.getElementById('editQuestionModal');
+    const editModal = new bootstrap.Modal(editModalEl);
+    const editQuestionIdEl = document.getElementById('edit-question-id');
+    const editQuestionTextEl = document.getElementById('edit-question-text');
+    const editAnswersSection = document.getElementById('edit-answers-section');
+
+    function createEditAnswerItem(answer = null) {
+      const wrap = document.createElement('div');
+      wrap.className = 'answer-item d-flex mb-2';
+      wrap.dataset.answerId = answer?.id ? String(answer.id) : '';
+      wrap.innerHTML = `
+        <textarea class="form-control me-2 edit-answer-text" rows="2" placeholder="Variant matni" required></textarea>
+        <div class="form-check form-switch mt-1">
+          <input type="checkbox" class="form-check-input edit-answer-correct">
+          <label class="form-check-label">To'g'ri</label>
+        </div>
+        <button type="button" class="btn btn-danger btn-sm ms-2 edit-remove-answer">
+          <i class="fa fa-trash"></i>
+        </button>`;
+
+      wrap.querySelector('.edit-answer-text').value = answer?.text || '';
+      wrap.querySelector('.edit-answer-correct').checked = !!answer?.is_correct;
+      return wrap;
+    }
+
+    document.querySelectorAll('.edit-question-btn').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const detailUrl = button.dataset.detailUrl;
+        const updateUrl = button.dataset.updateUrl;
+        if (!detailUrl || !updateUrl) {
+          return;
+        }
+
+        editModalEl.dataset.updateUrl = updateUrl;
+
+        Swal.fire({
+          title: 'Yuklanmoqda...',
+          text: 'Iltimos, kuting...',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        try {
+          const response = await fetch(detailUrl, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          });
+          const data = await response.json();
+          Swal.close();
+
+          if (!data.success) {
+            Swal.fire('Xatolik!', data.errors || "Savolni olishda xatolik yuz berdi.", 'error');
+            return;
+          }
+
+          editQuestionIdEl.value = data.question.id;
+          editQuestionTextEl.value = data.question.text || '';
+          editAnswersSection.innerHTML = '';
+
+          (data.question.answers || []).forEach((answer) => {
+            editAnswersSection.appendChild(createEditAnswerItem(answer));
+          });
+
+          while (editAnswersSection.querySelectorAll('.answer-item').length < 2) {
+            editAnswersSection.appendChild(createEditAnswerItem());
+          }
+
+          editModal.show();
+        } catch (error) {
+          Swal.close();
+          Swal.fire('Xatolik!', "Server bilan bog'lanishda xatolik yuz berdi.", 'error');
+        }
+      });
+    });
+
+    document.getElementById('edit-add-answer').addEventListener('click', () => {
+      editAnswersSection.appendChild(createEditAnswerItem());
+    });
+
+    editAnswersSection.addEventListener('click', (event) => {
+      const button = event.target.closest('.edit-remove-answer');
+      if (!button) {
+        return;
+      }
+      if (editAnswersSection.querySelectorAll('.answer-item').length <= 2) {
+        Swal.fire('Xatolik!', "Kamida 2 ta variant bo'lishi kerak.", 'warning');
+        return;
+      }
+      button.closest('.answer-item')?.remove();
+    });
+
+    document.getElementById('save-edit-question').addEventListener('click', async () => {
+      const updateUrl = editModalEl.dataset.updateUrl;
+      if (!updateUrl) {
+        return;
+      }
+
+      const text = (editQuestionTextEl.value || '').trim();
+      const answers = Array.from(editAnswersSection.querySelectorAll('.answer-item')).map((item) => {
+        const idRaw = item.dataset.answerId;
+        return {
+          id: idRaw ? parseInt(idRaw, 10) : null,
+          text: (item.querySelector('.edit-answer-text')?.value || '').trim(),
+          is_correct: !!item.querySelector('.edit-answer-correct')?.checked,
+        };
+      }).filter((answer) => answer.text);
+
+      if (!text) {
+        Swal.fire('Xatolik!', 'Savol matnini kiriting.', 'warning');
+        return;
+      }
+      if (answers.length < 2) {
+        Swal.fire('Xatolik!', "Kamida 2 ta variant bo'lishi kerak.", 'warning');
+        return;
+      }
+      if (!answers.some((answer) => answer.is_correct)) {
+        Swal.fire('Xatolik!', "Kamida bitta to'g'ri javob tanlanishi kerak.", 'warning');
+        return;
+      }
+
+      const confirmResult = await Swal.fire({
+        title: 'Tasdiqlaysizmi?',
+        text: "Savolni yangilamoqchimisiz?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3b82f6',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ha, saqlash',
+        cancelButtonText: 'Bekor qilish',
+      });
+
+      if (!confirmResult.isConfirmed) {
+        return;
+      }
+
+      try {
+        const response = await fetch(updateUrl, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: JSON.stringify({ text, answers }),
+        });
+        const data = await response.json();
+        if (data.success) {
+          editModal.hide();
+          await Swal.fire('Muvaffaqiyatli!', data.message, 'success');
+          window.location.reload();
+        } else {
+          Swal.fire('Xatolik!', data.errors || "Savolni yangilashda xatolik yuz berdi.", 'error');
+        }
+      } catch (error) {
+        Swal.fire('Xatolik!', "Server bilan bog'lanishda xatolik yuz berdi.", 'error');
+      }
+    });
+
+    document.querySelectorAll('.delete-question-btn').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const deleteUrl = button.dataset.deleteUrl;
+        if (!deleteUrl) {
+          return;
+        }
+
+        const confirmResult = await Swal.fire({
+          title: 'Tasdiqlaysizmi?',
+          text: "Savolni o'chirmoqchimisiz?",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d61f47',
+          cancelButtonColor: '#64748b',
+          confirmButtonText: "Ha, o'chirish",
+          cancelButtonText: 'Bekor qilish',
+        });
+
+        if (!confirmResult.isConfirmed) {
+          return;
+        }
+
+        try {
+          const response = await fetch(deleteUrl, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': csrfToken,
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+          });
+          const data = await response.json();
+          if (data.success) {
+            await Swal.fire('Muvaffaqiyatli!', data.message, 'success');
+            window.location.reload();
+          } else {
+            Swal.fire('Xatolik!', data.errors || "Savolni o'chirishda xatolik yuz berdi.", 'error');
+          }
+        } catch (error) {
+          Swal.fire('Xatolik!', "Server bilan bog'lanishda xatolik yuz berdi.", 'error');
+        }
+      });
+    });
+  });
+</script>
+{% endblock script %}

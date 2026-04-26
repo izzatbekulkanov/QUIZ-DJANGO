@@ -2,145 +2,226 @@
 {% load static %}
 
 {% block style %}
-<link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
 <style>
-  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
-  .bg-image {
-    background-size: cover;
-    background-position: center;
-  }
-  .bg-primary-dark-op {
-    background-color: rgba(0, 0, 0, 0.7);
+  .category-upload-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border: 1px dashed rgba(59, 130, 246, 0.3);
+    border-radius: 0.75rem;
     padding: 1rem;
+    background: rgba(248, 250, 252, 0.75);
   }
-  .btn-primary, .btn-alt-primary {
-    background: linear-gradient(90deg, #007bff, #00c4ff);
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
+
+  .category-upload-preview {
+    width: 100%;
+    max-width: 280px;
+    aspect-ratio: 16 / 10;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(30, 64, 175, 0.12), rgba(14, 165, 233, 0.18));
   }
-  .btn-primary:hover, .btn-alt-primary:hover {
-    background: linear-gradient(90deg, #0056b3, #0096cc);
-    border: none;
-  }
-  .form-control, .form-select {
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
-  }
-  .form-control:focus, .form-select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-  }
-  .form-label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #34495e;
-  }
-  .img-thumbnail {
+
+  .category-upload-preview img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 50%;
-    border: 2px solid #e9ecef;
-    transition: border-color 0.3s;
   }
-  .img-thumbnail:hover {
-    border-color: #007bff;
-    cursor: pointer;
+
+  .category-preview-card {
+    overflow: hidden;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.75rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 1));
   }
-  .is-invalid ~ .invalid-feedback {
-    display: block;
-    font-size: 0.8rem;
-    color: #dc3545;
+
+  .category-preview-media {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(30, 64, 175, 0.12), rgba(14, 165, 233, 0.18));
+  }
+
+  .category-preview-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .category-stat-item {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: #fff;
+  }
+
+  @media (min-width: 768px) {
+    .category-upload-shell {
+      flex-direction: row;
+      align-items: center;
+    }
   }
 </style>
 {% endblock style %}
 
 {% block content %}
 <main id="main-container">
-  <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-
-  <!-- Hero -->
-  <div class="bg-image overflow-hidden"
-       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
     <div class="bg-primary-dark-op">
-      <div class="container">
-        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
           <div class="flex-grow-1">
-            <h1 class="fw-semibold text-white mb-0">Kategoriyalar</h1>
-            <h2 class="h4 fw-normal text-white-75 mb-0">Kategoriyani tahrirlash</h2>
+            <h1 class="fw-semibold text-white mb-1">Kategoriyani tahrirlash</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">{{ category.name }} bo'limining ma'lumotlarini yangilang</h2>
           </div>
-          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="{% url 'administrator:categories' %}">
-              <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
-            </a>
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-end">
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:categories' %}">
+                <i class="fa fa-arrow-left me-1"></i> Kategoriyalar
+              </a>
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:question' %}">
+                <i class="fa fa-file-alt me-1"></i> Testlar
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Page Content -->
-  <div class="container py-3">
-    <div class="card shadow-sm">
-      <div class="card-header bg-primary text-white">
-        <h3 class="h5 mb-0">Kategoriyani tahrirlash</h3>
+  <div class="content content-boxed">
+    {% if error %}
+      <div class="alert alert-danger d-flex align-items-center" role="alert">
+        <i class="fa fa-exclamation-circle me-2"></i>
+        <div>{{ error }}</div>
       </div>
-      <div class="card-body">
-        <form id="editCategoryForm" method="POST" action="{% url 'administrator:edit-category' category.id %}" enctype="multipart/form-data" class="row g-3">
-          {% csrf_token %}
-          <!-- Kategoriya nomi -->
-          <div class="col-md-6">
-            <label for="category-name" class="form-label">Kategoriya nomi</label>
-            <input type="text" name="name" id="category-name" class="form-control" value="{{ category.name }}"
-                   required placeholder="Masalan: Fizika">
-            <div class="invalid-feedback">Kategoriya nomini kiritish majburiy.</div>
+    {% endif %}
+
+    <div class="row g-4">
+      <div class="col-12 col-xl-8">
+        <div class="block block-rounded">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Kategoriya ma'lumotlari</h3>
+            <div class="block-options">
+              <span class="fs-sm text-muted">ID: {{ category.id }}</span>
+            </div>
           </div>
-          <!-- Ta'rif -->
-          <div class="col-md-6">
-            <label for="category-description" class="form-label">Ta'rif</label>
-            <textarea name="description" id="category-description" rows="4" class="form-control"
-                      placeholder="Qisqacha ta'rif..." required>{{ category.description }}</textarea>
-            <div class="invalid-feedback">Ta'rifni kiritish majburiy.</div>
+          <div class="block-content block-content-full">
+            <form
+              id="category-form"
+              method="POST"
+              action="{% url 'administrator:edit-category' category.id %}"
+              enctype="multipart/form-data"
+              data-confirm-title="Tasdiqlaysizmi?"
+              data-confirm-text="Kategoriya ma'lumotlarini yangilamoqchimisiz?"
+              data-redirect-url="{% url 'administrator:categories' %}"
+              data-default-preview="{% static 'assets/images/question_category.png' %}"
+            >
+              {% csrf_token %}
+              <div class="row g-4">
+                <div class="col-12">
+                  <label for="category-name" class="form-label">Kategoriya nomi</label>
+                  <input
+                    type="text"
+                    name="name"
+                    id="category-name"
+                    class="form-control"
+                    value="{{ category.name }}"
+                    required
+                    placeholder="Masalan: Fizika"
+                  >
+                  <div class="form-text">Kategoriya nomi testlar ro'yxatida va biriktirish sahifalarida ko'rinadi.</div>
+                </div>
+                <div class="col-12">
+                  <label for="category-description" class="form-label">Tavsif</label>
+                  <textarea
+                    name="description"
+                    id="category-description"
+                    rows="6"
+                    class="form-control"
+                    placeholder="Qisqacha ta'rif..."
+                  >{{ category.description }}</textarea>
+                  <div class="form-text">Tavsifni yangilash orqali admin kartasidagi izohni ham yangilaysiz.</div>
+                </div>
+                <div class="col-12">
+                  <label class="form-label" for="category-image">Muqova rasmi</label>
+                  <div class="category-upload-shell">
+                    <div class="category-upload-preview">
+                      <img
+                        id="category-image-preview"
+                        src="{% if category.image %}{{ category.image.url }}{% else %}{% static 'assets/images/question_category.png' %}{% endif %}"
+                        alt="Kategoriya rasmi"
+                      >
+                    </div>
+                    <div class="flex-grow-1">
+                      <input type="file" id="category-image" name="image" class="form-control" accept="image/*">
+                      <div class="form-text mt-2">Yangi rasm tanlasangiz, eski muqova yangisiga almashtiriladi.</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12 d-flex flex-wrap justify-content-end gap-2">
+                  <a href="{% url 'administrator:categories' %}" class="btn btn-alt-secondary">
+                    <i class="fa fa-times me-1"></i> Bekor qilish
+                  </a>
+                  <button type="submit" class="btn btn-alt-primary">
+                    <i class="fa fa-save me-1"></i> Yangilash
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
-          <!-- Rasm preview va yuklash -->
-          <div class="col-12 text-center">
-            <label class="form-label d-block">Kategoriya rasmi</label>
-            <div class="position-relative" style="width: 150px; height: 150px; margin: auto;">
-              <img
-                id="categoryImagePreview"
-                src="{% if category.image %}{{ category.image.url }}{% else %}{% static 'assets/media/various/ecom_product1.png' %}{% endif %}"
-                alt="Kategoriya Rasmi"
-                class="img-thumbnail rounded-circle"
-                style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
-                onclick="document.getElementById('category-image').click();"
-              >
-              <input
-                type="file"
-                id="category-image"
-                name="image"
-                accept="image/*"
-                style="display: none;"
-                onchange="previewCategoryImage(this);"
-              >
-              <div class="position-absolute bottom-0 end-0">
-                <button type="button" class="btn btn-sm btn-primary"
-                        onclick="document.getElementById('category-image').click();">
-                  <i class="fa fa-camera"></i>
-                </button>
+        </div>
+      </div>
+
+      <div class="col-12 col-xl-4">
+        <div class="block block-rounded mb-4">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Jonli preview</h3>
+          </div>
+          <div class="block-content block-content-full">
+            <div class="category-preview-card">
+              <div class="category-preview-media">
+                <img
+                  id="sidebar-preview-image"
+                  src="{% if category.image %}{{ category.image.url }}{% else %}{% static 'assets/images/question_category.png' %}{% endif %}"
+                  alt="Preview"
+                >
+              </div>
+              <div class="p-3">
+                <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                  <h4 class="h5 mb-0" id="sidebar-preview-name">{{ category.name }}</h4>
+                  <span class="badge {% if category.tests_count %}bg-success{% else %}bg-secondary{% endif %} rounded-pill">
+                    {{ category.tests_count }} ta test
+                  </span>
+                </div>
+                <p class="text-muted fs-sm mb-0" id="sidebar-preview-description">
+                  {{ category.description|default:"Tavsif kiritilmagan." }}
+                </p>
               </div>
             </div>
           </div>
-          <!-- Submit Button -->
-          <div class="col-12 text-end mt-2">
-            <button type="button" class="btn btn-primary" id="submitEditCategory">
-              <i class="fa fa-save me-1"></i> Yangilash
-            </button>
+        </div>
+
+        <div class="block block-rounded">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Holat</h3>
           </div>
-        </form>
+          <div class="block-content block-content-full">
+            <div class="d-grid gap-3">
+              <div class="category-stat-item">
+                <div class="fs-sm text-muted text-uppercase mb-1">Bog'langan testlar</div>
+                <div class="fs-4 fw-semibold">{{ category.tests_count }}</div>
+              </div>
+              <div class="category-stat-item">
+                <div class="fs-sm text-muted text-uppercase mb-1">Yaratilgan sana</div>
+                <div class="fw-semibold">{{ category.created_at|date:"Y-m-d H:i" }}</div>
+              </div>
+              <div class="category-stat-item">
+                <div class="fs-sm text-muted text-uppercase mb-1">Oxirgi yangilanish</div>
+                <div class="fw-semibold">{{ category.updated_at|date:"Y-m-d H:i" }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -148,110 +229,124 @@
 {% endblock content %}
 
 {% block script %}
-<script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
 <script>
+  function updatePreviewText() {
+    const nameValue = document.getElementById('category-name').value.trim();
+    const descriptionValue = document.getElementById('category-description').value.trim();
+
+    document.getElementById('sidebar-preview-name').textContent = nameValue || 'Kategoriya nomi';
+    document.getElementById('sidebar-preview-description').textContent =
+      descriptionValue || "Tavsif kiritilmagan.";
+  }
+
   function previewCategoryImage(input) {
-    const preview = document.getElementById('categoryImagePreview');
+    const previewTargets = [
+      document.getElementById('category-image-preview'),
+      document.getElementById('sidebar-preview-image'),
+    ];
+    const defaultPreview = document.getElementById('category-form').dataset.defaultPreview;
+
     if (input.files && input.files[0]) {
       const reader = new FileReader();
-      reader.onload = function (e) {
-        preview.src = e.target.result;
+      reader.onload = function(event) {
+        previewTargets.forEach((target) => {
+          if (target) {
+            target.src = event.target.result;
+          }
+        });
       };
       reader.readAsDataURL(input.files[0]);
+      return;
+    }
+
+    previewTargets.forEach((target) => {
+      if (target) {
+        target.src = defaultPreview;
+      }
+    });
+  }
+
+  async function readJsonResponse(response) {
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      return response.json();
+    }
+
+    const text = await response.text();
+    return {
+      success: false,
+      message: text || `Server xatoligi (${response.status})`,
+    };
+  }
+
+  async function handleCategorySubmit(event) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    if (!form.reportValidity()) {
+      return;
+    }
+
+    const confirmation = await Swal.fire({
+      title: form.dataset.confirmTitle,
+      text: form.dataset.confirmText,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#007bff',
+      cancelButtonColor: '#dc3545',
+      confirmButtonText: 'Ha, davom etish',
+      cancelButtonText: 'Bekor qilish',
+    });
+
+    if (!confirmation.isConfirmed) {
+      return;
+    }
+
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      });
+
+      const data = await readJsonResponse(response);
+      await Swal.fire({
+        title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
+        text: data.message,
+        icon: data.success ? 'success' : 'error',
+        confirmButtonText: 'OK',
+      });
+
+      if (response.ok && data.success) {
+        window.location.href = data.redirect_url || form.dataset.redirectUrl;
+      }
+    } catch (error) {
+      Swal.fire({
+        title: 'Xatolik!',
+        text: "Server bilan bog'lanishda xatolik yuz berdi!",
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
     }
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    const submitBtn = document.getElementById('submitEditCategory');
-    const form = document.getElementById('editCategoryForm');
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('category-form');
+    const imageInput = document.getElementById('category-image');
+    const nameInput = document.getElementById('category-name');
+    const descriptionInput = document.getElementById('category-description');
 
-    submitBtn.addEventListener('click', function (e) {
-      e.preventDefault();
-      let isValid = true;
-
-      // Inputlarni validatsiya qilish
-      form.querySelectorAll('input[required], textarea[required]').forEach((input) => {
-        if (!input.value) {
-          input.classList.add('is-invalid');
-          isValid = false;
-        } else {
-          input.classList.remove('is-invalid');
-        }
-      });
-
-      if (isValid) {
-        Swal.fire({
-          title: 'Tasdiqlaysizmi?',
-          text: 'Kategoriyani yangilamoqchimisiz?',
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#007bff',
-          cancelButtonColor: '#dc3545',
-          confirmButtonText: 'Ha, yangilash!',
-          cancelButtonText: 'Bekor qilish',
-        }).then((result) => {
-          if (result.isConfirmed) {
-            const formData = new FormData(form);
-            fetch(form.action, {
-              method: 'POST',
-              body: formData,
-              headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-              },
-            })
-              .then(response => response.json())
-              .then(data => {
-                if (data.success) {
-                  Swal.fire({
-                    title: 'Muvaffaqiyatli!',
-                    text: data.message,
-                    icon: 'success',
-                    confirmButtonText: 'OK',
-                  }).then(() => {
-                    window.location.href = '{% url "categories" %}';
-                  });
-                } else {
-                  Swal.fire({
-                    title: 'Xatolik!',
-                    text: data.message || 'Ma\'lumotni yangilashda xatolik yuz berdi!',
-                    icon: 'error',
-                    confirmButtonText: 'OK',
-                  });
-                  if (data.errors) {
-                    Object.keys(data.errors).forEach(key => {
-                      const input = document.getElementById(key);
-                      if (input) {
-                        input.classList.add('is-invalid');
-                        const feedback = input.nextElementSibling;
-                        if (feedback && feedback.classList.contains('invalid-feedback')) {
-                          feedback.textContent = data.errors[key];
-                        }
-                      }
-                    });
-                  }
-                }
-              })
-              .catch(error => {
-                Swal.fire({
-                  title: 'Xatolik!',
-                  text: 'Server bilan bog\'lanishda xatolik yuz berdi!',
-                  icon: 'error',
-                  confirmButtonText: 'OK',
-                });
-                console.error('❌ Fetch xatosi:', error);
-              });
-          }
-        });
-      } else {
-        Swal.fire({
-          title: 'Xatolik!',
-          text: 'Iltimos, barcha majburiy maydonlarni to‘ldiring.',
-          icon: 'warning',
-          confirmButtonText: 'OK',
-        });
-      }
+    form.addEventListener('submit', handleCategorySubmit);
+    imageInput.addEventListener('change', function() {
+      previewCategoryImage(this);
     });
+    nameInput.addEventListener('input', updatePreviewText);
+    descriptionInput.addEventListener('input', updatePreviewText);
+
+    updatePreviewText();
   });
 </script>
 {% endblock script %}

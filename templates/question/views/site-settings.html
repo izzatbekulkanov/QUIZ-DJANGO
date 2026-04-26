@@ -1,145 +1,247 @@
 {% extends 'question/main.html' %}
 {% load static %}
 
+{% block style %}
+<style>
+  .settings-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 1rem;
+  }
+
+  .settings-form-shell,
+  .settings-preview-shell {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.9rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(255, 255, 255, 0.98));
+  }
+
+  .settings-preview-tile {
+    border: 1px dashed rgba(15, 23, 42, 0.12);
+    border-radius: 0.85rem;
+    padding: 1rem;
+    background: rgba(248, 250, 252, 0.84);
+  }
+
+  .settings-logo-preview {
+    max-width: 100%;
+    max-height: 96px;
+    object-fit: contain;
+  }
+
+  .settings-favicon-preview {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+  }
+</style>
+{% endblock style %}
+
 {% block content %}
 <main id="main-container">
-  <!-- Hero -->
-  <div class="bg-image overflow-hidden" style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
     <div class="bg-primary-dark-op">
       <div class="content content-full">
-        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
           <div class="flex-grow-1">
-            <h1 class="fw-semibold text-white mb-0">Tizim sozlamalari</h1>
-            <h2 class="h4 fw-normal text-white-75 mb-0">Aktiv platforma ma'lumotlarini tahrirlash</h2>
+            <h1 class="fw-semibold text-white mb-1">Tizim sozlamalari</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">Platforma brendi, aloqa ma'lumotlari va sayt holatini boshqarish</h2>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <!-- END Hero -->
 
-  <!-- Page Content -->
   <div class="content content-boxed">
-    <div class="block block-rounded">
-      <div class="block-header block-header-default">
-        <h3 class="block-title">Tizim sozlamalari formasi</h3>
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Holat</div>
+              <div class="fs-5 fw-semibold text-capitalize">{{ stats.status_label|default:"active" }}</div>
+            </div>
+            <div class="settings-stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa fa-sliders-h"></i>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="block-content">
-        {% if messages %}
-          {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-              {{ message }}
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Logo</div>
+              <div class="fs-5 fw-semibold">{% if stats.has_logo %}Yuklangan{% else %}Yo'q{% endif %}</div>
             </div>
-          {% endfor %}
-        {% endif %}
-
-        <form method="post" enctype="multipart/form-data" class="p-3">
-          {% csrf_token %}
-          <div class="row">
-            <!-- Chap ustun -->
-            <div class="col-md-6">
-              <div class="mb-2">
-                <label class="form-label text-muted small mb-1">Tizim nomi</label>
-                <input type="text" name="name" class="form-control form-control-sm"
-                       value="{{ setting.name|default:'' }}">
-              </div>
-
-              <div class="mb-2">
-                <label class="form-label text-muted small mb-1">Tavsif</label>
-                <textarea name="description" class="form-control form-control-sm" rows="3">{{ setting.description|default:'' }}</textarea>
-              </div>
-
-              <div class="mb-2">
-                <label class="form-label text-muted small mb-1">Email</label>
-                <input type="email" name="contact_email" class="form-control form-control-sm"
-                       value="{{ setting.contact_email|default:'' }}">
-              </div>
-
-              <div class="mb-2">
-                <label class="form-label text-muted small mb-1">Telefon</label>
-                <input type="text" name="contact_phone" class="form-control form-control-sm"
-                       value="{{ setting.contact_phone|default:'' }}">
-              </div>
-
-              <div class="mb-2">
-                <label class="form-label text-muted small mb-1">Manzil</label>
-                <textarea name="address" class="form-control form-control-sm" rows="2">{{ setting.address|default:'' }}</textarea>
-              </div>
-
-              <div class="mb-2">
-                <label class="form-label text-muted small mb-1">Footer matni</label>
-                <input type="text" name="footer_text" class="form-control form-control-sm"
-                       value="{{ setting.footer_text|default:'' }}">
-              </div>
-
-              <div class="mb-2">
-                <label class="form-label text-muted small mb-1">HEMIS API manzili</label>
-                <input type="url" name="hemis_url" class="form-control form-control-sm"
-                       value="{{ setting.hemis_url|default:'' }}">
-              </div>
-
-              <div class="mb-2">
-                <label class="form-label text-muted small mb-1">HEMIS API kaliti</label>
-                <input type="text" name="hemis_api_key" class="form-control form-control-sm"
-                       value="{{ setting.hemis_api_key|default:'' }}">
-              </div>
-            </div>
-
-            <!-- O‘ng ustun -->
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label text-muted small mb-1">Logo yuklash</label>
-                <input type="file" name="logo" class="form-control form-control-sm">
-                {% if setting.logo %}
-                  <img src="{{ setting.logo.url }}" class="img-thumbnail mt-2" width="120" alt="Logo">
-                {% endif %}
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label text-muted small mb-1">Favicon yuklash</label>
-                <input type="file" name="favicon" class="form-control form-control-sm">
-                {% if setting.favicon %}
-                  <img src="{{ setting.favicon.url }}" class="img-thumbnail mt-2" width="32" alt="Favicon">
-                {% endif %}
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label text-muted small mb-1">Sayt holati</label>
-                <select name="site_status" class="form-select form-select-sm">
-                  <option value="active" {% if setting.status == 'active' %}selected{% endif %}>Ishlamoqda</option>
-                  <option value="maintenance" {% if setting.status == 'maintenance' %}selected{% endif %}>Texnik tamirda</option>
-                  <option value="offline" {% if setting.status == 'offline' %}selected{% endif %}>Yopiq</option>
-                </select>
-              </div>
-
-              <div class="mb-2">
-                <label class="form-label text-muted small mb-1">Holat matni</label>
-                <textarea name="status_message" class="form-control form-control-sm" rows="3">{{ setting.status_message|default:'' }}</textarea>
-              </div>
+            <div class="settings-stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa fa-image"></i>
             </div>
           </div>
-
-          <div class="mt-3 text-end">
-            <button type="submit" class="btn btn-sm btn-primary px-4">
-              <i class="fa fa-save me-1"></i> Saqlash
-            </button>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Favicon</div>
+              <div class="fs-5 fw-semibold">{% if stats.has_favicon %}Yuklangan{% else %}Yo'q{% endif %}</div>
+            </div>
+            <div class="settings-stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa fa-star"></i>
+            </div>
           </div>
-        </form>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">So'nggi yangilanish</div>
+              <div class="fs-6 fw-semibold">
+                {% if stats.updated_at %}
+                  {{ stats.updated_at|date:"Y-m-d H:i" }}
+                {% else %}
+                  Hali saqlanmagan
+                {% endif %}
+              </div>
+            </div>
+            <div class="settings-stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa fa-clock"></i>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+
+    {% if messages %}
+      <div class="mb-4">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-2" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="row g-4">
+        <div class="col-xl-8">
+          <div class="block block-rounded mb-0">
+            <div class="block-header block-header-default">
+              <h3 class="block-title">Asosiy ma'lumotlar</h3>
+            </div>
+            <div class="block-content block-content-full">
+              <div class="settings-form-shell p-3 p-lg-4">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Tizim nomi</label>
+                    <input type="text" name="name" class="form-control" value="{{ setting.name|default:'' }}" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Sayt holati</label>
+                    <select name="site_status" class="form-select" required>
+                      <option value="active" {% if setting.status == 'active' %}selected{% endif %}>Ishlamoqda</option>
+                      <option value="maintenance" {% if setting.status == 'maintenance' %}selected{% endif %}>Texnik tamirda</option>
+                      <option value="offline" {% if setting.status == 'offline' %}selected{% endif %}>Yopiq</option>
+                    </select>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Tavsif</label>
+                    <textarea name="description" class="form-control" rows="4">{{ setting.description|default:'' }}</textarea>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="contact_email" class="form-control" value="{{ setting.contact_email|default:'' }}">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Telefon</label>
+                    <input type="text" name="contact_phone" class="form-control" value="{{ setting.contact_phone|default:'' }}">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Manzil</label>
+                    <textarea name="address" class="form-control" rows="3">{{ setting.address|default:'' }}</textarea>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Footer matni</label>
+                    <input type="text" name="footer_text" class="form-control" value="{{ setting.footer_text|default:'' }}">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">HEMIS URL</label>
+                    <input type="url" name="hemis_url" class="form-control" value="{{ setting.hemis_url|default:'' }}">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">HEMIS API kaliti</label>
+                    <input type="text" name="hemis_api_key" class="form-control" value="{{ setting.hemis_api_key|default:'' }}">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label">Holat matni</label>
+                    <textarea name="status_message" class="form-control" rows="4">{{ setting.status_message|default:'' }}</textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-4">
+          <div class="block block-rounded mb-4">
+            <div class="block-header block-header-default">
+              <h3 class="block-title">Brend aktivlari</h3>
+            </div>
+            <div class="block-content block-content-full">
+              <div class="settings-preview-shell p-3">
+                <div class="settings-preview-tile mb-3">
+                  <label class="form-label">Logo yuklash</label>
+                  <input type="file" name="logo" class="form-control">
+                  <div class="mt-3 text-center">
+                    {% if setting.logo %}
+                      <img src="{{ setting.logo.url }}" class="settings-logo-preview" alt="Logo">
+                    {% else %}
+                      <div class="text-muted fs-sm">Logo yuklanmagan</div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="settings-preview-tile">
+                  <label class="form-label">Favicon yuklash</label>
+                  <input type="file" name="favicon" class="form-control">
+                  <div class="mt-3 text-center">
+                    {% if setting.favicon %}
+                      <img src="{{ setting.favicon.url }}" class="settings-favicon-preview" alt="Favicon">
+                    {% else %}
+                      <div class="text-muted fs-sm">Favicon yuklanmagan</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="block block-rounded mb-0">
+            <div class="block-header block-header-default">
+              <h3 class="block-title">Saqlash</h3>
+            </div>
+            <div class="block-content block-content-full">
+              <div class="settings-preview-shell p-3">
+                <p class="text-muted mb-3">Bu forma saytning aktiv konfiguratsiyasini yangilaydi. Saqlangandan keyin oldingi aktiv yozuv avtomatik o'chirilmaydi, faqat nofaol holatga o'tadi.</p>
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-alt-primary">
+                    <i class="fa fa-save me-1"></i> Sozlamalarni saqlash
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
   </div>
 </main>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const alerts = document.querySelectorAll('.alert');
-    alerts.forEach(alert => {
-      setTimeout(() => {
-        alert.classList.remove('show');
-        alert.classList.add('fade');
-      }, 3000);
-    });
-  });
-</script>
 {% endblock content %}

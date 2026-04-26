@@ -1,5 +1,6 @@
 from datetime import timedelta
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -21,6 +22,38 @@ ALLOWED_HOSTS = env_list(
     "DJANGO_ALLOWED_HOSTS",
     default=["*"] if DEBUG else ["localhost", "127.0.0.1"],
 )
+
+
+def _iter_trusted_origins_from_hosts(hosts: list[str]) -> list[str]:
+    trusted: list[str] = []
+    seen: set[str] = set()
+
+    def add(origin: str) -> None:
+        if origin and origin not in seen:
+            trusted.append(origin)
+            seen.add(origin)
+
+    for raw_host in hosts:
+        host = (raw_host or "").strip()
+        if not host or host == "*":
+            continue
+
+        if "://" in host:
+            parsed = urlsplit(host)
+            if parsed.scheme and parsed.netloc:
+                add(f"{parsed.scheme}://{parsed.netloc}")
+            continue
+
+        normalized_host = host[1:] if host.startswith(".") else host
+        if normalized_host.startswith("*."):
+            add(f"http://{normalized_host}")
+            add(f"https://{normalized_host}")
+            continue
+
+        add(f"http://{normalized_host}")
+        add(f"https://{normalized_host}")
+
+    return trusted
 
 ASGI_APPLICATION = "core.asgi.application"
 
@@ -123,14 +156,17 @@ MIDDLEWARE = [
     "apps.logs.middleware.LogMiddleware",
 ]
 
-CSRF_TRUSTED_ORIGINS = env_list(
-    "DJANGO_CSRF_TRUSTED_ORIGINS",
-    default=[
-        "https://webtest.namspi.uz",
-        "http://webtest.namspi.uz",
-        "https://test.namspi.uz",
-    ],
-)
+DEFAULT_CSRF_TRUSTED_ORIGINS = _iter_trusted_origins_from_hosts(ALLOWED_HOSTS) + [
+    "https://webtest.namspi.uz",
+    "http://webtest.namspi.uz",
+    "https://test.namspi.uz",
+    "http://test.namspi.uz",
+]
+
+CSRF_TRUSTED_ORIGINS = []
+for origin in env_list("DJANGO_CSRF_TRUSTED_ORIGINS", default=DEFAULT_CSRF_TRUSTED_ORIGINS):
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 AUTH_USER_MODEL = "account.CustomUser"
 
@@ -260,4 +296,7 @@ SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_SAVE_EVERY_REQUEST = True
 
 CSRF_COOKIE_SECURE = env_bool("CSRF_COOKIE_SECURE", default=not DEBUG)
+CSRF_COOKIE_SAMESITE = "Lax"
 SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", default=False)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = env_bool("USE_X_FORWARDED_HOST", default=not DEBUG)

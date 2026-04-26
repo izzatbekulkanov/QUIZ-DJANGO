@@ -1,49 +1,150 @@
 {% extends 'question/main.html' %}
 {% load static %}
+
 {% block style %}
+<style>
+  .logs-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 1rem;
+  }
+
+  .logs-filter-shell,
+  .logs-table-shell,
+  .logs-empty {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.9rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(255, 255, 255, 0.98));
+  }
+
+  .logs-table-shell table th {
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+    white-space: nowrap;
+  }
+
+  .logs-empty {
+    padding: 2.25rem 1.5rem;
+  }
+
+  .logs-path-text {
+    display: inline-block;
+    max-width: 360px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+</style>
 {% endblock style %}
 
 {% block content %}
-    <main id="main-container">
-        <!-- Hero -->
-        <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
-          <div class="bg-primary-dark-op">
-            <div class="content content-full">
-              <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
-                <!-- Loglar sarlavhasi -->
-                <div class="flex-grow-1">
-                  <h1 class="fw-semibold text-white mb-0">Loglar</h1>
-                  <h2 class="h4 fw-normal text-white-75 mb-0">Barcha tizim loglari</h2>
-                </div>
-                <!-- Loglarni tozalash tugmasi -->
-                <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
-                  <span class="d-inline-block">
-                    <a class="btn btn-danger px-4 py-2" data-toggle="click-ripple" href="javascript:void(0)" onclick="clearLogs()">
-                      <i class="fa fa-trash me-1 opacity-50"></i> Loglarni tozalash
-                    </a>
-                  </span>
-                </div>
-              </div>
+<main id="main-container">
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+    <div class="bg-primary-dark-op">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-1">Loglar</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">Tizim so'rovlari, foydalanuvchi faolligi va texnik izlarni ko'rish</h2>
+          </div>
+          {% if request.user.is_superuser %}
+            <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+              <button type="button" class="btn btn-sm btn-danger" id="clear-logs-btn">
+                <i class="fa fa-trash me-1"></i> Loglarni tozalash
+              </button>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content content-boxed">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Jami loglar</div>
+              <div class="fs-2 fw-semibold">{{ total_logs_count }}</div>
+            </div>
+            <div class="logs-stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa fa-database"></i>
             </div>
           </div>
         </div>
-        <!-- END Hero -->
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Filtrlangan</div>
+              <div class="fs-2 fw-semibold">{{ filtered_logs_count }}</div>
+            </div>
+            <div class="logs-stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa fa-filter"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Bugungi loglar</div>
+              <div class="fs-2 fw-semibold">{{ today_logs_count }}</div>
+            </div>
+            <div class="logs-stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa fa-calendar-day"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Xatolik loglari</div>
+              <div class="fs-2 fw-semibold">{{ error_logs_count }}</div>
+            </div>
+            <div class="logs-stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa fa-exclamation-triangle"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        <!-- Page Content -->
-        <div class="content">
-          <h3 class="mb-4">Log yozuvlari</h3>
-
-          <div class="mb-4">
-            <form method="GET" class="row g-2">
-              <div class="col-md-2">
-                <input type="text" class="form-control" name="user" placeholder="Foydalanuvchi" value="{{ filters.user|default_if_none:'' }}">
+    <div class="block block-rounded mb-4">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Filter va qidiruv</h3>
+        <div class="block-options fs-sm text-muted">{{ unique_users_count }} ta foydalanuvchi loglarda uchradi</div>
+      </div>
+      <div class="block-content block-content-full">
+        <div class="logs-filter-shell p-3 p-lg-4">
+          <form method="get">
+            <div class="row g-3">
+              <div class="col-lg-2 col-md-6">
+                <label class="form-label">Foydalanuvchi</label>
+                <input type="text" class="form-control" name="user" placeholder="Username" value="{{ filters.user|default_if_none:'' }}">
               </div>
-              <div class="col-md-2">
-                <input type="text" class="form-control" name="ip" placeholder="IP Manzil" value="{{ filters.ip|default_if_none:'' }}">
+              <div class="col-lg-2 col-md-6">
+                <label class="form-label">IP manzil</label>
+                <input type="text" class="form-control" name="ip" placeholder="IP manzil" value="{{ filters.ip|default_if_none:'' }}">
               </div>
-              <div class="col-md-2">
+              <div class="col-lg-2 col-md-6">
+                <label class="form-label">Metod</label>
                 <select class="form-select" name="method">
-                  <option value="" {% if not filters.method %}selected{% endif %}>Metodni tanlang</option>
+                  <option value="" {% if not filters.method %}selected{% endif %}>Barchasi</option>
                   <option value="GET" {% if filters.method == "GET" %}selected{% endif %}>GET</option>
                   <option value="POST" {% if filters.method == "POST" %}selected{% endif %}>POST</option>
                   <option value="PUT" {% if filters.method == "PUT" %}selected{% endif %}>PUT</option>
@@ -53,153 +154,178 @@
                   <option value="OPTIONS" {% if filters.method == "OPTIONS" %}selected{% endif %}>OPTIONS</option>
                 </select>
               </div>
-              <div class="col-md-3">
-                <input type="text" class="form-control" name="path" placeholder="Path" value="{{ filters.path|default_if_none:'' }}">
+              <div class="col-lg-3 col-md-6">
+                <label class="form-label">Path</label>
+                <input type="text" class="form-control" name="path" placeholder="/administrator/..." value="{{ filters.path|default_if_none:'' }}">
               </div>
-              <div class="col-md-2">
+              <div class="col-lg-2 col-md-6">
+                <label class="form-label">Sana</label>
                 <input type="date" class="form-control" name="date" value="{{ filters.date|default_if_none:'' }}">
               </div>
-              <div class="col-md-1">
-                <button type="submit" class="btn btn-primary w-100">Qidirish</button>
+              <div class="col-lg-1 col-md-12 d-flex align-items-end justify-content-end">
+                <div class="d-grid w-100">
+                  <button type="submit" class="btn btn-alt-primary">
+                    <i class="fa fa-search me-1"></i> Qidirish
+                  </button>
+                </div>
               </div>
-            </form>
-          </div>
-
-          <div class="table-responsive">
-            <table class="table table-bordered table-striped table-hover">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Vaqt</th>
-                  <th>IP Manzil</th>
-                  <th>Metod</th>
-                  <th>Path</th>
-                  <th>Status Kode</th>
-                  <th>Foydalanuvchi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for log in logs %}
-                <tr>
-                  <td>{{ forloop.counter }}</td>
-                  <td>{{ log.timestamp }}</td>
-                  <td>{{ log.ip_address|default:"Noma'lum" }}</td>
-                  <td>{{ log.method }}</td>
-                  <td>{{ log.path }}</td>
-                  <td>{{ log.status_code }}</td>
-                  <td>
-                    {% if log.user %}
-                      {{ log.user.username }}
-                    {% else %}
-                      Anonim
-                    {% endif %}
-                  </td>
-                </tr>
-                {% empty %}
-                <tr>
-                  <td colspan="7" class="text-center">Log yozuvlari topilmadi</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-
-        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-
-          <!-- Pagination -->
-          <nav aria-label="Log pagination">
-            <ul class="pagination justify-content-center">
-              {% if logs.has_previous %}
-              <li class="page-item">
-                <a class="page-link" href="?page={{ logs.previous_page_number }}" aria-label="Oldingi">
-                  <span aria-hidden="true">&laquo;</span>
-                </a>
-              </li>
-              {% else %}
-              <li class="page-item disabled">
-                <span class="page-link">&laquo;</span>
-              </li>
-              {% endif %}
-
-              {% for num in logs.paginator.page_range %}
-              <li class="page-item {% if logs.number == num %}active{% endif %}">
-                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-              </li>
-              {% endfor %}
-
-              {% if logs.has_next %}
-              <li class="page-item">
-                <a class="page-link" href="?page={{ logs.next_page_number }}" aria-label="Keyingi">
-                  <span aria-hidden="true">&raquo;</span>
-                </a>
-              </li>
-              {% else %}
-              <li class="page-item disabled">
-                <span class="page-link">&raquo;</span>
-              </li>
-              {% endif %}
-            </ul>
-          </nav>
-          <!-- END Pagination -->
+            </div>
+          </form>
         </div>
-        <!-- END Page Content -->
-      </main>
+      </div>
+    </div>
+
+    <div class="block block-rounded">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Log yozuvlari</h3>
+        <div class="block-options fs-sm text-muted">
+          {% if logs.paginator.count %}
+            {{ logs.start_index }}-{{ logs.end_index }} / {{ logs.paginator.count }} ko'rsatilmoqda
+          {% else %}
+            Loglar topilmadi
+          {% endif %}
+        </div>
+      </div>
+      <div class="block-content block-content-full">
+        {% if logs %}
+          <div class="logs-table-shell p-2 p-lg-3">
+            <div class="table-responsive">
+              <table class="table table-hover table-vcenter mb-0">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Vaqt</th>
+                    <th>IP</th>
+                    <th>Metod</th>
+                    <th>Path</th>
+                    <th>Status</th>
+                    <th>Foydalanuvchi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for log in logs %}
+                    <tr>
+                      <td class="fw-semibold">{{ logs.start_index|add:forloop.counter0 }}</td>
+                      <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                      <td>{{ log.ip_address|default:"Noma'lum" }}</td>
+                      <td><span class="badge bg-body-light text-dark">{{ log.method }}</span></td>
+                      <td><code class="logs-path-text" title="{{ log.path }}">{{ log.path }}</code></td>
+                      <td>
+                        {% if log.status_code >= 500 %}
+                          <span class="badge bg-danger">{{ log.status_code }}</span>
+                        {% elif log.status_code >= 400 %}
+                          <span class="badge bg-warning text-dark">{{ log.status_code }}</span>
+                        {% else %}
+                          <span class="badge bg-success">{{ log.status_code }}</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if log.user %}
+                          {{ log.user.username }}
+                        {% else %}
+                          <span class="text-muted">Anonim</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {% if logs.paginator.num_pages > 1 %}
+            <nav class="mt-4" aria-label="Logs pagination">
+              <ul class="pagination pagination-sm justify-content-center mb-0">
+                {% if logs.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page=1{% if pagination_query %}&{{ pagination_query }}{% endif %}">Birinchi</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ logs.previous_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">Oldingi</a>
+                  </li>
+                {% else %}
+                  <li class="page-item disabled"><span class="page-link">Birinchi</span></li>
+                  <li class="page-item disabled"><span class="page-link">Oldingi</span></li>
+                {% endif %}
+
+                <li class="page-item active">
+                  <span class="page-link">{{ logs.number }} / {{ logs.paginator.num_pages }}</span>
+                </li>
+
+                {% if logs.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ logs.next_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">Keyingi</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ logs.paginator.num_pages }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">Oxirgi</a>
+                  </li>
+                {% else %}
+                  <li class="page-item disabled"><span class="page-link">Keyingi</span></li>
+                  <li class="page-item disabled"><span class="page-link">Oxirgi</span></li>
+                {% endif %}
+              </ul>
+            </nav>
+          {% endif %}
+        {% else %}
+          <div class="logs-empty text-center">
+            <div class="mb-3 text-muted">
+              <i class="fa fa-file-alt fa-2x opacity-50"></i>
+            </div>
+            <h4 class="h5 mb-2">Loglar topilmadi</h4>
+            <p class="text-muted mb-0">Berilgan filterlar bo'yicha mos log yozuvlari mavjud emas.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</main>
 {% endblock content %}
 
 {% block script %}
-  <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const clearButton = document.getElementById('clear-logs-btn');
+    if (!clearButton) {
+      return;
+    }
 
-  <script>
-  function clearLogs() {
-    Swal.fire({
-      title: 'Tasdiqlaysizmi?',
-      text: "Barcha loglarni o'chirmoqchimisiz?",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Ha, tozalash!',
-      cancelButtonText: 'Bekor qilish',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        fetch('{% url "clear-logs" %}', {
+    clearButton.addEventListener('click', async () => {
+      const result = await Swal.fire({
+        title: 'Tasdiqlaysizmi?',
+        text: "Barcha loglarni o'chirmoqchimisiz?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ha, tozalash',
+        cancelButtonText: 'Bekor qilish',
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      try {
+        const response = await fetch('{% url "administrator:clear-logs" %}', {
           method: 'POST',
           headers: {
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
             'X-Requested-With': 'XMLHttpRequest',
           },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              Swal.fire({
-                title: 'Muvaffaqiyatli!',
-                text: data.message,
-                icon: 'success',
-                confirmButtonText: 'OK',
-              }).then(() => {
-                window.location.reload(); // Sahifani qayta yuklash
-              });
-            } else {
-              Swal.fire({
-                title: 'Xatolik!',
-                text: data.message || "Loglarni o'chirishda xatolik yuz berdi.",
-                icon: 'error',
-                confirmButtonText: 'OK',
-              });
-            }
-          })
-          .catch((error) => {
-            Swal.fire({
-              title: 'Xatolik!',
-              text: 'Server bilan bog\'lanishda xatolik yuz berdi.',
-              icon: 'error',
-              confirmButtonText: 'OK',
-            });
-            console.error('Xatolik:', error);
-          });
+        });
+        const data = await response.json();
+        if (!data.success) {
+          Swal.fire('Xatolik!', data.message || "Loglarni o'chirishda xatolik yuz berdi.", 'error');
+          return;
+        }
+
+        await Swal.fire('Muvaffaqiyatli!', data.message, 'success');
+        window.location.reload();
+      } catch (error) {
+        Swal.fire('Xatolik!', "Server bilan bog'lanishda xatolik yuz berdi.", 'error');
       }
     });
-  }
+  });
 </script>
 {% endblock script %}

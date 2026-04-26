@@ -1,12 +1,24 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from apps.question.models import SystemSetting
 
 
+@login_required
 def site_settings_view(request):
-    # Active setting (or None)
     setting = SystemSetting.objects.filter(is_active=True).first()
+
+    def build_context(current_setting):
+        return {
+            'setting': current_setting,
+            'stats': {
+                'has_logo': bool(getattr(current_setting, 'logo', None)),
+                'has_favicon': bool(getattr(current_setting, 'favicon', None)),
+                'status_label': getattr(current_setting, 'status', 'active') if current_setting else 'active',
+                'updated_at': getattr(current_setting, 'updated_at', None),
+            },
+        }
 
     if request.method == 'POST':
         name = request.POST.get('name', '')
@@ -24,10 +36,9 @@ def site_settings_view(request):
 
         if not name or not site_status:
             messages.error(request, "Tizim nomi va sayt holati maydonlari to'ldirilishi shart.")
-            return render(request, 'question/views/site-settings.html', {'setting': setting})
+            return render(request, 'question/views/site-settings.html', build_context(setting))
 
         try:
-            # Deactivate previous settings
             SystemSetting.objects.update(is_active=False)
 
             if not setting:
@@ -56,6 +67,6 @@ def site_settings_view(request):
 
         except Exception as e:
             messages.error(request, f"Xatolik: {str(e)}")
-            return render(request, 'question/views/site-settings.html', {'setting': setting})
+            return render(request, 'question/views/site-settings.html', build_context(setting))
 
-    return render(request, 'question/views/site-settings.html', {'setting': setting})
+    return render(request, 'question/views/site-settings.html', build_context(setting))

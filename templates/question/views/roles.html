@@ -1,112 +1,313 @@
 {% extends 'question/main.html' %}
 {% load static %}
+
 {% block style %}
+<style>
+  .roles-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 1rem;
+  }
+
+  .roles-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .roles-group-card,
+  .roles-table-shell,
+  .roles-empty {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.9rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(255, 255, 255, 0.98));
+  }
+
+  .roles-group-card {
+    padding: 1rem;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+  }
+
+  .roles-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(59, 130, 246, 0.1);
+    color: #1d4ed8;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin: 0 0.35rem 0.35rem 0;
+  }
+
+  .roles-permission-chip {
+    background: rgba(14, 165, 233, 0.1);
+    color: #0369a1;
+  }
+
+  .roles-table-shell table th {
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+    white-space: nowrap;
+  }
+
+  .roles-empty {
+    padding: 2.25rem 1.5rem;
+  }
+
+  .roles-default-card {
+    border: 1px dashed rgba(59, 130, 246, 0.28);
+    border-radius: 0.9rem;
+    background: rgba(239, 246, 255, 0.78);
+    padding: 1rem;
+  }
+</style>
 {% endblock style %}
 
 {% block content %}
-    <main id="main-container">
-        <!-- Hero -->
-        <div class="bg-image overflow-hidden" style="background-image: url('{% static "{% static 'assets/media/photos/photo3@2x.jpg" %}');">
-          <div class="bg-primary-dark-op">
-            <div class="content content-full">
-              <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
-                <div class="flex-grow-1">
-                  <h1 class="fw-semibold text-white mb-0">Dashboard</h1>
-                  <h2 class="h4 fw-normal text-white-75 mb-0">Welcome Administrator</h2>
-                </div>
-                <div class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3">
-                  <span class="d-inline-block">
-                    <a class="btn btn-primary px-4 py-2" data-toggle="click-ripple" href="javascript:void(0)">
-                      <i class="fa fa-plus me-1 opacity-50"></i> New Project
-                    </a>
-                  </span>
+<main id="main-container">
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+    <div class="bg-primary-dark-op">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-1">Rollar va ruxsatlar</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">Guruhlar, ruxsatlar va foydalanuvchi birikmalarini bir joydan boshqaring</h2>
+          </div>
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <div class="roles-toolbar justify-content-center justify-content-lg-end">
+              {% if can_manage_role_groups %}
+                <form method="post" action="{{ create_default_role_groups_url }}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-alt-info">
+                    <i class="fa fa-magic me-1"></i> Default guruhlarni yaratish
+                  </button>
+                </form>
+                <a href="{{ add_role_group_url }}" class="btn btn-sm btn-alt-primary">
+                  <i class="fa fa-plus me-1"></i> Yangi guruh
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content content-boxed">
+    {% if messages %}
+      <div class="mb-4">
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} mb-2">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Guruhlar</div>
+              <div class="fs-2 fw-semibold">{{ group_count }}</div>
+            </div>
+            <div class="roles-stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa fa-layer-group"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Ruxsatlar</div>
+              <div class="fs-2 fw-semibold">{{ permission_count }}</div>
+            </div>
+            <div class="roles-stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa fa-key"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Biriktirilgan userlar</div>
+              <div class="fs-2 fw-semibold">{{ assigned_users_count }}</div>
+            </div>
+            <div class="roles-stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa fa-users"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Faol guruhlar</div>
+              <div class="fs-2 fw-semibold">{{ groups_with_permissions_count }}</div>
+            </div>
+            <div class="roles-stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa fa-shield-alt"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="roles-default-card mb-4">
+      <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+        <div>
+          <div class="fw-semibold mb-1">Professional default rol to'plami</div>
+          <div class="text-muted fs-sm">
+            Tizim uchun tavsiya etilgan kuchli standart guruhlar. Tugma bosilganda ular yaratiladi yoki mavjud bo'lsa ruxsatlari yangilanadi.
+          </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+          {% for group in default_groups %}
+            <span class="roles-chip mb-0">
+              <i class="fa fa-shield-alt"></i>{{ group.name }}
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="block block-rounded mb-4">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Guruhlar</h3>
+        <div class="block-options fs-sm text-muted">
+          {{ available_users_count }} ta foydalanuvchi ichidan guruhlar va ruxsatlarni boshqarish mumkin
+        </div>
+      </div>
+      <div class="block-content block-content-full">
+        {% if groups %}
+          <div class="row g-3">
+            {% for group in groups %}
+              <div class="col-12 col-xl-6">
+                <div class="roles-group-card h-100">
+                  <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                    <div>
+                      <h4 class="h5 mb-1">{{ group.name }}</h4>
+                      <div class="fs-sm text-muted">{{ group.user_total }} ta foydalanuvchi, {{ group.permission_total }} ta ruxsat</div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                      <a href="{{ group.detail_url }}" class="btn btn-sm btn-alt-primary">
+                        <i class="fa fa-cog me-1"></i> Boshqarish
+                      </a>
+                      {% if group.can_delete %}
+                        <form method="post" action="{% url 'administrator:delete-role-group' group.id %}" onsubmit="return confirm('Ushbu guruh o\\'chirilsinmi?');">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="fa fa-trash me-1"></i> O'chirish
+                          </button>
+                        </form>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <div class="fs-sm text-muted mb-2">Foydalanuvchilar</div>
+                    {% if group.prefetched_users %}
+                      <div>
+                        {% for user in group.prefetched_users|slice:":8" %}
+                          <span class="roles-chip"><i class="fa fa-user"></i>{{ user.username }}</span>
+                        {% endfor %}
+                        {% if group.user_total > 8 %}
+                          <span class="roles-chip bg-body-light text-dark">+{{ group.user_total|add:"-8" }} ta yana</span>
+                        {% endif %}
+                      </div>
+                    {% else %}
+                      <div class="text-muted fs-sm">Foydalanuvchilar biriktirilmagan.</div>
+                    {% endif %}
+                  </div>
+
+                  <div>
+                    <div class="fs-sm text-muted mb-2">Ruxsatlar</div>
+                    {% if group.prefetched_permissions %}
+                      <div>
+                        {% for permission in group.prefetched_permissions|slice:":10" %}
+                          <span class="roles-chip roles-permission-chip">{{ permission.uz_name }}</span>
+                        {% endfor %}
+                        {% if group.permission_total > 10 %}
+                          <span class="roles-chip bg-body-light text-dark">+{{ group.permission_total|add:"-10" }} ta yana</span>
+                        {% endif %}
+                      </div>
+                    {% else %}
+                      <div class="text-muted fs-sm">Ruxsatlar biriktirilmagan.</div>
+                    {% endif %}
+                  </div>
                 </div>
               </div>
-            </div>
+            {% endfor %}
           </div>
-        </div>
-        <!-- END Hero -->
+        {% else %}
+          <div class="roles-empty text-center">
+            <div class="mb-3 text-muted">
+              <i class="fa fa-user-slash fa-2x opacity-50"></i>
+            </div>
+            <h4 class="h5 mb-2">Guruhlar topilmadi</h4>
+            <p class="text-muted mb-3">Tizimda hali ruxsat guruhlari yaratilmagan.</p>
+            {% if can_manage_role_groups %}
+              <a href="{{ add_role_group_url }}" class="btn btn-alt-primary">
+                <i class="fa fa-plus me-1"></i> Birinchi guruhni yaratish
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
 
-        <!-- Page Content -->
-        <div class="content">
-          <div class="content">
-            <h3 class="mb-4">Guruhlar va Ruxsatlar</h3>
-          
-            <!-- Guruhlar jadvali -->
-            <div class="table-responsive">
-              <table class="table table-bordered table-striped">
-                <thead>
+    <div class="block block-rounded">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Barcha ruxsatlar</h3>
+        <div class="block-options fs-sm text-muted">{{ permission_count }} ta yozuv</div>
+      </div>
+      <div class="block-content block-content-full">
+        <div class="roles-table-shell p-2 p-lg-3">
+          <div class="table-responsive">
+            <table class="table table-hover table-vcenter mb-0">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Ruxsat nomi</th>
+                  <th>App</th>
+                  <th>Model</th>
+                  <th>Kod nomi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for permission in permissions %}
                   <tr>
-                    <th>#</th>
-                    <th>Guruh nomi</th>
-                    <th>Guruh foydalanuvchilari</th>
-                    <th>Birikkan ruxsatlar</th>
+                    <td class="fw-semibold">{{ forloop.counter }}</td>
+                    <td>{{ permission.uz_name }}</td>
+                    <td>{{ permission.app_label_uz }}</td>
+                    <td>{{ permission.model_label_uz }}</td>
+                    <td><code>{{ permission.codename }}</code></td>
                   </tr>
-                </thead>
-                <tbody>
-                  {% for group in groups %}
+                {% empty %}
                   <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ group.name }}</td>
-                    <td>
-                      {% if group.user_set.exists %}
-                        <ul>
-                          {% for user in group.user_set.all %}
-                          <li>{{ user.username }}</li>
-                          {% endfor %}
-                        </ul>
-                      {% else %}
-                        <span class="text-muted">Foydalanuvchilar yo'q</span>
-                      {% endif %}
-                    </td>
-                    <td>
-                      {% if group.permissions.exists %}
-                        <ul>
-                          {% for permission in group.permissions.all %}
-                          <li>{{ permission.name }}</li>
-                          {% endfor %}
-                        </ul>
-                      {% else %}
-                        <span class="text-muted">Ruxsatlar yo'q</span>
-                      {% endif %}
-                    </td>
+                    <td colspan="5" class="text-center text-muted">Ruxsatlar mavjud emas.</td>
                   </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          
-            <!-- Barcha ruxsatlar -->
-            <h3 class="mt-5">Barcha Ruxsatlar</h3>
-            <div class="table-responsive">
-              <table class="table table-bordered table-striped">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Ruxsat nomi</th>
-                    <th>Model nomi</th>
-                    <th>Kod nomi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for permission in permissions %}
-                  <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ permission.name }}</td>
-                    <td>{{ permission.content_type.model }}</td>
-                    <td>{{ permission.codename }}</td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
         </div>
-        <!-- END Page Content -->
-      </main>
+      </div>
+    </div>
+  </div>
+</main>
 {% endblock content %}
-
-{% block script %}
-  
-
-{% endblock script %}

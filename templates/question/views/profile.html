@@ -3,346 +3,249 @@
 
 {% block style %}
 <style>
-  .profile-shell {
-    padding-bottom: 2rem;
-  }
-
-  .profile-hero {
-    background:
-      radial-gradient(circle at top left, rgba(59, 130, 246, 0.22), transparent 30%),
-      radial-gradient(circle at top right, rgba(16, 185, 129, 0.18), transparent 32%),
-      linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.92));
-  }
-
-  .profile-card,
-  .stat-card,
-  .panel-card {
-    border: 0;
-    border-radius: 18px;
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
-  }
-
-  .profile-card {
-    overflow: hidden;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.96));
-  }
-
-  .profile-avatar {
-    width: 104px;
-    height: 104px;
-    border-radius: 24px;
+  .profile-avatar-lg {
+    width: 96px;
+    height: 96px;
     object-fit: cover;
-    border: 4px solid rgba(255, 255, 255, 0.92);
-    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
+    border-radius: 1rem;
+    border: 4px solid rgba(255, 255, 255, 0.18);
   }
 
   .profile-avatar-placeholder {
-    width: 104px;
-    height: 104px;
-    border-radius: 24px;
+    width: 96px;
+    height: 96px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    border-radius: 1rem;
     font-size: 2rem;
     font-weight: 700;
-    color: rgba(15, 23, 42, 0.72);
-    background: linear-gradient(135deg, rgba(191, 219, 254, 0.9), rgba(167, 243, 208, 0.9));
-    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+    color: #fff;
+    background: rgba(255, 255, 255, 0.18);
+    border: 4px solid rgba(255, 255, 255, 0.12);
   }
 
-  .role-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.45rem 0.8rem;
-    border-radius: 999px;
-    background: rgba(37, 99, 235, 0.1);
-    border: 1px solid rgba(37, 99, 235, 0.18);
-    color: rgba(30, 64, 175, 0.96);
-    font-weight: 600;
-    font-size: 0.85rem;
+  .profile-info-item,
+  .profile-list-item {
+    border: 1px solid rgba(0, 0, 0, 0.085);
+    border-radius: 0.5rem;
+    background: #fff;
   }
 
-  .meta-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
+  .profile-info-item {
+    height: 100%;
+    padding: 0.875rem 1rem;
   }
 
-  .meta-item {
-    padding: 0.9rem 1rem;
-    border-radius: 14px;
-    background: rgba(248, 250, 252, 0.9);
-    border: 1px solid rgba(148, 163, 184, 0.16);
-  }
-
-  .meta-item-label {
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: rgba(100, 116, 139, 0.92);
+  .profile-info-label {
     margin-bottom: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #6c757d;
   }
 
-  .meta-item-value {
+  .profile-info-value {
     font-weight: 600;
-    color: rgba(15, 23, 42, 0.94);
+    color: #212529;
     word-break: break-word;
   }
 
-  .stat-card {
-    padding: 1.1rem 1.15rem;
-    background: #fff;
-  }
-
-  .stat-icon {
+  .metric-icon {
     width: 48px;
     height: 48px;
-    border-radius: 14px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.15rem;
+    border-radius: 999px;
+    font-size: 1rem;
   }
 
-  .stat-value {
-    font-size: 1.85rem;
-    font-weight: 700;
-    color: rgba(15, 23, 42, 0.96);
-    line-height: 1.1;
+  .profile-list-item {
+    padding: 0.875rem 1rem;
+    max-width: 100%;
+    overflow: hidden;
   }
 
-  .panel-card {
-    background: #fff;
-  }
-
-  .panel-card .card-header {
-    background: transparent;
-    border-bottom: 1px solid rgba(226, 232, 240, 0.9);
-    padding: 1rem 1.25rem;
-  }
-
-  .panel-card .card-body {
-    padding: 1.1rem 1.25rem 1.25rem;
-  }
-
-  .timeline-list {
-    display: grid;
-    gap: 0.85rem;
-  }
-
-  .timeline-item {
-    padding: 0.9rem 1rem;
-    border-radius: 14px;
-    background: rgba(248, 250, 252, 0.84);
-    border: 1px solid rgba(226, 232, 240, 0.95);
-  }
-
-  .quick-link {
+  .profile-action-link {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.9rem 1rem;
-    border-radius: 14px;
-    background: rgba(248, 250, 252, 0.84);
-    border: 1px solid rgba(226, 232, 240, 0.95);
+    gap: 1rem;
+    padding: 0.875rem 1rem;
     color: inherit;
     text-decoration: none;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: all 0.2s ease;
   }
 
-  .quick-link:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+  .profile-action-link:hover {
     color: inherit;
+    border-color: rgba(13, 110, 253, 0.2);
+    background: rgba(13, 110, 253, 0.03);
+  }
+
+  .profile-log-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .profile-log-title,
+  .profile-log-path {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .profile-log-badge {
+    flex-shrink: 0;
   }
 </style>
 {% endblock style %}
 
 {% block content %}
-<main id="main-container" class="profile-shell">
-  <div class="profile-hero">
-    <div class="content py-4 py-md-5">
-      <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-4 text-white">
-        <div class="d-flex align-items-center gap-3">
-          {% if profile_user.profile_picture %}
-            <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" class="profile-avatar">
-          {% else %}
-            <div class="profile-avatar-placeholder">
-              {{ profile_user.first_name|default:profile_user.username|slice:":1" }}{{ profile_user.second_name|default:""|slice:":1" }}
+<main id="main-container">
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
+    <div class="bg-primary-dark-op">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
+          <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-3 flex-grow-1">
+            <div>
+              {% if profile_user.profile_picture %}
+                <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" class="profile-avatar-lg">
+              {% else %}
+                <div class="profile-avatar-placeholder">
+                  {{ profile_user.first_name|default:profile_user.username|slice:":1" }}{{ profile_user.second_name|default:""|slice:":1" }}
+                </div>
+              {% endif %}
             </div>
-          {% endif %}
-
-          <div>
-            <div class="d-flex flex-wrap gap-2 mb-2">
-              {% for role in role_labels %}
-                <span class="role-chip">
-                  <i class="fa fa-shield-alt"></i>
-                  {{ role }}
-                </span>
-              {% endfor %}
+            <div>
+              <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-start mb-2">
+                {% for role in role_labels %}
+                  <span class="badge rounded-pill bg-primary">{{ role }}</span>
+                {% endfor %}
+              </div>
+              <h1 class="fw-semibold text-white mb-1">
+                {% if profile_user.full_name %}
+                  {{ profile_user.full_name }}
+                {% elif profile_user.first_name or profile_user.second_name %}
+                  {{ profile_user.first_name }} {{ profile_user.second_name }}
+                {% else %}
+                  {{ profile_user.username }}
+                {% endif %}
+              </h1>
+              <h2 class="h5 fw-normal text-white-75 mb-1">@{{ profile_user.username }}</h2>
+              <p class="text-white-75 mb-0">
+                Oxirgi kirish: {{ profile_user.last_login|date:"Y-m-d H:i"|default:"Ma'lumot yo'q" }}
+              </p>
             </div>
-            <h1 class="h2 mb-1 text-white">
-              {{ profile_user.full_name|default:profile_user.get_full_name|default:profile_user.username }}
-            </h1>
-            <p class="mb-1 text-white-75">@{{ profile_user.username }}</p>
-            <p class="mb-0 text-white-50">
-              Administrator bo'limidagi shaxsiy boshqaruv sahifasi
-            </p>
           </div>
-        </div>
-
-        <div class="d-flex flex-wrap gap-2">
-          <a href="{% url 'administrator:edit-user' profile_user.id %}" class="btn btn-alt-primary">
-            <i class="fa fa-pen me-1"></i>
-            Profilni tahrirlash
-          </a>
-          <a href="{% url 'administrator:main' %}" class="btn btn-alt-secondary">
-            <i class="fa fa-chart-pie me-1"></i>
-            Boshqaruv paneli
-          </a>
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-end">
+              <a href="{% url 'administrator:edit-user' profile_user.id %}" class="btn btn-alt-primary">
+                <i class="fa fa-user-edit me-1"></i> Profilni tahrirlash
+              </a>
+              <a href="{% url 'administrator:main' %}" class="btn btn-alt-secondary">
+                <i class="fa fa-chart-pie me-1"></i> Dashboard
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="content py-4">
-    <div class="profile-card p-4 p-md-5 mb-4">
-      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
-        <div>
-          <h2 class="h4 mb-1">Shaxsiy ma'lumotlar</h2>
-          <p class="text-muted mb-0">Tizimdagi profilingiz va ishchi ma'lumotlaringiz</p>
-        </div>
-        <div class="text-muted small">
-          Oxirgi kirish:
-          <strong>{{ profile_user.last_login|date:"Y-m-d H:i"|default:"Ma'lumot yo'q" }}</strong>
-        </div>
-      </div>
-
-      <div class="meta-grid">
-        <div class="meta-item">
-          <div class="meta-item-label">Ism va familiya</div>
-          <div class="meta-item-value">{{ profile_user.first_name|default:"-" }} {{ profile_user.second_name|default:"" }}</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-item-label">Telefon</div>
-          <div class="meta-item-value">{{ profile_user.phone_number|default:"Kiritilmagan" }}</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-item-label">Email</div>
-          <div class="meta-item-value">{{ profile_user.contact_email|default:profile_user.email|default:"Kiritilmagan" }}</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-item-label">Manzil</div>
-          <div class="meta-item-value">{{ profile_user.address|default:"Kiritilmagan" }}</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-item-label">Lavozim</div>
-          <div class="meta-item-value">{{ profile_user.job_title|default:profile_user.staff_position|default:"Belgilanmagan" }}</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-item-label">Bo'lim / kafedra</div>
-          <div class="meta-item-value">{{ profile_user.department|default:profile_user.company_name|default:"Belgilanmagan" }}</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-item-label">Tug'ilgan sana</div>
-          <div class="meta-item-value">{{ profile_user.date_of_birth|date:"Y-m-d"|default:"Kiritilmagan" }}</div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-item-label">Ro'yxatdan o'tgan</div>
-          <div class="meta-item-value">{{ profile_user.date_joined|date:"Y-m-d H:i" }}</div>
-        </div>
-      </div>
-    </div>
-
+  <div class="content content-boxed">
     <div class="row g-3 mb-4">
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card h-100">
-          <div class="d-flex align-items-center justify-content-between gap-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
             <div>
-              <div class="text-muted small text-uppercase">Yaratgan testlar</div>
-              <div class="stat-value">{{ stats.created_tests }}</div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Yaratgan testlar</div>
+              <div class="fs-2 fw-semibold">{{ stats.created_tests }}</div>
             </div>
-            <div class="stat-icon" style="background: rgba(59, 130, 246, 0.12); color: rgba(37, 99, 235, 0.95);">
+            <div class="metric-icon bg-primary bg-opacity-10 text-primary">
               <i class="fa fa-file-alt"></i>
             </div>
           </div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card h-100">
-          <div class="d-flex align-items-center justify-content-between gap-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
             <div>
-              <div class="text-muted small text-uppercase">Faol topshiriqlar</div>
-              <div class="stat-value">{{ stats.active_assignments }}</div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Faol topshiriqlar</div>
+              <div class="fs-2 fw-semibold">{{ stats.active_assignments }}</div>
             </div>
-            <div class="stat-icon" style="background: rgba(16, 185, 129, 0.12); color: rgba(5, 150, 105, 0.95);">
+            <div class="metric-icon bg-success bg-opacity-10 text-success">
               <i class="fa fa-tasks"></i>
             </div>
           </div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card h-100">
-          <div class="d-flex align-items-center justify-content-between gap-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
             <div>
-              <div class="text-muted small text-uppercase">Nazorat qilgan natijalar</div>
-              <div class="stat-value">{{ stats.completed_results }}</div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Nazorat qilingan natijalar</div>
+              <div class="fs-2 fw-semibold">{{ stats.completed_results }}</div>
             </div>
-            <div class="stat-icon" style="background: rgba(245, 158, 11, 0.14); color: rgba(217, 119, 6, 0.96);">
+            <div class="metric-icon bg-warning bg-opacity-10 text-warning">
               <i class="fa fa-chart-line"></i>
             </div>
           </div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="stat-card h-100">
-          <div class="d-flex align-items-center justify-content-between gap-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
             <div>
-              <div class="text-muted small text-uppercase">O'rtacha natija</div>
-              <div class="stat-value">{{ stats.average_score }}%</div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">O'rtacha natija</div>
+              <div class="fs-2 fw-semibold">{{ stats.average_score|floatformat:1 }}%</div>
             </div>
-            <div class="stat-icon" style="background: rgba(168, 85, 247, 0.12); color: rgba(126, 34, 206, 0.96);">
+            <div class="metric-icon bg-info bg-opacity-10 text-info">
               <i class="fa fa-bullseye"></i>
             </div>
           </div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-xl-4">
-        <div class="stat-card h-100">
-          <div class="d-flex align-items-center justify-content-between gap-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
             <div>
-              <div class="text-muted small text-uppercase">Boshqargan talabalar</div>
-              <div class="stat-value">{{ stats.managed_students }}</div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Boshqargan talabalar</div>
+              <div class="fs-2 fw-semibold">{{ stats.managed_students }}</div>
             </div>
-            <div class="stat-icon" style="background: rgba(14, 165, 233, 0.12); color: rgba(2, 132, 199, 0.96);">
+            <div class="metric-icon bg-primary bg-opacity-10 text-primary">
               <i class="fa fa-user-graduate"></i>
             </div>
           </div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-xl-4">
-        <div class="stat-card h-100">
-          <div class="d-flex align-items-center justify-content-between gap-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
             <div>
-              <div class="text-muted small text-uppercase">Savollar bazasi</div>
-              <div class="stat-value">{{ stats.question_bank_size }}</div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Savollar bazasi</div>
+              <div class="fs-2 fw-semibold">{{ stats.question_bank_size }}</div>
             </div>
-            <div class="stat-icon" style="background: rgba(244, 63, 94, 0.12); color: rgba(225, 29, 72, 0.96);">
+            <div class="metric-icon bg-danger bg-opacity-10 text-danger">
               <i class="fa fa-question-circle"></i>
             </div>
           </div>
         </div>
       </div>
       <div class="col-12 col-sm-6 col-xl-4">
-        <div class="stat-card h-100">
-          <div class="d-flex align-items-center justify-content-between gap-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
             <div>
-              <div class="text-muted small text-uppercase">Faollik loglari</div>
-              <div class="stat-value">{{ stats.activity_logs }}</div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Faollik loglari</div>
+              <div class="fs-2 fw-semibold">{{ stats.activity_logs }}</div>
             </div>
-            <div class="stat-icon" style="background: rgba(100, 116, 139, 0.12); color: rgba(51, 65, 85, 0.96);">
+            <div class="metric-icon bg-secondary bg-opacity-10 text-secondary">
               <i class="fa fa-history"></i>
             </div>
           </div>
@@ -352,46 +255,146 @@
 
     <div class="row g-4">
       <div class="col-12 col-xl-8">
-        <div class="panel-card card mb-4">
-          <div class="card-header">
-            <h3 class="h5 mb-0">So'nggi testlar va topshiriqlar</h3>
+        <div class="block block-rounded mb-4">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Shaxsiy ma'lumotlar</h3>
+            <div class="block-options">
+              <span class="fs-sm text-muted">Ro'yxatdan o'tgan: {{ profile_user.date_joined|date:"Y-m-d H:i" }}</span>
+            </div>
           </div>
-          <div class="card-body">
+          <div class="block-content block-content-full">
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <div class="profile-info-item">
+                  <div class="profile-info-label">F.I.Sh.</div>
+                  <div class="profile-info-value">
+                    {% if profile_user.full_name %}
+                      {{ profile_user.full_name }}
+                    {% elif profile_user.first_name or profile_user.second_name %}
+                      {{ profile_user.first_name }} {{ profile_user.second_name }}
+                    {% else %}
+                      {{ profile_user.username }}
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="profile-info-item">
+                  <div class="profile-info-label">Username</div>
+                  <div class="profile-info-value">@{{ profile_user.username }}</div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="profile-info-item">
+                  <div class="profile-info-label">Telefon</div>
+                  <div class="profile-info-value">{{ profile_user.phone_number|default:"Kiritilmagan" }}</div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="profile-info-item">
+                  <div class="profile-info-label">Email</div>
+                  <div class="profile-info-value">{{ profile_user.contact_email|default:profile_user.email|default:"Kiritilmagan" }}</div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="profile-info-item">
+                  <div class="profile-info-label">Lavozim</div>
+                  <div class="profile-info-value">{{ profile_user.job_title|default:profile_user.staff_position|default:"Belgilanmagan" }}</div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="profile-info-item">
+                  <div class="profile-info-label">Bo'lim / tashkilot</div>
+                  <div class="profile-info-value">{{ profile_user.department|default:profile_user.company_name|default:"Belgilanmagan" }}</div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="profile-info-item">
+                  <div class="profile-info-label">Tug'ilgan sana</div>
+                  <div class="profile-info-value">{{ profile_user.date_of_birth|date:"Y-m-d"|default:"Kiritilmagan" }}</div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="profile-info-item">
+                  <div class="profile-info-label">Login ruxsati</div>
+                  <div class="profile-info-value">
+                    {% if profile_user.auth_is_id %}
+                      <span class="badge bg-success">Ruxsat berilgan</span>
+                    {% else %}
+                      <span class="badge bg-danger">Ruxsat berilmagan</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="profile-info-item">
+                  <div class="profile-info-label">Manzil</div>
+                  <div class="profile-info-value">{{ profile_user.address|default:"Kiritilmagan" }}</div>
+                </div>
+              </div>
+              {% if profile_user.bio %}
+                <div class="col-12">
+                  <div class="profile-info-item">
+                    <div class="profile-info-label">Bio</div>
+                    <div class="profile-info-value fw-normal">{{ profile_user.bio }}</div>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="block block-rounded mb-4">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">So'nggi testlar va topshiriqlar</h3>
+          </div>
+          <div class="block-content block-content-full">
             <div class="row g-3">
               <div class="col-12 col-lg-6">
                 <div class="d-flex align-items-center justify-content-between mb-3">
-                  <h4 class="h6 mb-0">Yaratgan testlar</h4>
+                  <h4 class="fs-sm fw-semibold text-uppercase mb-0">Yaratgan testlar</h4>
                   <a href="{% url 'administrator:question' %}" class="btn btn-sm btn-alt-secondary">Barchasi</a>
                 </div>
-                <div class="timeline-list">
+                <div class="d-grid gap-2">
                   {% for test in recent_tests %}
-                    <div class="timeline-item">
-                      <div class="fw-semibold">{{ test.name }}</div>
-                      <div class="text-muted small mb-2">{{ test.category.name }} | {{ test.created_at|date:"Y-m-d H:i" }}</div>
-                      <a href="{% url 'administrator:edit-test' test.id %}" class="btn btn-sm btn-alt-primary">Ochish</a>
+                    <div class="profile-list-item">
+                      <div class="d-flex justify-content-between gap-3">
+                        <div>
+                          <div class="fw-semibold">{{ test.name|truncatechars:60 }}</div>
+                          <div class="fs-sm text-muted">{{ test.category.name|default:"Kategoriya yo'q" }}</div>
+                        </div>
+                        <div class="fs-sm text-muted text-nowrap">{{ test.created_at|date:"Y-m-d H:i" }}</div>
+                      </div>
+                      <div class="mt-2">
+                        <a href="{% url 'administrator:edit-test' test.id %}" class="btn btn-sm btn-alt-primary">Ochish</a>
+                      </div>
                     </div>
                   {% empty %}
-                    <div class="timeline-item text-muted">Hali test yaratmagansiz.</div>
+                    <div class="profile-list-item text-muted">Hali test yaratmagansiz.</div>
                   {% endfor %}
                 </div>
               </div>
-
               <div class="col-12 col-lg-6">
                 <div class="d-flex align-items-center justify-content-between mb-3">
-                  <h4 class="h6 mb-0">So'nggi topshiriqlar</h4>
+                  <h4 class="fs-sm fw-semibold text-uppercase mb-0">So'nggi topshiriqlar</h4>
                   <a href="{% url 'administrator:assign-test' %}" class="btn btn-sm btn-alt-secondary">Barchasi</a>
                 </div>
-                <div class="timeline-list">
+                <div class="d-grid gap-2">
                   {% for assignment in recent_assignments %}
-                    <div class="timeline-item">
-                      <div class="fw-semibold">{{ assignment.test.name }}</div>
-                      <div class="text-muted small mb-2">
-                        {{ assignment.category.name }} | {{ assignment.start_time|date:"Y-m-d H:i" }}
+                    <div class="profile-list-item">
+                      <div class="d-flex justify-content-between gap-3">
+                        <div>
+                          <div class="fw-semibold">{{ assignment.test.name|truncatechars:60 }}</div>
+                          <div class="fs-sm text-muted">{{ assignment.category.name|default:"Kategoriya yo'q" }}</div>
+                        </div>
+                        <div class="fs-sm text-muted text-nowrap">{{ assignment.start_time|date:"Y-m-d H:i" }}</div>
                       </div>
-                      <a href="{% url 'administrator:view-assign-test' assignment.id %}" class="btn btn-sm btn-alt-primary">Ko'rish</a>
+                      <div class="mt-2">
+                        <a href="{% url 'administrator:view-assign-test' assignment.id %}" class="btn btn-sm btn-alt-primary">Ko'rish</a>
+                      </div>
                     </div>
                   {% empty %}
-                    <div class="timeline-item text-muted">Hali topshiriq biriktirmagansiz.</div>
+                    <div class="profile-list-item text-muted">Hali topshiriq biriktirmagansiz.</div>
                   {% endfor %}
                 </div>
               </div>
@@ -399,13 +402,13 @@
           </div>
         </div>
 
-        <div class="panel-card card">
-          <div class="card-header">
-            <h3 class="h5 mb-0">So'nggi natijalar nazorati</h3>
+        <div class="block block-rounded">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">So'nggi natijalar nazorati</h3>
           </div>
-          <div class="card-body">
+          <div class="block-content block-content-full">
             <div class="table-responsive">
-              <table class="table table-vcenter mb-0">
+              <table class="table table-vcenter table-hover mb-0">
                 <thead>
                   <tr>
                     <th>Talaba</th>
@@ -417,14 +420,22 @@
                 <tbody>
                   {% for result in recent_results %}
                     <tr>
-                      <td>{{ result.student.full_name|default:result.student.username }}</td>
+                      <td>
+                        {% if result.student.full_name %}
+                          {{ result.student.full_name }}
+                        {% elif result.student.first_name or result.student.second_name %}
+                          {{ result.student.first_name }} {{ result.student.second_name }}
+                        {% else %}
+                          {{ result.student.username }}
+                        {% endif %}
+                      </td>
                       <td>{{ result.assignment.test.name }}</td>
                       <td><span class="badge bg-primary">{{ result.score|floatformat:1 }}%</span></td>
                       <td>{{ result.end_time|date:"Y-m-d H:i"|default:"-" }}</td>
                     </tr>
                   {% empty %}
                     <tr>
-                      <td colspan="4" class="text-center text-muted">Hali yakunlangan natijalar yo'q.</td>
+                      <td colspan="4" class="text-center text-muted py-4">Hali yakunlangan natijalar yo'q.</td>
                     </tr>
                   {% endfor %}
                 </tbody>
@@ -435,50 +446,57 @@
       </div>
 
       <div class="col-12 col-xl-4">
-        <div class="panel-card card mb-4">
-          <div class="card-header">
-            <h3 class="h5 mb-0">Tezkor amallar</h3>
+        <div class="block block-rounded mb-4">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Tezkor amallar</h3>
           </div>
-          <div class="card-body d-grid gap-3">
-            <a href="{% url 'administrator:edit-user' profile_user.id %}" class="quick-link">
-              <span><i class="fa fa-user-edit me-2 text-primary"></i> Profilni tahrirlash</span>
-              <i class="fa fa-angle-right text-muted"></i>
-            </a>
-            <a href="{% url 'administrator:add-question' %}" class="quick-link">
-              <span><i class="fa fa-plus-circle me-2 text-success"></i> Yangi test qo'shish</span>
-              <i class="fa fa-angle-right text-muted"></i>
-            </a>
-            <a href="{% url 'administrator:add-assign-test' %}" class="quick-link">
-              <span><i class="fa fa-tasks me-2 text-warning"></i> Topshiriq biriktirish</span>
-              <i class="fa fa-angle-right text-muted"></i>
-            </a>
-            <a href="{% url 'administrator:results' %}" class="quick-link">
-              <span><i class="fa fa-chart-bar me-2 text-info"></i> Natijalarni ko'rish</span>
-              <i class="fa fa-angle-right text-muted"></i>
-            </a>
-            {% if profile_user.is_superuser %}
-              <a href="{% url 'administrator:site_settings' %}" class="quick-link">
-                <span><i class="fa fa-cogs me-2 text-danger"></i> Tizim sozlamalari</span>
+          <div class="block-content block-content-full">
+            <div class="d-grid gap-2">
+              <a href="{% url 'administrator:edit-user' profile_user.id %}" class="profile-list-item profile-action-link">
+                <span><i class="fa fa-user-edit text-primary me-2"></i> Profilni tahrirlash</span>
                 <i class="fa fa-angle-right text-muted"></i>
               </a>
-            {% endif %}
+              <a href="{% url 'administrator:add-question' %}" class="profile-list-item profile-action-link">
+                <span><i class="fa fa-plus-circle text-success me-2"></i> Yangi test yaratish</span>
+                <i class="fa fa-angle-right text-muted"></i>
+              </a>
+              <a href="{% url 'administrator:add-assign-test' %}" class="profile-list-item profile-action-link">
+                <span><i class="fa fa-tasks text-warning me-2"></i> Topshiriq biriktirish</span>
+                <i class="fa fa-angle-right text-muted"></i>
+              </a>
+              <a href="{% url 'administrator:results' %}" class="profile-list-item profile-action-link">
+                <span><i class="fa fa-chart-bar text-info me-2"></i> Natijalarni ko'rish</span>
+                <i class="fa fa-angle-right text-muted"></i>
+              </a>
+              {% if profile_user.is_superuser %}
+                <a href="{% url 'administrator:site_settings' %}" class="profile-list-item profile-action-link">
+                  <span><i class="fa fa-cogs text-danger me-2"></i> Tizim sozlamalari</span>
+                  <i class="fa fa-angle-right text-muted"></i>
+                </a>
+              {% endif %}
+            </div>
           </div>
         </div>
 
-        <div class="panel-card card">
-          <div class="card-header">
-            <h3 class="h5 mb-0">So'nggi faollik</h3>
+        <div class="block block-rounded">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">So'nggi faollik</h3>
           </div>
-          <div class="card-body">
-            <div class="timeline-list">
+          <div class="block-content block-content-full">
+            <div class="d-grid gap-2">
               {% for log in recent_logs %}
-                <div class="timeline-item">
-                  <div class="fw-semibold">{{ log.method }} {{ log.status_code }}</div>
-                  <div class="text-muted small mb-1">{{ log.path|truncatechars:55 }}</div>
-                  <div class="text-muted small">{{ log.timestamp|date:"Y-m-d H:i:s" }}</div>
+                <div class="profile-list-item">
+                  <div class="profile-log-row">
+                    <div class="fw-semibold profile-log-title">{{ log.method }} {{ log.status_code }}</div>
+                    <span class="badge profile-log-badge {% if log.status_code >= 400 %}bg-danger{% else %}bg-success{% endif %}">
+                      {{ log.status_code }}
+                    </span>
+                  </div>
+                  <div class="fs-sm text-muted mb-1 profile-log-path">{{ log.path|truncatechars:55 }}</div>
+                  <div class="fs-sm text-muted">{{ log.timestamp|date:"Y-m-d H:i:s" }}</div>
                 </div>
               {% empty %}
-                <div class="timeline-item text-muted">Siz uchun log yozuvlari topilmadi.</div>
+                <div class="profile-list-item text-muted">Siz uchun log yozuvlari topilmadi.</div>
               {% endfor %}
             </div>
           </div>

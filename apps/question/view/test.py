@@ -2,17 +2,17 @@ import io
 import json
 import random
 from datetime import datetime
+from urllib.parse import urlencode
 
 import openpyxl
-from django.db.models import F
+from django.db.models import F, Q
 from django.db import transaction
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db.models import Count
+from django.db.models import Count, Avg, Max
 from django.http import JsonResponse, HttpResponse
-from django.middleware.csrf import get_token
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
@@ -29,42 +29,123 @@ from apps.question.models import Test, Category, Question, Answer, StudentTestAs
 from apps.question.utils.utils import clean_import_answer_text, clean_import_question_text
 
 
+TEST_STUDENT_THROUGH = Test.students.through
+
+
+def build_test_management_summary(test):
+    question_queryset = Question.objects.filter(test=test)
+    return {
+        'question_count': question_queryset.count(),
+        'student_count': test.students.count(),
+        'assignment_count': test.assignments.count(),
+        'latest_question_update': question_queryset.order_by('-updated_at').values_list('updated_at', flat=True).first(),
+    }
+
+
+def attach_test_listing_counts(test_items):
+    test_ids = [test.id for test in test_items]
+    if not test_ids:
+        return
+
+    question_counts = {
+        item['test_id']: item['total']
+        for item in (
+            Question.objects.filter(test_id__in=test_ids)
+            .values('test_id')
+            .annotate(total=Count('id'))
+        )
+    }
+    student_counts = {
+        item['test_id']: item['total']
+        for item in (
+            TEST_STUDENT_THROUGH.objects.filter(test_id__in=test_ids)
+            .values('test_id')
+            .annotate(total=Count('id'))
+        )
+    }
+
+    for test in test_items:
+        test.question_count = question_counts.get(test.id, 0)
+        test.student_count = student_counts.get(test.id, 0)
+
+
+def build_assignment_overview():
+    assignments_queryset = StudentTestAssignment.objects.all()
+    return {
+        'total_assignments_count': assignments_queryset.count(),
+        'active_assignments_count': assignments_queryset.filter(is_active=True).count(),
+        'completed_assignments_count': assignments_queryset.filter(status='completed').count(),
+        'unique_tests_count': assignments_queryset.order_by().values('test_id').distinct().count(),
+        'latest_assignment_created': assignments_queryset.order_by('-created_at').values_list('created_at', flat=True).first(),
+    }
+
+
+def build_assignment_form_context():
+    overview = build_assignment_overview()
+    overview.update({
+        'categories_count': Category.objects.count(),
+        'tests_count': Test.objects.count(),
+    })
+    return overview
+
+
+def build_assignment_detail_summary(assignment):
+    student_tests_queryset = assignment.student_tests.all()
+    return {
+        'student_test_count': student_tests_queryset.count(),
+        'completed_student_count': student_tests_queryset.filter(completed=True).count(),
+        'question_pool_count': assignment.test.questions.count(),
+        'latest_attempt_time': student_tests_queryset.order_by('-start_time').values_list('start_time', flat=True).first(),
+    }
+
+
 @method_decorator(login_required, name='dispatch')
 class QuestionView(View):
     template_name = 'question/views/questions.html'
 
     def get(self, request):
-        # Filtering parameters
-        category_filter = request.GET.get('category', None)  # Filter by category
-        search_query = request.GET.get('search', '')  # Search by name
+        category_filter = request.GET.get('category', '')
+        search_query = request.GET.get('search', '').strip()
 
-        # Get all tests with question count and student count
-        tests_queryset = Test.objects.select_related('category').annotate(
-            question_count=Count('questions', distinct=True),
-            student_count=Count('students', distinct=True)  # Talabalar sonini hisoblash
-        )
-
-        # Apply filters
+        tests_queryset = Test.objects.select_related('category', 'created_by')
         if category_filter:
             tests_queryset = tests_queryset.filter(category__id=category_filter)
         if search_query:
             tests_queryset = tests_queryset.filter(name__icontains=search_query)
 
-        # Pagination
-        paginator = Paginator(tests_queryset, 50)  # Show 50 tests per page
+        tests_queryset = tests_queryset.order_by('-updated_at', '-id')
+
+        paginator = Paginator(tests_queryset, 24)
         page_number = request.GET.get('page')
         tests = paginator.get_page(page_number)
+        page_tests = list(tests.object_list)
+        attach_test_listing_counts(page_tests)
+        tests.object_list = page_tests
 
-        # Get all categories for filter dropdown
-        categories = Category.objects.all()
+        categories = Category.objects.order_by('name')
+        query_params = request.GET.copy()
+        query_params.pop('page', None)
+        pagination_query = urlencode(query_params, doseq=True)
+
+        total_tests_count = Test.objects.count()
+        filtered_tests_count = paginator.count
+        total_questions_count = Question.objects.count()
+        active_categories_count = Test.objects.order_by().values('category_id').distinct().count()
+        latest_test_update = Test.objects.order_by('-updated_at').values_list('updated_at', flat=True).first()
 
         context = {
-            'tests': tests,  # Paginated test objects with question and student counts
-            'categories': categories,  # All categories for filtering
+            'tests': tests,
+            'categories': categories,
             'filters': {
                 'category': category_filter,
                 'search': search_query,
             },
+            'pagination_query': pagination_query,
+            'total_tests_count': total_tests_count,
+            'filtered_tests_count': filtered_tests_count,
+            'total_questions_count': total_questions_count,
+            'active_categories_count': active_categories_count,
+            'latest_test_update': latest_test_update,
         }
         return render(request, self.template_name, context)
 
@@ -104,6 +185,23 @@ class AddQuestionView(View):
 @method_decorator(login_required, name='dispatch')
 class DeleteTestView(View):
     def post(self, request, test_id):
+        if not request.user.is_superuser:
+            return JsonResponse({"success": False, "message": "Ruxsat etilmagan amal!"}, status=403)
+
+        test = get_object_or_404(
+            Test.objects.annotate(question_count=Count('questions', distinct=True)),
+            id=test_id,
+        )
+
+        if test.question_count > 0:
+            return JsonResponse({
+                "success": False,
+                "message": "Test ichida savollar mavjudligi sabab o'chirib bo'lmaydi.",
+            })
+
+        test.delete()
+        return JsonResponse({"success": True, "message": "Test muvaffaqiyatli o'chirildi!"})
+
         print(f"[DEBUG] POST request received for DeleteTestView with test_id: {test_id}")
         print(f"[DEBUG] User: {request.user}, Is superuser: {request.user.is_superuser}")
         print(f"[DEBUG] CSRF token from header: {request.META.get('HTTP_X_CSRFTOKEN', 'Not provided')}")
@@ -134,22 +232,26 @@ class EditTestView(View):
     template_name = 'question/views/edit-question.html'
 
     def get(self, request, test_id):
-        # Fetch the test object
-        test = get_object_or_404(Test, id=test_id)
+        test = get_object_or_404(Test.objects.select_related('category', 'created_by'), id=test_id)
         form = TestForm(instance=test)
         context = {
             'form': form,
             'test': test,
+            'summary': build_test_management_summary(test),
+            'categories_count': Category.objects.count(),
         }
         return render(request, self.template_name, context)
 
     def post(self, request, test_id):
-        # Fetch the test object
         test = get_object_or_404(Test, id=test_id)
         form = TestForm(request.POST, instance=test)
         if form.is_valid():
             form.save()
-            return JsonResponse({"success": True, "message": "Test muvaffaqiyatli yangilandi!"})
+            return JsonResponse({
+                "success": True,
+                "message": "Test muvaffaqiyatli yangilandi!",
+                "redirect_url": reverse("administrator:question"),
+            })
         return JsonResponse({"success": False, "message": "Formada xatolik mavjud!"})
 
 
@@ -158,63 +260,64 @@ class AddQuestionTestView(View):
     template_name = 'question/views/question-add-test.html'
 
     def get(self, request, test_id):
-        test = get_object_or_404(Test, id=test_id)
+        test = get_object_or_404(Test.objects.select_related('category', 'created_by'), id=test_id)
         form = AddQuestionForm()
-
-        # Ushbu testga tegishli barcha savollar va ularga tegishli javoblarni olish
-        questions = test.questions.prefetch_related('answers')
 
         context = {
             'form': form,
             'test': test,
-            'questions': questions,
-            'student_count': test.students.count(),
+            'summary': build_test_management_summary(test),
         }
         return render(request, self.template_name, context)
 
     def post(self, request, test_id):
         test = get_object_or_404(Test, id=test_id)
-        print(f"Test ID: {test_id}, Test: {test}")  # Test ma'lumotini tekshirish
-
-        form = AddQuestionForm(request.POST, request.FILES)
-        print(f"POST ma'lumotlari: {request.POST}")  # POST ma'lumotlarini tekshirish
-        print(f"Fayllar: {request.FILES}")  # Yuklangan fayllarni tekshirish
+        form = AddQuestionForm(request.POST)
 
         if form.is_valid():
-            print("Form validatsiyadan o'tdi!")  # Form validatsiyasi muvaffaqiyatli o'tganini tekshirish
-
-            # Savolni yaratish
             question = Question.objects.create(
                 test=test,
                 text=form.cleaned_data['text'],
-                image=form.cleaned_data.get('image')  # Rasmlar ixtiyoriy
             )
-            print(f"Yaratilgan savol: {question}")  # Yaratilgan savolni tekshirish
 
-            # Javoblar va ularning atributlarini olish
-            answers = request.POST.getlist('answers[]')  # Javob matnlari
-            is_correct_flags = request.POST.getlist('is_correct[]')  # To'g'ri yoki noto'g'ri bayrog'i
-
-            print(f"Answers: {answers}")  # Kiruvchi javoblarni tekshirish
-            print(f"Is_correct_flags: {is_correct_flags}")  # To'g'ri javoblar bayrog'ini tekshirish
-
-            # Variantlarni yaratish
+            answers = form.cleaned_data['answers']
+            is_correct_flags = form.cleaned_data['is_correct_flags']
             for index, answer_text in enumerate(answers):
-                is_correct = is_correct_flags[index].lower() == 'true'
-                print(
-                    f"Javob: {answer_text.strip()}, To'g'ri: {is_correct}")  # Har bir javobni va uning holatini tekshirish
-
                 Answer.objects.create(
                     question=question,
-                    text=answer_text.strip(),
-                    is_correct=is_correct
+                    text=answer_text,
+                    is_correct=is_correct_flags[index] == 'true',
                 )
 
-            print("Savol va barcha javoblar muvaffaqiyatli saqlandi!")  # Yakuniy muvaffaqiyat xabari
             return JsonResponse({"success": True, "message": "Savol va barcha javoblar muvaffaqiyatli saqlandi!"})
 
-        print(f"Form validatsiya xatoliklari: {form.errors}")  # Form validatsiyasi xatolarini tekshirish
         return JsonResponse({"success": False, "errors": form.errors})
+
+
+@method_decorator(login_required, name='dispatch')
+class TestQuestionsView(View):
+    template_name = 'question/views/test-questions.html'
+
+    def get(self, request, test_id):
+        test = get_object_or_404(Test.objects.select_related('category', 'created_by'), id=test_id)
+        questions = (
+            test.questions
+            .prefetch_related('answers')
+            .annotate(
+                answer_count=Count('answers', distinct=True),
+                correct_answer_count=Count('answers', filter=Q(answers__is_correct=True), distinct=True),
+            )
+            .order_by('id')
+        )
+
+        context = {
+            'test': test,
+            'questions': questions,
+            'summary': build_test_management_summary(test),
+            'total_answers_count': Answer.objects.filter(question__test=test).count(),
+            'total_correct_answer_count': Answer.objects.filter(question__test=test, is_correct=True).count(),
+        }
+        return render(request, self.template_name, context)
 
 
 @method_decorator(login_required, name='dispatch')
@@ -483,17 +586,17 @@ class ViewAssignTestView(View):
     template_name = 'question/views/view-assign-test.html'
 
     def get(self, request, assignment_id):
-        # Fetch the assignment with related objects
-        assignment = get_object_or_404(StudentTestAssignment.objects.select_related('category', 'test', 'teacher'), id=assignment_id)
+        assignment = get_object_or_404(
+            StudentTestAssignment.objects.select_related('category', 'test', 'teacher'),
+            id=assignment_id,
+        )
 
-        # Get filter parameters
         group_name = request.GET.get('group_name', '')
         username = request.GET.get('username', '')
         first_name = request.GET.get('first_name', '')
         full_name = request.GET.get('full_name', '')
 
-        # Filter student tests
-        student_tests = assignment.student_tests.select_related('student')
+        student_tests = assignment.student_tests.select_related('student').order_by('-start_time', '-id')
         if group_name:
             student_tests = student_tests.filter(student__group_name__icontains=group_name)
         if username:
@@ -503,16 +606,44 @@ class ViewAssignTestView(View):
         if full_name:
             student_tests = student_tests.filter(student__full_name__icontains=full_name)
 
-        # Prepare context
+        paginator = Paginator(student_tests, 25)
+        page_number = request.GET.get('page')
+        paginated_student_tests = paginator.get_page(page_number)
+
+        completed_queryset = student_tests.filter(completed=True)
+        score_summary = completed_queryset.aggregate(
+            average_score=Avg('score'),
+            top_score=Max('score'),
+        )
+        total_attempts_count = assignment.student_tests.count()
+        groups_count = (
+            assignment.student_tests.exclude(student__group_name__isnull=True)
+            .exclude(student__group_name='')
+            .values('student__group_name')
+            .distinct()
+            .count()
+        )
+        query_params = request.GET.copy()
+        query_params.pop('page', None)
+
         context = {
             'assignment': assignment,
-            'student_tests': student_tests,
+            'student_tests': paginated_student_tests,
+            'summary': build_assignment_detail_summary(assignment),
+            'total_attempts_count': total_attempts_count,
+            'filtered_attempts_count': paginator.count,
+            'filtered_completed_count': completed_queryset.count(),
+            'filtered_incomplete_count': student_tests.filter(completed=False).count(),
+            'average_score': score_summary['average_score'],
+            'top_score': score_summary['top_score'],
+            'groups_count': groups_count,
+            'pagination_query': urlencode(query_params, doseq=True),
             'filters': {
                 'group_name': group_name,
                 'username': username,
                 'first_name': first_name,
                 'full_name': full_name,
-            }
+            },
         }
         return render(request, self.template_name, context)
 
@@ -662,8 +793,7 @@ class AddAssignTestView(View):
                 }, status=400)
 
             # Vaqt validatsiyasi
-            now = timezone.now()
-            if start_time < now:
+            if False:
                 return JsonResponse({
                     'success': False,
                     'message': 'Boshlanish vaqti hozirgi vaqtdan keyin bo‘lishi kerak.'
@@ -729,6 +859,336 @@ class ToggleActiveView(View):
             return JsonResponse({"success": False, "message": "Assignment not found."}, status=404)
         except Exception as e:
             return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+
+def parse_assignment_datetime(value):
+    return make_aware(datetime.strptime(value, '%Y-%m-%d %H:%M'))
+
+
+@method_decorator(login_required, name='dispatch')
+class AssignTestView(View):
+    template_name = 'question/views/assign-test.html'
+
+    def get(self, request):
+        category_id = request.GET.get('category', '').strip()
+        test_name = request.GET.get('test_name', '').strip()
+        start_time = request.GET.get('start_time', '').strip()
+        end_time = request.GET.get('end_time', '').strip()
+
+        assignments = (
+            StudentTestAssignment.objects.select_related('category', 'test', 'teacher')
+            .annotate(
+                student_test_count=Count('student_tests', distinct=True),
+                completed_student_count=Count(
+                    'student_tests',
+                    filter=Q(student_tests__completed=True),
+                    distinct=True,
+                ),
+            )
+            .order_by('-created_at', '-id')
+        )
+
+        if category_id:
+            assignments = assignments.filter(category_id=category_id)
+        if test_name:
+            assignments = assignments.filter(test__name__icontains=test_name)
+        if start_time:
+            assignments = assignments.filter(start_time__gte=start_time)
+        if end_time:
+            assignments = assignments.filter(end_time__lte=end_time)
+
+        paginator = Paginator(assignments, 24)
+        paginated_assignments = paginator.get_page(request.GET.get('page', 1))
+
+        query_params = request.GET.copy()
+        query_params.pop('page', None)
+        overview = build_assignment_overview()
+
+        context = {
+            'assignments': paginated_assignments,
+            'categories': Category.objects.order_by('name'),
+            'pagination_query': urlencode(query_params, doseq=True),
+            'total_assignments_count': overview['total_assignments_count'],
+            'filtered_assignments_count': paginator.count,
+            'active_assignments_count': overview['active_assignments_count'],
+            'completed_assignments_count': overview['completed_assignments_count'],
+            'unique_tests_count': overview['unique_tests_count'],
+            'latest_assignment_created': overview['latest_assignment_created'],
+            'filters': {
+                'category': category_id,
+                'test_name': test_name,
+                'start_time': start_time,
+                'end_time': end_time,
+            },
+        }
+        return render(request, self.template_name, context)
+
+
+@method_decorator(login_required, name='dispatch')
+class EditAssignTestView(View):
+    template_name = 'question/views/edit-assign-test.html'
+
+    def get(self, request, assignment_id):
+        assignment = get_object_or_404(
+            StudentTestAssignment.objects.select_related('category', 'test', 'teacher'),
+            id=assignment_id,
+        )
+        overview = build_assignment_form_context()
+
+        context = {
+            'assignment': assignment,
+            'categories': Category.objects.order_by('name'),
+            'summary': build_assignment_detail_summary(assignment),
+            'categories_count': overview['categories_count'],
+            'tests_count': overview['tests_count'],
+            'active_assignments_count': overview['active_assignments_count'],
+            'latest_assignment_created': overview['latest_assignment_created'],
+            'filters': {
+                'category_id': str(assignment.category_id),
+                'test_id': str(assignment.test_id),
+                'total_questions': assignment.total_questions,
+                'start_time': assignment.start_time.strftime('%Y-%m-%d %H:%M'),
+                'end_time': assignment.end_time.strftime('%Y-%m-%d %H:%M'),
+                'duration': assignment.duration,
+                'max_attempts': assignment.attempts,
+            },
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, assignment_id):
+        assignment = get_object_or_404(StudentTestAssignment, id=assignment_id)
+
+        try:
+            category_id = request.POST.get('category_id')
+            test_id = request.POST.get('test_id')
+            total_questions = int(request.POST.get('total_questions', 0))
+            duration = int(request.POST.get('duration', 0))
+            max_attempts = int(request.POST.get('max_attempts', 0))
+            start_time_value = request.POST.get('start_time')
+            end_time_value = request.POST.get('end_time')
+        except (TypeError, ValueError):
+            return JsonResponse({
+                'success': False,
+                'message': "Noto'g'ri ma'lumotlar kiritildi."
+            }, status=400)
+
+        if not all([category_id, test_id, total_questions, duration, max_attempts, start_time_value, end_time_value]):
+            return JsonResponse({
+                'success': False,
+                'message': "Barcha maydonlar to'ldirilishi kerak."
+            }, status=400)
+
+        if duration < 1:
+            return JsonResponse({
+                'success': False,
+                'message': "Davomiylik 1 daqiqadan kam bo'lishi mumkin emas."
+            }, status=400)
+
+        if max_attempts < 1:
+            return JsonResponse({
+                'success': False,
+                'message': "Maksimal urinishlar soni 1 dan kam bo'lishi mumkin emas."
+            }, status=400)
+
+        category = get_object_or_404(Category, id=category_id)
+        test = get_object_or_404(Test, id=test_id)
+        available_questions = test.questions.count()
+        if total_questions > available_questions:
+            return JsonResponse({
+                'success': False,
+                'message': f"Savollar soni testdagi savollar sonidan ({available_questions}) oshmasligi kerak."
+            }, status=400)
+
+        try:
+            start_time = parse_assignment_datetime(start_time_value)
+            end_time = parse_assignment_datetime(end_time_value)
+        except ValueError:
+            return JsonResponse({
+                'success': False,
+                'message': "Vaqt formati noto'g'ri (YYYY-MM-DD HH:mm)."
+            }, status=400)
+
+        if start_time >= end_time:
+            return JsonResponse({
+                'success': False,
+                'message': "Boshlanish vaqti tugash vaqtidan oldin bo'lishi kerak."
+            }, status=400)
+
+        duplicate_exists = StudentTestAssignment.objects.filter(
+            category=category,
+            test=test,
+            start_time=start_time,
+            end_time=end_time,
+        ).exclude(id=assignment.id).exists()
+        if duplicate_exists:
+            return JsonResponse({
+                'success': False,
+                'message': "Bunday test topshirig'i allaqachon mavjud!"
+            }, status=400)
+
+        assignment.category = category
+        assignment.test = test
+        assignment.total_questions = total_questions
+        assignment.start_time = start_time
+        assignment.end_time = end_time
+        assignment.duration = duration
+        assignment.attempts = max_attempts
+        assignment.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': "Topshiriq muvaffaqiyatli yangilandi.",
+            'redirect_url': reverse('administrator:assign-test'),
+        })
+
+
+@method_decorator([login_required, require_POST], name='dispatch')
+class DeleteAssignmentView(View):
+    def post(self, request, assignment_id):
+        assignment = get_object_or_404(StudentTestAssignment, id=assignment_id)
+
+        if assignment.student_tests.exists():
+            return JsonResponse({
+                'success': False,
+                'message': "Bu topshiriqni o'chirib bo'lmaydi, chunki unga tegishli talaba testlari mavjud."
+            }, status=400)
+
+        assignment.delete()
+        return JsonResponse({
+            'success': True,
+            'message': "Topshiriq muvaffaqiyatli o'chirildi!"
+        })
+
+
+@method_decorator(login_required, name='dispatch')
+class AddAssignTestView(View):
+    template_name = 'question/views/add-assign-test.html'
+
+    def get(self, request):
+        context = build_assignment_form_context()
+        context['categories'] = Category.objects.order_by('name')
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        try:
+            category_id = request.POST.get('category_id')
+            test_id = request.POST.get('test_id')
+            total_questions = int(request.POST.get('total_questions', 0))
+            duration = int(request.POST.get('duration', 0))
+            max_attempts = int(request.POST.get('max_attempts', 3))
+            start_time_value = request.POST.get('start_time')
+            end_time_value = request.POST.get('end_time')
+        except (TypeError, ValueError):
+            return JsonResponse({
+                'success': False,
+                'message': "Noto'g'ri ma'lumotlar kiritildi."
+            }, status=400)
+
+        if not all([category_id, test_id, total_questions, duration, max_attempts, start_time_value, end_time_value]):
+            return JsonResponse({
+                'success': False,
+                'message': "Barcha maydonlar to'ldirilishi kerak."
+            }, status=400)
+
+        if total_questions < 1:
+            return JsonResponse({
+                'success': False,
+                'message': "Savollar soni 1 dan kam bo'lishi mumkin emas."
+            }, status=400)
+
+        if duration < 1:
+            return JsonResponse({
+                'success': False,
+                'message': "Davomiylik 1 daqiqadan kam bo'lishi mumkin emas."
+            }, status=400)
+
+        if max_attempts < 1:
+            return JsonResponse({
+                'success': False,
+                'message': "Maksimal urinishlar soni 1 dan kam bo'lishi mumkin emas."
+            }, status=400)
+
+        category = get_object_or_404(Category, id=category_id)
+        test = get_object_or_404(Test, id=test_id)
+        available_questions = test.questions.count()
+        if total_questions > available_questions:
+            return JsonResponse({
+                'success': False,
+                'message': f"Testda faqat {available_questions} ta savol mavjud."
+            }, status=400)
+
+        try:
+            start_time = parse_assignment_datetime(start_time_value)
+            end_time = parse_assignment_datetime(end_time_value)
+        except ValueError:
+            return JsonResponse({
+                'success': False,
+                'message': "Vaqt formati noto'g'ri (YYYY-MM-DD HH:mm)."
+            }, status=400)
+
+        if start_time >= end_time:
+            return JsonResponse({
+                'success': False,
+                'message': "Boshlanish vaqti tugash vaqtidan oldin bo'lishi kerak."
+            }, status=400)
+
+        duplicate_exists = StudentTestAssignment.objects.filter(
+            category=category,
+            test=test,
+            start_time=start_time,
+            end_time=end_time,
+        ).exists()
+        if duplicate_exists:
+            return JsonResponse({
+                'success': False,
+                'message': "Bunday test topshirig'i allaqachon mavjud!"
+            }, status=400)
+
+        StudentTestAssignment.objects.create(
+            teacher=request.user,
+            test=test,
+            category=category,
+            total_questions=total_questions,
+            start_time=start_time,
+            end_time=end_time,
+            duration=duration,
+            is_active=True,
+            status='pending',
+            attempts=max_attempts,
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': "Test topshirig'i muvaffaqiyatli qo'shildi!",
+            'redirect_url': reverse('administrator:assign-test'),
+        })
+
+
+@method_decorator([login_required, require_POST], name='dispatch')
+class ToggleActiveView(View):
+    def post(self, request, assignment_id):
+        try:
+            data = json.loads(request.body or '{}')
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'message': "Yuborilgan ma'lumot noto'g'ri."
+            }, status=400)
+
+        if 'is_active' not in data:
+            return JsonResponse({
+                'success': False,
+                'message': "Faollik holati yuborilmadi."
+            }, status=400)
+
+        assignment = get_object_or_404(StudentTestAssignment, id=assignment_id)
+        assignment.is_active = bool(data['is_active'])
+        assignment.save(update_fields=['is_active'])
+
+        return JsonResponse({
+            'success': True,
+            'message': "Topshiriq holati muvaffaqiyatli yangilandi."
+        })
 
 
 @method_decorator(login_required, name='dispatch')

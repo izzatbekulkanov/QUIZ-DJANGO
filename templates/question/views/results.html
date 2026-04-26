@@ -2,128 +2,342 @@
 {% load static %}
 
 {% block style %}
-<link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
+<style>
+  .results-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 1rem;
+  }
+
+  .results-filter-shell,
+  .results-table-shell,
+  .results-empty {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.9rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(255, 255, 255, 0.98));
+  }
+
+  .results-table-shell table th {
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+    white-space: nowrap;
+  }
+
+  .results-table-shell table td {
+    vertical-align: middle;
+  }
+
+  .results-user-card {
+    min-width: 180px;
+  }
+
+  .results-empty {
+    padding: 2.5rem 1.5rem;
+  }
+
+  .results-pagination .page-link {
+    border-radius: 0.65rem;
+  }
+</style>
 {% endblock style %}
 
 {% block content %}
 <main id="main-container">
   <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-  <div class="bg-image overflow-hidden"
-       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
     <div class="bg-primary-dark-op">
       <div class="content content-full">
-        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
           <div class="flex-grow-1">
-            <h1 class="fw-semibold text-white mb-0">Natijalar</h1>
-            <h2 class="h4 fw-normal text-white-75 mb-0">Barcha natijalar ro'yxati</h2>
+            <h1 class="fw-semibold text-white mb-1">Natijalar</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">Yakunlangan va yakunlanmagan test urinishlarini bitta joyda kuzatish</h2>
+          </div>
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <a href="{% url 'administrator:results' %}" class="btn btn-sm btn-alt-secondary">
+              <i class="fa fa-rotate me-1"></i> Filtrni tozalash
+            </a>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="content">
-    <form method="get" class="mb-4">
-      <div class="row g-3">
-        <div class="col-lg-3 col-md-6">
-          <label for="category" class="form-label">Kategoriya</label>
-          <select id="category" name="category" class="form-control">
-            <option value="">Barcha kategoriyalar</option>
-            {% for category in categories %}
-              <option value="{{ category.id }}" {% if category.id|stringformat:"s" == filters.category %}selected{% endif %}>
-                {{ category.name }}
-              </option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-lg-3 col-md-6">
-          <label for="test" class="form-label">Test nomi</label>
-          <input type="text" id="test" name="test" class="form-control" placeholder="Test nomi"
-                 value="{{ filters.test }}">
-        </div>
-        <div class="col-lg-2 col-md-6">
-          <label for="username" class="form-label">Username</label>
-          <input type="text" id="username" name="username" class="form-control" placeholder="Username"
-                 value="{{ filters.username }}">
-        </div>
-        <div class="col-lg-2 col-md-6">
-          <label for="full_name" class="form-label">F.I.Sh.</label>
-          <input type="text" id="full_name" name="full_name" class="form-control" placeholder="Ism familiya"
-                 value="{{ filters.full_name }}">
-        </div>
-        <div class="col-lg-2 col-md-12 d-flex align-items-end gap-2">
-          <button type="submit" class="btn btn-primary w-100">Filtrlash</button>
-          <a href="{% url 'administrator:results' %}" class="btn btn-alt-secondary w-100">Tozalash</a>
+  <div class="content content-boxed">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Jami natijalar</div>
+              <div class="fs-2 fw-semibold">{{ total_results_count }}</div>
+            </div>
+            <div class="results-stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa fa-chart-bar"></i>
+            </div>
+          </div>
         </div>
       </div>
-    </form>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Filtrlangan</div>
+              <div class="fs-2 fw-semibold">{{ filtered_results_count }}</div>
+            </div>
+            <div class="results-stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa fa-filter"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Yakunlangan</div>
+              <div class="fs-2 fw-semibold">{{ completed_results_count }}</div>
+            </div>
+            <div class="results-stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa fa-check-circle"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">O'rtacha ball</div>
+              <div class="fs-2 fw-semibold">{{ average_score|default_if_none:0|floatformat:1 }}%</div>
+            </div>
+            <div class="results-stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa fa-bullseye"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block block-rounded mb-4">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Filter va nazorat</h3>
+        <div class="block-options fs-sm text-muted">
+          Holat, vaqt va foydalanuvchi bo'yicha tezkor qidiruv
+        </div>
+      </div>
+      <div class="block-content block-content-full">
+        <div class="results-filter-shell p-3 p-lg-4">
+          <form method="get">
+            <div class="row g-3">
+              <div class="col-lg-3 col-md-6">
+                <label for="category" class="form-label">Kategoriya</label>
+                <select id="category" name="category" class="form-select">
+                  <option value="">Barcha kategoriyalar</option>
+                  {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category.id|stringformat:"s" == filters.category %}selected{% endif %}>
+                      {{ category.name }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-lg-3 col-md-6">
+                <label for="test" class="form-label">Test nomi</label>
+                <input type="text" id="test" name="test" class="form-control" placeholder="Test nomi" value="{{ filters.test }}">
+              </div>
+              <div class="col-lg-2 col-md-6">
+                <label for="status" class="form-label">Holat</label>
+                <select id="status" name="status" class="form-select">
+                  <option value="all" {% if filters.status == 'all' %}selected{% endif %}>Barchasi</option>
+                  <option value="completed" {% if filters.status == 'completed' %}selected{% endif %}>Yakunlangan</option>
+                  <option value="incomplete" {% if filters.status == 'incomplete' %}selected{% endif %}>Yakunlanmagan</option>
+                </select>
+              </div>
+              <div class="col-lg-2 col-md-6">
+                <label for="time_filter" class="form-label">Vaqt</label>
+                <select id="time_filter" name="time_filter" class="form-select">
+                  <option value="today" {% if filters.time_filter == 'today' %}selected{% endif %}>Bugun</option>
+                  <option value="yesterday" {% if filters.time_filter == 'yesterday' %}selected{% endif %}>Kecha</option>
+                  <option value="week" {% if filters.time_filter == 'week' %}selected{% endif %}>Shu hafta</option>
+                  <option value="month" {% if filters.time_filter == 'month' %}selected{% endif %}>Shu oy</option>
+                  <option value="all" {% if filters.time_filter == 'all' %}selected{% endif %}>Hammasi</option>
+                </select>
+              </div>
+              <div class="col-lg-2 col-md-6">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Username" value="{{ filters.username }}">
+              </div>
+              <div class="col-lg-4 col-md-6">
+                <label for="full_name" class="form-label">F.I.Sh.</label>
+                <input type="text" id="full_name" name="full_name" class="form-control" placeholder="Ism familiya" value="{{ filters.full_name }}">
+              </div>
+              <div class="col-lg-8 col-md-6 d-flex align-items-end justify-content-end gap-2 flex-wrap">
+                <a href="{% url 'administrator:results' %}" class="btn btn-alt-secondary">
+              <i class="fa fa-undo me-1"></i> Tozalash
+                </a>
+                <button type="submit" class="btn btn-alt-primary">
+                  <i class="fa fa-filter me-1"></i> Filtrlash
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
 
     <div class="block block-rounded">
       <div class="block-header block-header-default">
         <h3 class="block-title">Test natijalari</h3>
-      </div>
-      <div class="block-content">
-        <div class="table-responsive">
-          <table class="table table-striped table-hover table-vcenter">
-            <thead class="table-primary">
-              <tr>
-                <th>#</th>
-                <th>Foydalanuvchi</th>
-                <th>Test nomi</th>
-                <th>Kategoriya</th>
-                <th>Natija (%)</th>
-                <th>Davomiylik</th>
-                <th>Bajarilgan vaqt</th>
-                <th>Amallar</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for test in completed_tests %}
-                <tr>
-                  <td>{{ forloop.counter }}</td>
-                  <td>
-                    <div class="fw-semibold">
-                      {% if test.student.full_name %}
-                        {{ test.student.full_name }}
-                      {% elif test.student.first_name or test.student.second_name %}
-                        {{ test.student.first_name }} {{ test.student.second_name }}
-                      {% else %}
-                        -
-                      {% endif %}
-                    </div>
-                    <div class="text-muted fs-sm">@{{ test.student.username }}</div>
-                  </td>
-                  <td>{{ test.assignment.test.name }}</td>
-                  <td>{{ test.assignment.category.name }}</td>
-                  <td>{{ test.score|floatformat:2 }}</td>
-                  <td>{{ test.get_duration_display }}</td>
-                  <td>{{ test.end_time|date:"Y-m-d H:i" }}</td>
-                  <td>
-                    <div class="d-flex gap-2 flex-wrap">
-                      <a href="{% url 'administrator:view-test-details' test.id %}" class="btn btn-info btn-sm">
-                        <i class="fa fa-eye"></i> Ko'rish
-                      </a>
-                      {% if request.user.is_superuser or test.assignment.teacher_id == request.user.id or test.assignment.test.created_by_id == request.user.id %}
-                        <button
-                          type="button"
-                          class="btn btn-danger btn-sm delete-result-btn"
-                          data-delete-url="{% url 'administrator:delete-student-result' test.id %}"
-                          data-student="{{ test.student.username }}"
-                          data-test="{{ test.assignment.test.name }}">
-                          <i class="fa fa-trash"></i> O'chirish
-                        </button>
-                      {% endif %}
-                    </div>
-                  </td>
-                </tr>
-              {% empty %}
-                <tr>
-                  <td colspan="8" class="text-center text-muted">Natijalar mavjud emas.</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="block-options fs-sm text-muted">
+          {% if student_tests.paginator.count %}
+            {{ student_tests.start_index }}-{{ student_tests.end_index }} / {{ student_tests.paginator.count }} ko'rsatilmoqda
+          {% else %}
+            Natijalar topilmadi
+          {% endif %}
         </div>
+      </div>
+      <div class="block-content block-content-full">
+        {% if student_tests %}
+          <div class="results-table-shell p-2 p-lg-3">
+            <div class="table-responsive">
+              <table class="table table-hover table-vcenter mb-0">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Foydalanuvchi</th>
+                    <th>Test va kategoriya</th>
+                    <th>Holat</th>
+                    <th>Ball</th>
+                    <th>Davomiylik</th>
+                    <th>Faollik</th>
+                    <th class="text-end">Amallar</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for test in student_tests %}
+                    <tr>
+                      <td class="fw-semibold">{{ student_tests.start_index|add:forloop.counter0 }}</td>
+                      <td>
+                        <div class="results-user-card">
+                          <div class="fw-semibold">
+                            {% if test.student.full_name %}
+                              {{ test.student.full_name }}
+                            {% elif test.student.first_name or test.student.second_name %}
+                              {{ test.student.first_name }} {{ test.student.second_name }}
+                            {% else %}
+                              -
+                            {% endif %}
+                          </div>
+                          <div class="fs-sm text-muted">@{{ test.student.username }}</div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="fw-semibold">{{ test.assignment.test.name }}</div>
+                        <div class="fs-sm text-muted">{{ test.assignment.category.name }}</div>
+                      </td>
+                      <td>
+                        {% if test.completed %}
+                          <span class="badge bg-success">Yakunlangan</span>
+                        {% else %}
+                          <span class="badge bg-warning text-dark">Yakunlanmagan</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if test.completed %}
+                          <span class="fw-semibold">{{ test.score|floatformat:2 }}%</span>
+                        {% else %}
+                          <span class="text-muted">-</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if test.completed and test.duration %}
+                          {{ test.get_duration_display }}
+                        {% else %}
+                          <span class="text-muted">-</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <div>{{ test.activity_time|date:"Y-m-d H:i" }}</div>
+                        <div class="fs-sm text-muted">Boshlangan: {{ test.start_time|date:"Y-m-d H:i" }}</div>
+                        {% if test.completed and test.end_time %}
+                          <div class="fs-sm text-muted">Tugagan: {{ test.end_time|date:"Y-m-d H:i" }}</div>
+                        {% endif %}
+                      </td>
+                      <td class="text-end">
+                        <div class="d-flex justify-content-end gap-2 flex-wrap">
+                          <a href="{% url 'administrator:view-test-details' test.id %}" class="btn btn-sm btn-alt-info">
+                            <i class="fa fa-eye me-1"></i> Ko'rish
+                          </a>
+                          {% if request.user.is_superuser or test.assignment.teacher_id == request.user.id or test.assignment.test.created_by_id == request.user.id %}
+                            <button
+                              type="button"
+                              class="btn btn-sm btn-danger delete-result-btn"
+                              data-delete-url="{% url 'administrator:delete-student-result' test.id %}"
+                              data-student="{{ test.student.username }}"
+                              data-test="{{ test.assignment.test.name }}">
+                              <i class="fa fa-trash me-1"></i> O'chirish
+                            </button>
+                          {% endif %}
+                        </div>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {% if student_tests.paginator.num_pages > 1 %}
+            <nav class="mt-4 results-pagination" aria-label="Results pagination">
+              <ul class="pagination pagination-sm justify-content-center mb-0">
+                {% if student_tests.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page=1{% if pagination_query %}&{{ pagination_query }}{% endif %}">Birinchi</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ student_tests.previous_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">Oldingi</a>
+                  </li>
+                {% else %}
+                  <li class="page-item disabled"><span class="page-link">Birinchi</span></li>
+                  <li class="page-item disabled"><span class="page-link">Oldingi</span></li>
+                {% endif %}
+
+                <li class="page-item active">
+                  <span class="page-link">{{ student_tests.number }} / {{ student_tests.paginator.num_pages }}</span>
+                </li>
+
+                {% if student_tests.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ student_tests.next_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">Keyingi</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ student_tests.paginator.num_pages }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">Oxirgi</a>
+                  </li>
+                {% else %}
+                  <li class="page-item disabled"><span class="page-link">Keyingi</span></li>
+                  <li class="page-item disabled"><span class="page-link">Oxirgi</span></li>
+                {% endif %}
+              </ul>
+            </nav>
+          {% endif %}
+        {% else %}
+          <div class="results-empty text-center">
+            <div class="mb-3 text-muted">
+              <i class="fa fa-inbox fa-2x opacity-50"></i>
+            </div>
+            <h4 class="h5 mb-2">Natijalar topilmadi</h4>
+            <p class="text-muted mb-3">Filtrlarni o'zgartirib ko'ring yoki yangi test urinishlari yaratilishini kuting.</p>
+            <a href="{% url 'administrator:results' %}" class="btn btn-alt-primary">
+              <i class="fa fa-undo me-1"></i> Filtrni tozalash
+            </a>
+          </div>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -143,11 +357,11 @@
         const deleteUrl = button.dataset.deleteUrl;
 
         const result = await Swal.fire({
-          title: 'Natijani ochirasizmi?',
-          text: `${student} uchun "${testName}" natijasi ochiriladi va qayta urinish mumkin boladi.`,
+          title: "Natijani o'chirasizmi?",
+          text: `${student} uchun "${testName}" natijasi o'chiriladi va qayta urinish mumkin bo'ladi.`,
           icon: 'warning',
           showCancelButton: true,
-          confirmButtonText: 'Ha, ochirish',
+          confirmButtonText: "Ha, o'chirish",
           cancelButtonText: 'Bekor qilish',
           confirmButtonColor: '#dc3545',
         });
@@ -166,15 +380,14 @@
           });
           const data = await response.json();
           if (!response.ok || !data.success) {
-            Swal.fire('Xatolik!', data.message || 'Natijani ochirishda xatolik yuz berdi.', 'error');
+            Swal.fire('Xatolik!', data.message || "Natijani o'chirishda xatolik yuz berdi.", 'error');
             return;
           }
 
-          await Swal.fire('Muvaffaqiyatli', data.message, 'success');
+          await Swal.fire('Muvaffaqiyatli!', data.message, 'success');
           window.location.reload();
         } catch (error) {
-          Swal.fire('Xatolik!', 'Server bilan boglanishda xatolik yuz berdi.', 'error');
-          console.error(error);
+          Swal.fire('Xatolik!', "Server bilan bog'lanishda xatolik yuz berdi.", 'error');
         }
       });
     });

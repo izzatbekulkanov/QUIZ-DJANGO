@@ -1,190 +1,281 @@
 {% extends 'question/main.html' %}
-{% load static custom_filters %}
+{% load static %}
 
 {% block style %}
-<link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
 <style>
-  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
-  .bg-image {
-    background-size: cover;
-    background-position: center;
+  .question-create-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 1rem;
   }
-  .bg-primary-dark-op {
-    background-color: rgba(0, 0, 0, 0.7);
+
+  .question-create-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .question-create-shell {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.75rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 0.98));
     padding: 1rem;
   }
-  .btn-primary, .btn-success, .btn-info, .btn-warning {
-    background: linear-gradient(90deg, #007bff, #00c4ff);
-    border: none;
-    border-radius: 6px;
+
+  .question-create-shell .nav-tabs {
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  }
+
+  .question-create-shell .nav-link {
+    border: 0;
+    color: #475569;
+    font-weight: 600;
+    padding-left: 0;
+    padding-right: 1rem;
+    margin-right: 1rem;
+  }
+
+  .question-create-shell .nav-link.active {
+    color: #1d4ed8;
+    background: transparent;
+    box-shadow: inset 0 -2px 0 #1d4ed8;
+  }
+
+  .question-create-shell .tab-pane {
+    padding-top: 1.25rem;
+  }
+
+  .question-create-shell .form-label {
     font-size: 0.9rem;
-    padding: 8px 12px;
+    font-weight: 600;
+    color: #334155;
   }
-  .btn-primary:hover, .btn-success:hover, .btn-info:hover, .btn-warning:hover {
-    background: linear-gradient(90deg, #0056b3, #0096cc);
-    border: none;
-  }
-  .btn-danger {
-    background: linear-gradient(90deg, #dc3545, #ff6b6b);
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
-  }
-  .btn-danger:hover {
-    background: linear-gradient(90deg, #b02a37, #cc5252);
-    border: none;
-  }
-  .btn-outline-light {
-    border-color: #e9ecef;
-    color: #fff;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
-  }
-  .btn-outline-light:hover {
-    background: linear-gradient(90deg, #6c757d, #adb5bd);
-    color: #fff;
-    border: none;
-  }
-  .form-control, .form-select {
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
-  }
-  .form-control:focus, .form-select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-  }
-  .form-label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #34495e;
-  }
-  .upload-container {
-    border: 2px dashed #dee2e6;
-    border-radius: 6px;
-    transition: all 0.3s;
-  }
-  .upload-container.dragover {
-    background-color: #e9ecef;
-    border-color: #007bff;
-  }
-  .upload-container.success {
-    border-color: #28a745;
-  }
-  .nav-tabs .nav-link {
-    color: #34495e;
-    font-weight: 500;
-    border: none;
-    border-bottom: 2px solid transparent;
-    padding: 10px 15px;
-    margin-right: 5px;
-  }
-  .nav-tabs .nav-link.active {
-    color: #007bff;
-    border-bottom: 2px solid #007bff;
-    background: #f8f9fa;
-  }
-  .nav-tabs .nav-link:hover {
-    color: #007bff;
-    border-bottom: 2px solid #007bff;
-  }
-  .is-invalid ~ .invalid-feedback {
+
+  .question-create-shell .is-invalid ~ .invalid-feedback {
     display: block;
     font-size: 0.8rem;
-    color: #dc3545;
   }
-  .list-group-item {
-    border-radius: 6px;
-    margin-bottom: 8px;
-  }
-  .import-rich {
-    font-size: 1rem;
-    line-height: 1.6;
-    color: inherit;
-    overflow-wrap: anywhere;
-  }
+
+  .import-rich,
   .import-rich * {
     max-width: 100%;
     font-size: inherit;
     color: inherit;
     font-family: inherit;
+    overflow-wrap: anywhere;
   }
+
   .import-rich p {
     margin-bottom: 0.5rem;
   }
+
   .import-rich p:last-child {
     margin-bottom: 0;
   }
+
   .import-rich img {
     max-width: 100%;
     display: inline-block;
     vertical-align: middle;
   }
-  .import-rich .docx-formula {
-    display: inline-block;
-    max-width: 100%;
-    vertical-align: middle;
-  }
+
   .import-rich table {
     width: auto;
     max-width: 100%;
     border-collapse: collapse;
   }
+
   .import-rich td,
   .import-rich th {
     padding: 0.25rem 0.4rem;
     vertical-align: middle;
     border: 1px solid rgba(15, 23, 42, 0.12);
   }
-  .import-rich sup,
-  .import-rich sub {
-    font-size: 0.78em;
-    line-height: 0;
+
+  .import-rich blockquote {
+    margin: 0.75rem 0;
+    padding: 0.75rem 1rem;
+    border-left: 3px solid rgba(59, 130, 246, 0.35);
+    background: rgba(248, 250, 252, 0.9);
+    border-radius: 0 0.75rem 0.75rem 0;
   }
-  #questions-preview li {
-    margin-bottom: 0.35rem;
+
+  .docx-formula {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.06);
+    color: #0f172a;
+    font-family: "Cambria Math", "Times New Roman", serif;
+    font-size: 0.95em;
   }
-  .paste-editor-shell {
+
+  .answer-item {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 0.98));
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .answer-item-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .answer-order-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .answer-item-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .answer-editor-shell {
+    width: 100%;
+  }
+
+  .answer-rich-toolbar {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .answer-rich-editor {
+    min-height: 120px;
+  }
+
+  .rich-editor-shell {
     border: 1px solid #dbe4f0;
     border-radius: 14px;
     overflow: hidden;
     background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
   }
-  .paste-toolbar {
+
+  .rich-toolbar {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     padding: 0.75rem;
     border-bottom: 1px solid #e6edf5;
-    background: rgba(248, 251, 255, 0.95);
+    background: rgba(248, 251, 255, 0.96);
   }
-  .paste-toolbar .btn {
+
+  .rich-toolbar-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding-right: 0.25rem;
+    margin-right: 0.25rem;
+    border-right: 1px solid rgba(148, 163, 184, 0.18);
+  }
+
+  .rich-toolbar-group:last-child {
+    margin-right: 0;
+    padding-right: 0;
+    border-right: 0;
+  }
+
+  .rich-toolbar .btn {
     border-radius: 999px;
     padding: 0.35rem 0.85rem;
   }
-  .paste-editor {
-    min-height: 320px;
+
+  .rich-toolbar select {
+    min-width: 120px;
+    border-radius: 999px;
+    border: 1px solid #d6e1ec;
+    background: #fff;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.85rem;
+    color: #334155;
+  }
+
+  .rich-editor {
+    min-height: 300px;
     padding: 1rem 1.1rem;
     background: #fff;
     outline: none;
   }
-  .paste-editor:empty::before {
+
+  .rich-editor.is-invalid {
+    box-shadow: inset 0 0 0 2px rgba(220, 53, 69, 0.2);
+  }
+
+  .rich-editor:empty::before {
     content: attr(data-placeholder);
     color: #94a3b8;
   }
-  .paste-editor.is-invalid {
-    box-shadow: inset 0 0 0 2px rgba(220, 53, 69, 0.2);
+
+  .question-source-field {
+    display: none;
   }
-  .import-side-note {
-    border: 1px solid #e5edf6;
-    border-radius: 14px;
-    background: linear-gradient(180deg, #f7fbff 0%, #f8f9fa 100%);
+
+  .import-action-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
   }
-  .import-side-note ul {
-    padding-left: 1rem;
+
+  .import-action-bar-left,
+  .import-action-bar-right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
   }
+
+  .import-status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: rgba(248, 250, 252, 0.9);
+    border-radius: 999px;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.8rem;
+    color: #475569;
+  }
+
+  .import-format-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 16px;
+    background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .import-format-card pre {
+    margin: 0;
+    padding: 0.9rem 1rem;
+    border-radius: 12px;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-size: 0.78rem;
+    white-space: pre-wrap;
+  }
+
   .preview-card {
     border: 1px solid #e5edf6;
     border-radius: 14px;
@@ -192,6 +283,7 @@
     box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
     padding: 1rem;
   }
+
   .preview-answer {
     display: flex;
     align-items: flex-start;
@@ -202,10 +294,12 @@
     background: #fbfdff;
     transition: border-color 0.2s ease, background-color 0.2s ease;
   }
+
   .preview-answer.is-correct {
     border-color: rgba(25, 135, 84, 0.25);
     background: #f2fbf5;
   }
+
   .preview-answer-label {
     width: 1.8rem;
     height: 1.8rem;
@@ -218,294 +312,548 @@
     font-weight: 600;
     flex-shrink: 0;
   }
+
   .preview-answer.is-correct .preview-answer-label {
     background: rgba(25, 135, 84, 0.12);
     color: #198754;
   }
-  .existing-answer {
+
+  .question-create-empty,
+  .preview-empty-state {
+    border: 1px dashed rgba(15, 23, 42, 0.12);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.72);
+    padding: 1.5rem;
+  }
+
+  .preview-modal-content {
+    border: 0;
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+
+  .preview-modal-header {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
     align-items: flex-start;
-    gap: 0.65rem;
-    margin-bottom: 0.5rem;
+    gap: 0.75rem;
+    padding-bottom: 0.75rem;
   }
-  .existing-answer:last-child {
-    margin-bottom: 0;
+
+  .preview-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
   }
-  .existing-answer-badge {
-    width: 1.7rem;
-    height: 1.7rem;
-    border-radius: 999px;
+
+  .preview-modal-count {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
     font-weight: 600;
-    background: #eef2f7;
-    color: #52616f;
-    flex-shrink: 0;
+    font-size: 0.82rem;
   }
-  .existing-answer.is-correct .existing-answer-badge {
-    background: rgba(25, 135, 84, 0.12);
-    color: #198754;
+
+  @media (max-width: 991.98px) {
+    .answer-item {
+      flex-direction: column;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .question-create-toolbar,
+    .import-action-bar-left,
+    .import-action-bar-right,
+    .preview-modal-actions {
+      justify-content: center;
+    }
+
+    .rich-toolbar-group {
+      border-right: 0;
+      padding-right: 0;
+      margin-right: 0;
+    }
   }
 </style>
 {% endblock style %}
 
 {% block content %}
 <main id="main-container">
-  <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-
-  <!-- Hero -->
-  <div class="bg-image overflow-hidden"
-       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
     <div class="bg-primary-dark-op">
-      <div class="container">
-        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
           <div class="flex-grow-1">
-            <h1 class="fw-semibold text-white mb-0">{{ test.name }} (Talabalar: {{ student_count }})</h1>
-            <h2 class="h5 fw-normal text-white-75 mb-0"><code><i>{{ test.name }}</i></code> ga savollar biriktirish</h2>
+            <h1 class="fw-semibold text-white mb-1">{{ test.name }}</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">Savol qo'shish, paste orqali import qilish va test bankini eksport qilish</h2>
           </div>
-          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3 d-flex flex-wrap gap-2 justify-content-center justify-content-sm-end">
-            {% if request.user.is_superuser %}
-              <a class="btn btn-light btn-sm" href="{% url 'administrator:generation' %}">
-                <i class="fa fa-wand-magic-sparkles me-1 opacity-50"></i> Generatsiya
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <div class="question-create-toolbar justify-content-center justify-content-lg-end">
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:question' %}">
+                <i class="fa fa-arrow-left me-1"></i> Testlar
               </a>
-            {% endif %}
-            <a class="btn btn-light btn-sm" href="{% url 'administrator:question' %}">
-              <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
-            </a>
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:edit-test' test.id %}">
+                <i class="fa fa-pencil-alt me-1"></i> Tahrirlash
+              </a>
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:assign-students-to-test' test.id %}">
+                <i class="fa fa-users me-1"></i> Talabalar
+              </a>
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:test-questions' test.id %}">
+                <i class="fa fa-list me-1"></i> Savollar banki
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Page Content -->
-  <div class="container py-3">
-    <div class="card shadow-sm">
-      <div class="card-header">
-        <ul class="nav nav-tabs nav-tabs-alt" role="tablist">
-          <li class="nav-item">
-            <a class="nav-link active" data-bs-toggle="tab" href="#add-question" data-tab-id="add-question">Savol Qo‘shish</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" href="#import-question" data-tab-id="import-question">Savol Import Qilish</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="tab" href="#export-question" data-tab-id="export-question">Export Qilish</a>
-          </li>
-        </ul>
-      </div>
-      <div class="card-body tab-content">
-        <!-- Savol Qo‘shish Tab -->
-        <div class="tab-pane active show" id="add-question" role="tabpanel">
-          <form method="POST" enctype="multipart/form-data" id="question-form">
-            {% csrf_token %}
-            {{ form.media }}
-            <div class="mb-3">
-              <label class="form-label" for="id_text">Savol matni</label>
-              {{ form.text }}
-              <div class="invalid-feedback">Savol matnini kiritish majburiy.</div>
+  <div class="content content-boxed">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Biriktirilgan talabalar</div>
+              <div class="fs-2 fw-semibold">{{ summary.student_count }}</div>
             </div>
-            <div id="answers-section" class="mb-3">
-              <label class="form-label">Variantlar</label>
-              <div class="answer-item d-flex mb-2">
-                <input type="text" class="form-control me-2" name="answers[]" placeholder="Variantni kiriting" required>
-                <div class="form-check form-switch">
-                  <input type="checkbox" class="form-check-input is-correct-checkbox" id="is-correct-0">
-                  <input type="hidden" name="is_correct[]" value="false">
-                  <label class="form-check-label" for="is-correct-0">To‘g‘ri</label>
-                </div>
-                <button type="button" class="btn btn-danger btn-sm ms-2 remove-answer">
-                  <i class="fa fa-trash"></i>
-                </button>
+            <div class="question-create-stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa fa-users"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Mavjud savollar</div>
+              <div class="fs-2 fw-semibold">{{ summary.question_count }}</div>
+            </div>
+            <div class="question-create-stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa fa-question-circle"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Biriktirishlar</div>
+              <div class="fs-2 fw-semibold">{{ summary.assignment_count }}</div>
+            </div>
+            <div class="question-create-stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa fa-link"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">So'nggi savol yangilanishi</div>
+              <div class="fs-6 fw-semibold">
+                {% if summary.latest_question_update %}
+                  {{ summary.latest_question_update|date:"Y-m-d H:i" }}
+                {% else %}
+                  Hali mavjud emas
+                {% endif %}
               </div>
             </div>
-            <button type="button" class="btn btn-sm btn-success mb-3" id="add-answer">
-              <i class="fa fa-plus"></i> Yangi variant qo‘shish
-            </button>
-            <div class="text-end">
-              <button type="button" class="btn btn-primary btn-sm" id="submit-question">
-                <i class="fa fa-save me-1"></i> Saqlash
-              </button>
+            <div class="question-create-stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa fa-clock"></i>
             </div>
-          </form>
+          </div>
         </div>
-        <!-- Savol Import Qilish Tab -->
-        <div class="tab-pane" id="import-question" role="tabpanel">
-          <form method="POST" enctype="multipart/form-data" id="import-form">
-            {% csrf_token %}
-            <div class="row g-4">
-              <div class="col-12">
-                <label class="form-label fw-semibold" for="paste-editor">Word hujjatdan to‘g‘ridan-to‘g‘ri paste qiling</label>
-                <div class="paste-editor-shell">
-                  <div class="paste-toolbar">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-command="bold">
-                      <i class="fa fa-bold"></i>
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-command="italic">
-                      <i class="fa fa-italic"></i>
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-command="underline">
-                      <i class="fa fa-underline"></i>
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-command="insertUnorderedList">
-                      <i class="fa fa-list-ul"></i>
-                    </button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" id="clear-paste-editor">
-                      <i class="fa fa-eraser me-1"></i> Tozalash
-                    </button>
+      </div>
+    </div>
+
+    <div class="block block-rounded">
+      <div class="block-header block-header-default">
+        <ul class="nav nav-tabs nav-tabs-block flex-grow-1" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#add-question" data-tab-id="add-question">Savol qo'shish</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#import-question" data-tab-id="import-question">Import qilish</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#export-question" data-tab-id="export-question">Export</a>
+          </li>
+        </ul>
+        <div class="block-options">
+          <a href="{% url 'administrator:test-questions' test.id %}" class="btn btn-sm btn-alt-primary">
+            <i class="fa fa-list me-1"></i> Savollar banki
+          </a>
+        </div>
+      </div>
+      <div class="block-content block-content-full">
+        <div class="question-create-shell tab-content">
+          <div class="tab-pane active show" id="add-question" role="tabpanel">
+            <form method="POST" enctype="multipart/form-data" id="question-form">
+              {% csrf_token %}
+              {{ form.media }}
+
+              <div class="mb-3">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2 mb-2">
+                  <label class="form-label mb-0" for="question-editor">Savol matni</label>
+                  <span class="text-muted small">Matn, rasm, formula, sarlavha va havolalarni bir editor ichida yozishingiz mumkin.</span>
+                </div>
+                <div class="rich-editor-shell">
+                  <div class="rich-toolbar" data-rich-toolbar="question-editor">
+                    <div class="rich-toolbar-group">
+                      <select data-editor-target="question-editor" data-rich-block>
+                        <option value="">Format</option>
+                        <option value="p">Oddiy matn</option>
+                        <option value="h2">Katta sarlavha</option>
+                        <option value="h3">Kichik sarlavha</option>
+                        <option value="blockquote">Iqtibos</option>
+                      </select>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="bold">
+                        <i class="fa fa-bold"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="italic">
+                        <i class="fa fa-italic"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="underline">
+                        <i class="fa fa-underline"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="strikeThrough">
+                        <i class="fa fa-strikethrough"></i>
+                      </button>
+                    </div>
+                    <div class="rich-toolbar-group">
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="insertOrderedList">
+                        <i class="fa fa-list-ol"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="insertUnorderedList">
+                        <i class="fa fa-list-ul"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="subscript">
+                        X<sub>2</sub>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="superscript">
+                        X<sup>2</sup>
+                      </button>
+                    </div>
+                    <div class="rich-toolbar-group">
+                      <select data-editor-target="question-editor" data-rich-size>
+                        <option value="">Hajm</option>
+                        <option value="2">Kichik</option>
+                        <option value="3">Oddiy</option>
+                        <option value="5">Katta</option>
+                        <option value="6">Juda katta</option>
+                      </select>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="justifyLeft">
+                        <i class="fa fa-align-left"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="justifyCenter">
+                        <i class="fa fa-align-center"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="justifyRight">
+                        <i class="fa fa-align-right"></i>
+                      </button>
+                    </div>
+                    <div class="rich-toolbar-group">
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-action="link">
+                        <i class="fa fa-link"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="unlink">
+                        <i class="fa fa-unlink"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-action="image">
+                        <i class="fa fa-image"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-action="formula">
+                        <i class="fa fa-square-root-alt"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-action="table">
+                        <i class="fa fa-table"></i>
+                      </button>
+                    </div>
+                    <div class="rich-toolbar-group">
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="removeFormat">
+                        <i class="fa fa-eraser"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="undo">
+                        <i class="fa fa-undo"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="question-editor" data-command="redo">
+                        <i class="fa fa-redo"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    id="question-editor"
+                    class="rich-editor import-rich"
+                    contenteditable="true"
+                    data-placeholder="Savol matnini shu yerga yozing yoki paste qiling. Rasm va formula ham qo'shishingiz mumkin."></div>
+                </div>
+                <div class="question-source-field">{{ form.text }}</div>
+                <div class="invalid-feedback" id="question-editor-invalid">Savol matnini kiritish majburiy.</div>
+              </div>
+
+              <div id="answers-section" class="mb-3">
+                <label class="form-label">Variantlar</label>
+              </div>
+
+              <button type="button" class="btn btn-success btn-sm mb-3" id="add-answer">
+                <i class="fa fa-plus me-1"></i> Yangi variant qo'shish
+              </button>
+
+              <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-alt-primary btn-sm" id="submit-question">
+                  <i class="fa fa-save me-1"></i> Saqlash
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="tab-pane" id="import-question" role="tabpanel">
+            <form method="POST" enctype="multipart/form-data" id="import-form">
+              {% csrf_token %}
+              <div class="import-action-bar">
+                <div class="import-action-bar-left">
+                  <a href="{% url 'administrator:download-template' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa fa-download me-1"></i> Word shablon
+                  </a>
+                  <span class="import-status-chip">
+                    <i class="fa fa-paste"></i> Import faqat paste orqali ishlaydi
+                  </span>
+                </div>
+                <div class="import-action-bar-right">
+                  <button type="button" class="btn btn-outline-secondary btn-sm" id="open-import-preview" disabled>
+                    <i class="fa fa-eye me-1"></i> Preview
+                  </button>
+                  <button type="button" class="btn btn-alt-primary btn-sm" id="submit-paste-button">
+                    <i class="fa fa-upload me-1"></i> Import qilish
+                  </button>
+                </div>
+              </div>
+
+              <div class="import-format-card">
+                <div class="row g-3 align-items-start">
+                  <div class="col-lg-5">
+                    <h5 class="mb-2">Qo'llab-quvvatlanadigan format</h5>
+                    <p class="text-muted small mb-0">Endi import matni bir nechta ko'rinishda kelsa ham o'qiladi. `+`, `=` va `#` markerlari soni turlicha bo'lsa ham parser to'g'ri ajratishga harakat qiladi.</p>
+                    <p class="text-muted small mb-0 mt-2">`++++` yangi savolni boshlaydi, `#` bilan boshlangan javob esa to'g'ri javob bo'ladi.</p>
+                  </div>
+                  <div class="col-lg-7">
+                    <pre>++++
+Savol matni shu yerda
+====
+#To'g'ri javob
+====
+Javob 1
+====
+Javob 2
+====
+Javob 3
+++++</pre>
+                    <pre class="d-none">++++
+Wie heißt du?
+====
+#Ich heiße Anna.
+====
+Ich wohne Anna.
+====
+Ich komme Anna.
+====
+Ich bin Anna wohne.
+++++</pre>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold" for="paste-editor">Savollarni to'g'ridan-to'g'ri paste qiling</label>
+                <div class="rich-editor-shell">
+                  <div class="rich-toolbar" data-rich-toolbar="paste-editor">
+                    <div class="rich-toolbar-group">
+                      <select data-editor-target="paste-editor" data-rich-block>
+                        <option value="">Format</option>
+                        <option value="p">Oddiy matn</option>
+                        <option value="h2">Katta sarlavha</option>
+                        <option value="h3">Kichik sarlavha</option>
+                        <option value="blockquote">Iqtibos</option>
+                      </select>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="bold">
+                        <i class="fa fa-bold"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="italic">
+                        <i class="fa fa-italic"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="underline">
+                        <i class="fa fa-underline"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="strikeThrough">
+                        <i class="fa fa-strikethrough"></i>
+                      </button>
+                    </div>
+                    <div class="rich-toolbar-group">
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="insertOrderedList">
+                        <i class="fa fa-list-ol"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="insertUnorderedList">
+                        <i class="fa fa-list-ul"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="subscript">
+                        X<sub>2</sub>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="superscript">
+                        X<sup>2</sup>
+                      </button>
+                    </div>
+                    <div class="rich-toolbar-group">
+                      <select data-editor-target="paste-editor" data-rich-size>
+                        <option value="">Hajm</option>
+                        <option value="2">Kichik</option>
+                        <option value="3">Oddiy</option>
+                        <option value="5">Katta</option>
+                        <option value="6">Juda katta</option>
+                      </select>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="justifyLeft">
+                        <i class="fa fa-align-left"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="justifyCenter">
+                        <i class="fa fa-align-center"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="justifyRight">
+                        <i class="fa fa-align-right"></i>
+                      </button>
+                    </div>
+                    <div class="rich-toolbar-group">
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-action="link">
+                        <i class="fa fa-link"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="unlink">
+                        <i class="fa fa-unlink"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-action="image">
+                        <i class="fa fa-image"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-action="formula">
+                        <i class="fa fa-square-root-alt"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-action="table">
+                        <i class="fa fa-table"></i>
+                      </button>
+                    </div>
+                    <div class="rich-toolbar-group">
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="removeFormat">
+                        <i class="fa fa-eraser"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" id="clear-paste-editor">
+                        <i class="fa fa-trash me-1"></i> Tozalash
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="undo">
+                        <i class="fa fa-undo"></i>
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="paste-editor" data-command="redo">
+                        <i class="fa fa-redo"></i>
+                      </button>
+                    </div>
                   </div>
                   <div
                     id="paste-editor"
-                    class="paste-editor import-rich"
+                    class="rich-editor import-rich"
                     contenteditable="true"
-                    data-placeholder="Word ichidagi savollarni shu yerga Ctrl+V bilan qo‘ying. Rasmlar va format saqlanadi."></div>
+                    data-placeholder="Savollarni shu yerga Ctrl+V bilan qo'ying. `+`, `=` va `#` markerlari turlicha bo'lsa ham tizim ularni o'qishga harakat qiladi."></div>
                 </div>
                 <input type="hidden" name="pasted_html" id="pasted-html">
                 <input type="hidden" name="pasted_text" id="pasted-text">
                 <div class="invalid-feedback d-none" id="paste-invalid">
-                  Word matnini paste qiling.
-                </div>
-                <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
-                  <div>
-                    <a href="{% url 'administrator:download-template' %}" class="btn btn-outline-secondary btn-sm me-2">
-                      <i class="fa fa-download me-1"></i> Word shablonni yuklab olish
-                    </a>
-                    <span class="text-muted small">Import qilinayotgan matnda faqat savol va variantlar bo‘lishi kifoya.</span>
-                  </div>
-                  <button type="button" class="btn btn-primary btn-sm" id="submit-paste-button">
-                    <i class="fa fa-upload me-1"></i> Import Qilish
-                  </button>
+                  Savollar matnini paste qiling.
                 </div>
               </div>
-            </div>
-          </form>
-          <div class="mt-4 d-none" id="import-preview-section">
-            <div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center gap-2 mb-3">
-              <div>
-                <h5 class="mb-1">Import preview</h5>
-                <p class="text-muted small mb-0">Saqlashdan oldin barcha savollar va variantlar shu yerda ko‘rsatiladi.</p>
-              </div>
-              <span class="badge bg-primary-subtle text-primary px-3 py-2" id="import-preview-count">0 ta savol</span>
-            </div>
-            <div id="questions-preview" class="d-grid gap-3"></div>
-            <div class="d-flex justify-content-end gap-2 mt-3">
-              <button type="button" class="btn btn-outline-secondary btn-sm" id="clear-import-preview">
-                <i class="fa fa-trash me-1"></i> Previewni tozalash
-              </button>
-              <button type="button" class="btn btn-primary btn-sm" id="save-questions">
-                <i class="fa fa-save me-1"></i> Barchasini saqlash
-              </button>
-            </div>
-          </div>
-        </div>
-        <!-- Export Qilish Tab -->
-        <div class="tab-pane" id="export-question" role="tabpanel">
-          <div class="mb-3">
-            <p class="mb-2">Savollarni quyidagi formatlarda eksport qiling:</p>
-            <div class="btn-group">
-              <a href="{% url 'administrator:export-questions' test.id 'json' %}" class="btn btn-primary btn-sm">
-                <i class="fa fa-download me-1"></i> JSON
-              </a>
-              <a href="{% url 'administrator:export-questions' test.id 'xlsx' %}" class="btn btn-success btn-sm">
-                <i class="fa fa-download me-1"></i> Excel
-              </a>
-              <a href="{% url 'administrator:export-questions' test.id 'csv' %}" class="btn btn-info btn-sm">
-                <i class="fa fa-download me-1"></i> CSV
-              </a>
-              <a href="{% url 'administrator:export-questions' test.id 'docx' %}" class="btn btn-warning btn-sm">
-                <i class="fa fa-download me-1"></i> Word
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="card-body">
-        <h5 class="card-title mb-3">Mavjud savollar</h5>
-        {% if questions %}
-          <ul class="list-group">
-            {% for question in questions %}
-              <li class="list-group-item" data-question-id="{{ question.id }}">
-                <div class="row align-items-start g-2">
-                  <div class="col-md-1 text-center">
-                    <span class="badge bg-primary">{{ forloop.counter }}</span>
-                  </div>
-                  <div class="col-md-5">
-                    <div class="text-primary import-rich">{{ question.text|clean_import_question }}</div>
-                  </div>
-                  <div class="col-md-4">
-                    {% for answer in question.answers.all %}
-                      <div class="existing-answer {% if answer.is_correct %}is-correct{% endif %}">
-                        <span class="existing-answer-badge">{{ forloop.counter }}</span>
-                        <div class="import-rich {% if answer.is_correct %}text-success fw-medium{% endif %}">{{ answer.text|clean_import_answer }}</div>
-                      </div>
-                    {% endfor %}
-                  </div>
-                  <div class="col-md-2 text-end">
-                    <button
-                      type="button"
-                      class="btn btn-info btn-sm edit-question-btn mb-1"
-                      data-detail-url="{% url 'administrator:question-detail' test.id question.id %}"
-                      data-update-url="{% url 'administrator:question-update' test.id question.id %}">
-                      <i class="fa fa-edit me-1"></i> Tahrirlash
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-danger btn-sm delete-question-btn"
-                      data-delete-url="{% url 'administrator:question-delete' test.id question.id %}">
-                      <i class="fa fa-trash me-1"></i> O'chirish
-                    </button>
-                  </div>
-                </div>
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <div class="alert alert-info text-center mb-0">
-            Hozircha savollar mavjud emas.
-          </div>
-        {% endif %}
-      </div>
-    </div>
-
-    <!-- Edit Question Modal -->
-    <div class="modal fade" id="editQuestionModal" tabindex="-1" aria-labelledby="editQuestionModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="editQuestionModalLabel">Savolni tahrirlash</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <form id="edit-question-form">
-              <input type="hidden" id="edit-question-id" value="">
-              <div class="mb-3">
-                <label class="form-label" for="edit-question-text">Savol matni</label>
-                <textarea class="form-control" id="edit-question-text" rows="5" required></textarea>
-              </div>
-
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <label class="form-label mb-0">Variantlar</label>
-                <button type="button" class="btn btn-success btn-sm" id="edit-add-answer">
-                  <i class="fa fa-plus"></i> Variant qo‘shish
-                </button>
-              </div>
-              <div id="edit-answers-section"></div>
             </form>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Bekor qilish</button>
-            <button type="button" class="btn btn-primary btn-sm" id="save-edit-question">
-              <i class="fa fa-save me-1"></i> Saqlash
-            </button>
+
+          <div class="tab-pane" id="export-question" role="tabpanel">
+            {% if summary.question_count %}
+              <div class="question-create-empty">
+                <h5 class="mb-2">Savollarni eksport qilish</h5>
+                <p class="text-muted mb-3">Test ichidagi mavjud savollarni quyidagi formatlarda yuklab olishingiz mumkin.</p>
+                <div class="d-flex flex-wrap gap-2">
+                  <a href="{% url 'administrator:export-questions' test.id 'json' %}" class="btn btn-alt-primary btn-sm">
+                    <i class="fa fa-download me-1"></i> JSON
+                  </a>
+                  <a href="{% url 'administrator:export-questions' test.id 'xlsx' %}" class="btn btn-success btn-sm">
+                    <i class="fa fa-download me-1"></i> Excel
+                  </a>
+                  <a href="{% url 'administrator:export-questions' test.id 'csv' %}" class="btn btn-info btn-sm text-white">
+                    <i class="fa fa-download me-1"></i> CSV
+                  </a>
+                  <a href="{% url 'administrator:export-questions' test.id 'docx' %}" class="btn btn-warning btn-sm">
+                    <i class="fa fa-download me-1"></i> Word
+                  </a>
+                </div>
+              </div>
+            {% else %}
+              <div class="question-create-empty text-center">
+                <div class="mb-3 text-muted">
+                  <i class="fa fa-file-alt fa-2x opacity-50"></i>
+                </div>
+                <h5 class="mb-2">Export uchun savollar yo'q</h5>
+                <p class="text-muted mb-0">Avval savol qo'shing yoki import qiling, keyin export formatlarini ishlatishingiz mumkin.</p>
+              </div>
+            {% endif %}
           </div>
         </div>
       </div>
     </div>
-
   </div>
+
+  <div class="modal fade" id="importPreviewModal" tabindex="-1" aria-labelledby="importPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content preview-modal-content">
+        <div class="modal-body p-4">
+          <div class="preview-modal-header border-bottom">
+            <div>
+              <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <h4 class="mb-0" id="importPreviewModalLabel">Import preview</h4>
+                <span class="preview-modal-count" id="import-preview-count">
+                  <i class="fa fa-layer-group"></i> 0 ta savol
+                </span>
+              </div>
+              <p class="text-muted small mb-0">To'g'ri javoblarni shu yerning o'zida belgilab, keyin bir martada saqlashingiz mumkin.</p>
+            </div>
+            <div class="preview-modal-actions">
+              <button type="button" class="btn btn-outline-secondary btn-sm" id="clear-import-preview" disabled>
+                <i class="fa fa-trash me-1"></i> Previewni tozalash
+              </button>
+              <button type="button" class="btn btn-alt-primary btn-sm" id="save-questions" disabled>
+                <i class="fa fa-save me-1"></i> Barchasini saqlash
+              </button>
+              <button type="button" class="btn btn-alt-secondary btn-sm" data-bs-dismiss="modal">
+                <i class="fa fa-times me-1"></i> Yopish
+              </button>
+            </div>
+          </div>
+
+          <div class="pt-4" id="questions-preview">
+            <div class="preview-empty-state text-center">
+              <div class="mb-3 text-muted">
+                <i class="fa fa-eye fa-2x opacity-50"></i>
+              </div>
+              <h5 class="mb-2">Preview hali tayyor emas</h5>
+              <p class="text-muted mb-0">Savollarni import qilganingizdan keyin preview shu modal ichida ko'rinadi.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="rich-image-upload" accept="image/*" class="d-none">
 </main>
 {% endblock content %}
 
@@ -515,134 +863,78 @@
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const tabs = document.querySelectorAll('.nav-tabs .nav-link');
-    const activeTab = localStorage.getItem('activeTab') || 'add-question';
+    const activeTab = localStorage.getItem('activeQuestionTab') || 'add-question';
 
     function getCookie(name) {
       const cookieValue = document.cookie
         .split('; ')
-        .find(row => row.startsWith(`${name}=`))
+        .find((row) => row.startsWith(`${name}=`))
         ?.split('=')[1];
       return cookieValue ? decodeURIComponent(cookieValue) : null;
     }
 
-    const csrfToken = getCookie('csrftoken') || document.querySelector('#question-form input[name=csrfmiddlewaretoken]')?.value;
-
-    // Set active tab
-    tabs.forEach(tab => {
-      const tabId = tab.getAttribute('data-tab-id');
-      const tabPane = document.getElementById(tabId);
-      if (tabId === activeTab && tabPane) {
-        tab.classList.add('active');
-        tabPane.classList.add('active', 'show');
-      } else if (tabPane) {
-        tab.classList.remove('active');
-        tabPane.classList.remove('active', 'show');
-      }
-    });
-
-    // Save active tab on click
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        localStorage.setItem('activeTab', tab.getAttribute('data-tab-id'));
-        initializeCheckboxes();
-      });
-    });
-
-    // Initialize checkboxes
-    function initializeCheckboxes() {
-      document.querySelectorAll('.is-correct-checkbox').forEach((checkbox, index) => {
-        const hiddenInput = checkbox.nextElementSibling;
-        if (hiddenInput?.tagName === 'INPUT' && hiddenInput.type === 'hidden') {
-          checkbox.id = `is-correct-${index}`;
-          checkbox.removeEventListener('change', updateHiddenInput);
-          checkbox.addEventListener('change', updateHiddenInput);
-        }
-      });
-    }
-
-    function updateHiddenInput() {
-      const hiddenInput = this.nextElementSibling;
-      if (hiddenInput) hiddenInput.value = this.checked ? 'true' : 'false';
-    }
-
-    initializeCheckboxes();
-
-    // Add new answer
-    document.getElementById('add-answer').addEventListener('click', () => {
-      const answersSection = document.getElementById('answers-section');
-      const index = answersSection.querySelectorAll('.answer-item').length;
-      const answerItem = document.createElement('div');
-      answerItem.className = 'answer-item d-flex mb-2';
-      answerItem.innerHTML = `
-        <input type="text" class="form-control me-2" name="answers[]" placeholder="Variantni kiriting" required>
-        <div class="form-check form-switch">
-          <input type="checkbox" class="form-check-input is-correct-checkbox" id="is-correct-${index}">
-          <input type="hidden" name="is_correct[]" value="false">
-          <label class="form-check-label" for="is-correct-${index}">To‘g‘ri</label>
-        </div>
-        <button type="button" class="btn btn-danger btn-sm ms-2 remove-answer">
-          <i class="fa fa-trash"></i>
-        </button>`;
-      answersSection.appendChild(answerItem);
-
-      const checkbox = answerItem.querySelector('.is-correct-checkbox');
-      checkbox.addEventListener('change', updateHiddenInput);
-    });
-
-    // Remove answer
-    document.getElementById('answers-section').addEventListener('click', e => {
-      if (e.target.closest('.remove-answer') && document.querySelectorAll('.answer-item').length > 1) {
-        e.target.closest('.answer-item').remove();
-      }
-    });
-
-    // Import helpers
+    const questionForm = document.getElementById('question-form');
+    const importForm = document.getElementById('import-form');
+    const questionEditor = document.getElementById('question-editor');
+    const questionTextarea = document.getElementById('id_text');
+    const questionEditorInvalid = document.getElementById('question-editor-invalid');
     const pasteEditor = document.getElementById('paste-editor');
     const pastedHtmlInput = document.getElementById('pasted-html');
     const pastedTextInput = document.getElementById('pasted-text');
     const pasteInvalid = document.getElementById('paste-invalid');
-    const importPreviewSection = document.getElementById('import-preview-section');
+    const previewOpenButton = document.getElementById('open-import-preview');
     const questionsPreviewEl = document.getElementById('questions-preview');
     const importPreviewCountEl = document.getElementById('import-preview-count');
     const clearImportPreviewButton = document.getElementById('clear-import-preview');
+    const saveQuestionsButton = document.getElementById('save-questions');
+    const richImageUpload = document.getElementById('rich-image-upload');
+    const csrfToken = getCookie('csrftoken') || questionForm.querySelector('input[name=csrfmiddlewaretoken]')?.value;
+    const previewModalElement = document.getElementById('importPreviewModal');
+    const previewModal = window.bootstrap ? new bootstrap.Modal(previewModalElement) : null;
     let importedQuestions = [];
+    let imageTargetEditorId = 'question-editor';
+    let activeEditorId = 'question-editor';
 
-    // Edit question modal
-    const editModalEl = document.getElementById('editQuestionModal');
-    const editModal = new bootstrap.Modal(editModalEl);
-    const editQuestionIdEl = document.getElementById('edit-question-id');
-    const editQuestionTextEl = document.getElementById('edit-question-text');
-    const editAnswersSection = document.getElementById('edit-answers-section');
+    let nextAnswerEditorIndex = 0;
 
-    function createEditAnswerItem(answer = null) {
-      const wrap = document.createElement('div');
-      wrap.className = 'answer-item d-flex mb-2';
-      wrap.dataset.answerId = answer?.id ? String(answer.id) : '';
-      wrap.innerHTML = `
-        <textarea class="form-control me-2 edit-answer-text" rows="2" placeholder="Variant matni" required></textarea>
-        <div class="form-check form-switch mt-1">
-          <input type="checkbox" class="form-check-input edit-answer-correct">
-          <label class="form-check-label">To‘g‘ri</label>
-        </div>
-        <button type="button" class="btn btn-danger btn-sm ms-2 edit-remove-answer">
-          <i class="fa fa-trash"></i>
-        </button>`;
-
-      const textEl = wrap.querySelector('.edit-answer-text');
-      const correctEl = wrap.querySelector('.edit-answer-correct');
-      textEl.value = answer?.text || '';
-      correctEl.checked = !!answer?.is_correct;
-      return wrap;
+    function editorHasContent(editorEl) {
+      const text = (editorEl.innerText || '').replace(/\u00a0/g, ' ').trim();
+      return text.length > 0 || !!editorEl.querySelector('img, table, math, .docx-formula, hr');
     }
 
-    function editorHasContent() {
-      const text = (pasteEditor.innerText || '').replace(/\u00a0/g, ' ').trim();
-      return text.length > 0 || !!pasteEditor.querySelector('img, table, math');
+    function getEditorById(editorId) {
+      return document.getElementById(editorId);
     }
 
-    function syncPasteInputs() {
-      pastedHtmlInput.value = pasteEditor.innerHTML || '';
-      pastedTextInput.value = pasteEditor.innerText || '';
+    function syncEditor(editorId) {
+      if (editorId === 'question-editor') {
+        questionTextarea.value = questionEditor.innerHTML || '';
+        return;
+      }
+
+      if (editorId === 'paste-editor') {
+        pastedHtmlInput.value = pasteEditor.innerHTML || '';
+        pastedTextInput.value = pasteEditor.innerText || '';
+        return;
+      }
+
+      const editor = getEditorById(editorId);
+      const hiddenInputId = editor?.dataset.hiddenInput;
+      const hiddenInput = hiddenInputId ? document.getElementById(hiddenInputId) : null;
+      if (editor && hiddenInput) {
+        hiddenInput.value = editor.innerHTML || '';
+      }
+    }
+
+    function syncAllEditors() {
+      syncEditor('question-editor');
+      syncEditor('paste-editor');
+      document.querySelectorAll('.answer-rich-editor').forEach((editor) => syncEditor(editor.id));
+    }
+
+    function setQuestionValidationState(isInvalid) {
+      questionEditor.classList.toggle('is-invalid', !!isInvalid);
+      questionEditorInvalid.style.display = isInvalid ? 'block' : 'none';
     }
 
     function setImportValidationState(isInvalid) {
@@ -662,21 +954,47 @@
     function plainTextToHtml(value) {
       return (value || '')
         .split(/\r?\n/)
-        .filter(line => line.trim())
-        .map(line => `<p>${escapeHtml(line)}</p>`)
+        .filter((line) => line.trim())
+        .map((line) => `<p>${escapeHtml(line)}</p>`)
         .join('');
     }
 
-    function insertHtmlAtCursor(html) {
-      pasteEditor.focus();
+    function focusEditor(editorId) {
+      const editor = getEditorById(editorId);
+      if (!editor) {
+        return;
+      }
+
+      activeEditorId = editorId;
+      editor.focus();
+
+      const selection = window.getSelection();
+      if (!selection || !selection.rangeCount || !editor.contains(selection.anchorNode)) {
+        const range = document.createRange();
+        range.selectNodeContents(editor);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
+
+    function insertHtmlAtCursor(editorId, html) {
+      const editor = getEditorById(editorId);
+      if (!editor) {
+        return;
+      }
+
+      focusEditor(editorId);
       if (document.queryCommandSupported && document.queryCommandSupported('insertHTML')) {
         document.execCommand('insertHTML', false, html);
+        syncEditor(editorId);
         return;
       }
 
       const selection = window.getSelection();
-      if (!selection || !selection.rangeCount) {
-        pasteEditor.insertAdjacentHTML('beforeend', html);
+      if (!selection || !selection.rangeCount || !editor.contains(selection.anchorNode)) {
+        editor.insertAdjacentHTML('beforeend', html);
+        syncEditor(editorId);
         return;
       }
 
@@ -697,42 +1015,64 @@
         selection.removeAllRanges();
         selection.addRange(newRange);
       }
+      syncEditor(editorId);
+    }
+
+    function applyEditorCommand(editorId, command, value = null) {
+      focusEditor(editorId);
+      document.execCommand(command, false, value);
+      syncEditor(editorId);
     }
 
     function normalizeImportedQuestions(questions) {
-      return (questions || []).map(question => ({
+      return (questions || []).map((question) => ({
         text: question?.text || '',
         image_base64: question?.image_base64 || null,
-        answers: (question?.answers || []).map(answer => {
+        answers: (question?.answers || []).map((answer) => {
           if (Array.isArray(answer)) {
             return {
               text: answer[0] || '',
-              is_correct: !!answer[1]
+              is_correct: !!answer[1],
             };
           }
           return {
             text: answer?.text || '',
-            is_correct: !!answer?.is_correct
+            is_correct: !!answer?.is_correct,
           };
-        }).filter(answer => answer.text)
-      })).filter(question => question.text && question.answers.length >= 2);
+        }).filter((answer) => answer.text),
+      })).filter((question) => question.text && question.answers.length >= 2);
     }
 
     function answerMarker(index) {
       return String.fromCharCode(65 + (index % 26));
     }
 
+    function updatePreviewControls() {
+      const hasQuestions = importedQuestions.length > 0;
+      previewOpenButton.disabled = !hasQuestions;
+      clearImportPreviewButton.disabled = !hasQuestions;
+      saveQuestionsButton.disabled = !hasQuestions;
+      importPreviewCountEl.innerHTML = `<i class="fa fa-layer-group"></i> ${importedQuestions.length} ta savol`;
+    }
+
     function renderImportedPreview() {
+      updatePreviewControls();
+
       if (!importedQuestions.length) {
-        importPreviewSection.classList.add('d-none');
-        questionsPreviewEl.innerHTML = '';
-        importPreviewCountEl.textContent = '0 ta savol';
+        questionsPreviewEl.innerHTML = `
+          <div class="preview-empty-state text-center">
+            <div class="mb-3 text-muted">
+              <i class="fa fa-eye fa-2x opacity-50"></i>
+            </div>
+            <h5 class="mb-2">Preview hali tayyor emas</h5>
+            <p class="text-muted mb-0">Savollarni import qilganingizdan keyin preview shu modal ichida ko'rinadi.</p>
+          </div>
+        `;
         return;
       }
 
-      importPreviewCountEl.textContent = `${importedQuestions.length} ta savol`;
       questionsPreviewEl.innerHTML = importedQuestions.map((question, questionIndex) => `
-        <div class="preview-card">
+        <div class="preview-card mb-3">
           <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
             <div class="fw-semibold">Savol ${questionIndex + 1}</div>
             <span class="badge bg-light text-dark">${question.answers.length} ta variant</span>
@@ -755,77 +1095,378 @@
           </div>
         </div>
       `).join('');
-      importPreviewSection.classList.remove('d-none');
     }
 
-    pasteEditor.addEventListener('input', () => {
-      syncPasteInputs();
-      if (editorHasContent()) {
-        setImportValidationState(false);
+    function openPreviewModal() {
+      if (previewModal) {
+        previewModal.show();
       }
-    });
+    }
 
-    pasteEditor.addEventListener('paste', event => {
-      const clipboard = event.clipboardData;
-      if (!clipboard) {
-        window.setTimeout(syncPasteInputs, 0);
-        return;
-      }
+    function tableHtml(rows, columns) {
+      const safeRows = Math.min(Math.max(parseInt(rows || 2, 10) || 2, 1), 6);
+      const safeColumns = Math.min(Math.max(parseInt(columns || 2, 10) || 2, 1), 6);
+      const body = Array.from({ length: safeRows }, () => (
+        `<tr>${Array.from({ length: safeColumns }, () => '<td>Yacheyka</td>').join('')}</tr>`
+      )).join('');
+      return `<table><tbody>${body}</tbody></table><p></p>`;
+    }
 
-      const html = clipboard.getData('text/html');
-      const text = clipboard.getData('text/plain');
-      const imageItems = Array.from(clipboard.items || []).filter(item => item.type.startsWith('image/'));
-      const hasHtmlImages = /<img[\s>]/i.test(html || '');
+    function answerEditorToolbar(editorId) {
+      return `
+        <div class="rich-toolbar answer-rich-toolbar">
+          <div class="rich-toolbar-group">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="${editorId}" data-command="bold">
+              <i class="fa fa-bold"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="${editorId}" data-command="italic">
+              <i class="fa fa-italic"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="${editorId}" data-command="underline">
+              <i class="fa fa-underline"></i>
+            </button>
+          </div>
+          <div class="rich-toolbar-group">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="${editorId}" data-command="insertOrderedList">
+              <i class="fa fa-list-ol"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="${editorId}" data-command="insertUnorderedList">
+              <i class="fa fa-list-ul"></i>
+            </button>
+          </div>
+          <div class="rich-toolbar-group">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="${editorId}" data-action="link">
+              <i class="fa fa-link"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="${editorId}" data-action="image">
+              <i class="fa fa-image"></i>
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-editor-target="${editorId}" data-action="formula">
+              <i class="fa fa-square-root-alt"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }
 
-      if (!html && !text && !imageItems.length) {
-        window.setTimeout(syncPasteInputs, 0);
-        return;
-      }
+    function answerEditorMarkup(index) {
+      const editorId = `answer-editor-${index}`;
+      const hiddenId = `answer-input-${index}`;
+      return `
+        <div class="answer-item" data-answer-item>
+          <div class="answer-item-header">
+            <span class="answer-order-label">Variant ${answerMarker(index)}</span>
+            <div class="answer-item-controls">
+              <div class="form-check form-switch pt-0 mb-0">
+                <input type="checkbox" class="form-check-input is-correct-checkbox" id="is-correct-${index}">
+                <input type="hidden" name="is_correct[]" value="false">
+                <label class="form-check-label" for="is-correct-${index}">To'g'ri</label>
+              </div>
+              <button type="button" class="btn btn-danger btn-sm remove-answer">
+                <i class="fa fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <div class="answer-editor-shell rich-editor-shell">
+            ${answerEditorToolbar(editorId)}
+            <div
+              id="${editorId}"
+              class="rich-editor answer-rich-editor import-rich"
+              contenteditable="true"
+              data-hidden-input="${hiddenId}"
+              data-placeholder="Variant matnini kiriting"></div>
+          </div>
+          <input type="hidden" id="${hiddenId}" name="answers[]">
+        </div>
+      `;
+    }
 
-      event.preventDefault();
-
-      if (html) {
-        const parsed = new DOMParser().parseFromString(html, 'text/html');
-        insertHtmlAtCursor(parsed.body?.innerHTML || html);
-      } else if (text) {
-        insertHtmlAtCursor(plainTextToHtml(text));
-      }
-
-      if (!hasHtmlImages) {
-        imageItems.forEach(item => {
-          const file = item.getAsFile();
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = () => {
-            insertHtmlAtCursor(`<p><img src="${reader.result}" alt="Pasted image"></p>`);
-            syncPasteInputs();
-          };
-          reader.readAsDataURL(file);
-        });
-      }
-
-      window.setTimeout(() => {
-        syncPasteInputs();
-        setImportValidationState(false);
-      }, 0);
-    });
-
-    document.querySelectorAll('[data-editor-command]').forEach(button => {
-      button.addEventListener('click', () => {
-        const command = button.dataset.editorCommand;
-        pasteEditor.focus();
-        document.execCommand(command, false, null);
-        syncPasteInputs();
+    function refreshAnswerOrderLabels() {
+      document.querySelectorAll('[data-answer-item]').forEach((item, index) => {
+        const orderLabel = item.querySelector('.answer-order-label');
+        if (orderLabel) {
+          orderLabel.textContent = `Variant ${answerMarker(index)}`;
+        }
       });
+    }
+
+    function bindRichEditorEvents(editorEl) {
+      if (!editorEl || editorEl.dataset.editorBound === 'true') {
+        return;
+      }
+
+      editorEl.dataset.editorBound = 'true';
+      editorEl.addEventListener('focus', () => {
+        activeEditorId = editorEl.id;
+      });
+
+      editorEl.addEventListener('input', () => {
+        syncEditor(editorEl.id);
+        if (editorEl.id === 'question-editor' && editorHasContent(questionEditor)) {
+          setQuestionValidationState(false);
+        }
+        if (editorEl.id === 'paste-editor' && editorHasContent(pasteEditor)) {
+          setImportValidationState(false);
+        }
+        if (editorEl.classList.contains('answer-rich-editor') && editorHasContent(editorEl)) {
+          editorEl.classList.remove('is-invalid');
+        }
+      });
+
+      editorEl.addEventListener('paste', (event) => {
+        const clipboard = event.clipboardData;
+        if (!clipboard) {
+          window.setTimeout(() => syncEditor(editorEl.id), 0);
+          return;
+        }
+
+        const html = clipboard.getData('text/html');
+        const text = clipboard.getData('text/plain');
+        const imageItems = Array.from(clipboard.items || []).filter((item) => item.type.startsWith('image/'));
+        const hasHtmlImages = /<img[\s>]/i.test(html || '');
+
+        if (!html && !text && !imageItems.length) {
+          window.setTimeout(() => syncEditor(editorEl.id), 0);
+          return;
+        }
+
+        event.preventDefault();
+
+        if (html) {
+          const parsed = new DOMParser().parseFromString(html, 'text/html');
+          insertHtmlAtCursor(editorEl.id, parsed.body?.innerHTML || html);
+        } else if (text) {
+          insertHtmlAtCursor(editorEl.id, plainTextToHtml(text));
+        }
+
+        if (!hasHtmlImages) {
+          imageItems.forEach((item) => {
+            const file = item.getAsFile();
+            if (!file) {
+              return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+              insertHtmlAtCursor(editorEl.id, `<p><img src="${reader.result}" alt="Pasted image"></p>`);
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+
+        window.setTimeout(() => {
+          syncEditor(editorEl.id);
+          if (editorEl.id === 'question-editor') {
+            setQuestionValidationState(false);
+          } else if (editorEl.id === 'paste-editor') {
+            setImportValidationState(false);
+          } else if (editorEl.classList.contains('answer-rich-editor')) {
+            editorEl.classList.remove('is-invalid');
+          }
+        }, 0);
+      });
+    }
+
+    function addAnswerEditor() {
+      const answersSection = document.getElementById('answers-section');
+      answersSection.insertAdjacentHTML('beforeend', answerEditorMarkup(nextAnswerEditorIndex));
+      const editor = document.getElementById(`answer-editor-${nextAnswerEditorIndex}`);
+      bindRichEditorEvents(editor);
+      syncEditor(editor.id);
+      nextAnswerEditorIndex += 1;
+      initializeCheckboxes();
+      refreshAnswerOrderLabels();
+    }
+
+    tabs.forEach((tab) => {
+      const tabId = tab.getAttribute('data-tab-id');
+      const tabPane = document.getElementById(tabId);
+      if (!tabPane) {
+        return;
+      }
+
+      if (tabId === activeTab) {
+        tab.classList.add('active');
+        tabPane.classList.add('active', 'show');
+      } else {
+        tab.classList.remove('active');
+        tabPane.classList.remove('active', 'show');
+      }
+    });
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        localStorage.setItem('activeQuestionTab', tab.getAttribute('data-tab-id'));
+        initializeCheckboxes();
+      });
+    });
+
+    function updateHiddenInput() {
+      const hiddenInput = this.nextElementSibling;
+      if (hiddenInput) {
+        hiddenInput.value = this.checked ? 'true' : 'false';
+      }
+    }
+
+    function initializeCheckboxes() {
+      document.querySelectorAll('.is-correct-checkbox').forEach((checkbox, index) => {
+        const hiddenInput = checkbox.nextElementSibling;
+        if (hiddenInput?.tagName === 'INPUT' && hiddenInput.type === 'hidden') {
+          checkbox.id = `is-correct-${index}`;
+          checkbox.removeEventListener('change', updateHiddenInput);
+          checkbox.addEventListener('change', updateHiddenInput);
+          checkbox.nextElementSibling.nextElementSibling.setAttribute('for', `is-correct-${index}`);
+        }
+      });
+    }
+
+    initializeCheckboxes();
+    bindRichEditorEvents(questionEditor);
+    bindRichEditorEvents(pasteEditor);
+    addAnswerEditor();
+    syncAllEditors();
+    renderImportedPreview();
+
+    document.getElementById('add-answer').addEventListener('click', addAnswerEditor);
+
+    document.getElementById('answers-section').addEventListener('click', (event) => {
+      if (event.target.closest('.remove-answer') && document.querySelectorAll('.answer-item').length > 1) {
+        event.target.closest('.answer-item').remove();
+        initializeCheckboxes();
+        refreshAnswerOrderLabels();
+      }
+    });
+
+    document.addEventListener('click', async (event) => {
+      const commandButton = event.target.closest('[data-editor-target][data-command]');
+      if (commandButton) {
+        applyEditorCommand(commandButton.dataset.editorTarget, commandButton.dataset.command);
+        return;
+      }
+
+      const actionButton = event.target.closest('[data-editor-target][data-action]');
+      if (actionButton) {
+        const editorId = actionButton.dataset.editorTarget;
+        const action = actionButton.dataset.action;
+
+        if (action === 'link') {
+          const result = await Swal.fire({
+            title: 'Havola qo\'shish',
+            input: 'url',
+            inputLabel: 'URL manzil',
+            inputPlaceholder: 'https://example.com',
+            showCancelButton: true,
+            confirmButtonText: 'Qo\'shish',
+            cancelButtonText: 'Bekor qilish',
+          });
+          if (result.isConfirmed && result.value) {
+            applyEditorCommand(editorId, 'createLink', result.value);
+          }
+          return;
+        }
+
+        if (action === 'image') {
+          imageTargetEditorId = editorId;
+          richImageUpload.click();
+          return;
+        }
+
+        if (action === 'formula') {
+          const result = await Swal.fire({
+            title: 'Formula qo\'shish',
+            input: 'text',
+            inputLabel: 'Formula matni',
+            inputPlaceholder: 'x^2 + y^2 = z^2',
+            showCancelButton: true,
+            confirmButtonText: 'Qo\'shish',
+            cancelButtonText: 'Bekor qilish',
+          });
+          if (result.isConfirmed && result.value) {
+            insertHtmlAtCursor(editorId, `<span class="docx-formula">${escapeHtml(result.value)}</span>`);
+          }
+          return;
+        }
+
+        if (action === 'table') {
+          const result = await Swal.fire({
+            title: 'Jadval qo\'shish',
+            html: `
+              <div class="row g-3">
+                <div class="col-6">
+                  <label class="form-label">Qator</label>
+                  <input type="number" id="swal-table-rows" class="form-control" min="1" max="6" value="2">
+                </div>
+                <div class="col-6">
+                  <label class="form-label">Ustun</label>
+                  <input type="number" id="swal-table-columns" class="form-control" min="1" max="6" value="2">
+                </div>
+              </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Qo\'shish',
+            cancelButtonText: 'Bekor qilish',
+            preConfirm: () => ({
+              rows: document.getElementById('swal-table-rows').value,
+              columns: document.getElementById('swal-table-columns').value,
+            }),
+          });
+          if (result.isConfirmed) {
+            insertHtmlAtCursor(editorId, tableHtml(result.value.rows, result.value.columns));
+          }
+        }
+      }
+    });
+
+    document.addEventListener('change', (event) => {
+      const blockSelect = event.target.closest('select[data-rich-block]');
+      if (blockSelect) {
+        if (!blockSelect.value) {
+          return;
+        }
+        const value = blockSelect.value.toUpperCase();
+        applyEditorCommand(blockSelect.dataset.editorTarget, 'formatBlock', value);
+        blockSelect.value = '';
+        return;
+      }
+
+      const sizeSelect = event.target.closest('select[data-rich-size]');
+      if (sizeSelect) {
+        if (!sizeSelect.value) {
+          return;
+        }
+        applyEditorCommand(sizeSelect.dataset.editorTarget, 'fontSize', sizeSelect.value);
+        sizeSelect.value = '';
+      }
+    });
+
+    richImageUpload.addEventListener('change', () => {
+      const files = Array.from(richImageUpload.files || []);
+      if (!files.length) {
+        return;
+      }
+
+      files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          insertHtmlAtCursor(imageTargetEditorId, `<p><img src="${reader.result}" alt="${escapeHtml(file.name)}"></p>`);
+        };
+        reader.readAsDataURL(file);
+      });
+
+      richImageUpload.value = '';
     });
 
     document.getElementById('clear-paste-editor').addEventListener('click', () => {
       pasteEditor.innerHTML = '';
       importedQuestions = [];
-      syncPasteInputs();
+      syncEditor('paste-editor');
       renderImportedPreview();
       setImportValidationState(false);
-      pasteEditor.focus();
+      focusEditor('paste-editor');
+    });
+
+    previewOpenButton.addEventListener('click', () => {
+      renderImportedPreview();
+      openPreviewModal();
     });
 
     clearImportPreviewButton.addEventListener('click', () => {
@@ -833,362 +1474,195 @@
       renderImportedPreview();
     });
 
-    // Question form submission
-    document.getElementById('submit-question').addEventListener('click', async e => {
-      e.preventDefault();
-      const form = document.getElementById('question-form');
+    document.getElementById('submit-question').addEventListener('click', async (event) => {
+      event.preventDefault();
+      syncEditor('question-editor');
       let isValid = true;
 
-      // Inputlarni validatsiya qilish
-      form.querySelectorAll('input[required], textarea[required]').forEach(input => {
-        if (!input.value) {
-          input.classList.add('is-invalid');
+      if (!editorHasContent(questionEditor)) {
+        setQuestionValidationState(true);
+        isValid = false;
+      } else {
+        setQuestionValidationState(false);
+      }
+
+      const answerEditors = questionForm.querySelectorAll('.answer-rich-editor');
+      let validAnswerCount = 0;
+      answerEditors.forEach((editor) => {
+        syncEditor(editor.id);
+        if (!editorHasContent(editor)) {
+          editor.classList.add('is-invalid');
           isValid = false;
         } else {
-          input.classList.remove('is-invalid');
+          editor.classList.remove('is-invalid');
+          validAnswerCount += 1;
         }
       });
 
-      // Kamida bitta to'g'ri javob borligini tekshirish
-      const correctAnswers = form.querySelectorAll('.is-correct-checkbox:checked').length;
-      if (correctAnswers === 0) {
-        Swal.fire('Xatolik!', 'Kamida bitta to‘g‘ri javob tanlanishi kerak.', 'warning');
+      if (validAnswerCount < 2) {
+        isValid = false;
+      }
+
+      if (questionForm.querySelectorAll('.is-correct-checkbox:checked').length === 0) {
+        Swal.fire('Xatolik!', "Kamida bitta to'g'ri javob tanlanishi kerak.", 'warning');
         return;
       }
 
-      if (isValid) {
-        Swal.fire({
-          title: 'Tasdiqlaysizmi?',
-          text: 'Savolni saqlamoqchimisiz?',
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonColor: '#007bff',
-          cancelButtonColor: '#dc3545',
-          confirmButtonText: 'Ha, saqlash!',
-          cancelButtonText: 'Bekor qilish'
-        }).then(async result => {
-          if (result.isConfirmed) {
-            try {
-              const formData = new FormData(form);
-              const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                  'X-Requested-With': 'XMLHttpRequest'
-                }
-              });
-              const data = await response.json();
-              Swal.fire({
-                title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
-                text: data.message || 'Savolni saqlashda xatolik yuz berdi.',
-                icon: data.success ? 'success' : 'error',
-                confirmButtonText: 'OK'
-              }).then(() => {
-                if (data.success) {
-                  form.reset();
-                  initializeCheckboxes();
-                  window.location.reload();
-                }
-              });
-            } catch (error) {
-              Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
-              console.error('Error:', error);
-            }
-          }
+      if (!isValid) {
+        Swal.fire('Xatolik!', "Iltimos, barcha majburiy maydonlarni to'ldiring.", 'warning');
+        return;
+      }
+
+      const result = await Swal.fire({
+        title: 'Tasdiqlaysizmi?',
+        text: "Savolni saqlamoqchimisiz?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3b82f6',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ha, saqlash',
+        cancelButtonText: 'Bekor qilish',
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      try {
+        const response = await fetch(questionForm.action, {
+          method: 'POST',
+          body: new FormData(questionForm),
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+          },
         });
-      } else {
-        Swal.fire('Xatolik!', 'Iltimos, barcha majburiy maydonlarni to‘ldiring.', 'warning');
+        const data = await response.json();
+        await Swal.fire({
+          title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
+          text: data.message || data.errors || "Savolni saqlashda xatolik yuz berdi.",
+          icon: data.success ? 'success' : 'error',
+          confirmButtonText: 'OK',
+        });
+        if (data.success) {
+          window.location.reload();
+        }
+      } catch (error) {
+        Swal.fire('Xatolik!', "Server bilan bog'lanishda xatolik yuz berdi.", 'error');
       }
     });
 
-    // Import form submission
-    const handleImportSubmit = async e => {
-      e.preventDefault();
-      const form = document.getElementById('import-form');
-      syncPasteInputs();
+    const handleImportSubmit = async (event) => {
+      event.preventDefault();
+      syncEditor('paste-editor');
 
-      const hasPastedContent = editorHasContent();
-      if (!hasPastedContent) {
+      if (!editorHasContent(pasteEditor)) {
         setImportValidationState(true);
         return;
       }
 
       setImportValidationState(false);
-
       Swal.fire({
         title: 'Yuklanmoqda...',
         text: 'Iltimos, kuting...',
         allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
+        didOpen: () => Swal.showLoading(),
       });
 
       try {
-        const formData = new FormData(form);
         const response = await fetch("{% url 'administrator:import-questions' test.id %}", {
           method: 'POST',
-          body: formData,
+          body: new FormData(importForm),
           headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-          }
+            'X-Requested-With': 'XMLHttpRequest',
+          },
         });
         const data = await response.json();
         Swal.close();
 
         if (data.success) {
           importedQuestions = normalizeImportedQuestions(data.questions);
+          if (!importedQuestions.length) {
+            Swal.fire('Xatolik!', "Savollar formatini o'qishning iloji bo'lmadi. Markerlarni tekshirib qayta urinib ko'ring.", 'error');
+            renderImportedPreview();
+            return;
+          }
           renderImportedPreview();
-          importPreviewSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          openPreviewModal();
         } else {
-          Swal.fire('Xatolik!', data.errors || 'Savollarni import qilishda xatolik yuz berdi.', 'error');
+          Swal.fire('Xatolik!', data.errors || "Savollarni import qilishda xatolik yuz berdi.", 'error');
         }
       } catch (error) {
         Swal.close();
-        Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
-        console.error('Error:', error);
+        Swal.fire('Xatolik!', "Server bilan bog'lanishda xatolik yuz berdi.", 'error');
       }
     };
 
-    const submitPasteButton = document.getElementById('submit-paste-button');
-    if (submitPasteButton) {
-      submitPasteButton.addEventListener('click', handleImportSubmit);
-    }
+    document.getElementById('submit-paste-button').addEventListener('click', handleImportSubmit);
 
-    questionsPreviewEl.addEventListener('change', event => {
+    questionsPreviewEl.addEventListener('change', (event) => {
       const checkbox = event.target.closest('.preview-answer-correct');
-      if (!checkbox) return;
+      if (!checkbox) {
+        return;
+      }
 
       const questionIndex = parseInt(checkbox.dataset.questionIndex, 10);
       const answerIndex = parseInt(checkbox.dataset.answerIndex, 10);
       const question = importedQuestions[questionIndex];
       const answer = question?.answers?.[answerIndex];
-      if (!answer) return;
+      if (!answer) {
+        return;
+      }
 
       answer.is_correct = checkbox.checked;
       renderImportedPreview();
     });
 
-    // Save imported questions
-    document.getElementById('save-questions').addEventListener('click', async () => {
+    saveQuestionsButton.addEventListener('click', async () => {
       if (!importedQuestions.length) {
-        Swal.fire('Xatolik!', 'Saqlash uchun previewdagi savollar mavjud emas.', 'warning');
+        Swal.fire('Xatolik!', "Saqlash uchun previewda savollar mavjud emas.", 'warning');
         return;
       }
 
-      const invalidQuestion = importedQuestions.find(question => !question.answers.some(answer => answer.is_correct));
-      if (invalidQuestion) {
-        Swal.fire('Xatolik!', 'Har bir savolda kamida bitta to‘g‘ri javob bo‘lishi kerak.', 'warning');
+      if (importedQuestions.find((question) => !question.answers.some((answer) => answer.is_correct))) {
+        Swal.fire('Xatolik!', "Har bir savolda kamida bitta to'g'ri javob bo'lishi kerak.", 'warning');
         return;
       }
 
-      Swal.fire({
+      const result = await Swal.fire({
         title: 'Tasdiqlaysizmi?',
-        text: 'Savollarni saqlamoqchimisiz?',
+        text: "Savollarni saqlamoqchimisiz?",
         icon: 'question',
         showCancelButton: true,
-        confirmButtonColor: '#007bff',
-        cancelButtonColor: '#dc3545',
-        confirmButtonText: 'Ha, saqlash!',
-        cancelButtonText: 'Bekor qilish'
-      }).then(async result => {
-        if (result.isConfirmed) {
-          try {
-            const response = await fetch("{% url 'administrator:save-imported-questions' %}", {
-              method: 'POST',
-              headers: {
-                'X-CSRFToken': csrfToken,
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-              },
-              body: JSON.stringify({ questions: importedQuestions })
-            });
-            const data = await response.json();
-            if (data.success) {
-              Swal.fire('Muvaffaqiyatli!', data.message, 'success').then(() => {
-                window.location.reload();
-              });
-            } else {
-              Swal.fire('Xatolik!', data.errors || 'Savollarni saqlashda xatolik yuz berdi.', 'error');
-            }
-          } catch (error) {
-            Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
-            console.error('Error:', error);
-          }
-        }
+        confirmButtonColor: '#3b82f6',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ha, saqlash',
+        cancelButtonText: 'Bekor qilish',
       });
-    });
 
-    // Open edit modal
-    document.querySelectorAll('.edit-question-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const detailUrl = btn.dataset.detailUrl;
-        const updateUrl = btn.dataset.updateUrl;
-        if (!detailUrl || !updateUrl) return;
+      if (!result.isConfirmed) {
+        return;
+      }
 
-        editModalEl.dataset.updateUrl = updateUrl;
-
-        Swal.fire({
-          title: 'Yuklanmoqda...',
-          text: 'Iltimos, kuting...',
-          allowOutsideClick: false,
-          didOpen: () => Swal.showLoading()
+      try {
+        const response = await fetch("{% url 'administrator:save-imported-questions' %}", {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: JSON.stringify({ questions: importedQuestions }),
         });
-
-        try {
-          const response = await fetch(detailUrl, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-          });
-          const data = await response.json();
-          Swal.close();
-
-          if (!data.success) {
-            Swal.fire('Xatolik!', data.errors || 'Savolni olishda xatolik yuz berdi.', 'error');
-            return;
-          }
-
-          const q = data.question;
-          editQuestionIdEl.value = q.id;
-          editQuestionTextEl.value = q.text || '';
-          editAnswersSection.innerHTML = '';
-
-          (q.answers || []).forEach(a => {
-            editAnswersSection.appendChild(createEditAnswerItem(a));
-          });
-
-          while (editAnswersSection.querySelectorAll('.answer-item').length < 2) {
-            editAnswersSection.appendChild(createEditAnswerItem());
-          }
-
-          editModal.show();
-        } catch (error) {
-          Swal.close();
-          Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
-          console.error('Error:', error);
+        const data = await response.json();
+        if (data.success) {
+          await Swal.fire('Muvaffaqiyatli!', data.message, 'success');
+          window.location.reload();
+        } else {
+          Swal.fire('Xatolik!', data.errors || "Savollarni saqlashda xatolik yuz berdi.", 'error');
         }
-      });
-    });
-
-    // Add answer in edit modal
-    document.getElementById('edit-add-answer').addEventListener('click', () => {
-      editAnswersSection.appendChild(createEditAnswerItem());
-    });
-
-    // Remove answer in edit modal
-    editAnswersSection.addEventListener('click', e => {
-      const btn = e.target.closest('.edit-remove-answer');
-      if (!btn) return;
-      const items = editAnswersSection.querySelectorAll('.answer-item');
-      if (items.length <= 2) {
-        Swal.fire('Xatolik!', "Kamida 2 ta variant bo‘lishi kerak.", 'warning');
-        return;
+      } catch (error) {
+        Swal.fire('Xatolik!', "Server bilan bog'lanishda xatolik yuz berdi.", 'error');
       }
-      btn.closest('.answer-item')?.remove();
-    });
-
-    // Save edited question
-    document.getElementById('save-edit-question').addEventListener('click', async () => {
-      const updateUrl = editModalEl.dataset.updateUrl;
-      if (!updateUrl) return;
-
-      const text = (editQuestionTextEl.value || '').trim();
-      const items = Array.from(editAnswersSection.querySelectorAll('.answer-item'));
-      const answers = items.map(item => {
-        const idRaw = item.dataset.answerId;
-        const textEl = item.querySelector('.edit-answer-text');
-        const correctEl = item.querySelector('.edit-answer-correct');
-        const aText = (textEl?.value || '').trim();
-        return {
-          id: idRaw ? parseInt(idRaw, 10) : null,
-          text: aText,
-          is_correct: !!correctEl?.checked
-        };
-      }).filter(a => a.text);
-
-      if (!text) {
-        Swal.fire('Xatolik!', 'Savol matnini kiriting.', 'warning');
-        return;
-      }
-      if (answers.length < 2) {
-        Swal.fire('Xatolik!', "Kamida 2 ta variant bo‘lishi kerak.", 'warning');
-        return;
-      }
-      if (!answers.some(a => a.is_correct)) {
-        Swal.fire('Xatolik!', "Kamida bitta to‘g‘ri javob tanlanishi kerak.", 'warning');
-        return;
-      }
-
-      Swal.fire({
-        title: 'Tasdiqlaysizmi?',
-        text: 'Savolni yangilamoqchimisiz?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#007bff',
-        cancelButtonColor: '#dc3545',
-        confirmButtonText: 'Ha, saqlash!',
-        cancelButtonText: 'Bekor qilish'
-      }).then(async result => {
-        if (!result.isConfirmed) return;
-
-        try {
-          const response = await fetch(updateUrl, {
-            method: 'POST',
-            headers: {
-              'X-CSRFToken': csrfToken,
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({ text, answers })
-          });
-          const data = await response.json();
-          if (data.success) {
-            editModal.hide();
-            Swal.fire('Muvaffaqiyatli!', data.message, 'success').then(() => window.location.reload());
-          } else {
-            Swal.fire('Xatolik!', data.errors || 'Savolni yangilashda xatolik yuz berdi.', 'error');
-          }
-        } catch (error) {
-          Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
-          console.error('Error:', error);
-        }
-      });
-    });
-
-    // Delete question
-    document.querySelectorAll('.delete-question-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const deleteUrl = btn.dataset.deleteUrl;
-        if (!deleteUrl) return;
-
-        Swal.fire({
-          title: 'Tasdiqlaysizmi?',
-          text: 'Savolni o‘chirmoqchimisiz?',
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#dc3545',
-          cancelButtonColor: '#6c757d',
-          confirmButtonText: 'Ha, o‘chirish!',
-          cancelButtonText: 'Bekor qilish'
-        }).then(async result => {
-          if (!result.isConfirmed) return;
-          try {
-            const response = await fetch(deleteUrl, {
-              method: 'POST',
-              headers: {
-                'X-CSRFToken': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest'
-              }
-            });
-            const data = await response.json();
-            if (data.success) {
-              Swal.fire('Muvaffaqiyatli!', data.message, 'success').then(() => window.location.reload());
-            } else {
-              Swal.fire('Xatolik!', data.errors || 'Savolni o‘chirishda xatolik yuz berdi.', 'error');
-            }
-          } catch (error) {
-            Swal.fire('Xatolik!', 'Server bilan bog‘lanishda xatolik yuz berdi.', 'error');
-            console.error('Error:', error);
-          }
-        });
-      });
     });
   });
 </script>

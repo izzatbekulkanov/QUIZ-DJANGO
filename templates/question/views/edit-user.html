@@ -1,229 +1,643 @@
 {% extends 'question/main.html' %}
 {% load static %}
+
 {% block style %}
+<link rel="stylesheet" href="{% static 'assets/js/plugins/select2/css/select2.min.css' %}">
+<style>
+  .user-edit-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 1rem;
+  }
+
+  .user-edit-shell,
+  .user-edit-summary,
+  .user-edit-note {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.9rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(255, 255, 255, 0.98));
+  }
+
+  .user-edit-shell {
+    padding: 1rem;
+  }
+
+  .user-edit-avatar {
+    width: 92px;
+    height: 92px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 4px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  }
+
+  .user-role-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(59, 130, 246, 0.1);
+    color: #1d4ed8;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin: 0 0.35rem 0.35rem 0;
+  }
+
+  .user-edit-section + .user-edit-section {
+    margin-top: 1.25rem;
+  }
+
+  .role-groups-select + .select2-container {
+    width: 100% !important;
+  }
+
+  .role-groups-select + .select2-container .select2-selection--multiple {
+    min-height: 44px;
+    border-radius: 0.55rem;
+    border-color: #dfe3ea;
+    padding: 0.35rem 0.4rem;
+  }
+
+  .role-groups-select + .select2-container .select2-selection__choice {
+    border: 0;
+    border-radius: 999px;
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+    padding: 0.2rem 0.55rem;
+    margin-top: 0.25rem;
+  }
+
+  .select2-dropdown.user-edit-select2-dropdown {
+    border-color: #dfe3ea;
+    border-radius: 0.65rem;
+    overflow: hidden;
+  }
+
+  .user-edit-toggle-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .user-edit-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.85rem;
+    background: #fff;
+  }
+
+  .user-edit-result-item + .user-edit-result-item {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed rgba(15, 23, 42, 0.12);
+  }
+</style>
 {% endblock style %}
+
 {% block content %}
 <main id="main-container">
-  <!-- Hero -->
   <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
-  <div class="bg-primary-dark-op">
-    <div class="content content-full">
-      <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
-        <div class="flex-grow-1">
-          <h1 class="fw-semibold text-white mb-0">Users</h1>
-          <h2 class="h4 fw-normal text-white-75 mb-0">Welcome To Edit User</h2>
-        </div>
-        <div class="mt-3 mt-sm-0">
-          <!-- Back Button -->
-          <a href="javascript:history.back()" class="btn btn-alt-secondary">
-          <i class="fa fa-arrow-left me-1"></i> Ortga
-          </a>
+    <div class="bg-primary-dark-op">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
+          <div class="flex-grow-1">
+            <h1 class="fw-semibold text-white mb-1">Foydalanuvchini tahrirlash</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">Profil, role group, akademik guruh va foydalanuvchi holatini bir joydan boshqaring</h2>
+          </div>
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-end">
+              <a href="{% url 'administrator:users' %}" class="btn btn-sm btn-alt-secondary">
+                <i class="fa fa-arrow-left me-1"></i> Foydalanuvchilarga qaytish
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-  </div>
-  <!-- END Hero -->
-  <!-- Page Content -->
-  <div class="content">
-    <!-- User Creation Form -->
-    <div class="card m-3  p-3">
-      <form id="editUserForm" method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="first_name">Ism</label>
-            <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}" required>
-          </div>
-          <div class="col-md-6 mb-3">
-            <label for="second_name">Familiya</label>
-            <input type="text" class="form-control" id="second_name" name="second_name" value="{{ user.second_name }}" required>
+
+  <div class="content content-boxed">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Role group</div>
+              <div class="fs-2 fw-semibold">{{ stats.assigned_role_groups }}</div>
+            </div>
+            <div class="user-edit-stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa fa-user-shield"></i>
+            </div>
           </div>
         </div>
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="phone_number">Telefon raqam</label>
-            <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ user.phone_number }}" required>
-          </div>
-          <div class="col-md-6 mb-3">
-            <label for="address">Manzil</label>
-            <input type="text" class="form-control" id="address" name="address" value="{{ user.address }}" required>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="date_of_birth">Tug'ilgan sana</label>
-            <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" value="{{ user.date_of_birth|date:'Y-m-d' }}">
-          </div>
-          <div class="col-md-6 mb-3">
-            <label for="gender">Jinsi</label>
-            <select class="form-select" id="gender" name="gender" required>
-            <option value="male" {% if user.gender == "male" %}selected{% endif %}>Erkak</option>
-            <option value="female" {% if user.gender == "female" %}selected{% endif %}>Ayol</option>
-            </select>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Biriktirilgan testlar</div>
+              <div class="fs-2 fw-semibold">{{ stats.assigned_tests_count }}</div>
+            </div>
+            <div class="user-edit-stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa fa-tasks"></i>
+            </div>
           </div>
         </div>
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label class="form-label" for="nationality">Millati</label>
-            <select class="form-select" id="nationality" name="nationality" required>
-            <option value="" disabled {% if not user.nationality %}selected{% endif %}>Millatingizni tanlang</option>
-            <option value="Uzbek" {% if user.nationality == "Uzbek" %}selected{% endif %}>O'zbek</option>
-            <option value="Kazakh" {% if user.nationality == "Kazakh" %}selected{% endif %}>Qozoq</option>
-            <option value="Kyrgyz" {% if user.nationality == "Kyrgyz" %}selected{% endif %}>Qirg'iz</option>
-            <option value="Tajik" {% if user.nationality == "Tajik" %}selected{% endif %}>Tojik</option>
-            <option value="Turkmen" {% if user.nationality == "Turkmen" %}selected{% endif %}>Turkman</option>
-            <option value="Afghan" {% if user.nationality == "Afghan" %}selected{% endif %}>Afg'on</option>
-            <option value="Pakistani" {% if user.nationality == "Pakistani" %}selected{% endif %}>Pokistonlik</option>
-            <option value="Indian" {% if user.nationality == "Indian" %}selected{% endif %}>Hind</option>
-            <option value="Chinese" {% if user.nationality == "Chinese" %}selected{% endif %}>Xitoylik</option>
-            <option value="Japanese" {% if user.nationality == "Japanese" %}selected{% endif %}>Yapon</option>
-            <option value="Korean" {% if user.nationality == "Korean" %}selected{% endif %}>Koreys</option>
-            <option value="Malaysian" {% if user.nationality == "Malaysian" %}selected{% endif %}>Malayziyalik</option>
-            <option value="Indonesian" {% if user.nationality == "Indonesian" %}selected{% endif %}>Indoneziyalik</option>
-            <option value="Filipino" {% if user.nationality == "Filipino" %}selected{% endif %}>Filippinlik</option>
-            <option value="Vietnamese" {% if user.nationality == "Vietnamese" %}selected{% endif %}>Vetnamlik</option>
-            <option value="Thai" {% if user.nationality == "Thai" %}selected{% endif %}>Tay</option>
-            <option value="Bangladeshi" {% if user.nationality == "Bangladeshi" %}selected{% endif %}>Bangladeshlik</option>
-            <option value="Sri Lankan" {% if user.nationality == "Sri Lankan" %}selected{% endif %}>Shri-Lankalik</option>
-            <option value="Nepali" {% if user.nationality == "Nepali" %}selected{% endif %}>Nepallik</option>
-            <option value="Mongolian" {% if user.nationality == "Mongolian" %}selected{% endif %}>Mo'g'ul</option>
-            <option value="Iranian" {% if user.nationality == "Iranian" %}selected{% endif %}>Eronlik</option>
-            <option value="Iraqi" {% if user.nationality == "Iraqi" %}selected{% endif %}>Iroqlik</option>
-            <option value="Saudi Arabian" {% if user.nationality == "Saudi Arabian" %}selected{% endif %}>Saudiya Arabistonlik</option>
-            <option value="Syrian" {% if user.nationality == "Syrian" %}selected{% endif %}>Suriya</option>
-            <option value="Jordanian" {% if user.nationality == "Jordanian" %}selected{% endif %}>Iordaniyalik</option>
-            <option value="Palestinian" {% if user.nationality == "Palestinian" %}selected{% endif %}>Falastinlik</option>
-            <option value="Turkish" {% if user.nationality == "Turkish" %}selected{% endif %}>Turk</option>
-            <option value="Armenian" {% if user.nationality == "Armenian" %}selected{% endif %}>Arman</option>
-            <option value="Azerbaijani" {% if user.nationality == "Azerbaijani" %}selected{% endif %}>Ozarbayjonlik</option>
-            <option value="Georgian" {% if user.nationality == "Georgian" %}selected{% endif %}>Gruzin</option>
-            </select>
-          </div>
-          <div class="col-md-6 mb-3">
-            <label for="profile_picture">Profil rasmi</label>
-            <input type="file" class="form-control" id="profile_picture" name="profile_picture">
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Natijalar</div>
+              <div class="fs-2 fw-semibold">{{ stats.student_results_count }}</div>
+            </div>
+            <div class="user-edit-stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa fa-chart-line"></i>
+            </div>
           </div>
         </div>
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="job_title">Lavozimi</label>
-            <input type="text" class="form-control" id="job_title" name="job_title" value="{{ user.job_title }}">
-          </div>
-          <div class="col-md-6 mb-3">
-            <label for="company_name">Ish joyi</label>
-            <input type="text" class="form-control" id="company_name" name="company_name" value="{{ user.company_name }}">
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="username">Username</label>
-            <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
-          </div>
-          <div class="col-md-6 mb-3">
-            <label for="email">Email</label>
-            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Log yozuvlari</div>
+              <div class="fs-2 fw-semibold">{{ stats.logs_count }}</div>
+            </div>
+            <div class="user-edit-stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa fa-file-alt"></i>
+            </div>
           </div>
         </div>
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="password">Yangi Parol</label>
-            <input type="password" class="form-control" id="password" name="password" placeholder="Parolni kiriting">
-          </div>
-          <div class="col-md-6 mb-3">
-            <label for="confirm_password">Parolni Tasdiqlash</label>
-            <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Parolni tasdiqlang">
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <label for="is_teacher">O'qituvchi</label>
-            <input type="checkbox" id="is_teacher" name="is_teacher" {% if user.is_teacher %}checked{% endif %}>
-          </div>
-          <div class="col-md-6 mb-3">
-            <label for="is_student">Talaba</label>
-            <input type="checkbox" id="is_student" name="is_student" {% if user.is_student %}checked{% endif %}>
-          </div>
-        </div>
-        <div class="text-end">
-          <button type="button" id="submitButton" class="btn btn-primary w-100">Yangilash</button>
-        </div>
-      </form>
+      </div>
     </div>
+
+    <form id="edit-user-form" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="row g-4">
+        <div class="col-12 col-xl-8">
+          <div class="block block-rounded mb-4">
+            <div class="block-header block-header-default">
+              <h3 class="block-title">Asosiy ma'lumotlar</h3>
+            </div>
+            <div class="block-content block-content-full">
+              <div class="user-edit-shell">
+                <div class="row g-3">
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="first_name">Ism</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="second_name">Familiya</label>
+                    <input type="text" class="form-control" id="second_name" name="second_name" value="{{ user.second_name|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="third_name">Sharifi</label>
+                    <input type="text" class="form-control" id="third_name" name="third_name" value="{{ user.third_name|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="full_name">To'liq ism</label>
+                    <input type="text" class="form-control" id="full_name" name="full_name" value="{{ user.full_name|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="phone_number">Telefon raqam</label>
+                    <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ user.phone_number|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="email">Asosiy email</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ user.email|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="contact_email">Aloqa email</label>
+                    <input type="email" class="form-control" id="contact_email" name="contact_email" value="{{ user.contact_email|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="date_of_birth">Tug'ilgan sana</label>
+                    <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" value="{{ user.date_of_birth|date:'Y-m-d' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="gender">Jins</label>
+                    <select class="form-select" id="gender" name="gender">
+                      <option value="">Tanlang</option>
+                      <option value="male" {% if user.gender == "male" %}selected{% endif %}>Erkak</option>
+                      <option value="female" {% if user.gender == "female" %}selected{% endif %}>Ayol</option>
+                    </select>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="nationality">Millati</label>
+                    <input type="text" class="form-control" id="nationality" name="nationality" value="{{ user.nationality|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="citizenship">Fuqaroligi</label>
+                    <input type="text" class="form-control" id="citizenship" name="citizenship" value="{{ user.citizenship|default:'' }}">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="address">Manzil</label>
+                    <textarea class="form-control" id="address" name="address" rows="3">{{ user.address|default:'' }}</textarea>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="bio">Bio</label>
+                    <textarea class="form-control" id="bio" name="bio" rows="3">{{ user.bio|default:'' }}</textarea>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="emergency_contact">Favqulodda aloqa</label>
+                    <input type="text" class="form-control" id="emergency_contact" name="emergency_contact" value="{{ user.emergency_contact|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="profile_picture">Profil rasmi</label>
+                    <input type="file" class="form-control" id="profile_picture" name="profile_picture" accept="image/*">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="block block-rounded mb-4">
+            <div class="block-header block-header-default">
+              <h3 class="block-title">Holat va guruhlar</h3>
+            </div>
+            <div class="block-content block-content-full">
+              <div class="user-edit-shell">
+                <div class="user-edit-toggle-row mb-3">
+                  <label class="user-edit-toggle">
+                    <input type="checkbox" class="form-check-input" id="is_student" name="is_student" {% if user.is_student %}checked{% endif %}>
+                    <span>Talaba</span>
+                  </label>
+                  <label class="user-edit-toggle">
+                    <input type="checkbox" class="form-check-input" id="is_teacher" name="is_teacher" {% if user.is_teacher %}checked{% endif %}>
+                    <span>Hodim</span>
+                  </label>
+                  <label class="user-edit-toggle">
+                    <input type="checkbox" class="form-check-input" id="auth_is_id" name="auth_is_id" {% if user.auth_is_id %}checked{% endif %}>
+                    <span>Login ruxsati</span>
+                  </label>
+                </div>
+
+                <div class="row g-3">
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="group_name">Akademik guruh</label>
+                    <input type="text" class="form-control" id="group_name" name="group_name" value="{{ user.group_name|default:'' }}" placeholder="Masalan: ATI-AU-24">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="role_groups">Role group biriktirish</label>
+                    <select class="form-select role-groups-select" id="role_groups" name="role_groups" multiple data-placeholder="Role guruhlarni tanlang">
+                      {% for role_group in role_groups %}
+                        <option value="{{ role_group.id }}" {% if role_group.id in selected_role_group_ids %}selected{% endif %}>{{ role_group.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="block block-rounded mb-4" id="student-section">
+            <div class="block-header block-header-default">
+              <h3 class="block-title">Talaba ma'lumotlari</h3>
+            </div>
+            <div class="block-content block-content-full">
+              <div class="user-edit-shell">
+                <div class="row g-3">
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="student_id_number">Talaba ID</label>
+                    <input type="text" class="form-control" id="student_id_number" name="student_id_number" value="{{ user.student_id_number|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="level_name">Kurs</label>
+                    <input type="text" class="form-control" id="level_name" name="level_name" value="{{ user.level_name|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="specialty">Mutaxassislik kodi</label>
+                    <input type="text" class="form-control" id="specialty" name="specialty" value="{{ user.specialty|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="specialty_name">Mutaxassislik nomi</label>
+                    <input type="text" class="form-control" id="specialty_name" name="specialty_name" value="{{ user.specialty_name|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="education_level">Ta'lim bosqichi</label>
+                    <input type="text" class="form-control" id="education_level" name="education_level" value="{{ user.education_level|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="education_type">Ta'lim turi</label>
+                    <input type="text" class="form-control" id="education_type" name="education_type" value="{{ user.education_type|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="education_form_name">Ta'lim shakli</label>
+                    <input type="text" class="form-control" id="education_form_name" name="education_form_name" value="{{ user.education_form_name|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="education_year">O'qish yili</label>
+                    <input type="text" class="form-control" id="education_year" name="education_year" value="{{ user.education_year|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="department_name">Fakultet</label>
+                    <input type="text" class="form-control" id="department_name" name="department_name" value="{{ user.department_name|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="payment_form">To'lov shakli</label>
+                    <input type="text" class="form-control" id="payment_form" name="payment_form" value="{{ user.payment_form|default:'' }}">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="block block-rounded mb-4" id="teacher-section">
+            <div class="block-header block-header-default">
+              <h3 class="block-title">Hodim ma'lumotlari</h3>
+            </div>
+            <div class="block-content block-content-full">
+              <div class="user-edit-shell">
+                <div class="row g-3">
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="job_title">Lavozim</label>
+                    <input type="text" class="form-control" id="job_title" name="job_title" value="{{ user.job_title|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="company_name">Ish joyi</label>
+                    <input type="text" class="form-control" id="company_name" name="company_name" value="{{ user.company_name|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="department">Bo'lim / kafedra</label>
+                    <input type="text" class="form-control" id="department" name="department" value="{{ user.department|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="staff_position">Shtatdagi o'rni</label>
+                    <input type="text" class="form-control" id="staff_position" name="staff_position" value="{{ user.staff_position|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="academic_degree">Ilmiy daraja</label>
+                    <input type="text" class="form-control" id="academic_degree" name="academic_degree" value="{{ user.academic_degree|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="academic_rank">Ilmiy unvon</label>
+                    <input type="text" class="form-control" id="academic_rank" name="academic_rank" value="{{ user.academic_rank|default:'' }}">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="employee_id_number">Xodim ID raqami</label>
+                    <input type="number" class="form-control" id="employee_id_number" name="employee_id_number" value="{{ user.employee_id_number|default:'' }}">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="block block-rounded mb-4">
+            <div class="block-header block-header-default">
+              <h3 class="block-title">Xavfsizlik</h3>
+            </div>
+            <div class="block-content block-content-full">
+              <div class="user-edit-shell">
+                <div class="row g-3">
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="password">Yangi parol</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Agar kerak bo'lsa kiriting">
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="confirm_password">Parolni tasdiqlash</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Qayta kiriting">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="block block-rounded mb-4">
+            <div class="block-header block-header-default">
+              <h3 class="block-title">Saqlash</h3>
+            </div>
+            <div class="block-content block-content-full">
+              <div class="d-flex flex-wrap gap-2">
+                <button type="button" id="save-user-button" class="btn btn-alt-primary">
+                  <i class="fa fa-save me-1"></i> O'zgarishlarni saqlash
+                </button>
+                <a href="{% url 'administrator:users' %}" class="btn btn-alt-secondary">
+                  <i class="fa fa-times me-1"></i> Bekor qilish
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-xl-4">
+          <div class="block block-rounded mb-4">
+            <div class="block-content block-content-full text-center">
+              <img
+                id="profile-preview"
+                src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
+                alt="{{ user.username }}"
+                class="user-edit-avatar mb-3"
+              >
+              <div class="fw-semibold fs-4">
+                {% if user.full_name %}
+                  {{ user.full_name }}
+                {% elif user.first_name or user.second_name %}
+                  {{ user.first_name }} {{ user.second_name }}
+                {% else %}
+                  {{ user.username }}
+                {% endif %}
+              </div>
+              <div class="text-muted mb-3">@{{ user.username }}</div>
+              <div class="d-flex justify-content-center flex-wrap">
+                {% if user.is_student %}
+                  <span class="user-role-chip"><i class="fa fa-user-graduate"></i> Talaba</span>
+                {% endif %}
+                {% if user.is_teacher %}
+                  <span class="user-role-chip"><i class="fa fa-user-tie"></i> Hodim</span>
+                {% endif %}
+                {% if user.auth_is_id %}
+                  <span class="user-role-chip"><i class="fa fa-shield-alt"></i> Login ruxsatli</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <div class="block block-rounded mb-4">
+            <div class="block-header block-header-default">
+              <h3 class="block-title">Role grouplar</h3>
+            </div>
+            <div class="block-content block-content-full">
+              <div class="user-edit-summary p-3">
+                {% for role_group in user.groups.all %}
+                  <span class="user-role-chip"><i class="fa fa-users-cog"></i>{{ role_group.name }}</span>
+                {% empty %}
+                  <div class="text-muted fs-sm">Role group biriktirilmagan.</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <div class="block block-rounded mb-4">
+            <div class="block-header block-header-default">
+              <h3 class="block-title">Foydalanuvchi ko'rsatkichi</h3>
+            </div>
+            <div class="block-content block-content-full">
+              <div class="user-edit-note p-3">
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-muted">Tugallangan natijalar</span>
+                  <strong>{{ stats.completed_results_count }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-muted">O'rtacha ball</span>
+                  <strong>{{ stats.average_score }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span class="text-muted">Yaratgan testlari</span>
+                  <strong>{{ stats.managed_tests_count }}</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-muted">Topshiriqlari</span>
+                  <strong>{{ stats.assignments_count }}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="block block-rounded">
+            <div class="block-header block-header-default">
+              <h3 class="block-title">So'nggi natijalar</h3>
+            </div>
+            <div class="block-content block-content-full">
+              <div class="user-edit-summary p-3">
+                {% for result in recent_results %}
+                  <div class="user-edit-result-item">
+                    <div class="fw-semibold">{{ result.assignment.test.name }}</div>
+                    <div class="fs-sm text-muted">{{ result.assignment.category.name }} • {{ result.score|default:0 }} ball</div>
+                  </div>
+                {% empty %}
+                  <div class="text-muted fs-sm">Natijalar topilmadi.</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
   </div>
 </main>
 {% endblock content %}
+
 {% block script %}
+<script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/select2/js/select2.full.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
 <script>
-  document.getElementById("submitButton").addEventListener("click", function () {
-    const password = document.getElementById("password").value;
-    const confirmPassword = document.getElementById("confirm_password").value;
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('edit-user-form');
+    const saveButton = document.getElementById('save-user-button');
+    const passwordField = document.getElementById('password');
+    const confirmPasswordField = document.getElementById('confirm_password');
+    const isStudentField = document.getElementById('is_student');
+    const isTeacherField = document.getElementById('is_teacher');
+    const studentSection = document.getElementById('student-section');
+    const teacherSection = document.getElementById('teacher-section');
+    const profilePictureInput = document.getElementById('profile_picture');
+    const profilePreview = document.getElementById('profile-preview');
 
-    // Parol bir xilligini tekshirish
-    if (password && password !== confirmPassword) {
-      Swal.fire({
-        title: 'Xatolik!',
-        text: 'Parollar mos kelmadi. Iltimos, qayta tekshiring.',
-        icon: 'error',
-        confirmButtonText: 'OK',
+    const toggleSections = () => {
+      studentSection.classList.toggle('d-none', !isStudentField.checked);
+      teacherSection.classList.toggle('d-none', !isTeacherField.checked);
+    };
+
+    toggleSections();
+    isStudentField.addEventListener('change', toggleSections);
+    isTeacherField.addEventListener('change', toggleSections);
+
+    if (window.jQuery) {
+      window.jQuery('.role-groups-select').select2({
+        width: '100%',
+        placeholder: function () {
+          return this.dataset.placeholder || '';
+        },
+        dropdownCssClass: 'user-edit-select2-dropdown',
       });
-      return; // Formani yuborishni to'xtatish
     }
 
-    Swal.fire({
-      title: 'Tasdiqlaysizmi?',
-      text: "Foydalanuvchi ma'lumotlarini yangilamoqchimisiz?",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Ha, yangilash!',
-      cancelButtonText: 'Bekor qilish',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const form = document.getElementById("editUserForm");
-        const formData = new FormData(form);
+    if (profilePictureInput && profilePreview) {
+      profilePictureInput.addEventListener('change', () => {
+        const file = profilePictureInput.files && profilePictureInput.files[0];
+        if (!file) {
+          return;
+        }
 
-        // AJAX so'rov yuborish
-        fetch(form.action, {
-          method: "POST",
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          profilePreview.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    saveButton.addEventListener('click', async () => {
+      if (passwordField.value && passwordField.value !== confirmPasswordField.value) {
+        await Swal.fire({
+          title: 'Xatolik!',
+          text: 'Parollar mos kelmadi. Iltimos, qayta tekshiring.',
+          icon: 'error',
+          confirmButtonText: 'OK',
+        });
+        return;
+      }
+
+      const confirmation = await Swal.fire({
+        title: 'Tasdiqlaysizmi?',
+        text: "Foydalanuvchi ma'lumotlarini yangilamoqchimisiz?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ha, saqlash',
+        cancelButtonText: 'Bekor qilish',
+      });
+
+      if (!confirmation.isConfirmed) {
+        return;
+      }
+
+      const formData = new FormData(form);
+
+      try {
+        const response = await fetch(form.action || window.location.href, {
+          method: 'POST',
           body: formData,
           headers: {
             'X-Requested-With': 'XMLHttpRequest',
           },
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              Swal.fire({
-                title: 'Muvaffaqiyatli!',
-                text: data.message,
-                icon: 'success',
-                confirmButtonText: 'OK',
-              }).then(() => {
-                window.location.reload(); // Sahifani qayta yuklash
-              });
-            } else {
-              Swal.fire({
-                title: 'Xatolik!',
-                text: data.message,
-                icon: 'error',
-                confirmButtonText: 'OK',
-              });
-            }
-          })
-          .catch((error) => {
-            Swal.fire({
-              title: 'Xatolik!',
-              text: 'Maʼlumotlarni yuborishda xatolik yuz berdi.',
-              icon: 'error',
-              confirmButtonText: 'OK',
-            });
-          });
+        });
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Foydalanuvchini saqlashda xatolik yuz berdi.");
+        }
+
+        await Swal.fire({
+          title: 'Muvaffaqiyatli!',
+          text: data.message,
+          icon: 'success',
+          confirmButtonText: 'OK',
+        });
+
+        window.location.href = data.redirect_url || window.location.href;
+      } catch (error) {
+        await Swal.fire({
+          title: 'Xatolik!',
+          text: error.message || "Ma'lumotlarni yuborishda xatolik yuz berdi.",
+          icon: 'error',
+          confirmButtonText: 'OK',
+        });
       }
     });
   });
 </script>
-
 {% endblock script %}

@@ -2,222 +2,428 @@
 {% load static %}
 
 {% block style %}
-<link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
 <style>
-  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
-  .bg-image {
-    background-size: cover;
-    background-position: center;
+  .assignment-view-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 1rem;
   }
-  .bg-primary-dark-op {
-    background-color: rgba(0, 0, 0, 0.7);
+
+  .assignment-view-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .assignment-view-filter-shell {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.75rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 0.98));
     padding: 1rem;
   }
-  .btn-primary, .btn-success, .btn-warning {
-    background: linear-gradient(90deg, #007bff, #00c4ff);
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
+
+  .assignment-view-note {
+    border: 1px dashed rgba(15, 23, 42, 0.14);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.9);
+    padding: 0.875rem 1rem;
   }
-  .btn-primary:hover, .btn-success:hover, .btn-warning:hover {
-    background: linear-gradient(90deg, #0056b3, #0096cc);
-    border: none;
+
+  .assignment-summary-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.78);
+    padding: 1rem;
   }
-  .btn-outline-secondary {
-    border-color: #e9ecef;
-    color: #fff;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
+
+  .assignment-summary-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+    margin-bottom: 0.25rem;
   }
-  .btn-outline-secondary:hover {
-    background: linear-gradient(90deg, #6c757d, #adb5bd);
-    color: #fff;
-    border: none;
+
+  .assignment-student-cell {
+    min-width: 220px;
   }
-  .form-control {
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
+
+  .assignment-group-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 230px;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(99, 102, 241, 0.1);
+    color: #4338ca;
+    font-size: 0.75rem;
+    font-weight: 700;
   }
-  .form-control:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+
+  .assignment-score-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(34, 197, 94, 0.14);
+    color: #166534;
+    font-size: 0.75rem;
+    font-weight: 700;
   }
-  .form-label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #34495e;
+
+  .assignment-pending-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(250, 204, 21, 0.16);
+    color: #854d0e;
+    font-size: 0.75rem;
+    font-weight: 700;
   }
-  .table {
-    border-radius: 6px;
-    overflow: hidden;
+
+  .assignment-empty-state {
+    border: 1px dashed rgba(15, 23, 42, 0.12);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.72);
+    padding: 2.75rem 1.5rem;
+    text-align: center;
   }
-  .table th, .table td {
-    vertical-align: middle;
-  }
-  .badge.bg-success {
-    background: linear-gradient(90deg, #28a745, #4caf50);
-  }
-  .badge.bg-warning {
-    background: linear-gradient(90deg, #ff9800, #ffb300);
-  }
-  .badge.bg-secondary {
-    background: linear-gradient(90deg, #6c757d, #adb5bd);
+
+  @media (max-width: 767.98px) {
+    .assignment-view-toolbar {
+      justify-content: center;
+    }
+
+    .assignment-student-cell {
+      min-width: 0;
+    }
   }
 </style>
 {% endblock style %}
 
 {% block content %}
 <main id="main-container">
-  <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 
-  <!-- Hero -->
-  <div class="bg-image overflow-hidden"
-       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
     <div class="bg-primary-dark-op">
-      <div class="container">
-        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
           <div class="flex-grow-1">
-            <h1 class="fw-semibold text-white mb-0">Topshiriqlar</h1>
-            <h2 class="h4 fw-normal text-white-75 mb-0">Topshiriq tafsilotlari</h2>
+            <h1 class="fw-semibold text-white mb-1">{{ assignment.test.name }}</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">Topshiriq natijalari, talabalar urinishlari va eksport oqimini bir joyda boshqarish</h2>
           </div>
-          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="{% url 'administrator:assign-test' %}">
-              <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
-            </a>
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <div class="assignment-view-toolbar justify-content-center justify-content-lg-end">
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:assign-test' %}">
+                <i class="fa fa-arrow-left me-1"></i> Topshiriqlar
+              </a>
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:edit-assign-test' assignment.id %}">
+                <i class="fa fa-pencil-alt me-1"></i> Tahrirlash
+              </a>
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:question' %}">
+                <i class="fa fa-file-alt me-1"></i> Testlar
+              </a>
+              <a class="btn btn-sm btn-alt-success" href="{% url 'administrator:export-assign-test' assignment.id %}{% if pagination_query %}?{{ pagination_query }}{% endif %}">
+                <i class="fa fa-download me-1"></i> Excel
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Page Content -->
-  <div class="container py-3">
-    <div class="card shadow-sm">
-      <div class="card-header bg-primary text-white">
-        <h3 class="h5 mb-0">Test Topshiriq Tafsilotlari</h3>
+  <div class="content content-boxed">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Jami urinishlar</div>
+              <div class="fs-2 fw-semibold">{{ total_attempts_count }}</div>
+            </div>
+            <div class="assignment-view-stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa fa-users"></i>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card-body p-4">
-        <div class="row g-3 mb-4">
-          <div class="col-md-6">
-            <h5><strong>O‘qituvchi:</strong> {{ assignment.teacher.username }}</h5>
-          </div>
-          <div class="col-md-6">
-            <h5><strong>Kategoriya:</strong> {{ assignment.category.name }}</h5>
-          </div>
-          <div class="col-md-6">
-            <h5><strong>Test:</strong> {{ assignment.test.name }}</h5>
-          </div>
-          <div class="col-md-6">
-            <h5><strong>Savollar soni:</strong> {{ assignment.total_questions }}</h5>
-          </div>
-          <div class="col-md-6">
-            <h5><strong>Boshlanish vaqti:</strong> {{ assignment.start_time|date:"Y-m-d H:i" }}</h5>
-          </div>
-          <div class="col-md-6">
-            <h5><strong>Tugash vaqti:</strong> {{ assignment.end_time|date:"Y-m-d H:i" }}</h5>
-          </div>
-          <div class="col-md-6">
-            <h5><strong>Davomiylik (daqiqa):</strong> {{ assignment.duration }}</h5>
-          </div>
-          <div class="col-md-6">
-            <h5><strong>Maksimal urinishlar:</strong> {{ assignment.max_attempts }}</h5>
-          </div>
-          <div class="col-md-6">
-            <h5><strong>Urinishlar soni:</strong> {{ assignment.attempts }}</h5>
-          </div>
-          <div class="col-md-6">
-            <h5><strong>Holati:</strong>
-              <span class="badge {% if assignment.is_active %}bg-success{% else %}bg-secondary{% endif %}">
-                {{ assignment.is_active|yesno:"Faol,Faol emas" }}
-              </span>
-            </h5>
-          </div>
-          <div class="col-md-6">
-            <h5><strong>Status:</strong>
-              <span class="badge {% if assignment.status == 'pending' %}bg-success{% else %}bg-danger{% endif %}">
-                {{ assignment.get_status_display }}
-              </span>
-            </h5>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Filter natijasi</div>
+              <div class="fs-2 fw-semibold">{{ filtered_attempts_count }}</div>
+            </div>
+            <div class="assignment-view-stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa fa-filter"></i>
+            </div>
           </div>
         </div>
-
-        <!-- Student Tests Filter Form -->
-        <h3 class="card-title mb-3">Testni Bajargan Talabalar</h3>
-        <form method="get" class="row g-3 mb-4">
-          <div class="col-md-3">
-            <label for="group_name" class="form-label"><i class="fa fa-users me-2"></i>Guruh nomi</label>
-            <input type="text" id="group_name" name="group_name" class="form-control" placeholder="Guruh nomi kiriting" value="{{ filters.group_name }}">
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Yakunlanganlar</div>
+              <div class="fs-2 fw-semibold">{{ filtered_completed_count }}</div>
+            </div>
+            <div class="assignment-view-stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa fa-check-circle"></i>
+            </div>
           </div>
-          <div class="col-md-3">
-            <label for="username" class="form-label"><i class="fa fa-user me-2"></i>Foydalanuvchi nomi</label>
-            <input type="text" id="username" name="username" class="form-control" placeholder="Foydalanuvchi nomi kiriting" value="{{ filters.username }}">
-          </div>
-          <div class="col-md-3">
-            <label for="first_name" class="form-label"><i class="fa fa-id-card me-2"></i>Ism</label>
-            <input type="text" id="first_name" name="first_name" class="form-control" placeholder="Ism kiriting" value="{{ filters.first_name }}">
-          </div>
-          <div class="col-md-3">
-            <label for="full_name" class="form-label"><i class="fa fa-id-card-alt me-2"></i>To‘liq ism</label>
-            <input type="text" id="full_name" name="full_name" class="form-control" placeholder="To‘liq ism kiriting" value="{{ filters.full_name }}">
-          </div>
-          <div class="col-md-12 text-end">
-            <button type="submit" class="btn btn-primary"><i class="fa fa-filter me-1"></i>Filtr</button>
-            <a href="{% url 'administrator:view-assign-test' assignment.id %}" class="btn btn-outline-primary"><i class="fa fa-times me-1"></i>Tozalash</a>
-            <a href="{% url 'administrator:export-assign-test' assignment.id %}?{% if request.GET %}{{ request.GET.urlencode }}{% endif %}" class="btn btn-success">
-              <i class="fa fa-download me-1"></i>Excelga eksport qilish
-            </a>
-          </div>
-        </form>
-
-        <!-- Student Tests Table -->
-        <div class="table-responsive">
-          <table class="table table-bordered table-striped table-hover">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Foydalanuvchi nomi</th>
-                <th>To‘liq ism</th>
-                <th>Guruh nomi</th>
-                <th>Ball</th>
-                <th>Tugallangan</th>
-                <th>Davomiylik (MM:SS)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for student_test in student_tests %}
-                <tr>
-                  <td>{{ forloop.counter }}</td>
-                  <td>{{ student_test.student.username }}</td>
-                  <td>{{ student_test.student.full_name|default:"-" }}</td>
-                  <td>{{ student_test.student.group_name|default:"-" }}</td>
-                  <td>{{ student_test.score }}</td>
-                  <td>
-                    <span class="badge {% if student_test.completed %}bg-success{% else %}bg-warning{% endif %}">
-                      {{ student_test.completed|yesno:"Ha,Yo‘q" }}
-                    </span>
-                  </td>
-                  <td>{{ student_test.get_duration_display }}</td>
-                </tr>
-              {% empty %}
-                <tr>
-                  <td colspan="7" class="text-center">Hech qanday talaba testni bajarmagan.</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
         </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">O'rtacha ball</div>
+              <div class="fs-2 fw-semibold">
+                {% if filtered_completed_count %}
+                  {{ average_score|floatformat:1 }}
+                {% else %}
+                  -
+                {% endif %}
+              </div>
+            </div>
+            <div class="assignment-view-stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa fa-chart-line"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        <div class="text-end mt-4">
-          <a href="{% url 'administrator:edit-assign-test' assignment.id %}" class="btn btn-warning me-2">
-            <i class="fa fa-edit me-1"></i>Tahrirlash
-          </a>
-          <a href="{% url 'administrator:assign-test' %}" class="btn btn-outline-success">
-            <i class="fa fa-arrow-left me-1"></i>Ortga
-          </a>
+    <div class="row g-4">
+      <div class="col-xl-8">
+        <div class="block block-rounded mb-0">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Filter va natijalar</h3>
+            <div class="block-options">
+              <span class="fs-sm text-muted">
+                {% if summary.latest_attempt_time %}
+                  So'nggi urinish: {{ summary.latest_attempt_time|date:"Y-m-d H:i" }}
+                {% else %}
+                  Hali urinish yo'q
+                {% endif %}
+              </span>
+            </div>
+          </div>
+          <div class="block-content block-content-full">
+            <div class="assignment-view-note mb-3">
+              Export tugmasi aynan joriy filter natijasini yuklaydi. Qidiruv orqali ma'lum guruh yoki talaba kesimidagi natijalarni alohida ajratib ko'rishingiz mumkin.
+            </div>
+
+            <div class="assignment-view-filter-shell mb-4">
+              <form method="get" class="row g-3 align-items-end">
+                <div class="col-12 col-md-6 col-xl-3">
+                  <label class="form-label" for="group_name">Guruh nomi</label>
+                  <input type="text" id="group_name" name="group_name" class="form-control" value="{{ filters.group_name }}" placeholder="Masalan: 101-guruh">
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                  <label class="form-label" for="username">Username</label>
+                  <input type="text" id="username" name="username" class="form-control" value="{{ filters.username }}" placeholder="Talaba username">
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                  <label class="form-label" for="first_name">Ism</label>
+                  <input type="text" id="first_name" name="first_name" class="form-control" value="{{ filters.first_name }}" placeholder="Talaba ismi">
+                </div>
+                <div class="col-12 col-md-6 col-xl-3">
+                  <label class="form-label" for="full_name">To'liq ism</label>
+                  <input type="text" id="full_name" name="full_name" class="form-control" value="{{ filters.full_name }}" placeholder="F.I.Sh">
+                </div>
+                <div class="col-12 d-flex flex-wrap gap-2 justify-content-end">
+                  <a href="{% url 'administrator:view-assign-test' assignment.id %}" class="btn btn-alt-secondary">
+                    <i class="fa fa-rotate-left me-1"></i> Tozalash
+                  </a>
+                  <a href="{% url 'administrator:export-assign-test' assignment.id %}{% if pagination_query %}?{{ pagination_query }}{% endif %}" class="btn btn-alt-success">
+                    <i class="fa fa-download me-1"></i> Excelga eksport
+                  </a>
+                  <button type="submit" class="btn btn-alt-primary">
+                    <i class="fa fa-filter me-1"></i> Filterlash
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {% if filtered_attempts_count %}
+              <div class="table-responsive">
+                <table class="table table-borderless table-striped table-vcenter align-middle mb-0">
+                  <thead>
+                    <tr class="text-muted fs-sm text-uppercase">
+                      <th>#</th>
+                      <th>Talaba</th>
+                      <th>Guruh</th>
+                      <th>Natija</th>
+                      <th>Davomiylik</th>
+                      <th>Faoliyat vaqti</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for student_test in student_tests %}
+                      <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td class="assignment-student-cell">
+                          <div class="fw-semibold">{{ student_test.student.full_name|default:"-" }}</div>
+                          <div class="fs-sm text-muted">@{{ student_test.student.username }}</div>
+                        </td>
+                        <td>
+                          {% if student_test.student.group_name %}
+                            <span class="assignment-group-pill">
+                              <i class="fa fa-layer-group"></i> {{ student_test.student.group_name }}
+                            </span>
+                          {% else %}
+                            <span class="text-muted">-</span>
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if student_test.completed %}
+                            <div class="assignment-score-pill mb-2">
+                              <i class="fa fa-check"></i> {{ student_test.score|floatformat:1 }}%
+                            </div>
+                            <div class="fs-sm text-muted">Yakunlangan</div>
+                          {% else %}
+                            <div class="assignment-pending-pill mb-2">
+                              <i class="fa fa-hourglass-half"></i> Jarayonda
+                            </div>
+                            <div class="fs-sm text-muted">Natija hali yakunlanmagan</div>
+                          {% endif %}
+                        </td>
+                        <td>
+                          {% if student_test.completed and student_test.duration %}
+                            <div class="fw-semibold">{{ student_test.get_duration_display }}</div>
+                          {% else %}
+                            <div class="text-muted">-</div>
+                          {% endif %}
+                        </td>
+                        <td>
+                          <div class="fw-semibold">{{ student_test.start_time|date:"Y-m-d H:i" }}</div>
+                          <div class="fs-sm text-muted">Boshlangan</div>
+                          {% if student_test.completed and student_test.end_time %}
+                            <div class="fs-sm text-muted mt-1">Tugagan: {{ student_test.end_time|date:"Y-m-d H:i" }}</div>
+                          {% endif %}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+
+              {% if student_tests.paginator.num_pages > 1 %}
+                <nav class="pt-4" aria-label="Student tests pagination">
+                  <ul class="pagination pagination-sm justify-content-center mb-0">
+                    {% if student_tests.has_previous %}
+                      <li class="page-item">
+                        <a class="page-link" href="?page=1{% if pagination_query %}&{{ pagination_query }}{% endif %}">Birinchi</a>
+                      </li>
+                      <li class="page-item">
+                        <a class="page-link" href="?page={{ student_tests.previous_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">Oldingi</a>
+                      </li>
+                    {% endif %}
+
+                    {% for num in student_tests.paginator.page_range %}
+                      {% if num >= student_tests.number|add:-2 and num <= student_tests.number|add:2 %}
+                        <li class="page-item {% if student_tests.number == num %}active{% endif %}">
+                          <a class="page-link" href="?page={{ num }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">{{ num }}</a>
+                        </li>
+                      {% endif %}
+                    {% endfor %}
+
+                    {% if student_tests.has_next %}
+                      <li class="page-item">
+                        <a class="page-link" href="?page={{ student_tests.next_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">Keyingi</a>
+                      </li>
+                      <li class="page-item">
+                        <a class="page-link" href="?page={{ student_tests.paginator.num_pages }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">Oxirgi</a>
+                      </li>
+                    {% endif %}
+                  </ul>
+                </nav>
+              {% endif %}
+            {% else %}
+              <div class="assignment-empty-state">
+                <div class="fs-1 text-muted mb-3">
+                  <i class="fa fa-chart-bar"></i>
+                </div>
+                <h3 class="h4 mb-2">Natijalar topilmadi</h3>
+                <p class="text-muted mb-4">Hozircha bu topshiriq bo'yicha urinish yo'q yoki joriy filter bo'yicha hech narsa topilmadi.</p>
+                <a href="{% url 'administrator:view-assign-test' assignment.id %}" class="btn btn-alt-primary">
+                  <i class="fa fa-rotate-left me-1"></i> Filterlarni tozalash
+                </a>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-4">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Topshiriq haqida</h3>
+          </div>
+          <div class="block-content">
+            <div class="assignment-summary-card mb-3">
+              <div class="assignment-summary-label">Mas'ul o'qituvchi</div>
+              <div class="fw-semibold">{{ assignment.teacher.full_name|default:assignment.teacher.username }}</div>
+              <div class="fs-sm text-muted mt-1">@{{ assignment.teacher.username }}</div>
+            </div>
+
+            <div class="assignment-summary-card mb-3">
+              <div class="assignment-summary-label">Kategoriya va test</div>
+              <div class="fw-semibold">{{ assignment.category.name }}</div>
+              <div class="fs-sm text-muted mt-1">{{ assignment.test.name }}</div>
+            </div>
+
+            <div class="assignment-summary-card mb-3">
+              <div class="assignment-summary-label">Holat</div>
+              <div class="d-flex flex-wrap gap-2">
+                <span class="badge {% if assignment.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                  {{ assignment.is_active|yesno:"Faol,Faol emas" }}
+                </span>
+                <span class="badge {% if assignment.status == 'completed' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                  {{ assignment.get_status_display }}
+                </span>
+              </div>
+            </div>
+
+            <div class="assignment-summary-card mb-3">
+              <div class="assignment-summary-label">Limitlar</div>
+              <div class="fw-semibold">{{ assignment.total_questions }} ta savol</div>
+              <div class="fs-sm text-muted mt-1">{{ assignment.duration }} daqiqa · {{ assignment.attempts }} urinish</div>
+            </div>
+
+            <div class="assignment-summary-card mb-3">
+              <div class="assignment-summary-label">Vaqt oynasi</div>
+              <div class="fw-semibold">{{ assignment.start_time|date:"Y-m-d H:i" }}</div>
+              <div class="fs-sm text-muted mt-1">dan {{ assignment.end_time|date:"Y-m-d H:i" }} gacha</div>
+            </div>
+
+            <div class="assignment-summary-card">
+              <div class="assignment-summary-label">Natija xulosasi</div>
+              <div class="fw-semibold">
+                {% if filtered_completed_count %}
+                  Eng yuqori ball: {{ top_score|floatformat:1 }}%
+                {% else %}
+                  Yakunlangan natija yo'q
+                {% endif %}
+              </div>
+              <div class="fs-sm text-muted mt-1">{{ groups_count }} ta guruhdan urinish mavjud</div>
+              <div class="fs-sm text-muted mt-1">{{ filtered_incomplete_count }} ta yakunlanmagan urinish</div>
+              {% if summary.latest_attempt_time %}
+                <div class="fs-sm text-muted mt-1">So'nggi urinish: {{ summary.latest_attempt_time|date:"Y-m-d H:i" }}</div>
+              {% endif %}
+            </div>
+          </div>
         </div>
       </div>
     </div>

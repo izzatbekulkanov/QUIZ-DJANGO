@@ -2,147 +2,273 @@
 {% load static %}
 
 {% block style %}
-<link rel="stylesheet" href="{% static 'assets/js/plugins/dropzone/min/dropzone.min.css' %}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <style>
-  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
-  .bg-image {
-    background-size: cover;
-    background-position: center;
+  .assignment-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 1rem;
   }
-  .bg-primary-dark-op {
-    background-color: rgba(0, 0, 0, 0.7);
+
+  .assignment-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .assignment-form-shell {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.75rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 0.98));
     padding: 1rem;
   }
-  .btn-primary {
-    background: linear-gradient(90deg, #007bff, #00c4ff);
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
+
+  .assignment-note {
+    border: 1px dashed rgba(15, 23, 42, 0.14);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.9);
+    padding: 0.875rem 1rem;
   }
-  .btn-primary:hover {
-    background: linear-gradient(90deg, #0056b3, #0096cc);
-    border: none;
+
+  .assignment-summary-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.78);
+    padding: 1rem;
   }
-  .btn-outline-secondary {
-    border-color: #e9ecef;
-    color: #fff;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
+
+  .assignment-summary-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+    margin-bottom: 0.25rem;
   }
-  .btn-outline-secondary:hover {
-    background: linear-gradient(90deg, #6c757d, #adb5bd);
-    color: #fff;
-    border: none;
+
+  .assignment-preview-value {
+    word-break: break-word;
   }
-  .form-control, .form-select {
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
-  }
-  .form-control:focus, .form-select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-  }
-  .form-label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #34495e;
-  }
-  .is-invalid ~ .invalid-feedback {
-    display: block;
-    font-size: 0.8rem;
-    color: #dc3545;
+
+  @media (max-width: 767.98px) {
+    .assignment-toolbar {
+      justify-content: center;
+    }
   }
 </style>
 {% endblock style %}
 
 {% block content %}
 <main id="main-container">
-  <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 
-  <!-- Hero -->
-  <div class="bg-image overflow-hidden"
-       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
     <div class="bg-primary-dark-op">
-      <div class="container">
-        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
           <div class="flex-grow-1">
-            <h1 class="fw-semibold text-white mb-0">Topshiriqlar</h1>
-            <h2 class="h4 fw-normal text-white-75 mb-0">Topshiriqlar qo'shish</h2>
+            <h1 class="fw-semibold text-white mb-1">Yangi topshiriq</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">Testni kategoriya, vaqt oynasi va urinish limiti bilan biriktirish</h2>
           </div>
-          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="javascript:history.back()">
-              <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
-            </a>
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <div class="assignment-toolbar justify-content-center justify-content-lg-end">
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:assign-test' %}">
+                <i class="fa fa-arrow-left me-1"></i> Topshiriqlar
+              </a>
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:question' %}">
+                <i class="fa fa-file-alt me-1"></i> Testlar
+              </a>
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:categories' %}">
+                <i class="fa fa-layer-group me-1"></i> Kategoriyalar
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Page Content -->
-  <div class="container py-3">
-    <div class="card shadow-sm">
-      <div class="card-header bg-primary text-white">
-        <h3 class="h5 mb-0">Yangi Test Topshiriq Qo‘shish</h3>
+  <div class="content content-boxed">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Kategoriyalar</div>
+              <div class="fs-2 fw-semibold">{{ categories_count }}</div>
+            </div>
+            <div class="assignment-stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa fa-folder-open"></i>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card-body p-4">
-        <form id="add-assignment-form" method="post">
-          {% csrf_token %}
-          <div class="mb-3">
-            <label for="category_id" class="form-label"><i class="fa fa-folder-open me-2"></i>Kategoriya</label>
-            <select id="category_id" name="category_id" class="form-select" required data-url="{% url 'administrator:category-tests' %}">
-              <option value="" disabled selected>Kategoriya tanlang</option>
-              {% for category in categories %}
-                <option value="{{ category.id }}">{{ category.name }}</option>
-              {% endfor %}
-            </select>
-            <div class="invalid-feedback">Kategoriya tanlash majburiy.</div>
-          </div>
-          <div class="mb-3">
-            <label for="test_id" class="form-label"><i class="fa fa-file-text me-2"></i>Test</label>
-            <select id="test_id" name="test_id" class="form-select" required>
-              <option value="" disabled selected>Avval kategoriya tanlang</option>
-            </select>
-            <div class="invalid-feedback">Test tanlash majburiy.</div>
-          </div>
-          <div class="mb-3">
-            <label for="total_questions" class="form-label"><i class="fa fa-question-circle me-2"></i>Savollar soni</label>
-            <input type="number" id="total_questions" name="total_questions" class="form-control" required min="1">
-            <div class="invalid-feedback">Savollar soni 1 dan kam bo‘lishi mumkin emas.</div>
-          </div>
-          <div class="row g-3 mb-3">
-            <div class="col-md-6">
-              <label for="start_time" class="form-label"><i class="fa fa-clock me-2"></i>Boshlanish vaqti</label>
-              <input type="text" id="start_time" name="start_time" class="form-control" required placeholder="YYYY-MM-DD HH:mm">
-              <div class="invalid-feedback">Boshlanish vaqti kiritilishi shart.</div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Testlar banki</div>
+              <div class="fs-2 fw-semibold">{{ tests_count }}</div>
             </div>
-            <div class="col-md-6">
-              <label for="end_time" class="form-label"><i class="fa fa-clock me-2"></i>Tugash vaqti</label>
-              <input type="text" id="end_time" name="end_time" class="form-control" required placeholder="YYYY-MM-DD HH:mm">
-              <div class="invalid-feedback">Tugash vaqti kiritilishi shart.</div>
+            <div class="assignment-stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa fa-file-alt"></i>
             </div>
           </div>
-          <div class="row g-3 mb-3">
-            <div class="col-md-6">
-              <label for="duration" class="form-label"><i class="fa fa-hourglass me-2"></i>Davomiylik (daqiqa)</label>
-              <input type="number" id="duration" name="duration" class="form-control" required min="1" value="30">
-              <div class="invalid-feedback">Davomiylik 1 daqiqadan kam bo‘lishi mumkin emas.</div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Faol oqimlar</div>
+              <div class="fs-2 fw-semibold">{{ active_assignments_count }}</div>
             </div>
-            <div class="col-md-6">
-              <label for="max_attempts" class="form-label"><i class="fa fa-redo me-2"></i>Maksimal urinishlar soni</label>
-              <input type="number" id="max_attempts" name="max_attempts" class="form-control" required min="1" value="3">
-              <div class="invalid-feedback">Urinishlar soni 1 dan kam bo‘lishi mumkin emas.</div>
+            <div class="assignment-stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa fa-bolt"></i>
             </div>
           </div>
-          <div class="text-end">
-            <button type="button" class="btn btn-primary" id="submit-assignment">Qo‘shish</button>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">So'nggi yaratish</div>
+              <div class="fs-6 fw-semibold">
+                {% if latest_assignment_created %}
+                  {{ latest_assignment_created|date:"Y-m-d H:i" }}
+                {% else %}
+                  Hali mavjud emas
+                {% endif %}
+              </div>
+            </div>
+            <div class="assignment-stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa fa-clock"></i>
+            </div>
           </div>
-        </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-xl-8">
+        <div class="block block-rounded mb-0">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Topshiriq yaratish</h3>
+          </div>
+          <div class="block-content block-content-full">
+            <div class="assignment-note mb-3">
+              Kategoriya tanlang, keyin shu kategoriya ichidagi testni biriktiring. Savollar soni tanlangan testdagi mavjud savollar sonidan oshmaydi.
+            </div>
+
+            <div class="assignment-form-shell">
+              <form id="add-assignment-form" method="post" data-redirect-url="{% url 'administrator:assign-test' %}">
+                {% csrf_token %}
+                <div class="row g-3">
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="category_id">Kategoriya</label>
+                    <select
+                      id="category_id"
+                      name="category_id"
+                      class="form-select"
+                      required
+                      data-url="{% url 'administrator:category-tests' %}"
+                    >
+                      <option value="">Kategoriya tanlang</option>
+                      {% for category in categories %}
+                        <option value="{{ category.id }}">{{ category.name }}</option>
+                      {% endfor %}
+                    </select>
+                    <div class="invalid-feedback">Kategoriya tanlash majburiy.</div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="test_id">Test</label>
+                    <select
+                      id="test_id"
+                      name="test_id"
+                      class="form-select"
+                      required
+                      data-questions-url="{% url 'administrator:test-questions-count' %}"
+                    >
+                      <option value="">Avval kategoriya tanlang</option>
+                    </select>
+                    <div id="test-help-text" class="form-text">Test tanlangandan keyin mavjud savollar soni ko'rsatiladi.</div>
+                    <div class="invalid-feedback">Test tanlash majburiy.</div>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <label class="form-label" for="total_questions">Savollar soni</label>
+                    <input type="number" id="total_questions" name="total_questions" class="form-control" min="1" required>
+                    <div id="questions-help-text" class="form-text">Savollar limiti testdagi mavjud hajmga mos ravishda nazorat qilinadi.</div>
+                    <div class="invalid-feedback">Savollar soni 1 dan kam bo'lmasligi kerak.</div>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <label class="form-label" for="duration">Davomiylik (daqiqa)</label>
+                    <input type="number" id="duration" name="duration" class="form-control" min="1" value="30" required>
+                    <div class="invalid-feedback">Davomiylik 1 daqiqadan kam bo'lmasligi kerak.</div>
+                  </div>
+                  <div class="col-12 col-md-4">
+                    <label class="form-label" for="max_attempts">Maksimal urinishlar</label>
+                    <input type="number" id="max_attempts" name="max_attempts" class="form-control" min="1" value="3" required>
+                    <div class="invalid-feedback">Urinishlar soni 1 dan kam bo'lmasligi kerak.</div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="start_time">Boshlanish vaqti</label>
+                    <input type="text" id="start_time" name="start_time" class="form-control" placeholder="YYYY-MM-DD HH:mm" required>
+                    <div class="invalid-feedback">Boshlanish vaqtini kiriting.</div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label" for="end_time">Tugash vaqti</label>
+                    <input type="text" id="end_time" name="end_time" class="form-control" placeholder="YYYY-MM-DD HH:mm" required>
+                    <div class="invalid-feedback">Tugash vaqtini kiriting.</div>
+                  </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 justify-content-end mt-4">
+                  <a href="{% url 'administrator:assign-test' %}" class="btn btn-alt-secondary">
+                    <i class="fa fa-times me-1"></i> Bekor qilish
+                  </a>
+                  <button type="button" class="btn btn-alt-primary" id="submit-assignment">
+                    <i class="fa fa-save me-1"></i> Saqlash
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-4">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Live preview</h3>
+          </div>
+          <div class="block-content">
+            <div class="assignment-summary-card mb-3">
+              <div class="assignment-summary-label">Mas'ul foydalanuvchi</div>
+              <div class="fw-semibold assignment-preview-value">{{ request.user.full_name|default:request.user.username }}</div>
+            </div>
+            <div class="assignment-summary-card mb-3">
+              <div class="assignment-summary-label">Kategoriya</div>
+              <div class="fw-semibold assignment-preview-value" id="preview-category">Tanlanmagan</div>
+            </div>
+            <div class="assignment-summary-card mb-3">
+              <div class="assignment-summary-label">Test</div>
+              <div class="fw-semibold assignment-preview-value" id="preview-test">Tanlanmagan</div>
+            </div>
+            <div class="assignment-summary-card mb-3">
+              <div class="assignment-summary-label">Savollar va urinishlar</div>
+              <div class="fw-semibold assignment-preview-value" id="preview-questions">0 ta savol · 3 urinish</div>
+            </div>
+            <div class="assignment-summary-card">
+              <div class="assignment-summary-label">Vaqt oynasi</div>
+              <div class="fw-semibold assignment-preview-value" id="preview-window">Boshlanish va tugash vaqti kiritilmagan</div>
+              <div class="fs-sm text-muted mt-2">Saqlangach topshiriq avtomatik `Faol / Pending` holatda yaratiladi.</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -150,281 +276,250 @@
 {% endblock content %}
 
 {% block script %}
-<script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('add-assignment-form');
     const categorySelect = document.getElementById('category_id');
     const testSelect = document.getElementById('test_id');
     const totalQuestionsInput = document.getElementById('total_questions');
-    const startTimeInput = document.getElementById('start_time');
-    const endTimeInput = document.getElementById('end_time');
     const durationInput = document.getElementById('duration');
     const maxAttemptsInput = document.getElementById('max_attempts');
-    const form = document.getElementById('add-assignment-form');
+    const startTimeInput = document.getElementById('start_time');
+    const endTimeInput = document.getElementById('end_time');
+    const testHelpText = document.getElementById('test-help-text');
+    const questionsHelpText = document.getElementById('questions-help-text');
+    const previewCategory = document.getElementById('preview-category');
+    const previewTest = document.getElementById('preview-test');
+    const previewQuestions = document.getElementById('preview-questions');
+    const previewWindow = document.getElementById('preview-window');
     const submitButton = document.getElementById('submit-assignment');
 
     let maxQuestions = 0;
 
-    // Initialize Flatpickr for datetime inputs
-    flatpickr([startTimeInput, endTimeInput], {
+    flatpickr('#start_time, #end_time', {
       enableTime: true,
-      dateFormat: "Y-m-d H:i",
+      dateFormat: 'Y-m-d H:i',
       time_24hr: true,
       minuteIncrement: 1,
-      placeholder: "YYYY-MM-DD HH:mm"
+      allowInput: true
     });
 
-    // Fetch tests based on category selection
-    categorySelect.addEventListener('change', async () => {
-      const categoryId = categorySelect.value;
-      const url = categorySelect.dataset.url;
-      testSelect.innerHTML = '<option value="" disabled selected>Test yuklanmoqda...</option>';
-
-      if (categoryId) {
-        try {
-          const response = await fetch(`${url}?category_id=${categoryId}`);
-          const data = await response.json();
-          testSelect.innerHTML = '<option value="" disabled selected>Test tanlang</option>';
-          if (data.success) {
-            data.tests.forEach(test => {
-              const option = document.createElement('option');
-              option.value = test.id;
-              option.textContent = test.name;
-              testSelect.appendChild(option);
-            });
-            Swal.fire({
-              title: 'Muvaffaqiyatli',
-              text: 'Kategoriya bo‘yicha testlar yuklandi!',
-              icon: 'success',
-              confirmButtonText: 'OK'
-            });
-          } else {
-            Swal.fire({
-              title: 'Xatolik',
-              text: data.message || 'Testlarni yuklashda muammo yuz berdi.',
-              icon: 'error',
-              confirmButtonText: 'OK'
-            });
-          }
-        } catch (error) {
-          Swal.fire({
-            title: 'Xatolik',
-            text: 'Server bilan bog‘lanishda muammo.',
-            icon: 'error',
-            confirmButtonText: 'OK'
-          });
-          console.error('Error:', error);
-        }
-      } else {
-        testSelect.innerHTML = '<option value="" disabled selected>Avval kategoriya tanlang</option>';
-        Swal.fire({
-          title: 'Eslatma',
-          text: 'Iltimos, kategoriya tanlang.',
-          icon: 'info',
-          confirmButtonText: 'OK'
-        });
+    function parseDate(value) {
+      if (!value) {
+        return null;
       }
-    });
+      const parsed = new Date(value.replace(' ', 'T'));
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
 
-    // Fetch question count based on test selection
-    testSelect.addEventListener('change', async () => {
-      const testId = testSelect.value;
-      if (testId) {
-        try {
-          const response = await fetch(`{% url 'administrator:test-questions-count' %}?test_id=${testId}`);
-          const data = await response.json();
-          if (data.success) {
-            maxQuestions = data.total_questions;
-            Swal.fire({
-              title: 'Muvaffaqiyatli',
-              text: `Ushbu test uchun jami ${maxQuestions} ta savol mavjud.`,
-              icon: 'success',
-              confirmButtonText: 'OK'
-            });
-          } else {
-            Swal.fire({
-              title: 'Xatolik',
-              text: data.message || 'Savollar sonini olishda muammo yuz berdi.',
-              icon: 'error',
-              confirmButtonText: 'OK'
-            });
-          }
-        } catch (error) {
-          Swal.fire({
-            title: 'Xatolik',
-            text: 'Server bilan bog‘lanishda muammo.',
-            icon: 'error',
-            confirmButtonText: 'OK'
-          });
-          console.error('Error:', error);
-        }
+    function updatePreview() {
+      const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
+      const selectedTest = testSelect.options[testSelect.selectedIndex];
+      const totalQuestions = totalQuestionsInput.value || 0;
+      const maxAttempts = maxAttemptsInput.value || 0;
+
+      previewCategory.textContent = selectedCategory && selectedCategory.value ? selectedCategory.textContent : 'Tanlanmagan';
+      previewTest.textContent = selectedTest && selectedTest.value ? selectedTest.textContent : 'Tanlanmagan';
+      previewQuestions.textContent = `${totalQuestions} ta savol · ${maxAttempts} urinish`;
+
+      if (startTimeInput.value && endTimeInput.value) {
+        previewWindow.textContent = `${startTimeInput.value} dan ${endTimeInput.value} gacha`;
       } else {
+        previewWindow.textContent = 'Boshlanish va tugash vaqti kiritilmagan';
+      }
+    }
+
+    async function fetchTests(categoryId) {
+      testSelect.innerHTML = '<option value="">Test yuklanmoqda...</option>';
+      totalQuestionsInput.value = '';
+      maxQuestions = 0;
+      updatePreview();
+
+      try {
+        const response = await fetch(`${categorySelect.dataset.url}?category_id=${categoryId}`);
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Testlarni yuklab bo'lmadi.");
+        }
+
+        testSelect.innerHTML = '<option value="">Test tanlang</option>';
+        data.tests.forEach((test) => {
+          const option = document.createElement('option');
+          option.value = test.id;
+          option.textContent = test.name;
+          testSelect.appendChild(option);
+        });
+
+        testHelpText.textContent = `${data.tests.length} ta test topildi.`;
+        questionsHelpText.textContent = "Savollar limiti testdagi mavjud hajmga mos ravishda nazorat qilinadi.";
+        updatePreview();
+      } catch (error) {
+        testSelect.innerHTML = '<option value="">Test topilmadi</option>';
+        testHelpText.textContent = error.message;
+      }
+    }
+
+    async function fetchQuestionCount(testId) {
+      try {
+        const response = await fetch(`${testSelect.dataset.questionsUrl}?test_id=${testId}`);
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Savollar sonini olib bo'lmadi.");
+        }
+
+        maxQuestions = data.total_questions;
+        questionsHelpText.textContent = `Ushbu test uchun jami ${maxQuestions} ta savol mavjud.`;
+        if (!totalQuestionsInput.value || Number(totalQuestionsInput.value) > maxQuestions) {
+          totalQuestionsInput.value = maxQuestions;
+        }
+        updatePreview();
+      } catch (error) {
         maxQuestions = 0;
-        Swal.fire({
-          title: 'Eslatma',
-          text: 'Iltimos, test tanlang.',
-          icon: 'info',
-          confirmButtonText: 'OK'
-        });
+        questionsHelpText.textContent = error.message;
+        updatePreview();
       }
+    }
+
+    categorySelect.addEventListener('change', async () => {
+      if (!categorySelect.value) {
+        testSelect.innerHTML = '<option value="">Avval kategoriya tanlang</option>';
+        updatePreview();
+        return;
+      }
+      await fetchTests(categorySelect.value);
     });
 
-    // Validate total questions input
-    totalQuestionsInput.addEventListener('input', () => {
-      const enteredValue = parseInt(totalQuestionsInput.value, 10);
-      if (enteredValue > maxQuestions && maxQuestions > 0) {
-        Swal.fire({
-          title: 'Xatolik',
-          text: `Kiritilgan savollar soni ${maxQuestions} dan oshmasligi kerak.`,
-          icon: 'error',
-          confirmButtonText: 'OK'
-        });
-        totalQuestionsInput.value = maxQuestions;
+    testSelect.addEventListener('change', async () => {
+      if (!testSelect.value) {
+        maxQuestions = 0;
+        updatePreview();
+        return;
       }
+      await fetchQuestionCount(testSelect.value);
     });
 
-    // Validate max attempts input
-    maxAttemptsInput.addEventListener('input', () => {
-      const enteredValue = parseInt(maxAttemptsInput.value, 10);
-      if (enteredValue < 1) {
-        Swal.fire({
-          title: 'Xatolik',
-          text: 'Maksimal urinishlar soni 1 dan kam bo‘lishi mumkin emas.',
-          icon: 'error',
-          confirmButtonText: 'OK'
-        });
-        maxAttemptsInput.value = 1;
-      }
+    [totalQuestionsInput, durationInput, maxAttemptsInput, startTimeInput, endTimeInput].forEach((input) => {
+      input.addEventListener('input', () => {
+        if ((input === durationInput || input === maxAttemptsInput) && Number(input.value) < 1) {
+          input.value = 1;
+        }
+        if (input === totalQuestionsInput && maxQuestions > 0 && Number(totalQuestionsInput.value) > maxQuestions) {
+          totalQuestionsInput.value = maxQuestions;
+          questionsHelpText.textContent = `Savollar soni avtomatik ${maxQuestions} ga tenglandi.`;
+        }
+        updatePreview();
+      });
     });
 
-    // Validate duration input
-    durationInput.addEventListener('input', () => {
-      const enteredValue = parseInt(durationInput.value, 10);
-      if (enteredValue < 1) {
-        Swal.fire({
-          title: 'Xatolik',
-          text: 'Davomiylik 1 daqiqadan kam bo‘lishi mumkin emas.',
-          icon: 'error',
-          confirmButtonText: 'OK'
-        });
-        durationInput.value = 1;
-      }
-    });
-
-    // Form submission with validation
     submitButton.addEventListener('click', async () => {
       let isValid = true;
 
-      // Inputlarni validatsiya qilish
-      form.querySelectorAll('input[required], select[required]').forEach(input => {
-        if (!input.value) {
-          input.classList.add('is-invalid');
+      form.querySelectorAll('input[required], select[required]').forEach((field) => {
+        if (!field.value) {
+          field.classList.add('is-invalid');
           isValid = false;
         } else {
-          input.classList.remove('is-invalid');
+          field.classList.remove('is-invalid');
         }
       });
 
-      const startTime = new Date(startTimeInput.value);
-      const endTime = new Date(endTimeInput.value);
-      const now = new Date();
+      const startDate = parseDate(startTimeInput.value);
+      const endDate = parseDate(endTimeInput.value);
 
-      if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+      if (!startDate || !endDate) {
         startTimeInput.classList.add('is-invalid');
         endTimeInput.classList.add('is-invalid');
-        Swal.fire({
+        await Swal.fire({
           title: 'Xatolik',
-          text: 'Boshlanish yoki tugash vaqti noto‘g‘ri formatda kiritilgan.',
+          text: "Boshlanish yoki tugash vaqti noto'g'ri formatda kiritilgan.",
           icon: 'error',
           confirmButtonText: 'OK'
         });
         return;
       }
 
-      if (startTime >= endTime) {
+      if (startDate >= endDate) {
         startTimeInput.classList.add('is-invalid');
         endTimeInput.classList.add('is-invalid');
-        Swal.fire({
+        await Swal.fire({
           title: 'Xatolik',
-          text: 'Boshlanish vaqti tugash vaqtidan keyin bo‘lishi mumkin emas.',
+          text: "Boshlanish vaqti tugash vaqtidan oldin bo'lishi kerak.",
           icon: 'error',
           confirmButtonText: 'OK'
         });
         return;
       }
 
-      if (endTime <= now) {
+      if (endDate <= new Date()) {
         endTimeInput.classList.add('is-invalid');
-        Swal.fire({
+        await Swal.fire({
           title: 'Xatolik',
-          text: 'Tugash vaqti hozirgi vaqtdan oldin bo‘lishi mumkin emas.',
+          text: "Tugash vaqti hozirgi vaqtdan oldin bo'lishi mumkin emas.",
           icon: 'error',
           confirmButtonText: 'OK'
         });
         return;
       }
 
-      if (isValid) {
-        Swal.fire({
-          title: 'Tasdiqlaysizmi?',
-          text: 'Yangi test topshiriqni qo‘shmoqchimisiz?',
-          icon: 'question',
-          showCancelButton: true,
-          confirmButtonColor: '#007bff',
-          cancelButtonColor: '#dc3545',
-          confirmButtonText: 'Ha, qo‘shish!',
-          cancelButtonText: 'Bekor qilish'
-        }).then(async result => {
-          if (result.isConfirmed) {
-            try {
-              const formData = new FormData(form);
-              const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                  'X-Requested-With': 'XMLHttpRequest'
-                }
-              });
-              const data = await response.json();
-              if (data.success) {
-                Swal.fire({
-                  title: 'Muvaffaqiyatli!',
-                  text: data.message,
-                  icon: 'success',
-                  confirmButtonText: 'OK'
-                }).then(() => {
-                  window.location.href = '{% url 'administrator:assign-test' %}';
-                });
-              } else {
-                Swal.fire({
-                  title: 'Xatolik!',
-                  text: data.message || 'Topshiriqni qo‘shishda xato yuz berdi.',
-                  icon: 'error',
-                  confirmButtonText: 'OK'
-                });
-              }
-            } catch (error) {
-              Swal.fire({
-                title: 'Xatolik!',
-                text: 'Server bilan bog‘lanishda muammo.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-              });
-              console.error('Error:', error);
-            }
+      if (!isValid) {
+        await Swal.fire({
+          title: 'Xatolik',
+          text: "Iltimos, barcha majburiy maydonlarni to'ldiring.",
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        });
+        return;
+      }
+
+      const confirmation = await Swal.fire({
+        title: "Topshiriqni saqlaymizmi?",
+        text: "Yangi test biriktirishi yaratilib, faol holatda saqlanadi.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ha, saqlash',
+        cancelButtonText: 'Bekor qilish'
+      });
+
+      if (!confirmation.isConfirmed) {
+        return;
+      }
+
+      try {
+        const response = await fetch(form.action || window.location.href, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
           }
         });
-      } else {
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Topshiriqni saqlab bo'lmadi.");
+        }
+
+        await Swal.fire({
+          title: 'Muvaffaqiyatli',
+          text: data.message,
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
+        window.location.href = data.redirect_url || form.dataset.redirectUrl;
+      } catch (error) {
         Swal.fire({
-          title: 'Xatolik!',
-          text: 'Iltimos, barcha majburiy maydonlarni to‘ldiring.',
-          icon: 'warning',
+          title: 'Xatolik',
+          text: error.message || "Server bilan bog'lanishda muammo yuz berdi.",
+          icon: 'error',
           confirmButtonText: 'OK'
         });
       }
     });
+
+    updatePreview();
   });
 </script>
 {% endblock script %}

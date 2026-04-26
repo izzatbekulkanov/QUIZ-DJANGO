@@ -70,7 +70,7 @@
             <span class="nav-main-link-name">Natijalar</span>
           </a>
         </li>
-        {% if request.user.is_superuser %}
+        {% if request.user.is_superuser or perms.auth.view_group or perms.auth.change_group %}
           <li class="nav-main-item ">
             <a class="nav-main-link {% if request.resolver_match.url_name == 'logs' %}active{% endif %}"
                href="{% url 'administrator:logs' %}">
@@ -79,7 +79,7 @@
             </a>
           </li>
           <li class="nav-main-item ">
-            <a class="nav-main-link {% if request.resolver_match.url_name == 'roles' %}active{% endif %}"
+            <a class="nav-main-link {% if request.resolver_match.url_name == 'roles' or request.resolver_match.url_name == 'add-role-group' or request.resolver_match.url_name == 'role-group-detail' %}active{% endif %}"
                href="{% url 'administrator:roles' %}">
               <i class="nav-main-link-icon fas fa-user-shield"></i>
               <span class="nav-main-link-name">Rollar</span>

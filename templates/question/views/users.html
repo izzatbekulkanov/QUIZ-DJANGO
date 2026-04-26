@@ -2,312 +2,564 @@
 {% load static %}
 
 {% block style %}
+<link rel="stylesheet" href="{% static 'assets/js/plugins/select2/css/select2.min.css' %}">
 <style>
-  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
-  .bg-image {
-    background-size: cover;
-    background-position: center;
+  .users-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 1rem;
   }
-  .bg-primary-dark-op {
-    background-color: rgba(0, 0, 0, 0.7);
+
+  .users-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .users-filter-shell {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.75rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.9), rgba(255, 255, 255, 0.98));
     padding: 1rem;
   }
-  .btn-primary, .btn-success, .btn-warning, .btn-info {
-    background: linear-gradient(90deg, #007bff, #00c4ff);
-    border: none;
+
+  .users-note {
+    border: 1px dashed rgba(15, 23, 42, 0.14);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.9);
+    padding: 0.875rem 1rem;
   }
-  .btn-primary:hover, .btn-success:hover, .btn-warning:hover, .btn-info:hover {
-    background: linear-gradient(90deg, #0056b3, #0096cc);
+
+  .users-avatar {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 999px;
   }
-  .btn-danger {
-    background: linear-gradient(90deg, #dc3545, #ff6b6b);
-    border: none;
+
+  .users-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
   }
-  .btn-danger:hover {
-    background: linear-gradient(90deg, #b02a37, #cc5252);
+
+  .users-role-badge.student {
+    color: #166534;
+    background: rgba(34, 197, 94, 0.12);
   }
-  .card-icon {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    cursor: pointer;
-    color: #6c757d;
-    font-size: 0.9rem;
+
+  .users-role-badge.teacher {
+    color: #1d4ed8;
+    background: rgba(59, 130, 246, 0.12);
   }
-  .card-icon:hover {
-    color: #007bff;
+
+  .users-role-badge.other {
+    color: #475569;
+    background: rgba(100, 116, 139, 0.12);
+  }
+
+  .users-group-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 220px;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(99, 102, 241, 0.1);
+    color: #4338ca;
+    font-size: 0.75rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .searchable-select + .select2-container {
+    width: 100% !important;
+  }
+
+  .searchable-select + .select2-container .select2-selection--single {
+    min-height: 42px;
+    border-radius: 0.375rem;
+    border-color: #dfe3ea;
+    display: flex;
+    align-items: center;
+  }
+
+  .searchable-select + .select2-container .select2-selection__rendered {
+    line-height: 40px;
+    padding-left: 0.875rem;
+    padding-right: 2rem;
+  }
+
+  .searchable-select + .select2-container .select2-selection__arrow {
+    height: 40px;
+    right: 0.5rem;
+  }
+
+  .select2-dropdown.user-select2-dropdown {
+    border-color: #dfe3ea;
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  .excel-preview-summary {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.8);
+    padding: 0.875rem 1rem;
+  }
+
+  .excel-preview-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .group-import-panel {
+    border: 1px solid rgba(59, 130, 246, 0.16);
+    border-radius: 0.75rem;
+    background: rgba(239, 246, 255, 0.7);
+    padding: 1rem;
+  }
+
+  .progress-status-note {
+    min-height: 48px;
   }
 </style>
 {% endblock style %}
 
 {% block content %}
 <main id="main-container">
-  <!-- CSRF Token -->
   <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
+  <input type="file" id="excel-import-input" class="d-none" accept=".xlsx,.xlsm">
 
-  <!-- Hero -->
-  <div class="bg-image overflow-hidden"
-       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
     <div class="bg-primary-dark-op">
-      <div class="container">
-        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
           <div class="flex-grow-1">
-            <h1 class="fw-semibold text-white mb-0">Foydalanuvchilar</h1>
+            <h1 class="fw-semibold text-white mb-1">Foydalanuvchilar</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">Administrator panelidagi barcha foydalanuvchilarni boshqarish, filtrlash va import qilish</h2>
           </div>
-          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="{% url 'administrator:users' %}">
-              <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
-            </a>
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <div class="users-toolbar justify-content-center justify-content-lg-end">
+              <div class="dropdown">
+                <button class="btn btn-sm btn-alt-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fa fa-cloud-download-alt me-1"></i> HEMIS yuklash
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <button type="button" class="dropdown-item" onclick="startImport('staff', 'Hodimlar')">
+                      <i class="fa fa-user-tie text-success me-2"></i> Hodimlar
+                    </button>
+                  </li>
+                  <li>
+                    <button type="button" class="dropdown-item" onclick="startImport('students', 'Talabalar')">
+                      <i class="fa fa-user-graduate text-primary me-2"></i> Talabalar
+                    </button>
+                  </li>
+                  <li>
+                    <button type="button" class="dropdown-item" onclick="showGroupImportPanel()">
+                      <i class="fa fa-users text-info me-2"></i> Guruh bo'yicha
+                    </button>
+                  </li>
+                </ul>
+              </div>
+              <button type="button" class="btn btn-sm btn-warning" onclick="grantAllAuth()">
+                <i class="fa fa-check-square me-1"></i> Barchasiga ruxsat
+              </button>
+              <button type="button" class="btn btn-sm btn-alt-secondary" onclick="revokeAllAuth()">
+                <i class="fa fa-times-circle me-1"></i> Ruxsatni olib tashlash
+              </button>
+              <a href="{% url 'administrator:add-user' %}" class="btn btn-sm btn-alt-primary">
+                <i class="fa fa-plus me-1"></i> Yangi
+              </a>
+              <button type="button" id="excel-import-button" class="btn btn-sm btn-success">
+                <i class="fa fa-file-excel me-1"></i> Excel import
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Page Content -->
-  <div class="container py-3">
-    <!-- Quick Overview -->
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3">
-      <div class="col">
-        <div class="card text-center position-relative shadow-sm">
-          <div class="card-body">
-            <i class="fa fa-eye card-icon" title="Ma'lumotlarni ko‘rish"></i>
-            <h4 class="card-title fw-bold text-dark">{{ total_users_count }}</h4>
-            <p class="text-muted mb-0">Jami foydalanuvchilar</p>
+  <div class="content content-boxed">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Jami foydalanuvchilar</div>
+              <div class="fs-2 fw-semibold">{{ total_users_count }}</div>
+            </div>
+            <div class="users-stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa fa-users"></i>
+            </div>
           </div>
         </div>
       </div>
-      <div class="col">
-        <div class="card text-center position-relative shadow-sm">
-          <div class="card-body">
-            <i class="fa fa-eye card-icon" title="Ma'lumotlarni ko‘rish"></i>
-            <h4 class="card-title fw-bold text-dark">{{ today_users_count }}</h4>
-            <p class="text-muted mb-0">Bugun qo'shilgan</p>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Talabalar</div>
+              <div class="fs-2 fw-semibold">{{ student_users_count }}</div>
+            </div>
+            <div class="users-stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa fa-user-graduate"></i>
+            </div>
           </div>
         </div>
       </div>
-      <div class="col">
-        <div class="card text-center position-relative shadow-sm">
-          <div class="card-body">
-            <i class="fa fa-eye card-icon" title="Ma'lumotlarni ko‘rish"></i>
-            <h4 class="card-title fw-bold text-dark">{{ yesterday_users_count }}</h4>
-            <p class="text-muted mb-0">Kecha qo'shilgan</p>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Hodimlar</div>
+              <div class="fs-2 fw-semibold">{{ teacher_users_count }}</div>
+            </div>
+            <div class="users-stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa fa-user-tie"></i>
+            </div>
           </div>
         </div>
       </div>
-      <div class="col">
-        <div class="card text-center position-relative shadow-sm">
-          <div class="card-body">
-            <i class="fa fa-eye card-icon" title="Ma'lumotlarni ko‘rish"></i>
-            <h4 class="card-title fw-bold text-dark">{{ month_users_count }}</h4>
-            <p class="text-muted mb-0">Ushbu oyda qo'shilgan</p>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Login ruxsati</div>
+              <div class="fs-2 fw-semibold">{{ auth_enabled_count }}</div>
+            </div>
+            <div class="users-stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa fa-shield-alt"></i>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- All Users -->
-    <div class="card shadow-sm mt-4">
-      <div class="card-header bg-primary text-white">
-        <h3 class="h5 mb-0">Foydalanuvchilar</h3>
-      </div>
-      <div class="card-body">
-        <div class="d-flex flex-wrap gap-2 mb-3">
-          <div class="dropdown">
-            <button class="btn btn-sm btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-label="Yuklash opsiyalari">
-              <i class="fa fa-upload me-1"></i> Yuklash
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="javascript:void(0)" onclick="startImport('staff', 'Hodimlar')">
-                <i class="fa fa-user-tie text-success me-1"></i> Hodimlar</a></li>
-              <li><a class="dropdown-item" href="javascript:void(0)" onclick="startImport('students', 'Talabalar')">
-                <i class="fa fa-user-graduate text-primary me-1"></i> Talabalar</a></li>
-              <li><a class="dropdown-item" href="javascript:void(0)" onclick="showGroupImport()">
-                <i class="fa fa-users text-info me-1"></i> Guruh bo‘yicha yuklash</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <button type="button" class="dropdown-item" onclick="openExcelImport()">
-                  <i class="fa fa-file-excel text-success me-1"></i> Excel orqali yuklash
-                </button>
-              </li>
-            </ul>
-          </div>
-          <button class="btn btn-sm btn-warning" onclick="grantAllAuth()" aria-label="Barcha foydalanuvchilarga ruxsat berish">
-            <i class="fa fa-check-square me-1"></i> Barchasiga ruxsat berish
-          </button>
-          <button class="btn btn-sm btn-secondary" onclick="revokeAllAuth()" aria-label="Barcha foydalanuvchilardan ruxsatni olib tashlash">
-            <i class="fa fa-times-square me-1"></i> Barchasidan olib tashlash
-          </button>
-          <a class="btn btn-sm btn-info" href="{% url 'administrator:add-user' %}" aria-label="Yangi foydalanuvchi qo'shish">
-            <i class="fa fa-plus me-1"></i> Yangi
-          </a>
+    <div class="block block-rounded mb-4">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Filter va import boshqaruvi</h3>
+        <div class="block-options">
+          <span class="fs-sm text-muted">Bugun: {{ today_users_count }} | Kecha: {{ yesterday_users_count }} | Ushbu oy: {{ month_users_count }}</span>
         </div>
-        <input type="file" id="excel-import-input" class="d-none" accept=".xlsx,.xlsm" onchange="handleExcelImport(event)">
-        <div class="text-muted small mb-3">
+      </div>
+      <div class="block-content block-content-full">
+        <div class="users-note mb-3">
           Excel import ustunlari: <code>username</code>, <code>O'quvchining F.I.SH.</code>, <code>akademik guruh</code>.
           Import qilingan foydalanuvchilarning paroli <code>namdpi451</code> bo'ladi.
         </div>
 
-        <!-- Guruh tanlash oynasi -->
-        <div id="group-import-container" class="mt-3" style="display: none;">
-          <div class="input-group input-group-sm" style="max-width: 300px;">
-            <select id="group-select" class="form-select form-select-sm" aria-label="Guruh tanlash">
-              <option value="">Guruhni tanlang</option>
-              <!-- Groups will be populated dynamically via JavaScript -->
-            </select>
-            <button class="btn btn-primary btn-sm" onclick="startGroupImport()" aria-label="Guruh bo‘yicha yuklash">
-              <i class="fa fa-upload me-1"></i> Yuklash
-            </button>
-          </div>
-          <div id="error-alert" class="alert alert-danger d-none mt-2" role="alert"></div>
-        </div>
-
-        <form method="GET" class="mb-3">
-          <div class="d-flex flex-wrap gap-2">
-            <div class="input-group input-group-sm flex-grow-1" style="max-width: 300px;">
-              <input type="text" name="search" id="search" value="{{ search_query }}" class="form-control"
-                     placeholder="Foydalanuvchi qidirish..." aria-label="Foydalanuvchi qidirish">
-              <button class="btn btn-outline-secondary" type="submit" aria-label="Qidirish">
-                <i class="fa fa-search"></i>
+        <div id="group-import-panel" class="group-import-panel d-none mb-3">
+          <div class="row g-3 align-items-end">
+            <div class="col-12 col-lg-8">
+              <label class="form-label" for="group-import-select">HEMIS guruhi</label>
+              <select id="group-import-select" class="form-select searchable-select" data-placeholder="Guruhni yozib qidiring">
+                <option value="">Guruhni tanlang</option>
+              </select>
+            </div>
+            <div class="col-12 col-lg-4">
+              <button type="button" class="btn btn-primary w-100" onclick="startGroupImport()">
+                <i class="fa fa-upload me-1"></i> Guruhni yuklash
               </button>
             </div>
-            <select class="form-select form-select-sm" name="filter_type" id="filter_type" onchange="this.form.submit()" aria-label="Filtr turi" style="max-width: 150px;">
-              <option value="" {% if not filter_type %}selected{% endif %}>Hammasi</option>
-              <option value="student" {% if filter_type == 'student' %}selected{% endif %}>Talaba</option>
-              <option value="teacher" {% if filter_type == 'teacher' %}selected{% endif %}>Hodim</option>
-              <option value="other" {% if filter_type == 'other' %}selected{% endif %}>Boshqa</option>
-              <option value="group" {% if filter_type == 'group' %}selected{% endif %}>Guruh bo'yicha</option>
-            </select>
-            {% if filter_type == 'group' %}
-              <select class="form-select form-select-sm" name="group_id" id="group_id" onchange="this.form.submit()" aria-label="Guruh tanlash" style="max-width: 150px;">
-                <option value="" {% if not group_id %}selected{% endif %}>Barcha guruhlar</option>
+          </div>
+          <div id="group-import-error" class="text-danger fs-sm mt-2 d-none"></div>
+        </div>
+
+        <form id="user-filter-form" method="get" class="users-filter-shell">
+          <div class="row g-3 align-items-end">
+            <div class="col-12 col-xl-5">
+              <label class="form-label" for="search">Qidiruv</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fa fa-search"></i></span>
+                <input type="text" name="search" id="search" value="{{ search_query }}" class="form-control" placeholder="Ism, username, telefon yoki guruh nomi">
+              </div>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+              <label class="form-label" for="filter-type">Tur bo'yicha</label>
+              <select class="form-select" name="filter_type" id="filter-type">
+                <option value="" {% if not filter_type %}selected{% endif %}>Hammasi</option>
+                <option value="student" {% if filter_type == 'student' %}selected{% endif %}>Talaba</option>
+                <option value="teacher" {% if filter_type == 'teacher' %}selected{% endif %}>Hodim</option>
+                <option value="other" {% if filter_type == 'other' %}selected{% endif %}>Boshqa</option>
+                <option value="group" {% if filter_type == 'group' %}selected{% endif %}>Guruh bo'yicha</option>
+              </select>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3 {% if filter_type != 'group' %}d-none{% endif %}" id="group-filter-field">
+              <label class="form-label" for="group-filter-select">Guruh</label>
+              <select class="form-select searchable-select" name="group_name" id="group-filter-select" data-placeholder="Guruhni yozib qidiring" {% if filter_type != 'group' %}disabled{% endif %}>
+                <option value="">Barcha guruhlar</option>
                 {% for group in groups %}
-                  <option value="{{ group.id }}"
-                          {% if group_id == group.id %}selected{% endif %}>{{ group.group_name }}</option>
+                  <option value="{{ group }}" {% if group_name == group %}selected{% endif %}>{{ group }}</option>
                 {% endfor %}
               </select>
+            </div>
+            <div class="col-12 col-xl-1">
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fa fa-filter"></i>
+              </button>
+            </div>
+          </div>
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            <a href="{% url 'administrator:users' %}" class="btn btn-sm btn-alt-secondary">
+              <i class="fa fa-undo me-1"></i> Tozalash
+            </a>
+            {% if filter_type %}
+              <span class="badge bg-primary fs-sm">Faol filter: {{ filter_type }}</span>
+            {% endif %}
+            {% if group_name %}
+              <span class="badge bg-info fs-sm">Guruh: {{ group_name }}</span>
             {% endif %}
           </div>
         </form>
+      </div>
+    </div>
 
+    <div class="block block-rounded">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Foydalanuvchilar ro'yxati</h3>
+        <div class="block-options">
+          <span class="fs-sm text-muted">Joriy natija: {{ users.paginator.count }} ta</span>
+        </div>
+      </div>
+      <div class="block-content block-content-full">
         <div class="table-responsive">
-          <table class="table table-sm table-striped table-bordered align-middle text-center">
-            <thead class="table-light">
+          <table class="table table-vcenter table-hover align-middle mb-0">
+            <thead>
               <tr>
-                <th style="width: 40px;">#</th>
-                <th>Username</th>
-                <th>Ism</th>
-                <th>Familiya</th>
+                <th style="width: 70px;">#</th>
+                <th>Foydalanuvchi</th>
                 <th>Guruh</th>
                 <th>Holati</th>
                 <th>Tug'ilgan sana</th>
-                <th>Rasm</th>
-                <th>Auth</th>
-                <th>Harakat</th>
+                <th class="text-center">Auth</th>
+                <th class="text-end" style="width: 140px;">Harakat</th>
               </tr>
             </thead>
             <tbody>
               {% for user in users %}
                 <tr>
-                  <td>{{ forloop.counter }}</td>
-                  <td>{{ user.username|default:"–" }}</td>
-                  <td>{{ user.first_name|default:"–" }}</td>
-                  <td>{{ user.second_name|default:"–" }}</td>
-                  <td>{{ user.group_name|default:"<span class='text-danger'>Biriktirilmagan</span>"|safe }}</td>
+                  <td class="text-muted">{{ users.start_index|add:forloop.counter0 }}</td>
                   <td>
-                    {% if user.is_student %}
-                      Talaba {% if user.level_name %}({{ user.level_name }}){% endif %}
-                    {% elif user.is_teacher %}
-                      O‘qituvchi {% if user.staff_position %}({{ user.staff_position }}){% endif %}
+                    <div class="d-flex align-items-center gap-3">
+                      <img
+                        src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
+                        alt="{{ user.username }}"
+                        class="users-avatar"
+                        loading="lazy"
+                        decoding="async"
+                      >
+                      <div class="min-w-0">
+                        <div class="fw-semibold">
+                          {% if user.full_name %}
+                            {{ user.full_name }}
+                          {% elif user.first_name or user.second_name %}
+                            {{ user.first_name }} {{ user.second_name }}
+                          {% else %}
+                            {{ user.username }}
+                          {% endif %}
+                        </div>
+                        <div class="fs-sm text-muted">@{{ user.username }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    {% if user.group_name %}
+                      <span class="users-group-pill" title="{{ user.group_name }}">
+                        <i class="fa fa-layer-group"></i> {{ user.group_name }}
+                      </span>
                     {% else %}
-                      Boshqa
+                      <span class="text-muted">Biriktirilmagan</span>
                     {% endif %}
                   </td>
-                  <td>{{ user.date_of_birth|date:"Y-m-d"|default:"–" }}</td>
                   <td>
-                    <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
-                         alt="Avatar" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover;">
+                    {% if user.is_student %}
+                      <span class="users-role-badge student">
+                        <i class="fa fa-user-graduate"></i> Talaba{% if user.level_name %} ({{ user.level_name }}){% endif %}
+                      </span>
+                    {% elif user.is_teacher %}
+                      <span class="users-role-badge teacher">
+                        <i class="fa fa-user-tie"></i> Hodim{% if user.staff_position %} ({{ user.staff_position }}){% endif %}
+                      </span>
+                    {% else %}
+                      <span class="users-role-badge other">
+                        <i class="fa fa-user"></i> Boshqa
+                      </span>
+                    {% endif %}
                   </td>
-                  <td>
-                    <input type="checkbox" class="auth-toggle" data-user-id="{{ user.id }}"
-                           {% if user.auth_is_id %}checked{% endif %} aria-label="Auth holatini o‘zgartirish">
+                  <td>{{ user.date_of_birth|date:"Y-m-d"|default:"-" }}</td>
+                  <td class="text-center">
+                    <div class="form-check form-switch d-inline-flex justify-content-center mb-0">
+                      <input type="checkbox" class="form-check-input auth-toggle" data-user-id="{{ user.id }}" {% if user.auth_is_id %}checked{% endif %}>
+                    </div>
                   </td>
-                  <td>
-                    <a href="{% url 'administrator:edit-user' user.id %}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip"
-                       title="Tahrirlash" aria-label="Foydalanuvchini tahrirlash">
-                      <i class="fa fa-pencil-alt"></i>
-                    </a>
-                    <button onclick="deleteUser('{{ user.id }}')" class="btn btn-sm btn-danger"
-                            data-bs-toggle="tooltip" title="O'chirish" aria-label="Foydalanuvchini o‘chirish">
-                      <i class="fa fa-times"></i>
-                    </button>
+                  <td class="text-end">
+                    <div class="btn-group btn-group-sm">
+                      <a href="{% url 'administrator:edit-user' user.id %}" class="btn btn-alt-primary" title="Tahrirlash">
+                        <i class="fa fa-pencil-alt"></i>
+                      </a>
+                      <button type="button" class="btn btn-danger" onclick="deleteUser('{{ user.id }}')" title="O'chirish">
+                        <i class="fa fa-times"></i>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               {% empty %}
                 <tr>
-                  <td colspan="10" class="text-muted text-center">Foydalanuvchilar topilmadi</td>
+                  <td colspan="7" class="text-center text-muted py-5">
+                    <div class="mb-2"><i class="fa fa-inbox fa-2x opacity-50"></i></div>
+                    Foydalanuvchilar topilmadi.
+                  </td>
                 </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
 
-        <nav class="d-flex justify-content-end mt-3">
-          <ul class="pagination pagination-sm mb-0">
-            {% with current=users.number total=users.paginator.num_pages %}
-              {% if users.has_previous %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ users.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if group_id %}&group_id={{ group_id }}{% endif %}" aria-label="Oldingi sahifa">«</a>
-                </li>
-              {% endif %}
-              {% if current > 3 %}
-                <li class="page-item">
-                  <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if group_id %}&group_id={{ group_id }}{% endif %}" aria-label="Birinchi sahifa">1</a>
-                </li>
-                {% if current > 4 %}
-                  <li class="page-item disabled"><span class="page-link">...</span></li>
-                {% endif %}
-              {% endif %}
-              {% for num in users.paginator.page_range %}
-                {% if num >= current|add:'-2' and num <= current|add:'2' %}
-                  <li class="page-item {% if num == current %}active{% endif %}">
-                    <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if group_id %}&group_id={{ group_id }}{% endif %}" aria-label="Sahifa {{ num }}">{{ num }}</a>
+        {% if users.paginator.num_pages > 1 %}
+          <nav class="d-flex justify-content-end mt-4">
+            <ul class="pagination pagination-sm mb-0">
+              {% with current=users.number total=users.paginator.num_pages %}
+                {% if users.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ users.previous_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">&laquo;</a>
                   </li>
                 {% endif %}
-              {% endfor %}
-              {% if current < total|add:'-2' %}
-                {% if current < total|add:'-3' %}
-                  <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% if current > 3 %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page=1{% if pagination_query %}&{{ pagination_query }}{% endif %}">1</a>
+                  </li>
+                  {% if current > 4 %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                  {% endif %}
                 {% endif %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ total }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if group_id %}&group_id={{ group_id }}{% endif %}" aria-label="Oxirgi sahifa">{{ total }}</a>
-                </li>
-              {% endif %}
-              {% if users.has_next %}
-                <li class="page-item">
-                  <a class="page-link" href="?page={{ users.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filter_type %}&filter_type={{ filter_type }}{% endif %}{% if group_id %}&group_id={{ group_id }}{% endif %}" aria-label="Keyingi sahifa">»</a>
-                </li>
-              {% endif %}
-            {% endwith %}
-          </ul>
-        </nav>
+                {% for num in users.paginator.page_range %}
+                  {% if num >= current|add:'-2' and num <= current|add:'2' %}
+                    <li class="page-item {% if num == current %}active{% endif %}">
+                      <a class="page-link" href="?page={{ num }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">{{ num }}</a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+                {% if current < total|add:'-2' %}
+                  {% if current < total|add:'-3' %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                  {% endif %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ total }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">{{ total }}</a>
+                  </li>
+                {% endif %}
+                {% if users.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ users.next_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">&raquo;</a>
+                  </li>
+                {% endif %}
+              {% endwith %}
+            </ul>
+          </nav>
+        {% endif %}
       </div>
+    </div>
+  </div>
 
-      <!-- Progress Modal -->
-      <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="importModalLabel">Ma'lumotlarni yuklash</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal fade" id="excelPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Excel preview</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+        </div>
+        <div class="modal-body">
+          <div id="excel-preview-loading" class="text-center py-5">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <div class="fw-medium">Excel preview tayyorlanmoqda...</div>
+          </div>
+
+          <div id="excel-preview-content" class="d-none">
+            <div class="users-note mb-3">
+              <div class="fw-semibold mb-1" id="excel-preview-file-name">-</div>
+              <div class="fs-sm text-muted">Import tasdiqlangach foydalanuvchilar bazaga yoziladi. Quyida dastlabki preview ko'rsatiladi.</div>
             </div>
-            <div class="modal-body">
-              <p id="importStatus" class="mb-3">Yuklanmoqda...</p>
-              <div class="progress" role="progressbar" aria-label="Yuklash jarayoni">
-                <div id="importProgress" class="progress-bar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-6 col-xl-3">
+                <div class="excel-preview-summary">
+                  <div class="fs-sm text-muted text-uppercase">Yaroqli satrlar</div>
+                  <div class="excel-preview-value" id="excel-summary-total">0</div>
+                </div>
+              </div>
+              <div class="col-6 col-xl-3">
+                <div class="excel-preview-summary">
+                  <div class="fs-sm text-muted text-uppercase">Yangi</div>
+                  <div class="excel-preview-value text-success" id="excel-summary-new">0</div>
+                </div>
+              </div>
+              <div class="col-6 col-xl-3">
+                <div class="excel-preview-summary">
+                  <div class="fs-sm text-muted text-uppercase">Yangilanadi</div>
+                  <div class="excel-preview-value text-info" id="excel-summary-update">0</div>
+                </div>
+              </div>
+              <div class="col-6 col-xl-3">
+                <div class="excel-preview-summary">
+                  <div class="fs-sm text-muted text-uppercase">O'tkazib yuborildi</div>
+                  <div class="excel-preview-value text-warning" id="excel-summary-skipped">0</div>
+                </div>
               </div>
             </div>
+
+            <div class="table-responsive">
+              <table class="table table-vcenter table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Username</th>
+                    <th>F.I.Sh.</th>
+                    <th>Guruh</th>
+                    <th>Holat</th>
+                  </tr>
+                </thead>
+                <tbody id="excel-preview-table-body"></tbody>
+              </table>
+            </div>
+            <div id="excel-preview-more-note" class="fs-sm text-muted mt-3 d-none"></div>
           </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-alt-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+          <button type="button" id="excel-preview-confirm-button" class="btn btn-success" disabled>
+            <i class="fa fa-upload me-1"></i> Importni boshlash
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="progressModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="progress-modal-title">Yuklash jarayoni</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+        </div>
+        <div class="modal-body">
+          <div class="progress-status-note fw-medium mb-3" id="progress-status-text">Jarayon tayyorlanmoqda...</div>
+          <div class="progress mb-3" style="height: 18px;">
+            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+          </div>
+          <div class="fs-sm text-muted" id="progress-detail-text">Jarayon boshlanishi kutilmoqda.</div>
         </div>
       </div>
     </div>
@@ -317,13 +569,20 @@
 
 {% block script %}
 <script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/select2/js/select2.full.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
 <script>
+  const state = {
+    excelPreview: null,
+    groupOptionsLoaded: false,
+    activeSource: null,
+  };
+
   function getCookie(name) {
     const cookieValue = document.cookie
       .split(';')
-      .map(cookie => cookie.trim())
-      .find(cookie => cookie.startsWith(`${name}=`));
+      .map((cookie) => cookie.trim())
+      .find((cookie) => cookie.startsWith(`${name}=`));
 
     if (!cookieValue) {
       return '';
@@ -333,234 +592,407 @@
   }
 
   function getCsrfToken() {
-    const hiddenToken = document.getElementById('csrf-token')?.value?.trim() || '';
-    const cookieToken = getCookie('csrftoken');
-    const token = hiddenToken || cookieToken;
-
-    if (!token) {
-      Swal.fire({
-        title: 'Xato!',
-        text: 'CSRF token topilmadi',
-        icon: 'error',
-        confirmButtonText: 'OK',
-      });
-      return null;
-    }
-    return token;
+    return document.getElementById('csrf-token')?.value?.trim() || getCookie('csrftoken');
   }
 
   async function readJsonResponse(response) {
     const contentType = response.headers.get('content-type') || '';
-
     if (contentType.includes('application/json')) {
       return response.json();
     }
 
     const text = await response.text();
-    const parser = new DOMParser();
-    const documentNode = parser.parseFromString(text, 'text/html');
-    const pageTitle = documentNode.querySelector('title')?.textContent?.trim();
-
     return {
       success: false,
-      message: pageTitle || `Server xatoligi (${response.status})`,
+      message: text || `Server xatoligi (${response.status})`,
     };
   }
 
-  function loadGroups() {
-    fetch("{% url 'administrator:group-list' %}", {
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    })
-      .then(response => response.json())
-      .then(data => {
-        const select = document.getElementById('group-select');
-        select.innerHTML = '<option value="">Guruhni tanlang</option>';
-        data.forEach(group => {
-          const option = document.createElement('option');
-          option.value = group.id;
-          option.textContent = group.name;
-          select.appendChild(option);
-        });
-      })
-      .catch(error => {
-        console.error('Error loading groups:', error);
-        document.getElementById('error-alert').classList.remove('d-none');
-        document.getElementById('error-alert').innerText = 'Gruhlarni yuklashda xato!';
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function getProgressModal() {
+    return bootstrap.Modal.getOrCreateInstance(document.getElementById('progressModal'), {
+      backdrop: 'static',
+      keyboard: false,
+    });
+  }
+
+  function resetProgressModal(title, statusText) {
+    document.getElementById('progress-modal-title').textContent = title;
+    document.getElementById('progress-status-text').textContent = statusText;
+    document.getElementById('progress-detail-text').textContent = 'Jarayon boshlanishi kutilmoqda.';
+    const bar = document.getElementById('progress-bar');
+    bar.classList.remove('bg-danger');
+    bar.style.width = '0%';
+    bar.textContent = '0%';
+    bar.setAttribute('aria-valuenow', '0');
+  }
+
+  function updateProgressModal(progress, statusText, detailText, isError) {
+    const normalizedProgress = Math.max(0, Math.min(100, Number(progress) || 0));
+    const bar = document.getElementById('progress-bar');
+    document.getElementById('progress-status-text').textContent = statusText;
+    document.getElementById('progress-detail-text').textContent = detailText || '';
+    bar.style.width = `${normalizedProgress}%`;
+    bar.textContent = `${normalizedProgress}%`;
+    bar.setAttribute('aria-valuenow', String(normalizedProgress));
+    if (isError) {
+      bar.classList.add('bg-danger');
+    } else {
+      bar.classList.remove('bg-danger');
+    }
+  }
+
+  function initSelect2(elementId, placeholder) {
+    const selectElement = document.getElementById(elementId);
+    if (!selectElement || !window.jQuery || !jQuery.fn.select2) {
+      return;
+    }
+
+    const $select = jQuery(selectElement);
+    if ($select.hasClass('select2-hidden-accessible')) {
+      $select.select2('destroy');
+    }
+
+    $select.select2({
+      placeholder: placeholder || false,
+      dropdownParent: jQuery('#page-container'),
+      dropdownCssClass: 'user-select2-dropdown',
+      width: '100%',
+      minimumResultsForSearch: 0,
+    });
+  }
+
+  async function loadGroups() {
+    if (state.groupOptionsLoaded) {
+      return;
+    }
+
+    try {
+      const response = await fetch("{% url 'administrator:group-list' %}", {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+        },
       });
+      const data = await response.json();
+      const select = document.getElementById('group-import-select');
+      select.innerHTML = '<option value="">Guruhni tanlang</option>';
+
+      data.forEach((group) => {
+        const option = document.createElement('option');
+        option.value = group.id;
+        option.textContent = group.name;
+        select.appendChild(option);
+      });
+
+      state.groupOptionsLoaded = true;
+      initSelect2('group-import-select', 'Guruhni yozib qidiring');
+    } catch (error) {
+      const errorNode = document.getElementById('group-import-error');
+      errorNode.textContent = "Guruhlarni yuklashda xatolik yuz berdi.";
+      errorNode.classList.remove('d-none');
+    }
+  }
+
+  function showGroupImportPanel() {
+    document.getElementById('group-import-panel').classList.remove('d-none');
+    document.getElementById('group-import-error').classList.add('d-none');
+    loadGroups();
   }
 
   function startImport(type, label) {
-    const modal = new bootstrap.Modal(document.getElementById('importModal'));
-    modal.show();
-    const statusElement = document.getElementById('importStatus');
-    const progressElement = document.getElementById('importProgress');
-    progressElement.classList.remove('bg-danger');
-    statusElement.innerText = `${label} yuklanmoqda...`;
-    progressElement.style.width = '0%';
-    progressElement.innerText = '0%';
-    progressElement.setAttribute('aria-valuenow', 0);
+    if (state.activeSource) {
+      state.activeSource.close();
+      state.activeSource = null;
+    }
+
+    resetProgressModal(`${label} import`, `${label} uchun import boshlandi...`);
+    getProgressModal().show();
 
     const importUrls = {
       staff: "{% url 'administrator:import_staff' %}",
-      students: "{% url 'administrator:import_students' %}"
+      students: "{% url 'administrator:import_students' %}",
     };
+
     const source = new EventSource(importUrls[type]);
+    state.activeSource = source;
+
     source.onmessage = function(event) {
       const data = JSON.parse(event.data);
-      statusElement.innerText = data.status;
-      progressElement.style.width = `${data.progress}%`;
-      progressElement.innerText = `${data.progress}%`;
-      progressElement.setAttribute('aria-valuenow', data.progress);
-      if (data.progress >= 100) {
+      updateProgressModal(
+        data.progress,
+        data.status,
+        `${label} importi davom etmoqda.`,
+        false
+      );
+
+      if (Number(data.progress) >= 100) {
         source.close();
+        state.activeSource = null;
         Swal.fire({
-          title: 'Muvaffaqiyat!',
+          title: 'Muvaffaqiyatli!',
           text: data.status,
           icon: 'success',
           confirmButtonText: 'OK',
         }).then(() => {
-          modal.hide();
-          location.reload();
+          getProgressModal().hide();
+          window.location.reload();
         });
       }
     };
+
     source.onerror = function() {
       source.close();
-      statusElement.innerText = `❌ ${label} yuklashda xato!`;
-      progressElement.classList.add('bg-danger');
-      progressElement.style.width = '100%';
-      progressElement.innerText = 'Xato';
+      state.activeSource = null;
+      updateProgressModal(100, `${label} importida xatolik yuz berdi.`, "Jarayon server tomonidan to'xtatildi.", true);
       Swal.fire({
-        title: 'Xato!',
-        text: `${label} yuklashda xato yuz berdi!`,
+        title: 'Xatolik!',
+        text: `${label} importida xatolik yuz berdi.`,
         icon: 'error',
         confirmButtonText: 'OK',
       });
     };
   }
 
-  function showGroupImport() {
-    document.getElementById('group-import-container').style.display = 'block';
-    loadGroups();
+  function startGroupImport() {
+    const select = document.getElementById('group-import-select');
+    const groupId = select.value;
+    const groupLabel = select.options[select.selectedIndex]?.textContent || '';
+    const errorNode = document.getElementById('group-import-error');
+
+    if (!groupId) {
+      errorNode.textContent = "Iltimos, guruhni tanlang.";
+      errorNode.classList.remove('d-none');
+      return;
+    }
+
+    errorNode.classList.add('d-none');
+
+    if (state.activeSource) {
+      state.activeSource.close();
+      state.activeSource = null;
+    }
+
+    resetProgressModal('Guruh bo\'yicha import', `${groupLabel} guruhi uchun import boshlandi...`);
+    getProgressModal().show();
+
+    const source = new EventSource(
+      "{% url 'administrator:import-students-by-group' %}" + `?group_id=${encodeURIComponent(groupId)}`
+    );
+    state.activeSource = source;
+
+    source.onmessage = function(event) {
+      const data = JSON.parse(event.data);
+      updateProgressModal(
+        data.progress,
+        data.status,
+        `${groupLabel} guruhi import qilinmoqda.`,
+        false
+      );
+
+      if (Number(data.progress) >= 100) {
+        source.close();
+        state.activeSource = null;
+        Swal.fire({
+          title: 'Muvaffaqiyatli!',
+          text: data.status,
+          icon: 'success',
+          confirmButtonText: 'OK',
+        }).then(() => {
+          getProgressModal().hide();
+          window.location.reload();
+        });
+      }
+    };
+
+    source.onerror = function() {
+      source.close();
+      state.activeSource = null;
+      updateProgressModal(100, "Guruh importida xatolik yuz berdi.", "Server jarayonni yakunlay olmadi.", true);
+      Swal.fire({
+        title: 'Xatolik!',
+        text: "Guruh bo'yicha importda xatolik yuz berdi.",
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+    };
   }
 
-  function openExcelImport() {
-    document.getElementById('excel-import-input').click();
+  function setExcelPreviewLoading(fileName) {
+    document.getElementById('excel-preview-loading').classList.remove('d-none');
+    document.getElementById('excel-preview-content').classList.add('d-none');
+    document.getElementById('excel-preview-file-name').textContent = fileName || '-';
+    document.getElementById('excel-preview-confirm-button').disabled = true;
   }
 
-  function handleExcelImport(event) {
+  function renderExcelPreview(data) {
+    state.excelPreview = data;
+    document.getElementById('excel-preview-loading').classList.add('d-none');
+    document.getElementById('excel-preview-content').classList.remove('d-none');
+    document.getElementById('excel-preview-file-name').textContent = data.file_name;
+    document.getElementById('excel-summary-total').textContent = data.summary.total_valid;
+    document.getElementById('excel-summary-new').textContent = data.summary.new_count;
+    document.getElementById('excel-summary-update').textContent = data.summary.update_count;
+    document.getElementById('excel-summary-skipped').textContent = data.summary.skipped_count;
+
+    const rowsHtml = data.preview_rows.map((row) => `
+      <tr>
+        <td>${row.index}</td>
+        <td><code>${escapeHtml(row.username)}</code></td>
+        <td>${escapeHtml(row.full_name)}</td>
+        <td>${escapeHtml(row.group_name || '-')}</td>
+        <td>
+          <span class="badge ${row.status === 'update' ? 'bg-info' : 'bg-success'}">
+            ${escapeHtml(row.status_label)}
+          </span>
+        </td>
+      </tr>
+    `).join('');
+
+    document.getElementById('excel-preview-table-body').innerHTML = rowsHtml || `
+      <tr>
+        <td colspan="5" class="text-center text-muted py-4">Preview ma'lumotlari topilmadi.</td>
+      </tr>
+    `;
+
+    const moreNote = document.getElementById('excel-preview-more-note');
+    if (data.has_more_rows) {
+      moreNote.classList.remove('d-none');
+      moreNote.textContent = `Faqat dastlabki ${data.preview_limit} ta satr ko'rsatildi. Qolganlari import vaqtida qayta ishlanadi.`;
+    } else {
+      moreNote.classList.add('d-none');
+      moreNote.textContent = '';
+    }
+
+    document.getElementById('excel-preview-confirm-button').disabled = false;
+  }
+
+  async function handleExcelImportSelection(event) {
     const fileInput = event.target;
-    const file = fileInput.files && fileInput.files[0];
+    const file = fileInput.files?.[0];
     if (!file) {
       return;
     }
 
     const csrfToken = getCsrfToken();
     if (!csrfToken) {
+      Swal.fire({
+        title: 'Xatolik!',
+        text: 'CSRF token topilmadi.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
       fileInput.value = '';
       return;
     }
 
+    const previewModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('excelPreviewModal'));
+    setExcelPreviewLoading(file.name);
+    previewModal.show();
+
     const formData = new FormData();
     formData.append('file', file);
 
-    Swal.fire({
-      title: 'Excel import',
-      text: `${file.name} yuklanmoqda...`,
-      allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
-    });
+    try {
+      const response = await fetch("{% url 'administrator:import-users-excel-preview' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: formData,
+      });
 
-    fetch("{% url 'administrator:import-users-excel' %}", {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': csrfToken,
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-      body: formData,
-    })
-      .then(async response => {
-        const data = await readJsonResponse(response);
-        if (!response.ok) {
-          throw data;
-        }
-        return data;
-      })
-      .then(data => {
+      const data = await readJsonResponse(response);
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Excel preview tayyorlab bo\'lmadi.');
+      }
+
+      renderExcelPreview(data);
+    } catch (error) {
+      previewModal.hide();
+      Swal.fire({
+        title: 'Xatolik!',
+        text: error.message || 'Excel preview tayyorlashda xatolik yuz berdi.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+    } finally {
+      fileInput.value = '';
+    }
+  }
+
+  function startExcelImportFromPreview() {
+    if (!state.excelPreview?.token) {
+      return;
+    }
+
+    if (state.activeSource) {
+      state.activeSource.close();
+      state.activeSource = null;
+    }
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('excelPreviewModal')).hide();
+    resetProgressModal('Excel import', `${state.excelPreview.file_name} importi boshlandi...`);
+    getProgressModal().show();
+
+    const source = new EventSource(
+      "{% url 'administrator:import-users-excel-stream' %}" + `?token=${encodeURIComponent(state.excelPreview.token)}`
+    );
+    state.activeSource = source;
+
+    source.onmessage = function(event) {
+      const data = JSON.parse(event.data);
+      updateProgressModal(
+        data.progress,
+        data.status,
+        data.processed_count
+          ? `${data.processed_count}/${data.total_count} | Yangi: ${data.created_count} | Yangilandi: ${data.updated_count}`
+          : 'Server import jarayonini davom ettirmoqda.',
+        Boolean(data.error)
+      );
+
+      if (data.error || data.success === false) {
+        source.close();
+        state.activeSource = null;
         Swal.fire({
-          title: 'Muvaffaqiyat!',
-          text: data.message,
-          icon: 'success',
-          confirmButtonText: 'OK',
-        }).then(() => {
-          location.reload();
-        });
-      })
-      .catch(error => {
-        Swal.fire({
-          title: 'Xato!',
-          text: error.message || 'Excel importda xatolik yuz berdi.',
+          title: 'Xatolik!',
+          text: data.status || 'Excel importda xatolik yuz berdi.',
           icon: 'error',
           confirmButtonText: 'OK',
         });
-      })
-      .finally(() => {
-        fileInput.value = '';
-      });
-  }
+        return;
+      }
 
-  function startGroupImport() {
-    const groupId = document.getElementById('group-select').value;
-    const groupName = document.getElementById('group-select').options[document.getElementById('group-select').selectedIndex].text;
-    if (!groupId) {
-      document.getElementById('error-alert').classList.remove('d-none');
-      document.getElementById('error-alert').innerText = 'Iltimos, guruh tanlang!';
-      return;
-    }
-    const modal = new bootstrap.Modal(document.getElementById('importModal'));
-    modal.show();
-    const statusElement = document.getElementById('importStatus');
-    const progressElement = document.getElementById('importProgress');
-    progressElement.classList.remove('bg-danger');
-    statusElement.innerText = `Guruh '${groupName}' uchun yuklanmoqda...`;
-    progressElement.style.width = '0%';
-    progressElement.innerText = '0%';
-    progressElement.setAttribute('aria-valuenow', 0);
-
-    const groupImportUrl = "{% url 'administrator:import-students-by-group' %}";
-    const source = new EventSource(`${groupImportUrl}?group_id=${encodeURIComponent(groupId)}`);
-    source.onmessage = function(event) {
-      const data = JSON.parse(event.data);
-      statusElement.innerText = data.status;
-      progressElement.style.width = `${data.progress}%`;
-      progressElement.innerText = `${data.progress}%`;
-      progressElement.setAttribute('aria-valuenow', data.progress);
-      if (data.progress >= 100) {
+      if (Number(data.progress) >= 100 && data.success) {
         source.close();
+        state.activeSource = null;
         Swal.fire({
-          title: 'Muvaffaqiyat!',
+          title: 'Muvaffaqiyatli!',
           text: data.status,
           icon: 'success',
           confirmButtonText: 'OK',
         }).then(() => {
-          modal.hide();
-          location.reload();
+          getProgressModal().hide();
+          window.location.reload();
         });
       }
     };
+
     source.onerror = function() {
       source.close();
-      statusElement.innerText = `❌ Guruh '${groupName}' yuklashda xato!`;
-      progressElement.classList.add('bg-danger');
-      progressElement.style.width = '100%';
-      progressElement.innerText = 'Xato';
+      state.activeSource = null;
+      updateProgressModal(100, 'Excel importda uzilish yuz berdi.', 'Server bilan SSE aloqa uzildi.', true);
       Swal.fire({
-        title: 'Xato!',
-        text: `Guruh '${groupName}' yuklashda xato yuz berdi!`,
+        title: 'Xatolik!',
+        text: 'Excel import jarayonida uzilish yuz berdi.',
         icon: 'error',
         confirmButtonText: 'OK',
       });
@@ -569,71 +1001,191 @@
 
   function deleteUser(userId) {
     const csrfToken = getCsrfToken();
-    if (!csrfToken) return;
+    if (!csrfToken) {
+      return;
+    }
 
     Swal.fire({
-      title: 'O‘chirishni tasdiqlaysizmi?',
-      text: 'Foydalanuvchi o‘chiriladi',
+      title: "O'chirishni tasdiqlaysizmi?",
+      text: "Foydalanuvchi o'chiriladi.",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#0d6efd',
-      cancelButtonColor: '#dc3545',
-      confirmButtonText: 'Ha, o‘chirish!',
-      cancelButtonText: 'Bekor',
+      confirmButtonColor: '#d61f47',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: "Ha, o'chirish",
+      cancelButtonText: 'Bekor qilish',
     }).then((result) => {
-      if (result.isConfirmed) {
-        const deleteUserUrl = "{% url 'administrator:delete-user' 0 %}".replace("/0/", `/${userId}/`);
-        fetch(deleteUserUrl, {
-          method: 'DELETE',
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      fetch("{% url 'administrator:delete-user' 0 %}".replace('/0/', `/${userId}/`), {
+        method: 'DELETE',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          Swal.fire({
+            title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
+            text: data.message,
+            icon: data.success ? 'success' : 'error',
+            confirmButtonText: 'OK',
+          }).then(() => {
+            if (data.success) {
+              window.location.reload();
+            }
+          });
+        })
+        .catch(() => {
+          Swal.fire({
+            title: 'Xatolik!',
+            text: "Server bilan bog'lanishda xatolik yuz berdi.",
+            icon: 'error',
+            confirmButtonText: 'OK',
+          });
+        });
+    });
+  }
+
+  function grantAllAuth() {
+    Swal.fire({
+      title: 'Tasdiqlash',
+      text: 'Barcha foydalanuvchilarga login ruxsati berilsinmi?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Ha, ruxsat berish',
+      cancelButtonText: 'Bekor qilish',
+    }).then((result) => {
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      fetch("{% url 'administrator:grant-all-auth' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCsrfToken(),
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          Swal.fire({
+            title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
+            text: data.message,
+            icon: data.success ? 'success' : 'error',
+            confirmButtonText: 'OK',
+          }).then(() => {
+            if (data.success) {
+              window.location.reload();
+            }
+          });
+        });
+    });
+  }
+
+  function revokeAllAuth() {
+    Swal.fire({
+      title: 'Tasdiqlash',
+      text: 'Barcha foydalanuvchilardan login ruxsati olib tashlansinmi?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Ha, olib tashlash',
+      cancelButtonText: 'Bekor qilish',
+    }).then((result) => {
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      fetch("{% url 'administrator:revoke-all-auth' %}", {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': getCsrfToken(),
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          Swal.fire({
+            title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
+            text: data.message,
+            icon: data.success ? 'success' : 'error',
+            confirmButtonText: 'OK',
+          }).then(() => {
+            if (data.success) {
+              window.location.reload();
+            }
+          });
+        });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    initSelect2('group-filter-select', 'Guruhni yozib qidiring');
+    document.getElementById('excel-import-button').addEventListener('click', function() {
+      document.getElementById('excel-import-input').click();
+    });
+    document.getElementById('excel-import-input').addEventListener('change', handleExcelImportSelection);
+    document.getElementById('excel-preview-confirm-button').addEventListener('click', startExcelImportFromPreview);
+
+    const filterTypeElement = document.getElementById('filter-type');
+    const filterForm = document.getElementById('user-filter-form');
+    const groupField = document.getElementById('group-filter-field');
+    const groupSelect = document.getElementById('group-filter-select');
+
+    filterTypeElement.addEventListener('change', function() {
+      const showGroup = this.value === 'group';
+      groupField.classList.toggle('d-none', !showGroup);
+      groupSelect.disabled = !showGroup;
+
+      if (!showGroup) {
+        if (window.jQuery && jQuery.fn.select2) {
+          jQuery(groupSelect).prop('disabled', true).val('').trigger('change');
+        } else {
+          groupSelect.value = '';
+        }
+      } else {
+        if (window.jQuery && jQuery.fn.select2) {
+          jQuery(groupSelect).prop('disabled', false);
+        }
+        initSelect2('group-filter-select', 'Guruhni yozib qidiring');
+      }
+    });
+
+    if (window.jQuery && jQuery.fn.select2) {
+      jQuery(groupSelect).on('change', function() {
+        if (!this.disabled && filterTypeElement.value === 'group') {
+          filterForm.submit();
+        }
+      });
+    } else {
+      groupSelect.addEventListener('change', function() {
+        if (!this.disabled && filterTypeElement.value === 'group') {
+          filterForm.submit();
+        }
+      });
+    }
+
+    document.querySelectorAll('.auth-toggle').forEach((toggle) => {
+      toggle.addEventListener('change', function() {
+        const userId = this.dataset.userId;
+        fetch("{% url 'administrator:toggle-auth' 0 %}".replace('/0/', `/${userId}/`), {
+          method: 'POST',
           headers: {
-            'X-CSRFToken': csrfToken,
+            'X-CSRFToken': getCsrfToken(),
             'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json',
           },
+          body: JSON.stringify({ auth_is_id: this.checked }),
         })
           .then((response) => response.json())
           .then((data) => {
             Swal.fire({
-              title: data.success ? 'Muvaffaqiyat!' : 'Xato!',
-              text: data.message,
-              icon: data.success ? 'success' : 'error',
-              confirmButtonText: 'OK',
-            }).then(() => data.success && location.reload());
-          })
-          .catch(() => {
-            Swal.fire({
-              title: 'Xato!',
-              text: 'Server bilan bog‘lanishda xato',
-              icon: 'error',
-              confirmButtonText: 'OK',
-            });
-          });
-      }
-    });
-  }
-
-  // Auth toggle functionality
-  document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.auth-toggle').forEach(toggle => {
-      toggle.addEventListener('change', function() {
-        const userId = this.dataset.userId;
-        const isChecked = this.checked;
-        const csrfToken = getCsrfToken();
-        if (!csrfToken) return;
-
-        const toggleAuthUrl = "{% url 'administrator:toggle-auth' 0 %}".replace("/0/", `/${userId}/`);
-        fetch(toggleAuthUrl, {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': csrfToken,
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ auth_is_id: isChecked }),
-        })
-          .then(response => response.json())
-          .then(data => {
-            Swal.fire({
-              title: data.success ? 'Muvaffaqiyat!' : 'Xato!',
+              title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
               text: data.message,
               icon: data.success ? 'success' : 'error',
               confirmButtonText: 'OK',
@@ -641,8 +1193,8 @@
           })
           .catch(() => {
             Swal.fire({
-              title: 'Xato!',
-              text: "Server bilan bog'lanishda xato",
+              title: 'Xatolik!',
+              text: "Server bilan bog'lanishda xatolik yuz berdi.",
               icon: 'error',
               confirmButtonText: 'OK',
             });
@@ -650,103 +1202,5 @@
       });
     });
   });
-
-  // Barcha foydalanuvchilarga ruxsat berish
-  function grantAllAuth() {
-    Swal.fire({
-      title: 'Tasdiqlash',
-      text: 'Barcha foydalanuvchilarga ruxsat berilsinmi?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ffc107',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Ha, ruxsat berish!',
-      cancelButtonText: 'Bekor',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const csrfToken = getCsrfToken();
-        if (!csrfToken) return;
-
-        fetch("{% url 'administrator:grant-all-auth' %}", {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': csrfToken,
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json',
-          },
-        })
-          .then(response => response.json())
-          .then(data => {
-            Swal.fire({
-              title: data.success ? 'Muvaffaqiyat!' : 'Xato!',
-              text: data.message,
-              icon: data.success ? 'success' : 'error',
-              confirmButtonText: 'OK',
-            }).then(() => {
-              if (data.success) {
-                location.reload();
-              }
-            });
-          })
-          .catch(() => {
-            Swal.fire({
-              title: 'Xato!',
-              text: "Server bilan bog'lanishda xato",
-              icon: 'error',
-              confirmButtonText: 'OK',
-            });
-          });
-      }
-    });
-  }
-
-  // Barcha foydalanuvchilardan ruxsatni olib tashlash
-  function revokeAllAuth() {
-    Swal.fire({
-      title: 'Tasdiqlash',
-      text: 'Barcha foydalanuvchilardan ruxsatni olib tashlansinmi?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#dc3545',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Ha, olib tashlash!',
-      cancelButtonText: 'Bekor',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const csrfToken = getCsrfToken();
-        if (!csrfToken) return;
-
-        fetch("{% url 'administrator:revoke-all-auth' %}", {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': csrfToken,
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json',
-          },
-        })
-          .then(response => response.json())
-          .then(data => {
-            Swal.fire({
-              title: data.success ? 'Muvaffaqiyat!' : 'Xato!',
-              text: data.message,
-              icon: data.success ? 'success' : 'error',
-              confirmButtonText: 'OK',
-            }).then(() => {
-              if (data.success) {
-                location.reload();
-              }
-            });
-          })
-          .catch(() => {
-            Swal.fire({
-              title: 'Xato!',
-              text: "Server bilan bog'lanishda xato",
-              icon: 'error',
-              confirmButtonText: 'OK',
-            });
-          });
-      }
-    });
-  }
 </script>
 {% endblock script %}

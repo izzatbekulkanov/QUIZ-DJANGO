@@ -3,118 +3,221 @@
 
 {% block style %}
 <style>
-  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
-  .bg-image {
-    background-size: cover;
-    background-position: center;
+  .test-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 1rem;
   }
-  .bg-primary-dark-op {
-    background-color: rgba(0, 0, 0, 0.7);
+
+  .test-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .test-form-shell {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.75rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 0.98));
     padding: 1rem;
   }
-  .btn-primary {
-    background: linear-gradient(90deg, #007bff, #00c4ff);
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
+
+  .test-note {
+    border: 1px dashed rgba(15, 23, 42, 0.14);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.9);
+    padding: 0.875rem 1rem;
   }
-  .btn-primary:hover {
-    background: linear-gradient(90deg, #0056b3, #0096cc);
-    border: none;
+
+  .test-summary-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.78);
+    padding: 1rem;
   }
-  .btn-outline-secondary {
-    border-color: #e9ecef;
-    color: #fff;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
+
+  .test-summary-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+    margin-bottom: 0.25rem;
   }
-  .btn-outline-secondary:hover {
-    background: linear-gradient(90deg, #6c757d, #adb5bd);
-    color: #fff;
-    border: none;
-  }
-  .form-control, .form-select {
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
-  }
-  .form-control:focus, .form-select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
-  }
-  .form-label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #34495e;
-  }
-  .is-invalid ~ .invalid-feedback {
-    display: block;
-    font-size: 0.8rem;
-    color: #dc3545;
+
+  @media (max-width: 767.98px) {
+    .test-toolbar {
+      justify-content: center;
+    }
   }
 </style>
 {% endblock style %}
 
 {% block content %}
 <main id="main-container">
-  <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 
-  <!-- Hero -->
-  <div class="bg-image overflow-hidden"
-       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
     <div class="bg-primary-dark-op">
-      <div class="container">
-        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
           <div class="flex-grow-1">
-            <h1 class="fw-semibold text-white mb-0">Savollar</h1>
-            <h2 class="h4 fw-normal text-white-75 mb-0">Savollar tahrirlash</h2>
+            <h1 class="fw-semibold text-white mb-1">{{ test.name }}</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">Test ma'lumotlarini umumiy boshqaruv dizaynida yangilash</h2>
           </div>
-          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="javascript:history.back()">
-              <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
-            </a>
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <div class="test-toolbar justify-content-center justify-content-lg-end">
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:question' %}">
+                <i class="fa fa-arrow-left me-1"></i> Testlar
+              </a>
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:assign-students-to-test' test.id %}">
+                <i class="fa fa-users me-1"></i> Talabalar
+              </a>
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:test-questions' test.id %}">
+                <i class="fa fa-list me-1"></i> Savollar
+              </a>
+              <a class="btn btn-sm btn-alt-primary" href="{% url 'administrator:add-question-test' test.id %}">
+                <i class="fa fa-plus me-1"></i> Savol qo'shish
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Page Content -->
-  <div class="container py-3">
-    <div class="card shadow-sm">
-      <div class="card-header bg-primary text-white">
-        <h3 class="h5 mb-0">Testni Tahrirlash</h3>
+  <div class="content content-boxed">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Kategoriya</div>
+              <div class="fs-4 fw-semibold">{{ test.category.name }}</div>
+            </div>
+            <div class="test-stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa fa-folder-open"></i>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="card-body p-4">
-        <form method="POST" action="{% url 'administrator:edit-test' test.id %}" id="editTestForm">
-          {% csrf_token %}
-          <!-- Category Dropdown -->
-          <div class="mb-3">
-            <label class="form-label" for="id_category"><i class="fa fa-folder-open me-2"></i>Kategoriya</label>
-            {{ form.category }}
-            <div class="invalid-feedback">Kategoriya tanlash majburiy.</div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Savollar</div>
+              <div class="fs-2 fw-semibold">{{ summary.question_count }}</div>
+            </div>
+            <div class="test-stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa fa-question-circle"></i>
+            </div>
           </div>
-          <!-- Test Name -->
-          <div class="mb-3">
-            <label class="form-label" for="id_name"><i class="fa fa-file-text me-2"></i>Test Nomi</label>
-            {{ form.name }}
-            <div class="invalid-feedback">Test nomini kiritish majburiy.</div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Biriktirilgan talabalar</div>
+              <div class="fs-2 fw-semibold">{{ summary.student_count }}</div>
+            </div>
+            <div class="test-stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa fa-users"></i>
+            </div>
           </div>
-          <!-- Test Description -->
-          <div class="mb-3">
-            <label class="form-label" for="id_description"><i class="fa fa-info-circle me-2"></i>Ta'rif</label>
-            {{ form.description }}
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">So'nggi savol yangilanishi</div>
+              <div class="fs-6 fw-semibold">
+                {% if summary.latest_question_update %}
+                  {{ summary.latest_question_update|date:"Y-m-d H:i" }}
+                {% else %}
+                  Hali kiritilmagan
+                {% endif %}
+              </div>
+            </div>
+            <div class="test-stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa fa-clock"></i>
+            </div>
           </div>
-          <!-- Submit Button -->
-          <div class="text-end">
-            <button type="button" class="btn btn-primary" id="submitButton">
-              <i class="fa fa-save me-1"></i> Saqlash
-            </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-xl-8">
+        <div class="block block-rounded mb-0">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Testni tahrirlash</h3>
           </div>
-        </form>
+          <div class="block-content block-content-full">
+            <div class="test-note mb-3">
+              Test nomi va kategoriyasi o'zgarganda, savollar va talabalar biriktirish holati saqlanib qoladi. Faqat boshqaruv ma'lumotlari yangilanadi.
+            </div>
+
+            <div class="test-form-shell">
+              <form method="POST" action="{% url 'administrator:edit-test' test.id %}" id="editTestForm" data-redirect-url="{% url 'administrator:question' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                  <label class="form-label" for="id_category">Kategoriya</label>
+                  {{ form.category }}
+                  <div class="invalid-feedback">Kategoriya tanlash majburiy.</div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" for="id_name">Test nomi</label>
+                  {{ form.name }}
+                  <div class="invalid-feedback">Test nomini kiritish majburiy.</div>
+                </div>
+                <div class="mb-0">
+                  <label class="form-label" for="id_description">Tavsif</label>
+                  {{ form.description }}
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 justify-content-end mt-4">
+                  <a href="{% url 'administrator:question' %}" class="btn btn-alt-secondary">
+                    <i class="fa fa-times me-1"></i> Bekor qilish
+                  </a>
+                  <button type="button" class="btn btn-alt-primary" id="submitButton">
+                    <i class="fa fa-save me-1"></i> Saqlash
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-xl-4">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-header block-header-default">
+            <h3 class="block-title">Qisqacha ma'lumot</h3>
+          </div>
+          <div class="block-content">
+            <div class="test-summary-card mb-3">
+              <div class="test-summary-label">Muallif</div>
+              <div class="fw-semibold">{{ test.created_by.username }}</div>
+            </div>
+            <div class="test-summary-card mb-3">
+              <div class="test-summary-label">Biriktirishlar</div>
+              <div class="fw-semibold">{{ summary.assignment_count }} ta aktiv oqim bilan ishlatilmoqda</div>
+            </div>
+            <div class="test-summary-card mb-3">
+              <div class="test-summary-label">Yaratilgan sana</div>
+              <div class="fw-semibold">{{ test.created_at|date:"Y-m-d H:i" }}</div>
+            </div>
+            <div class="test-summary-card">
+              <div class="test-summary-label">Kategoriyalar soni</div>
+              <div class="fw-semibold">{{ categories_count }} ta umumiy kategoriya mavjud</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -124,14 +227,27 @@
 {% block script %}
 <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
 <script>
-  document.getElementById('submitButton').addEventListener('click', function (e) {
-    e.preventDefault();
+  function getCookie(name) {
+    const cookieValue = `; ${document.cookie}`;
+    const parts = cookieValue.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop().split(';').shift();
+    }
+    return '';
+  }
+
+  document.getElementById('submitButton').addEventListener('click', function (event) {
+    event.preventDefault();
     const form = document.getElementById('editTestForm');
+    const requiredFields = ['#id_category', '#id_name'];
     let isValid = true;
 
-    // Inputlarni validatsiya qilish
-    form.querySelectorAll('input[required], select[required]').forEach((input) => {
-      if (!input.value) {
+    requiredFields.forEach((selector) => {
+      const input = form.querySelector(selector);
+      if (!input) {
+        return;
+      }
+      if (!input.value || !String(input.value).trim()) {
         input.classList.add('is-invalid');
         isValid = false;
       } else {
@@ -139,58 +255,60 @@
       }
     });
 
-    if (isValid) {
-      Swal.fire({
-        title: 'Tasdiqlaysizmi?',
-        text: "Ushbu testni yangilamoqchimisiz?",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#007bff',
-        cancelButtonColor: '#dc3545',
-        confirmButtonText: 'Ha, yangilash!',
-        cancelButtonText: 'Bekor qilish'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          const formData = new FormData(form);
-          fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-              'X-Requested-With': 'XMLHttpRequest'
-            }
-          })
-            .then(response => response.json())
-            .then(data => {
-              Swal.fire({
-                title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
-                text: data.message || 'Testni yangilashda xatolik yuz berdi.',
-                icon: data.success ? 'success' : 'error',
-                confirmButtonText: 'OK'
-              }).then(() => {
-                if (data.success) {
-                  window.location.href = '{% url "administrator:question" %}';
-                }
-              });
-            })
-            .catch(error => {
-              Swal.fire({
-                title: 'Xatolik!',
-                text: 'Server bilan bog‘lanishda xatolik yuz berdi.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-              });
-              console.error('Error:', error);
-            });
-        }
-      });
-    } else {
+    if (!isValid) {
       Swal.fire({
         title: 'Xatolik!',
-        text: 'Iltimos, barcha majburiy maydonlarni to‘ldiring.',
+        text: "Iltimos, barcha majburiy maydonlarni to'ldiring.",
         icon: 'warning',
-        confirmButtonText: 'OK'
+        confirmButtonText: 'OK',
       });
+      return;
     }
+
+    Swal.fire({
+      title: 'Tasdiqlaysizmi?',
+      text: "Ushbu test ma'lumotlarini yangilamoqchimisiz?",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3b82f6',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Ha, saqlash',
+      cancelButtonText: 'Bekor qilish',
+    }).then(async (result) => {
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken') || document.getElementById('csrf-token')?.value || '',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        });
+
+        const data = await response.json();
+        await Swal.fire({
+          title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
+          text: data.message || "Testni yangilashda xatolik yuz berdi.",
+          icon: data.success ? 'success' : 'error',
+          confirmButtonText: 'OK',
+        });
+
+        if (data.success) {
+          window.location.href = data.redirect_url || form.dataset.redirectUrl;
+        }
+      } catch (error) {
+        Swal.fire({
+          title: 'Xatolik!',
+          text: "Server bilan bog'lanishda xatolik yuz berdi.",
+          icon: 'error',
+          confirmButtonText: 'OK',
+        });
+      }
+    });
   });
 </script>
 {% endblock script %}

@@ -2,278 +2,499 @@
 {% load static %}
 
 {% block style %}
+<link rel="stylesheet" href="{% static 'assets/js/plugins/select2/css/select2.min.css' %}">
 <style>
-  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
-  .bg-image {
-    background-size: cover;
-    background-position: center;
+  .students-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 1rem;
   }
-  .bg-primary-dark-op {
-    background-color: rgba(0, 0, 0, 0.7);
+
+  .students-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .students-filter-shell {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 0.75rem;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 0.98));
     padding: 1rem;
   }
-  .btn-primary, .btn-success {
-    background: linear-gradient(90deg, #007bff, #00c4ff);
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
+
+  .students-note {
+    border: 1px dashed rgba(15, 23, 42, 0.14);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.9);
+    padding: 0.875rem 1rem;
   }
-  .btn-primary:hover, .btn-success:hover {
-    background: linear-gradient(90deg, #0056b3, #0096cc);
-    border: none;
+
+  .student-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 2px solid rgba(148, 163, 184, 0.2);
   }
-  .btn-danger {
-    background: linear-gradient(90deg, #dc3545, #ff6b6b);
-    border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
+
+  .student-name-cell {
+    min-width: 220px;
   }
-  .btn-danger:hover {
-    background: linear-gradient(90deg, #b02a37, #cc5252);
-    border: none;
+
+  .student-group-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 240px;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(99, 102, 241, 0.1);
+    color: #4338ca;
+    font-size: 0.75rem;
+    font-weight: 600;
   }
-  .form-control, .form-select {
-    border-radius: 6px;
-    font-size: 0.9rem;
-    padding: 8px 12px;
+
+  .students-select-shell + .select2-container {
+    width: 100% !important;
   }
-  .form-control:focus, .form-select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+
+  .students-select-shell + .select2-container .select2-selection--single {
+    min-height: 42px;
+    border-radius: 0.375rem;
+    border-color: #dfe3ea;
+    display: flex;
+    align-items: center;
   }
-  .form-label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #34495e;
+
+  .students-select-shell + .select2-container .select2-selection__rendered {
+    line-height: 40px;
+    padding-left: 0.875rem;
+    padding-right: 2rem;
   }
-  .table {
-    border-radius: 6px;
+
+  .students-select-shell + .select2-container .select2-selection__arrow {
+    height: 40px;
+    right: 0.5rem;
+  }
+
+  .select2-dropdown.students-select-dropdown {
+    border-color: #dfe3ea;
+    border-radius: 0.5rem;
     overflow: hidden;
   }
-  .table th, .table td {
-    vertical-align: middle;
+
+  .assigned-students-shell {
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
   }
-  .pagination .page-link {
-    border-radius: 6px;
-    margin: 0 3px;
-    color: #007bff;
+
+  .students-empty-state {
+    border: 1px dashed rgba(15, 23, 42, 0.12);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.72);
+    padding: 2.75rem 1.5rem;
+    text-align: center;
   }
-  .pagination .page-link:hover {
-    background: linear-gradient(90deg, #007bff, #00c4ff);
-    color: #fff;
-  }
-  .pagination .page-item.active .page-link {
-    background: linear-gradient(90deg, #007bff, #00c4ff);
-    border-color: #007bff;
-    color: #fff;
-  }
-  .rounded-circle {
-    border: 2px solid #e9ecef;
+
+  @media (max-width: 767.98px) {
+    .students-toolbar {
+      justify-content: center;
+    }
   }
 </style>
 {% endblock style %}
 
 {% block content %}
 <main id="main-container">
-  <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 
-  <!-- Hero -->
-  <div class="bg-image overflow-hidden"
-       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
     <div class="bg-primary-dark-op">
-      <div class="container">
-        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
           <div class="flex-grow-1">
-            <h1 class="fw-semibold text-white mb-0">{{ test.name }}</h1>
-            <h2 class="h4 fw-normal text-white-75 mb-0">Talabalarni biriktirish</h2>
+            <h1 class="fw-semibold text-white mb-1">{{ test.name }}</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">Talabalarni testga biriktirish va mavjud ro'yxatni boshqarish</h2>
           </div>
-          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="{% url 'administrator:question' %}">
-              <i class="fa fa-arrow-left me-1 opacity-50"></i> Ortga
-            </a>
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <div class="students-toolbar justify-content-center justify-content-lg-end">
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:question' %}">
+                <i class="fa fa-arrow-left me-1"></i> Testlar
+              </a>
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:edit-test' test.id %}">
+                <i class="fa fa-pencil-alt me-1"></i> Tahrirlash
+              </a>
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:test-questions' test.id %}">
+                <i class="fa fa-list me-1"></i> Savollar
+              </a>
+              <a class="btn btn-sm btn-alt-primary" href="{% url 'administrator:add-question-test' test.id %}">
+                <i class="fa fa-plus me-1"></i> Savol qo'shish
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Page Content -->
-  <div class="container my-4">
-    <!-- Filter Form -->
-    <form method="GET" class="mb-4">
-      <div class="row g-3 align-items-center">
-        <div class="col-md-3">
-          <select class="form-select js-select2" name="group" data-placeholder="Barcha guruhlar" onchange="this.form.submit()" style="width: 100%;">
-            <option value="" {% if not group_filter %}selected{% endif %}>Barcha guruhlar</option>
-            {% for group in groups %}
-              <option value="{{ group }}" {% if group_filter == group %}selected{% endif %}>{{ group }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-md-3">
-          <input type="text" class="form-control" name="search" placeholder="Talaba nomini qidiring..." value="{{ search_query|default:'' }}">
-        </div>
-        <div class="col-md-3">
-          <button type="submit" class="btn btn-primary w-100">
-            <i class="fa fa-filter me-1"></i> Filtrlash
-          </button>
+  <div class="content content-boxed">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Biriktirilgan talabalar</div>
+              <div class="fs-2 fw-semibold">{{ assigned_students_count }}</div>
+            </div>
+            <div class="students-stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa fa-check-circle"></i>
+            </div>
+          </div>
         </div>
       </div>
-    </form>
-
-    <!-- Students to Assign -->
-    <h4 class="card-title mb-3">Biriktirish uchun talabalar</h4>
-    <form method="POST">
-      {% csrf_token %}
-      <div class="table-responsive">
-        <table class="table table-bordered table-striped table-sm table-hover">
-          <thead>
-            <tr>
-              <th class="text-center" style="width: 40px;">
-                <input type="checkbox" id="select-all" onclick="toggleSelectAll(this)">
-              </th>
-              <th>#</th>
-              <th>Ism</th>
-              <th>Familiya</th>
-              <th>Guruh</th>
-              <th>Talaba ID</th>
-              <th>Rasm</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for student in students %}
-              <tr>
-                <td class="text-center">
-                  <input type="checkbox" name="students" value="{{ student.id }}">
-                </td>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ student.first_name|default:"–" }}</td>
-                <td>{{ student.second_name|default:"–" }}</td>
-                <td>{{ student.group_name|default:"–" }}</td>
-                <td>
-                  {% if student.student_id_number %}
-                    {{ student.student_id_number }}
-                  {% else %}
-                    {{ student.username|default:"–" }}
-                  {% endif %}
-                </td>
-                <td>
-                  <img src="{% if student.profile_picture %}{{ student.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
-                       alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
-                </td>
-              </tr>
-            {% empty %}
-              <tr>
-                <td colspan="7" class="text-center">Talabalar topilmadi</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Mavjud talabalar</div>
+              <div class="fs-2 fw-semibold">{{ available_students_total }}</div>
+            </div>
+            <div class="students-stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa fa-users"></i>
+            </div>
+          </div>
+        </div>
       </div>
-      <button type="submit" class="btn btn-success">
-        <i class="fa fa-check me-1"></i> Talabalarni biriktirish
-      </button>
-    </form>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Filter natijasi</div>
+              <div class="fs-2 fw-semibold">{{ filtered_students_count }}</div>
+            </div>
+            <div class="students-stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa fa-filter"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Guruhlar</div>
+              <div class="fs-2 fw-semibold">{{ groups_count }}</div>
+            </div>
+            <div class="students-stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa fa-layer-group"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <!-- Pagination -->
-    <nav class="d-flex justify-content-end mt-3">
-      <ul class="pagination pagination-sm mb-0">
-        {% if students.has_previous %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ students.previous_page_number }}{% if group_filter %}&group={{ group_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Previous">
-              <span aria-hidden="true">«</span>
-            </a>
-          </li>
-        {% endif %}
-        {% for num in students.paginator.page_range %}
-          {% if num >= students.number|add:'-2' and num <= students.number|add:'2' %}
-            <li class="page-item {% if students.number == num %}active{% endif %}">
-              <a class="page-link" href="?page={{ num }}{% if group_filter %}&group={{ group_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
-            </li>
+    <div class="block block-rounded">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Biriktirish boshqaruvi</h3>
+        <div class="block-options">
+          <span class="fs-sm text-muted">{{ question_count }} ta savol | {{ test.category.name }}</span>
+        </div>
+      </div>
+      <div class="block-content block-content-full">
+        <div class="students-note mb-3">
+          Quyidagi ro'yxat faqat hali ushbu testga biriktirilmagan talabalarni ko'rsatadi. Filterlar pagination bilan birga saqlanadi.
+        </div>
+
+        <div class="students-filter-shell mb-4">
+          <form method="GET" class="row g-3 align-items-end">
+            <div class="col-12 col-md-4 col-xl-3">
+              <label class="form-label" for="group-filter-select">Guruh</label>
+              <select
+                id="group-filter-select"
+                class="form-select students-select-shell"
+                name="group"
+                data-placeholder="Barcha guruhlar"
+              >
+                <option value="">Barcha guruhlar</option>
+                {% for group in groups %}
+                  <option value="{{ group }}" {% if group_filter == group %}selected{% endif %}>{{ group }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 col-md-5 col-xl-4">
+              <label class="form-label" for="students-search">Talaba qidiruvi</label>
+              <input
+                type="text"
+                class="form-control"
+                id="students-search"
+                name="search"
+                value="{{ search_query|default:'' }}"
+                placeholder="F.I.Sh, username yoki ID"
+              >
+            </div>
+            <div class="col-12 col-md-3 col-xl-5">
+              <div class="d-flex flex-wrap gap-2 justify-content-xl-end">
+                <button type="submit" class="btn btn-alt-primary">
+                  <i class="fa fa-search me-1"></i> Filtrlash
+                </button>
+                {% if group_filter or search_query %}
+                  <a href="{% url 'administrator:assign-students-to-test' test.id %}" class="btn btn-alt-secondary">
+                    <i class="fa fa-rotate-left me-1"></i> Tozalash
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <form method="POST" id="assign-students-form">
+          {% csrf_token %}
+
+          {% if students %}
+            <div class="table-responsive">
+              <table class="table table-hover table-vcenter align-middle mb-0">
+                <thead>
+                  <tr class="text-uppercase fs-xs text-muted">
+                    <th style="width: 44px;" class="text-center">
+                      <input type="checkbox" id="select-all" class="form-check-input">
+                    </th>
+                    <th class="fw-semibold">#</th>
+                    <th class="fw-semibold">Talaba</th>
+                    <th class="fw-semibold">Guruh</th>
+                    <th class="fw-semibold">Talaba ID</th>
+                    <th class="fw-semibold text-end">Tanlash</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for student in students %}
+                    <tr>
+                      <td class="text-center">
+                        <input type="checkbox" class="form-check-input student-checkbox" name="students" value="{{ student.id }}">
+                      </td>
+                      <td class="text-muted fw-semibold">{{ students.start_index|add:forloop.counter0 }}</td>
+                      <td>
+                        <div class="d-flex align-items-center gap-3 student-name-cell">
+                          <img
+                            src="{% if student.profile_picture %}{{ student.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
+                            alt="Avatar"
+                            class="student-avatar"
+                          >
+                          <div class="min-w-0">
+                            <div class="fw-semibold">
+                              {% if student.full_name %}
+                                {{ student.full_name }}
+                              {% elif student.first_name or student.second_name %}
+                                {{ student.first_name|default:'' }} {{ student.second_name|default:'' }}
+                              {% else %}
+                                {{ student.username }}
+                              {% endif %}
+                            </div>
+                            <div class="fs-sm text-muted">@{{ student.username }}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="student-group-pill">
+                          <i class="fa fa-users"></i> {{ student.group_name|default:"Guruh ko'rsatilmagan" }}
+                        </span>
+                      </td>
+                      <td>{{ student.student_id_number|default:student.username }}</td>
+                      <td class="text-end">
+                        <span class="badge bg-body-light text-dark rounded-pill">Biriktirishga tayyor</span>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mt-4">
+              <div class="fs-sm text-muted">Bir nechta talabani birdan tanlab testga biriktirishingiz mumkin.</div>
+              <button type="submit" class="btn btn-success">
+                <i class="fa fa-check me-1"></i> Tanlanganlarni biriktirish
+              </button>
+            </div>
+
+            {% if students.paginator.num_pages > 1 %}
+              <nav class="d-flex justify-content-end mt-4">
+                <ul class="pagination pagination-sm mb-0">
+                  {% with current=students.number total=students.paginator.num_pages %}
+                    {% if students.has_previous %}
+                      <li class="page-item">
+                        <a class="page-link" href="?page={{ students.previous_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">&laquo;</a>
+                      </li>
+                    {% endif %}
+                    {% if current > 3 %}
+                      <li class="page-item">
+                        <a class="page-link" href="?page=1{% if pagination_query %}&{{ pagination_query }}{% endif %}">1</a>
+                      </li>
+                      {% if current > 4 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                      {% endif %}
+                    {% endif %}
+                    {% for num in students.paginator.page_range %}
+                      {% if num >= current|add:'-2' and num <= current|add:'2' %}
+                        <li class="page-item {% if num == current %}active{% endif %}">
+                          <a class="page-link" href="?page={{ num }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">{{ num }}</a>
+                        </li>
+                      {% endif %}
+                    {% endfor %}
+                    {% if current < total|add:'-2' %}
+                      {% if current < total|add:'-3' %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                      {% endif %}
+                      <li class="page-item">
+                        <a class="page-link" href="?page={{ total }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">{{ total }}</a>
+                      </li>
+                    {% endif %}
+                    {% if students.has_next %}
+                      <li class="page-item">
+                        <a class="page-link" href="?page={{ students.next_page_number }}{% if pagination_query %}&{{ pagination_query }}{% endif %}">&raquo;</a>
+                      </li>
+                    {% endif %}
+                  {% endwith %}
+                </ul>
+              </nav>
+            {% endif %}
+          {% else %}
+            <div class="students-empty-state">
+              <div class="mb-3 text-muted">
+                <i class="fa fa-user-graduate fa-2x opacity-50"></i>
+              </div>
+              <h4 class="h5 mb-2">Biriktirish uchun talaba topilmadi</h4>
+              <p class="text-muted mb-0">Filterlarni o'zgartirib ko'ring yoki barcha mos talabalar allaqachon ushbu testga biriktirilgan.</p>
+            </div>
           {% endif %}
-        {% endfor %}
-        {% if students.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ students.next_page_number }}{% if group_filter %}&group={{ group_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}" aria-label="Next">
-              <span aria-hidden="true">»</span>
-            </a>
-          </li>
-        {% endif %}
-      </ul>
-    </nav>
+        </form>
 
-    <!-- Assigned Students -->
-    {% if assigned_students.exists %}
-      <hr class="my-4">
-      <h4 class="card-title mb-3">Biriktirilgan talabalar</h4>
-      <div class="table-responsive">
-        <table class="table table-bordered table-striped table-sm table-hover">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Ism</th>
-              <th>Familiya</th>
-              <th>Guruh</th>
-              <th>Talaba ID</th>
-              <th>Rasm</th>
-              <th class="text-center">Harakat</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for student in assigned_students %}
-              <tr>
-                <td>{{ forloop.counter }}</td>
-                <td>{{ student.first_name|default:"–" }}</td>
-                <td>{{ student.second_name|default:"–" }}</td>
-                <td>{{ student.group_name|default:"–" }}</td>
-                <td>
-                  {% if student.student_id_number %}
-                    {{ student.student_id_number }}
-                  {% else %}
-                    {{ student.username|default:"–" }}
-                  {% endif %}
-                </td>
-                <td>
-                  <img src="{% if student.profile_picture %}{{ student.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
-                       alt="Avatar" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
-                </td>
-                <td class="text-center">
-                  <form method="POST" class="d-inline">
-                    {% csrf_token %}
-                    <input type="hidden" name="remove_student" value="{{ student.id }}">
-                    <button type="submit" class="btn btn-sm btn-danger" title="O‘chirish">
-                      <i class="fa fa-trash"></i>
-                    </button>
-                  </form>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+        <div class="assigned-students-shell">
+          <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+            <div>
+              <h4 class="h5 mb-1">Biriktirilgan talabalar</h4>
+              <div class="fs-sm text-muted">Hozir testga ulanib turgan talabalar ro'yxati</div>
+            </div>
+            <span class="badge bg-success rounded-pill">{{ assigned_students_count }} ta</span>
+          </div>
+
+          {% if assigned_students %}
+            <div class="table-responsive">
+              <table class="table table-hover table-vcenter align-middle mb-0">
+                <thead>
+                  <tr class="text-uppercase fs-xs text-muted">
+                    <th class="fw-semibold">#</th>
+                    <th class="fw-semibold">Talaba</th>
+                    <th class="fw-semibold">Guruh</th>
+                    <th class="fw-semibold">Talaba ID</th>
+                    <th class="fw-semibold text-end">Harakat</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for student in assigned_students %}
+                    <tr>
+                      <td class="text-muted fw-semibold">{{ forloop.counter }}</td>
+                      <td>
+                        <div class="d-flex align-items-center gap-3 student-name-cell">
+                          <img
+                            src="{% if student.profile_picture %}{{ student.profile_picture.url }}{% else %}{% static 'assets/media/avatars/default-avatar.jpg' %}{% endif %}"
+                            alt="Avatar"
+                            class="student-avatar"
+                          >
+                          <div class="min-w-0">
+                            <div class="fw-semibold">
+                              {% if student.full_name %}
+                                {{ student.full_name }}
+                              {% elif student.first_name or student.second_name %}
+                                {{ student.first_name|default:'' }} {{ student.second_name|default:'' }}
+                              {% else %}
+                                {{ student.username }}
+                              {% endif %}
+                            </div>
+                            <div class="fs-sm text-muted">@{{ student.username }}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="student-group-pill">
+                          <i class="fa fa-users"></i> {{ student.group_name|default:"Guruh ko'rsatilmagan" }}
+                        </span>
+                      </td>
+                      <td>{{ student.student_id_number|default:student.username }}</td>
+                      <td class="text-end">
+                        <form method="POST" class="d-inline">
+                          {% csrf_token %}
+                          <input type="hidden" name="remove_student" value="{{ student.id }}">
+                          <button type="submit" class="btn btn-sm btn-danger">
+                            <i class="fa fa-trash me-1"></i> Olib tashlash
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="students-empty-state">
+              <div class="mb-3 text-muted">
+                <i class="fa fa-users fa-2x opacity-50"></i>
+              </div>
+              <h4 class="h5 mb-2">Hali talaba biriktirilmagan</h4>
+              <p class="text-muted mb-0">Yuqoridagi jadval orqali tanlangan talabalarni shu testga qo'shing.</p>
+            </div>
+          {% endif %}
+        </div>
       </div>
-    {% endif %}
+    </div>
   </div>
 </main>
 {% endblock content %}
 
 {% block script %}
+<script src="{% static 'assets/js/plugins/select2/js/select2.full.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
 <script>
-  One.helpersOnLoad('jq-select2');
-
-  function toggleSelectAll(checkbox) {
-    document.querySelectorAll('input[name="students"]').forEach(cb => cb.checked = checkbox.checked);
+  const selectAllCheckbox = document.getElementById('select-all');
+  if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener('change', function () {
+      document.querySelectorAll('.student-checkbox').forEach((checkbox) => {
+        checkbox.checked = this.checked;
+      });
+    });
   }
 
-  {% if alert %}
-    Swal.fire({
-      title: '{{ alert.message }}',
-      icon: '{{ alert.type }}',
-      confirmButtonText: 'OK'
-    });
-  {% endif %}
+  document.addEventListener('DOMContentLoaded', function () {
+    const groupSelectElement = document.getElementById('group-filter-select');
+
+    if (groupSelectElement) {
+      if (window.jQuery && jQuery.fn.select2) {
+        const groupSelect = jQuery(groupSelectElement);
+        groupSelect.select2({
+          placeholder: groupSelect.data('placeholder') || false,
+          dropdownParent: jQuery('#page-container'),
+          dropdownCssClass: 'students-select-dropdown',
+          width: '100%',
+          minimumResultsForSearch: 0,
+        });
+      }
+
+      groupSelectElement.addEventListener('change', function () {
+        this.form.submit();
+      });
+    }
+
+    {% if alert %}
+      Swal.fire({
+        title: '{{ alert.message }}',
+        icon: '{{ alert.type }}',
+        confirmButtonText: 'OK',
+      });
+    {% endif %}
+  });
 </script>
 {% endblock script %}

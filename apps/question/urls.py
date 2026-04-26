@@ -8,7 +8,6 @@ from .view.category import (
     GetCategoryTestsView,
     GetTestQuestionsCountView,
 )
-from .view.generation import GenerationDownloadView, GenerationRunView, GenerationView
 from .view.hemis_users import (
     ImportStudentsFromHemisStreamView,
     ImportStaffFromHemisStreamView,
@@ -16,12 +15,14 @@ from .view.hemis_users import (
     GroupListView,
 )
 from .view.site import site_settings_view
+from .view.user_admin import EditUserView, UsersView
 from .view.test import (
     QuestionView,
     AddQuestionView,
     DeleteTestView,
     EditTestView,
     AddQuestionTestView,
+    TestQuestionsView,
     QuestionDetailApiView,
     QuestionUpdateApiView,
     QuestionDeleteApiView,
@@ -36,19 +37,26 @@ from .view.test import (
 from .views import (
     MainView,
     ProfileView,
-    UsersView,
     ResultsView,
     DeleteStudentResultView,
     AddUserView,
-    EditUserView,
     ViewTestDetailsView,
     assign_students_to_test,
     ToggleAuthView,
     GrantAllAuthView,
     RevokeAllAuthView,
     ImportUsersExcelView,
+    ImportUsersExcelPreviewView,
+    ImportUsersExcelStreamView,
 )
-from .view.roles import RolesView
+from .view.roles import (
+    AddRoleGroupView,
+    CreateDefaultRoleGroupsView,
+    DeleteRoleGroupView,
+    RoleGroupDetailView,
+    RoleUserSearchView,
+    RolesView,
+)
 
 urlpatterns = [
     path('', MainView.as_view(), name='main'),
@@ -62,6 +70,8 @@ urlpatterns = [
     path('users/<int:id>/edit/', EditUserView.as_view(), name='edit-user'),
     path('users/<int:id>/delete/', UsersView.as_view(), name='delete-user'),
     path('users/import-excel/', ImportUsersExcelView.as_view(), name='import-users-excel'),
+    path('users/import-excel/preview/', ImportUsersExcelPreviewView.as_view(), name='import-users-excel-preview'),
+    path('users/import-excel/stream/', ImportUsersExcelStreamView.as_view(), name='import-users-excel-stream'),
     path('categories/', CategoriesView.as_view(), name='categories'),
     path('categories/add/', AddCategoryView.as_view(), name='add-category'),
     path('categories/<int:category_id>/edit/', EditCategoryView.as_view(), name='edit-category'),
@@ -74,6 +84,7 @@ urlpatterns = [
     path('tests/<int:test_id>/edit/', EditTestView.as_view(), name='edit-test'),
     path('tests/<int:test_id>/delete/', DeleteTestView.as_view(), name='delete-test'),
     path('tests/<int:test_id>/details/', ViewTestDetailsView.as_view(), name='view-test-details'),
+    path('tests/<int:test_id>/questions/', TestQuestionsView.as_view(), name='test-questions'),
     path('tests/<int:test_id>/questions/add/', AddQuestionTestView.as_view(), name='add-question-test'),
     path('tests/<int:test_id>/questions/<int:question_id>/detail/', QuestionDetailApiView.as_view(), name='question-detail'),
     path('tests/<int:test_id>/questions/<int:question_id>/update/', QuestionUpdateApiView.as_view(), name='question-update'),
@@ -83,9 +94,6 @@ urlpatterns = [
     path('tests/template/download/', DownloadTemplateView.as_view(), name='download-template'),
     path('tests/<int:test_id>/export/<str:format_type>/', ExportQuestionsView.as_view(), name='export-questions'),
     path('tests/<int:test_id>/students/', assign_students_to_test, name='assign-students-to-test'),
-    path('generation/', GenerationView.as_view(), name='generation'),
-    path('generation/run/', GenerationRunView.as_view(), name='generation-run'),
-    path('generation/download/<str:run_id>/<path:filename>/', GenerationDownloadView.as_view(), name='generation-download'),
     path('assignments/', AssignTestView.as_view(), name='assign-test'),
     path('assignments/add/', AddAssignTestView.as_view(), name='add-assign-test'),
     path('assignments/<int:assignment_id>/edit/', EditAssignTestView.as_view(), name='edit-assign-test'),
@@ -100,4 +108,9 @@ urlpatterns = [
     path('results/', ResultsView.as_view(), name='results'),
     path('results/<int:test_id>/delete/', DeleteStudentResultView.as_view(), name='delete-student-result'),
     path('roles/', RolesView.as_view(), name='roles'),
+    path('roles/defaults/create/', CreateDefaultRoleGroupsView.as_view(), name='create-default-role-groups'),
+    path('roles/add/', AddRoleGroupView.as_view(), name='add-role-group'),
+    path('roles/users/search/', RoleUserSearchView.as_view(), name='role-user-search'),
+    path('roles/<int:group_id>/delete/', DeleteRoleGroupView.as_view(), name='delete-role-group'),
+    path('roles/<int:group_id>/', RoleGroupDetailView.as_view(), name='role-group-detail'),
 ]

@@ -1,9 +1,13 @@
-from .models import Log
-from django.utils.timezone import now
+import logging
+
 from django.contrib.auth import get_user_model
 from django.db.utils import IntegrityError
 
+from .models import Log
+
+
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 class LogMiddleware:
     def __init__(self, get_response):
@@ -11,6 +15,10 @@ class LogMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
+        request_path = request.get_full_path()
+
+        if request.path.rstrip("/").endswith("/logs/clear"):
+            return response
 
         # Log data
         ip_address = self.get_client_ip(request)
@@ -20,17 +28,22 @@ class LogMiddleware:
         # Logni saqlash
         try:
             log = Log.objects.create(
-                timestamp=now(),
                 ip_address=ip_address,
                 method=request.method,
-                path=request.get_full_path(),
+                path=request_path,
                 status_code=response.status_code,
                 user_agent=user_agent,
                 user=user,
             )
-            print(f"[INFO] Log yozildi: {log.method} {log.path} ({log.status_code}) - Foydalanuvchi: {log.user.username if log.user else 'Anonim'}")
+            logger.debug(
+                "Log yozildi: %s %s (%s) - Foydalanuvchi: %s",
+                log.method,
+                log.path,
+                log.status_code,
+                log.user.username if log.user else "Anonim",
+            )
         except IntegrityError as e:
-            print(f"[ERROR] Log yozishda xato: {str(e)} - Path: {request.get_full_path()}")
+            logger.warning("Log yozishda xato: %s - Path: %s", str(e), request_path)
 
         return response
 
@@ -46,12 +59,13 @@ class LogMiddleware:
     @staticmethod
     def print_log(log):
         """Log ma'lumotlarini terminalga chiqarish"""
-        print(f"""
-        Vaqt: {log.timestamp}
-        IP Manzil: {log.ip_address}
-        Metod: {log.method}
-        Path: {log.path}
-        Status Code: {log.status_code}
-        User Agent: {log.user_agent}
-        Foydalanuvchi: {log.user.username if log.user else "Anonim"}
-        """)
+        logger.debug(
+            "Vaqt: %s | IP: %s | Metod: %s | Path: %s | Status: %s | User Agent: %s | Foydalanuvchi: %s",
+            log.timestamp,
+            log.ip_address,
+            log.method,
+            log.path,
+            log.status_code,
+            log.user_agent,
+            log.user.username if log.user else "Anonim",
+        )

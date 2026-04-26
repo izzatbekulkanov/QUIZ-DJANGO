@@ -3,153 +3,413 @@
 
 {% block style %}
 <style>
-  /* Minimal maxsus CSS faqat zarur joylashuv va gradientlar uchun */
-  .bg-image {
-    background-size: cover;
-    background-position: center;
+  .category-stat-icon {
+    width: 48px;
+    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 1rem;
   }
-  .bg-primary-dark-op {
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 1rem;
+
+  .category-card-media {
+    position: relative;
+    width: 96px;
+    min-width: 96px;
+    height: 96px;
+    overflow: hidden;
+    border: 1px solid rgba(59, 130, 246, 0.16);
+    border-radius: 1rem;
+    background: linear-gradient(135deg, rgba(30, 64, 175, 0.12), rgba(14, 165, 233, 0.18));
   }
-  .btn-primary, .btn-outline-primary {
-    background: linear-gradient(90deg, #007bff, #00c4ff);
-    border: none;
+
+  .category-grid-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
   }
-  .btn-primary:hover, .btn-outline-primary:hover {
-    background: linear-gradient(90deg, #0056b3, #0096cc);
-    border: none;
+
+  .category-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
   }
-  .btn-danger, .btn-outline-danger {
-    background: linear-gradient(90deg, #dc3545, #ff6b6b);
-    border: none;
+
+  .category-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
-  .btn-danger:hover, .btn-outline-danger:hover {
-    background: linear-gradient(90deg, #b02a37, #cc5252);
-    border: none;
+
+  .category-card-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1d4ed8;
+    font-size: 2rem;
+  }
+
+  .category-card-icon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.4rem;
+    background: rgba(15, 23, 42, 0.18);
+    backdrop-filter: blur(2px);
+  }
+
+  .category-card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+  }
+
+  .category-card-title {
+    min-height: 3rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+  }
+
+  .category-card-summary {
+    min-height: 4.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+  }
+
+  .category-card-meta {
+    min-height: 2.5rem;
+  }
+
+  .category-card-actions {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .category-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, 0.12);
+    color: #475569;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .category-empty-state {
+    border: 1px dashed rgba(15, 23, 42, 0.12);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.72);
+    padding: 3rem 1.5rem;
+    text-align: center;
+  }
+
+  .category-note {
+    border: 1px dashed rgba(15, 23, 42, 0.12);
+    border-radius: 0.75rem;
+    background: rgba(248, 250, 252, 0.9);
+    padding: 0.875rem 1rem;
+  }
+
+  @media (max-width: 575.98px) {
+    .category-card-media {
+      width: 88px;
+      min-width: 88px;
+      height: 88px;
+    }
   }
 </style>
 {% endblock style %}
 
 {% block content %}
 <main id="main-container">
-  <!-- CSRF Token -->
-  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  <input type="hidden" id="csrf-token" value="{{ csrf_token }}">
 
-  <!-- Hero -->
-  <div class="bg-image overflow-hidden"
-       style="background-image: url('{% static 'assets/media/photos/photo3@2x.jpg' %}');">
+  <div class="bg-image overflow-hidden" style="background-image: url('{% static "assets/media/photos/photo3@2x.jpg" %}');">
     <div class="bg-primary-dark-op">
-      <div class="container">
-        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center mt-5 mb-2 text-center text-sm-start">
+      <div class="content content-full">
+        <div class="d-flex flex-column flex-lg-row justify-content-lg-between align-items-lg-center mt-5 mb-2 text-center text-lg-start">
           <div class="flex-grow-1">
-            <h1 class="fw-semibold text-white mb-0">Kategoriyalar</h1>
+            <h1 class="fw-semibold text-white mb-1">Kategoriyalar</h1>
+            <h2 class="h5 fw-normal text-white-75 mb-0">Savollar bo'limlarini bir joydan boshqarish, tahrirlash va tartiblash</h2>
           </div>
-          <div class="flex-shrink-0 mt-2 mt-sm-0 ms-sm-3">
-            <a class="btn btn-light btn-sm" href="{% url 'administrator:add-category' %}">
-              <i class="fa fa-plus me-1"></i> Qo‘shish
-            </a>
+          <div class="flex-shrink-0 mt-3 mt-lg-0 ms-lg-3">
+            <div class="d-flex flex-wrap gap-2 justify-content-center justify-content-lg-end">
+              <a class="btn btn-sm btn-alt-secondary" href="{% url 'administrator:question' %}">
+                <i class="fa fa-file-alt me-1"></i> Testlar
+              </a>
+              <a class="btn btn-sm btn-alt-primary" href="{% url 'administrator:add-category' %}">
+                <i class="fa fa-plus me-1"></i> Yangi kategoriya
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Page Content -->
-  <div class="container py-3">
-    <div class="row g-3">
-      {% for category in categories %}
-        <div class="col-sm-6 col-lg-4">
-          <div class="card h-100 border-0 shadow-sm">
-            <img src="{% if category.image %}{{ category.image.url }}{% else %}{% static 'assets/images/question_category.png' %}{% endif %}"
-                 class="card-img-top" alt="{{ category.name }}" style="aspect-ratio: 4/3; object-fit: cover;">
-            <div class="card-body d-flex flex-column p-3">
-              <h5 class="card-title mb-2">{{ category.name }}</h5>
-              <p class="card-text text-muted small mb-2">{{ category.description|default:"Tavsif yo‘q" }}</p>
-              <p class="card-text text-muted small mb-3">Savollar: {{ category.tests.count }}</p>
-              <div class="mt-auto d-flex gap-2">
-                <a href="{% url 'administrator:edit-category' category.id %}" class="btn btn-primary btn-sm w-50">
-                  <i class="fa fa-edit me-1"></i> Tahrirlash
-                </a>
-                <button class="btn btn-danger btn-sm w-50" onclick="deleteCategory({{ category.id }})">
-                  <i class="fa fa-trash me-1"></i> O‘chirish
-                </button>
-              </div>
+  <div class="content content-boxed">
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Jami kategoriya</div>
+              <div class="fs-2 fw-semibold">{{ total_categories_count }}</div>
+            </div>
+            <div class="category-stat-icon bg-primary bg-opacity-10 text-primary">
+              <i class="fa fa-layer-group"></i>
             </div>
           </div>
         </div>
-      {% empty %}
-        <div class="col-12">
-          <div class="alert alert-info text-center mb-0">
-            <i class="fa fa-info-circle me-1"></i> Kategoriya mavjud emas
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Bog'langan testlar</div>
+              <div class="fs-2 fw-semibold">{{ total_tests_count }}</div>
+            </div>
+            <div class="category-stat-icon bg-success bg-opacity-10 text-success">
+              <i class="fa fa-file-alt"></i>
+            </div>
           </div>
         </div>
-      {% endfor %}
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">Bo'sh kategoriyalar</div>
+              <div class="fs-2 fw-semibold">{{ empty_categories_count }}</div>
+            </div>
+            <div class="category-stat-icon bg-warning bg-opacity-10 text-warning">
+              <i class="fa fa-inbox"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="block block-rounded h-100 mb-0">
+          <div class="block-content block-content-full d-flex align-items-center justify-content-between">
+            <div>
+              <div class="fs-sm fw-medium text-muted text-uppercase">So'nggi yangilanish</div>
+              <div class="fs-5 fw-semibold">
+                {% if latest_category_update %}
+                  {{ latest_category_update|date:"Y-m-d H:i" }}
+                {% else %}
+                  Ma'lumot yo'q
+                {% endif %}
+              </div>
+            </div>
+            <div class="category-stat-icon bg-info bg-opacity-10 text-info">
+              <i class="fa fa-clock"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="block block-rounded mb-4">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Boshqaruv eslatmasi</h3>
+      </div>
+      <div class="block-content block-content-full">
+        <div class="category-note">
+          Test biriktirilgan kategoriyalarni o'chirib bo'lmaydi. Avval ichidagi testlarni boshqa kategoriya bilan bog'lang yoki o'chiring, so'ng kategoriya o'chiriladi.
+        </div>
+      </div>
+    </div>
+
+    <div class="block block-rounded">
+      <div class="block-header block-header-default">
+        <h3 class="block-title">Kategoriya kartalari</h3>
+        <div class="block-options">
+          <span class="fs-sm text-muted">{{ total_categories_count }} ta yozuv</span>
+        </div>
+      </div>
+      <div class="block-content block-content-full">
+        {% if categories %}
+          <div class="row g-4">
+            {% for category in categories %}
+              <div class="col-12 col-md-6 col-xl-4">
+                <div class="block block-rounded h-100 mb-0 overflow-hidden category-grid-card">
+                  <div class="block-content category-card-body">
+                    <div class="category-card-top">
+                      <div class="category-card-media">
+                        {% if category.image %}
+                          <img src="{{ category.image.url }}" alt="{{ category.name }}" class="category-card-image">
+                        {% else %}
+                          <div class="category-card-placeholder">
+                            <i class="fa fa-image"></i>
+                          </div>
+                        {% endif %}
+                        <div class="category-card-icon">
+                          <i class="fa fa-layer-group"></i>
+                        </div>
+                      </div>
+
+                      <div class="min-w-0 flex-grow-1">
+                        <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                          <div class="min-w-0">
+                            <h4 class="h5 mb-1 category-card-title">{{ category.name }}</h4>
+                            <div class="fs-sm text-muted">ID: {{ category.id }}</div>
+                          </div>
+                          <span class="badge {% if category.tests_count %}bg-success{% else %}bg-secondary{% endif %} rounded-pill">
+                            {{ category.tests_count }} ta test
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p class="text-muted fs-sm category-card-summary mb-3">
+                      {{ category.description|default:"Bu kategoriya uchun tavsif hali kiritilmagan."|truncatechars:140 }}
+                    </p>
+
+                    <div class="d-flex flex-wrap gap-2 mb-3 category-card-meta">
+                      <span class="category-meta-pill">
+                        <i class="fa fa-calendar-plus"></i> {{ category.created_at|date:"Y-m-d" }}
+                      </span>
+                      <span class="category-meta-pill">
+                        <i class="fa fa-sync-alt"></i> {{ category.updated_at|date:"Y-m-d H:i" }}
+                      </span>
+                    </div>
+
+                    <div class="d-flex gap-2 category-card-actions">
+                      <a href="{% url 'administrator:edit-category' category.id %}" class="btn btn-sm btn-alt-primary w-100">
+                        <i class="fa fa-pencil-alt me-1"></i> Tahrirlash
+                      </a>
+                      <button type="button" class="btn btn-sm btn-danger w-100" onclick="deleteCategory({{ category.id }})">
+                        <i class="fa fa-trash me-1"></i> O'chirish
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="category-empty-state">
+            <div class="mb-3 text-muted">
+              <i class="fa fa-layer-group fa-2x opacity-50"></i>
+            </div>
+            <h4 class="h5 mb-2">Hali kategoriya yaratilmagan</h4>
+            <p class="text-muted mb-3">Yangi kategoriya qo'shib, testlarni tartibli boshqarishni boshlang.</p>
+            <a href="{% url 'administrator:add-category' %}" class="btn btn-alt-primary">
+              <i class="fa fa-plus me-1"></i> Birinchi kategoriyani qo'shish
+            </a>
+          </div>
+        {% endif %}
+      </div>
     </div>
   </div>
 </main>
 {% endblock content %}
 
 {% block script %}
-<script src="{% static 'assets/js/lib/jquery.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/sweetalert2/sweetalert2.all.min.js' %}"></script>
 <script>
-  const getCSRFToken = () => {
-    const token = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-    if (!token) {
-      Swal.fire({
-        title: 'Xato!',
-        text: 'CSRF token topilmadi',
-        icon: 'error',
-        confirmButtonText: 'OK'
-      });
-      return null;
+  function getCookie(name) {
+    const cookieValue = `; ${document.cookie}`;
+    const parts = cookieValue.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop().split(';').shift();
     }
-    return token;
-  };
+    return '';
+  }
 
-  const deleteCategory = (categoryId) => {
-    const csrfToken = getCSRFToken();
-    if (!csrfToken) return;
+  function getCsrfToken() {
+    return document.getElementById('csrf-token')?.value?.trim() || getCookie('csrftoken');
+  }
 
-    Swal.fire({
-      title: 'O‘chirishni tasdiqlaysizmi?',
-      text: 'Kategoriya butunlay o‘chiriladi',
+  async function readJsonResponse(response) {
+    const contentType = response.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      return response.json();
+    }
+
+    const text = await response.text();
+    return {
+      success: false,
+      message: text || `Server xatoligi (${response.status})`,
+    };
+  }
+
+  async function deleteCategory(categoryId) {
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      Swal.fire({
+        title: 'Xatolik!',
+        text: 'CSRF token topilmadi.',
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: "O'chirishni tasdiqlaysizmi?",
+      text: "Kategoriya butunlay o'chiriladi.",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#007bff',
-      cancelButtonColor: '#dc3545',
-      confirmButtonText: 'O‘chirish',
-      cancelButtonText: 'Bekor'
-    }).then(result => {
-      if (result.isConfirmed) {
-        const deleteCategoryUrl = "{% url 'administrator:delete-category' 0 %}".replace("/0/", `/${categoryId}/`);
-        fetch(deleteCategoryUrl, {
+      confirmButtonColor: '#d61f47',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: "Ha, o'chirish",
+      cancelButtonText: 'Bekor qilish',
+    });
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "{% url 'administrator:delete-category' 0 %}".replace('/0/', `/${categoryId}/`),
+        {
           method: 'DELETE',
           headers: {
             'X-CSRFToken': csrfToken,
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        })
-          .then(res => res.json())
-          .then(data => {
-            Swal.fire({
-              title: data.success ? 'Muvaffaqiyat!' : 'Xato!',
-              text: data.message,
-              icon: data.success ? 'success' : 'error',
-              confirmButtonText: 'OK'
-            }).then(() => data.success && window.location.reload());
-          })
-          .catch(() => {
-            Swal.fire({
-              title: 'Xato!',
-              text: 'Server bilan bog‘lanishda xato',
-              icon: 'error',
-              confirmButtonText: 'OK'
-            });
-          });
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        }
+      );
+
+      const data = await readJsonResponse(response);
+      await Swal.fire({
+        title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
+        text: data.message,
+        icon: data.success ? 'success' : 'error',
+        confirmButtonText: 'OK',
+      });
+
+      if (response.ok && data.success) {
+        window.location.reload();
       }
-    });
-  };
+    } catch (error) {
+      Swal.fire({
+        title: 'Xatolik!',
+        text: "Server bilan bog'lanishda xatolik yuz berdi.",
+        icon: 'error',
+        confirmButtonText: 'OK',
+      });
+    }
+  }
 </script>
 {% endblock script %}
