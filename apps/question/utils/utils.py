@@ -2,6 +2,9 @@ import csv
 import json
 import random
 import tempfile
+import os
+import time
+import uuid
 import gzip
 from pathlib import Path
 from io import BytesIO
@@ -10,11 +13,14 @@ import shutil
 import subprocess
 import mimetypes
 import html as std_html
+import zipfile
 from urllib.parse import unquote
 from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
-from django.http import HttpResponse, JsonResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
+from django.db import transaction
+from django.db.models import Prefetch
 from django.utils.decorators import method_decorator
 from django.views import View
 from docx.shared import Inches
@@ -52,6 +58,10 @@ BROWSER_SAFE_IMAGE_MIME_TYPES = {
 IMPORT_SEPARATOR_RE = re.compile(r"^(?:\++|-{3,})$")
 IMPORT_ANSWER_PREFIX_RE = re.compile(r"^=+\s*")
 IMPORT_CORRECT_PREFIX_RE = re.compile(r"^#+\s*")
+REPO_ROOT = Path(__file__).resolve().parents[3]
+WORD_HELPER_BRIDGE_DIR = REPO_ROOT / "desktop" / "windows_word_bridge"
+WORD_HELPER_EXTENSION_DIR = REPO_ROOT / "desktop" / "browser_extension" / "quiz_word_helper"
+OFFICE_HELPER_EXE_PATH = WORD_HELPER_BRIDGE_DIR / "dist" / "QuizOfficeHelper.exe"
 
 
 def _local_name(tag):
@@ -1122,12 +1132,356 @@ def parse_excel(file, additional_files=None):
     return questions
 
 
+QUESTION_IMPORT_BATCH_SIZE = 250
+QUESTION_IMPORT_PREVIEW_TTL_SECONDS = 60 * 60
+
+
+def _get_question_import_preview_dir():
+    directory = Path(tempfile.gettempdir()) / "quiz_django_question_imports"
+    directory.mkdir(parents=True, exist_ok=True)
+    return directory
+
+
+def _cleanup_expired_question_import_previews():
+    now = time.time()
+    for preview_path in _get_question_import_preview_dir().glob("*.json"):
+        try:
+            if now - preview_path.stat().st_mtime > QUESTION_IMPORT_PREVIEW_TTL_SECONDS:
+                preview_path.unlink(missing_ok=True)
+        except OSError:
+            continue
+
+
+def _get_question_import_preview_path(token):
+    safe_token = re.sub(r"[^a-zA-Z0-9_-]", "", token or "")
+    return _get_question_import_preview_dir() / f"{safe_token}.json"
+
+
+def _save_question_import_preview(payload):
+    _cleanup_expired_question_import_previews()
+    token = uuid.uuid4().hex
+    preview_path = _get_question_import_preview_path(token)
+    with preview_path.open("w", encoding="utf-8") as preview_file:
+        json.dump(payload, preview_file, ensure_ascii=False)
+    return token
+
+
+def _load_question_import_preview(token):
+    preview_path = _get_question_import_preview_path(token)
+    if not preview_path.exists():
+        raise ValueError("Import preview topilmadi yoki muddati tugagan.")
+
+    with preview_path.open("r", encoding="utf-8") as preview_file:
+        return json.load(preview_file)
+
+
+def _delete_question_import_preview(token):
+    try:
+        _get_question_import_preview_path(token).unlink(missing_ok=True)
+    except OSError:
+        pass
+
+
+def _build_question_import_signature(question_text, answers):
+    normalized_question = _normalize_import_fragment(question_text or "").strip().lower()
+    if not normalized_question:
+        return None
+
+    correct_answers = sorted(
+        {
+            _normalize_import_fragment(answer.get("text") or "").strip().lower()
+            for answer in (answers or [])
+            if answer.get("is_correct")
+            and _normalize_import_fragment(answer.get("text") or "").strip()
+        }
+    )
+    if not correct_answers:
+        return None
+    return normalized_question, tuple(correct_answers)
+
+
+def _prepare_question_import_entries(questions):
+    prepared_entries = []
+    seen_signatures = set()
+
+    for question in questions or []:
+        question_text = _normalize_import_fragment(question.get("text") or "").strip()
+        normalized_answers = []
+        for answer in question.get("answers") or []:
+            cleaned_answer = _normalize_import_fragment(answer.get("text") or "").strip()
+            if cleaned_answer:
+                normalized_answers.append(
+                    {
+                        "text": cleaned_answer,
+                        "is_correct": bool(answer.get("is_correct")),
+                    }
+                )
+
+        if not question_text or len(normalized_answers) < 2:
+            continue
+
+        signature = _build_question_import_signature(question_text, normalized_answers)
+        if signature is None or signature in seen_signatures:
+            continue
+
+        seen_signatures.add(signature)
+        prepared_entries.append(
+            {
+                "text": question_text,
+                "image_base64": question.get("image_base64") or None,
+                "answers": normalized_answers,
+                "signature": signature,
+            }
+        )
+
+    return prepared_entries
+
+
+def _apply_correct_answer_indexes(questions, correct_answer_indexes):
+    if not isinstance(correct_answer_indexes, list):
+        return questions
+
+    for question_index, answer_indexes in enumerate(correct_answer_indexes):
+        if question_index >= len(questions):
+            break
+        question = questions[question_index]
+        answers = question.get("answers") or []
+        valid_indexes = {
+            int(index)
+            for index in (answer_indexes or [])
+            if str(index).strip().isdigit()
+        }
+        for answer_index, answer in enumerate(answers):
+            answer["is_correct"] = answer_index in valid_indexes
+
+    return questions
+
+
+def _bulk_save_import_questions(test, questions):
+    prepared_entries = _prepare_question_import_entries(questions)
+    if not prepared_entries:
+        return {"saved_count": 0, "skipped_duplicates": 0}
+
+    existing_signatures = set()
+    existing_questions = (
+        Question.objects.filter(test=test)
+        .only("id", "text")
+        .prefetch_related(
+            Prefetch(
+                "answers",
+                queryset=Answer.objects.filter(is_correct=True).only("question_id", "text"),
+            )
+        )
+    )
+    for existing_question in existing_questions:
+        signature = _build_question_import_signature(
+            existing_question.text,
+            [
+                {"text": answer.text, "is_correct": True}
+                for answer in existing_question.answers.all()
+            ],
+        )
+        if signature:
+            existing_signatures.add(signature)
+
+    entries_to_create = [
+        entry
+        for entry in prepared_entries
+        if entry["signature"] not in existing_signatures
+    ]
+    skipped_duplicates = len(prepared_entries) - len(entries_to_create)
+
+    if not entries_to_create:
+        return {"saved_count": 0, "skipped_duplicates": skipped_duplicates}
+
+    with transaction.atomic():
+        question_objects = [
+            Question(test=test, text=entry["text"])
+            for entry in entries_to_create
+        ]
+        created_questions = Question.objects.bulk_create(
+            question_objects,
+            batch_size=QUESTION_IMPORT_BATCH_SIZE,
+        )
+
+        if created_questions and any(question.pk is None for question in created_questions):
+            recent_questions = list(
+                Question.objects.filter(test=test)
+                .order_by("-id")[: len(created_questions)]
+            )
+            recent_questions.reverse()
+            for created_question, recent_question in zip(created_questions, recent_questions):
+                created_question.pk = recent_question.pk
+
+        answer_objects = []
+        for entry, created_question in zip(entries_to_create, created_questions):
+            if entry["image_base64"]:
+                image_data = base64.b64decode(entry["image_base64"])
+                created_question.image.save(
+                    f"question_{created_question.pk}.png",
+                    ContentFile(image_data),
+                )
+
+            for answer in entry["answers"]:
+                answer_objects.append(
+                    Answer(
+                        question_id=created_question.pk,
+                        text=answer["text"],
+                        is_correct=answer["is_correct"],
+                    )
+                )
+
+        if answer_objects:
+            Answer.objects.bulk_create(
+                answer_objects,
+                batch_size=QUESTION_IMPORT_BATCH_SIZE * 4,
+            )
+
+    return {
+        "saved_count": len(entries_to_create),
+        "skipped_duplicates": skipped_duplicates,
+    }
+
+
+def _iter_helper_archive_files(base_dir):
+    for file_path in base_dir.rglob("*"):
+        if file_path.is_dir():
+            continue
+        if any(part in {"__pycache__", ".venv"} for part in file_path.parts):
+            continue
+        if file_path.suffix.lower() == ".pyc":
+            continue
+        yield file_path
+
+
+def _zip_directory_response(archive_name, directory_mappings, extra_files=None):
+    buffer = BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        for archive_root, base_dir in directory_mappings:
+            if not base_dir.exists():
+                continue
+            for file_path in _iter_helper_archive_files(base_dir):
+                relative_path = file_path.relative_to(base_dir)
+                archive_path = Path(archive_root) / relative_path
+                archive.write(file_path, str(archive_path).replace("\\", "/"))
+
+        for archive_path, content in extra_files or []:
+            archive.writestr(archive_path, content)
+
+    buffer.seek(0)
+    response = HttpResponse(buffer.getvalue(), content_type="application/zip")
+    response["Content-Disposition"] = f'attachment; filename="{archive_name}"'
+    return response
+
+
+def _word_helper_kit_readme():
+    return (
+        "Quiz Word yordamchisi paketi\n"
+        "=============================\n\n"
+        "1. ZIP faylni oching.\n"
+        "2. windows_word_bridge\\start_bridge.bat faylini ikki marta bosing.\n"
+        "3. Word ichida savollar yozilgan faylni ochiq qoldiring.\n"
+        "4. Brauzerda test sahifasiga qayting va \"Hujjatlar ro'yxatini yangilash\" tugmasini bosing.\n\n"
+        "Agar brauzer Word yordamchisi bilan to'g'ridan-to'g'ri ishlamasa:\n"
+        "5. browser_extension\\quiz_word_helper papkasini Chrome yoki Edge brauzeriga qo'shing.\n"
+        "6. Sahifani yangilang va qayta urinib ko'ring.\n"
+    )
+
+
+def _get_word_application():
+    try:
+        import pythoncom
+        import win32com.client
+    except Exception as exc:
+        raise RuntimeError("MS Word bilan ishlash uchun win32com mavjud emas.") from exc
+
+    pythoncom.CoInitialize()
+    word = win32com.client.Dispatch("Word.Application")
+    return word
+
+
+def _build_open_word_document_key(index, document):
+    document_name = str(getattr(document, "Name", "") or "")
+    document_full_name = str(getattr(document, "FullName", "") or "")
+    return f"{index}:{document_full_name or document_name}"
+
+
+def _list_open_word_documents():
+    word = _get_word_application()
+    documents = []
+    active_full_name = ""
+    try:
+        active_document = getattr(word, "ActiveDocument", None)
+        if active_document is not None:
+            active_full_name = str(getattr(active_document, "FullName", "") or "")
+    except Exception:
+        active_full_name = ""
+
+    for index in range(1, int(word.Documents.Count) + 1):
+        document = word.Documents(index)
+        name = str(getattr(document, "Name", "") or "").strip()
+        full_name = str(getattr(document, "FullName", "") or "").strip()
+        documents.append(
+            {
+                "key": _build_open_word_document_key(index, document),
+                "name": name or f"Word hujjati {index}",
+                "path": full_name,
+                "is_active": bool(full_name and full_name == active_full_name),
+                "is_saved": bool(getattr(document, "Saved", True)),
+            }
+        )
+
+    return documents
+
+
+def _find_open_word_document(document_key):
+    word = _get_word_application()
+    for index in range(1, int(word.Documents.Count) + 1):
+        document = word.Documents(index)
+        if _build_open_word_document_key(index, document) == document_key:
+            return document
+    raise ValueError("Tanlangan Word hujjati topilmadi. Uni qayta tanlang.")
+
+
+def _extract_questions_from_open_word_document(document_key):
+    document = _find_open_word_document(document_key)
+    temp_directory = tempfile.TemporaryDirectory(prefix="quiz_open_word_import_")
+    temp_dir_path = Path(temp_directory.name)
+    full_name = str(getattr(document, "FullName", "") or "")
+    suffix = Path(full_name).suffix.lower() if full_name else ".docx"
+    if suffix not in {".doc", ".docx"}:
+        suffix = ".docx"
+
+    temp_file_path = temp_dir_path / f"open_word_copy{suffix}"
+    temp_clone = None
+
+    try:
+        try:
+            document.SaveCopyAs(str(temp_file_path))
+        except Exception:
+            temp_clone = document.Application.Documents.Add()
+            temp_clone.Range().FormattedText = document.Range().FormattedText
+            temp_file_path = temp_file_path.with_suffix(".docx")
+            temp_clone.SaveAs2(str(temp_file_path), FileFormat=16)
+
+        with temp_file_path.open("rb") as temp_file:
+            return parse_word(temp_file)
+    finally:
+        if temp_clone is not None:
+            try:
+                temp_clone.Close(False)
+            except Exception:
+                pass
+        temp_directory.cleanup()
+
+
 @method_decorator(login_required, name='dispatch')
 class ImportQuestionsView(View):
     def post(self, request, test_id):
         test = get_object_or_404(Test, id=test_id)
 
         try:
+            started_at = time.perf_counter()
             pasted_html = (request.POST.get("pasted_html") or "").strip()
             pasted_text = (request.POST.get("pasted_text") or "").strip()
             has_pasted_content = has_meaningful_import_content(pasted_html, pasted_text)
@@ -1147,17 +1501,153 @@ class ImportQuestionsView(View):
                     "errors": "Savollar topilmadi. Formatni tekshirib qayta paste qiling.",
                 })
 
-            request.session["imported_questions"] = questions
-            request.session["test_id"] = test_id
-            request.session.modified = True
+            preview_token = _save_question_import_preview(
+                {
+                    "requested_by": request.user.id,
+                    "test_id": test_id,
+                    "source": "paste",
+                    "questions": questions,
+                }
+            )
+            parse_duration_ms = round((time.perf_counter() - started_at) * 1000, 1)
 
             return JsonResponse({
                 "success": True,
                 "questions": questions,
+                "preview_token": preview_token,
+                "total_questions": len(questions),
+                "parse_duration_ms": parse_duration_ms,
+                "source_label": "Paste orqali import",
                 "message": "Savollar muvaffaqiyatli o'qildi va preview tayyorlandi!",
             })
         except Exception as e:
             return JsonResponse({"success": False, "errors": f"Importda xato: {str(e)}"})
+
+
+@method_decorator(login_required, name='dispatch')
+class OpenWordDocumentsView(View):
+    def get(self, request, test_id):
+        try:
+            documents = _list_open_word_documents()
+            return JsonResponse(
+                {
+                    "success": True,
+                    "supported": True,
+                    "documents": documents,
+                }
+            )
+        except Exception as exc:
+            return JsonResponse(
+                {
+                    "success": True,
+                    "supported": False,
+                    "documents": [],
+                    "message": (
+                        "Server foydalanuvchining kompyuteridagi ochiq Word oynalarini ko'ra olmaydi. "
+                        "Ubuntu serverda tavsiya etilgan usul: Word'dan nusxa olib, Clipboarddan yuklash."
+                    ),
+                    "errors": f"Ochiq Word hujjatlarini o'qishda xatolik: {str(exc)}",
+                },
+            )
+
+
+@method_decorator(login_required, name='dispatch')
+class ImportOpenWordDocumentView(View):
+    def post(self, request, test_id):
+        test = get_object_or_404(Test, id=test_id)
+        document_key = (request.POST.get("document_key") or "").strip()
+        if not document_key:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": "Avval ochiq Word hujjatini tanlang.",
+                },
+                status=400,
+            )
+
+        try:
+            started_at = time.perf_counter()
+            questions = _coerce_import_questions(_extract_questions_from_open_word_document(document_key))
+            if not questions:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "errors": "Tanlangan Word hujjatidan savollar topilmadi.",
+                    }
+                )
+
+            preview_token = _save_question_import_preview(
+                {
+                    "requested_by": request.user.id,
+                    "test_id": test_id,
+                    "source": "open-word",
+                    "document_key": document_key,
+                    "questions": questions,
+                }
+            )
+            parse_duration_ms = round((time.perf_counter() - started_at) * 1000, 1)
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "questions": questions,
+                    "preview_token": preview_token,
+                    "total_questions": len(questions),
+                    "parse_duration_ms": parse_duration_ms,
+                    "source_label": "Ochiq Word hujjatidan import",
+                    "message": "Word hujjatidagi savollar muvaffaqiyatli o'qildi!",
+                }
+            )
+        except Exception as exc:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "errors": f"Word hujjatini import qilishda xatolik: {str(exc)}",
+                },
+                status=500,
+            )
+
+
+@method_decorator(login_required, name='dispatch')
+class DownloadWordHelperKitView(View):
+    def get(self, request):
+        return _zip_directory_response(
+            "quiz-word-helper-kit.zip",
+            [
+                ("windows_word_bridge", WORD_HELPER_BRIDGE_DIR),
+                ("browser_extension/quiz_word_helper", WORD_HELPER_EXTENSION_DIR),
+            ],
+            extra_files=[("README.txt", _word_helper_kit_readme())],
+        )
+
+
+@method_decorator(login_required, name='dispatch')
+class DownloadWordHelperExtensionView(View):
+    def get(self, request):
+        return _zip_directory_response(
+            "quiz-word-browser-extension.zip",
+            [("quiz_word_helper", WORD_HELPER_EXTENSION_DIR)],
+        )
+
+
+@method_decorator(login_required, name='dispatch')
+class DownloadOfficeHelperExeView(View):
+    def get(self, request):
+        if not OFFICE_HELPER_EXE_PATH.exists():
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Yordamchi dastur hali tayyor emas. Administrator exe faylini build qilishi kerak.",
+                },
+                status=503,
+            )
+
+        return FileResponse(
+            OFFICE_HELPER_EXE_PATH.open("rb"),
+            as_attachment=True,
+            filename=OFFICE_HELPER_EXE_PATH.name,
+            content_type="application/octet-stream",
+        )
 
 
 @method_decorator(login_required, name='dispatch')
@@ -1193,10 +1683,6 @@ class DownloadTemplateView(View):
 @method_decorator(login_required, name='dispatch')
 class SaveImportedQuestionsView(View):
     def post(self, request):
-        test_id = request.session.get("test_id")
-        if not test_id:
-            return JsonResponse({"success": False, "errors": "Test topilmadi"})
-
         payload = {}
         if request.body:
             try:
@@ -1204,75 +1690,54 @@ class SaveImportedQuestionsView(View):
             except (ValueError, UnicodeDecodeError):
                 payload = {}
 
-        incoming_questions = _coerce_import_questions(payload.get("questions"))
-        questions = incoming_questions or _coerce_import_questions(
-            request.session.get("imported_questions", [])
-        )
+        preview_token = (payload.get("preview_token") or "").strip()
+        correct_answer_indexes = payload.get("correct_answer_indexes") or []
+        test_id = None
+        questions = None
+
+        if preview_token:
+            try:
+                preview_payload = _load_question_import_preview(preview_token)
+            except ValueError as exc:
+                return JsonResponse({"success": False, "errors": str(exc)}, status=400)
+
+            if preview_payload.get("requested_by") != request.user.id:
+                return JsonResponse({"success": False, "errors": "Bu import preview sizga tegishli emas."}, status=403)
+
+            test_id = preview_payload.get("test_id")
+            questions = _coerce_import_questions(preview_payload.get("questions"))
+            questions = _apply_correct_answer_indexes(questions, correct_answer_indexes)
+        else:
+            test_id = request.session.get("test_id")
+            incoming_questions = _coerce_import_questions(payload.get("questions"))
+            questions = incoming_questions or _coerce_import_questions(
+                request.session.get("imported_questions", [])
+            )
+
+        if not test_id:
+            return JsonResponse({"success": False, "errors": "Test topilmadi"})
+
         if not questions:
             return JsonResponse({"success": False, "errors": "Saqlash uchun savollar topilmadi"})
 
         test = get_object_or_404(Test, id=test_id)
-        saved_count = 0
 
         try:
-            for q in questions:
-                question_text = _normalize_import_fragment(q.get("text") or "").strip()
-                normalized_answers = []
-                for answer in q.get("answers") or []:
-                    cleaned_answer = _normalize_import_fragment(answer.get("text") or "").strip()
-                    if cleaned_answer:
-                        normalized_answers.append({
-                            "text": cleaned_answer,
-                            "is_correct": bool(answer.get("is_correct")),
-                        })
-
-                if not question_text or len(normalized_answers) < 2:
-                    continue
-
-                correct_answer = next(
-                    (answer["text"] for answer in normalized_answers if answer["is_correct"]),
-                    None,
-                )
-                if not correct_answer:
-                    print(f"Savol o'tkazib yuborildi: to'g'ri javob yo'q: {question_text}")
-                    continue
-
-                exists = Question.objects.filter(
-                    test=test,
-                    text__iexact=question_text,
-                ).filter(
-                    answers__text__iexact=correct_answer,
-                    answers__is_correct=True,
-                ).exists()
-
-                if exists:
-                    print(
-                        f"Savol o'tkazib yuborildi: takrorlangan savol: "
-                        f"{question_text} (to'g'ri javob: {correct_answer})"
-                    )
-                    continue
-
-                question = Question.objects.create(test=test, text=question_text)
-                if q.get("image_base64"):
-                    image_data = base64.b64decode(q["image_base64"])
-                    image_name = f"question_{question.id}.png"
-                    question.image.save(image_name, ContentFile(image_data))
-
-                for answer in normalized_answers:
-                    Answer.objects.create(
-                        question=question,
-                        text=answer["text"],
-                        is_correct=answer["is_correct"],
-                    )
-
-                saved_count += 1
-
             request.session.pop("imported_questions", None)
             request.session.pop("test_id", None)
             request.session.modified = True
+            save_summary = _bulk_save_import_questions(test, questions)
+
+            if preview_token:
+                _delete_question_import_preview(preview_token)
+
+            skipped_duplicates = save_summary["skipped_duplicates"]
+            extra_message = f" {skipped_duplicates} ta takror savol o'tkazib yuborildi." if skipped_duplicates else ""
             return JsonResponse({
                 "success": True,
-                "message": f"{saved_count} ta savol muvaffaqiyatli saqlandi!",
+                "saved_count": save_summary["saved_count"],
+                "skipped_duplicates": skipped_duplicates,
+                "message": f"{save_summary['saved_count']} ta savol muvaffaqiyatli saqlandi!{extra_message}",
             })
         except Exception as e:
             print(f"Saqlashda xato: {str(e)}")

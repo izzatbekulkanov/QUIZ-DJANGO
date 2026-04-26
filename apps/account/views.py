@@ -159,7 +159,13 @@ class RegisterView(View):
 
 def check_username(request):
     username = request.GET.get('username', '').strip()
-    is_taken = CustomUser.objects.filter(username=username).exists()
+    exclude_user_id = (request.GET.get('exclude_user_id') or '').strip()
+    username_queryset = CustomUser.objects.filter(username=username)
+
+    if exclude_user_id.isdigit():
+        username_queryset = username_queryset.exclude(id=int(exclude_user_id))
+
+    is_taken = username_queryset.exists()
     return JsonResponse({'is_taken': is_taken})
 
 

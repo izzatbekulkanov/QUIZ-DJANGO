@@ -1,6 +1,16 @@
 from django.urls import path
 
-from .utils.utils import DownloadTemplateView, SaveImportedQuestionsView, ImportQuestionsView, ExportQuestionsView
+from .utils.utils import (
+    DownloadTemplateView,
+    DownloadOfficeHelperExeView,
+    DownloadWordHelperExtensionView,
+    DownloadWordHelperKitView,
+    SaveImportedQuestionsView,
+    ImportQuestionsView,
+    ExportQuestionsView,
+    OpenWordDocumentsView,
+    ImportOpenWordDocumentView,
+)
 from .view.category import (
     CategoriesView,
     AddCategoryView,
@@ -15,7 +25,7 @@ from .view.hemis_users import (
     GroupListView,
 )
 from .view.site import site_settings_view
-from .view.user_admin import EditUserView, UsersView
+from .view.user_admin import EditUserView, ForceDeleteUserView, UsersView
 from .view.test import (
     QuestionView,
     AddQuestionView,
@@ -69,6 +79,7 @@ urlpatterns = [
     path('users/add/', AddUserView.as_view(), name='add-user'),
     path('users/<int:id>/edit/', EditUserView.as_view(), name='edit-user'),
     path('users/<int:id>/delete/', UsersView.as_view(), name='delete-user'),
+    path('users/<int:id>/force-delete/', ForceDeleteUserView.as_view(), name='force-delete-user'),
     path('users/import-excel/', ImportUsersExcelView.as_view(), name='import-users-excel'),
     path('users/import-excel/preview/', ImportUsersExcelPreviewView.as_view(), name='import-users-excel-preview'),
     path('users/import-excel/stream/', ImportUsersExcelStreamView.as_view(), name='import-users-excel-stream'),
@@ -90,8 +101,13 @@ urlpatterns = [
     path('tests/<int:test_id>/questions/<int:question_id>/update/', QuestionUpdateApiView.as_view(), name='question-update'),
     path('tests/<int:test_id>/questions/<int:question_id>/delete/', QuestionDeleteApiView.as_view(), name='question-delete'),
     path('tests/<int:test_id>/questions/import/', ImportQuestionsView.as_view(), name='import-questions'),
+    path('tests/<int:test_id>/questions/open-word-documents/', OpenWordDocumentsView.as_view(), name='open-word-documents'),
+    path('tests/<int:test_id>/questions/import-open-word/', ImportOpenWordDocumentView.as_view(), name='import-open-word'),
     path('tests/import/save/', SaveImportedQuestionsView.as_view(), name='save-imported-questions'),
     path('tests/template/download/', DownloadTemplateView.as_view(), name='download-template'),
+    path('tests/office-helper/download/', DownloadOfficeHelperExeView.as_view(), name='download-office-helper-exe'),
+    path('tests/word-helper/download/', DownloadWordHelperKitView.as_view(), name='download-word-helper-kit'),
+    path('tests/word-helper/extension/download/', DownloadWordHelperExtensionView.as_view(), name='download-word-helper-extension'),
     path('tests/<int:test_id>/export/<str:format_type>/', ExportQuestionsView.as_view(), name='export-questions'),
     path('tests/<int:test_id>/students/', assign_students_to_test, name='assign-students-to-test'),
     path('assignments/', AssignTestView.as_view(), name='assign-test'),

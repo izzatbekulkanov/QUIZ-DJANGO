@@ -1,5 +1,9 @@
+import json
+import tempfile
 from io import BytesIO
 from datetime import timedelta
+from pathlib import Path
+from unittest.mock import patch
 
 from django.contrib.auth.models import Group, Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -9,6 +13,7 @@ from django.utils import timezone
 from openpyxl import Workbook
 
 from apps.account.models import CustomUser
+from apps.logs.models import Log
 from apps.question.models import Answer, Category, Question, StudentTest, StudentTestAssignment, StudentTestQuestion, Test
 from apps.question.utils.utils import _coerce_import_questions, parse_pasted_questions
 from apps.question.views import _delete_excel_import_preview
@@ -174,6 +179,161 @@ von
         self.assertEqual(len(questions[1]["answers"]), 4)
         self.assertTrue(questions[0]["answers"][0]["is_correct"])
         self.assertTrue(questions[1]["answers"][0]["is_correct"])
+
+
+class ImportQuestionsFlowTests(TestCase):
+    def setUp(self):
+        self.admin_user = CustomUser.objects.create_user(
+            username="question-import-admin",
+            password="secret123",
+            is_staff=True,
+        )
+        self.client.force_login(self.admin_user)
+        self.category = Category.objects.create(name="Import test category")
+        self.test = Test.objects.create(
+            category=self.category,
+            name="Import test",
+            created_by=self.admin_user,
+        )
+
+    def _sample_pasted_text(self):
+        return """
++++
+Wie heißt du?
+====
+#Ich heiße Anna.
+====
+Ich wohne Anna.
+====
+Ich komme Anna.
+====
+Ich bin Anna wohne.
++++
+Ich komme ___ Italien.
+====
+#aus
+====
+in
+====
+bei
+====
+von
+""".strip()
+
+    def test_import_preview_returns_token_and_bulk_save_persists_questions(self):
+        preview_response = self.client.post(
+            reverse("administrator:import-questions", args=[self.test.id]),
+            {
+                "pasted_html": "",
+                "pasted_text": self._sample_pasted_text(),
+            },
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(preview_response.status_code, 200)
+        preview_payload = preview_response.json()
+        self.assertTrue(preview_payload["success"])
+        self.assertTrue(preview_payload["preview_token"])
+        self.assertEqual(preview_payload["total_questions"], 2)
+
+        save_response = self.client.post(
+            reverse("administrator:save-imported-questions"),
+            data=json.dumps(
+                {
+                    "preview_token": preview_payload["preview_token"],
+                    "correct_answer_indexes": [[0], [0]],
+                }
+            ),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(save_response.status_code, 200)
+        save_payload = save_response.json()
+        self.assertTrue(save_payload["success"])
+        self.assertEqual(save_payload["saved_count"], 2)
+        self.assertEqual(Question.objects.filter(test=self.test).count(), 2)
+        self.assertEqual(Answer.objects.filter(question__test=self.test).count(), 8)
+
+    def test_bulk_save_skips_duplicate_questions(self):
+        preview_response = self.client.post(
+            reverse("administrator:import-questions", args=[self.test.id]),
+            {
+                "pasted_html": "",
+                "pasted_text": self._sample_pasted_text(),
+            },
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        preview_token = preview_response.json()["preview_token"]
+
+        self.client.post(
+            reverse("administrator:save-imported-questions"),
+            data=json.dumps(
+                {
+                    "preview_token": preview_token,
+                    "correct_answer_indexes": [[0], [0]],
+                }
+            ),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        second_preview_response = self.client.post(
+            reverse("administrator:import-questions", args=[self.test.id]),
+            {
+                "pasted_html": "",
+                "pasted_text": self._sample_pasted_text(),
+            },
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        second_preview_token = second_preview_response.json()["preview_token"]
+
+        second_save_response = self.client.post(
+            reverse("administrator:save-imported-questions"),
+            data=json.dumps(
+                {
+                    "preview_token": second_preview_token,
+                    "correct_answer_indexes": [[0], [0]],
+                }
+            ),
+            content_type="application/json",
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(second_save_response.status_code, 200)
+        second_save_payload = second_save_response.json()
+        self.assertTrue(second_save_payload["success"])
+        self.assertEqual(second_save_payload["saved_count"], 0)
+        self.assertEqual(second_save_payload["skipped_duplicates"], 2)
+
+    def test_download_word_helper_kit_returns_zip(self):
+        response = self.client.get(reverse("administrator:download-word-helper-kit"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/zip")
+        self.assertIn("quiz-word-helper-kit.zip", response["Content-Disposition"])
+        self.assertGreater(len(response.content), 0)
+
+    def test_download_word_helper_extension_returns_zip(self):
+        response = self.client.get(reverse("administrator:download-word-helper-extension"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/zip")
+        self.assertIn("quiz-word-browser-extension.zip", response["Content-Disposition"])
+        self.assertGreater(len(response.content), 0)
+
+    def test_download_office_helper_exe_returns_file_when_built(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            exe_path = Path(temp_dir) / "QuizOfficeHelper.exe"
+            exe_path.write_bytes(b"MZ-test-helper")
+
+            with patch("apps.question.utils.utils.OFFICE_HELPER_EXE_PATH", exe_path):
+                response = self.client.get(reverse("administrator:download-office-helper-exe"))
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response["Content-Type"], "application/octet-stream")
+            self.assertIn("QuizOfficeHelper.exe", response["Content-Disposition"])
+            response.close()
 
 
 class ImportUsersExcelViewTests(TestCase):
@@ -629,6 +789,68 @@ class EditUserAdminViewTests(TestCase):
             list(self.target_user.groups.values_list("id", flat=True)),
             [self.role_group.id],
         )
+
+    def test_force_delete_removes_user_and_all_related_records(self):
+        self.target_user.is_teacher = True
+        self.target_user.save(update_fields=["is_teacher"])
+        self.target_user.groups.add(self.role_group)
+
+        category = Category.objects.create(name="Majburiy delete")
+        managed_test = Test.objects.create(
+            category=category,
+            name="Bog'liq test",
+            created_by=self.target_user,
+        )
+        assignment = StudentTestAssignment.objects.create(
+            teacher=self.target_user,
+            test=managed_test,
+            category=category,
+            total_questions=0,
+            start_time=timezone.now() - timedelta(hours=1),
+            end_time=timezone.now() + timedelta(hours=1),
+            duration=30,
+        )
+        student_test = StudentTest.objects.create(
+            student=self.target_user,
+            assignment=assignment,
+            completed=True,
+            score=86,
+        )
+        Log.objects.create(
+            method="POST",
+            path="/administrator/users/",
+            status_code=200,
+            user=self.target_user,
+        )
+
+        response = self.client.post(
+            reverse("administrator:force-delete-user", args=[self.target_user.id]),
+            {"confirmation_username": self.target_user.username},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertTrue(payload["success"])
+        self.assertEqual(payload["redirect_url"], reverse("administrator:users"))
+        self.assertFalse(CustomUser.objects.filter(id=self.target_user.id).exists())
+        self.assertFalse(Test.objects.filter(id=managed_test.id).exists())
+        self.assertFalse(StudentTestAssignment.objects.filter(id=assignment.id).exists())
+        self.assertFalse(StudentTest.objects.filter(id=student_test.id).exists())
+        self.assertFalse(Log.objects.filter(user_id=self.target_user.id).exists())
+        self.assertEqual(self.role_group.user_set.count(), 0)
+
+    def test_force_delete_requires_exact_username_confirmation(self):
+        response = self.client.post(
+            reverse("administrator:force-delete-user", args=[self.target_user.id]),
+            {"confirmation_username": "wrong-username"},
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        payload = response.json()
+        self.assertFalse(payload["success"])
+        self.assertTrue(CustomUser.objects.filter(id=self.target_user.id).exists())
 
 
 class ViewTestDetailsViewTests(TestCase):

@@ -276,6 +276,36 @@
     white-space: pre-wrap;
   }
 
+  .import-source-card {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 0.98));
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .import-source-card summary {
+    cursor: pointer;
+    list-style: none;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .import-source-card summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .import-source-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: end;
+  }
+
+  .import-source-select {
+    min-width: 260px;
+  }
+
   .preview-card {
     border: 1px solid #e5edf6;
     border-radius: 14px;
@@ -358,6 +388,26 @@
     color: #1d4ed8;
     font-weight: 600;
     font-size: 0.82rem;
+  }
+
+  .preview-meta-note {
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+
+  .preview-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .preview-pagination-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 
   @media (max-width: 991.98px) {
@@ -625,8 +675,11 @@
                   <a href="{% url 'administrator:download-template' %}" class="btn btn-outline-secondary btn-sm">
                     <i class="fa fa-download me-1"></i> Word shablon
                   </a>
-                  <span class="import-status-chip">
-                    <i class="fa fa-paste"></i> Import faqat paste orqali ishlaydi
+                  <button type="button" class="btn btn-outline-primary btn-sm" id="read-clipboard-button">
+                    <i class="fa fa-file-word me-1"></i> Worddan tez olish
+                  </button>
+                  <span class="import-status-chip" id="import-source-status">
+                    <i class="fa fa-layer-group"></i> 1-usul: Worddagi savollarni belgilang, <kbd>Ctrl</kbd>+<kbd>C</kbd> bosing va <strong>Worddan tez olish</strong> ni bosing
                   </span>
                 </div>
                 <div class="import-action-bar-right">
@@ -634,8 +687,58 @@
                     <i class="fa fa-eye me-1"></i> Preview
                   </button>
                   <button type="button" class="btn btn-alt-primary btn-sm" id="submit-paste-button">
-                    <i class="fa fa-upload me-1"></i> Import qilish
+                    <i class="fa fa-search me-1"></i> Paste matnini tekshirish
                   </button>
+                </div>
+              </div>
+
+              <div class="import-source-card">
+                <div class="mt-3">
+                  <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-3">
+                    <div>
+                      <h5 class="mb-2">2-usul: Katta Word yoki Office faylidan yuklash</h5>
+                      <p class="text-muted small mb-0">500-1000 ta savol bo'lsa, yordamchi dasturdan foydalaning. U kompyuterdagi ochiq Office oynalarini ko'rsatadi va tanlangan fayldagi matnni bir bosishda previewga olib keladi.</p>
+                    </div>
+                    <div class="question-create-toolbar">
+                      <button type="button" class="btn btn-outline-primary btn-sm" id="prepare-word-helper">
+                        <i class="fa fa-download me-1"></i> Yordamchi .exe ni olish
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm" id="check-word-bridge">
+                        <i class="fa fa-heart-pulse me-1"></i> Dastur ishlayotganini tekshirish
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="row g-3 align-items-end">
+                  <div class="col-12 col-lg-8">
+                    <label class="form-label fw-semibold" for="open-word-document-select">Ochiq Office oynasini tanlang</label>
+                    <select class="form-select import-source-select" id="open-word-document-select">
+                      <option value="">Yordamchi dastur ishga tushgach ochiq Office oynalari shu yerda ko'rinadi</option>
+                    </select>
+                    <div class="preview-meta-note mt-2">Word, Excel va PowerPoint ichida ochiq turgan fayllar ro'yxatda chiqadi. Savollar bor faylni tanlang.</div>
+                  </div>
+                  <div class="col-12 col-lg-4">
+                    <div class="import-source-actions">
+                      <button type="button" class="btn btn-outline-secondary btn-sm" id="refresh-open-word-documents">
+                        <i class="fa fa-sync-alt me-1"></i> Ochiq oynalarni yangilash
+                      </button>
+                      <button type="button" class="btn btn-outline-primary btn-sm" id="import-open-word-button" disabled>
+                        <i class="fa fa-file-import me-1"></i> Tanlangan oynadan olish
+                      </button>
+                    </div>
+                  </div>
+                  </div>
+
+                  <details class="mt-3">
+                    <summary>Qo'shimcha sozlama</summary>
+                    <div class="row g-3 align-items-end mt-1">
+                      <div class="col-12 col-lg-6">
+                        <label class="form-label fw-semibold" for="word-bridge-url">Yordamchi dastur manzili</label>
+                        <input type="url" class="form-control" id="word-bridge-url" value="http://127.0.0.1:8765" placeholder="http://127.0.0.1:8765">
+                        <div class="preview-meta-note mt-2">Ko'p holatda bu joyni o'zgartirish shart emas.</div>
+                      </div>
+                    </div>
+                  </details>
                 </div>
               </div>
 
@@ -643,8 +746,9 @@
                 <div class="row g-3 align-items-start">
                   <div class="col-lg-5">
                     <h5 class="mb-2">Qo'llab-quvvatlanadigan format</h5>
-                    <p class="text-muted small mb-0">Endi import matni bir nechta ko'rinishda kelsa ham o'qiladi. `+`, `=` va `#` markerlari soni turlicha bo'lsa ham parser to'g'ri ajratishga harakat qiladi.</p>
-                    <p class="text-muted small mb-0 mt-2">`++++` yangi savolni boshlaydi, `#` bilan boshlangan javob esa to'g'ri javob bo'ladi.</p>
+                    <p class="text-muted small mb-0">Endi import matni bir nechta ko'rinishda kelsa ham o'qiladi. <code>+</code>, <code>=</code> va <code>#</code> markerlari soni turlicha bo'lsa ham parser to'g'ri ajratishga harakat qiladi.</p>
+                    <p class="text-muted small mb-0 mt-2"><code>++++</code> yangi savolni boshlaydi, <code>#</code> bilan boshlangan javob esa to'g'ri javob bo'ladi.</p>
+                    <p class="text-muted small mb-0 mt-2">Eng qulay usul: Word ichida savollarni belgilang, <kbd>Ctrl</kbd>+<kbd>C</kbd> qiling, keyin <strong>Worddan tez olish</strong> tugmasini bosing.</p>
                   </div>
                   <div class="col-lg-7">
                     <pre>++++
@@ -824,7 +928,7 @@ Ich bin Anna wohne.
                   <i class="fa fa-layer-group"></i> 0 ta savol
                 </span>
               </div>
-              <p class="text-muted small mb-0">To'g'ri javoblarni shu yerning o'zida belgilab, keyin bir martada saqlashingiz mumkin.</p>
+              <p class="text-muted small mb-0" id="import-preview-meta">To'g'ri javoblarni shu yerning o'zida belgilab, keyin bir martada saqlashingiz mumkin.</p>
             </div>
             <div class="preview-modal-actions">
               <button type="button" class="btn btn-outline-secondary btn-sm" id="clear-import-preview" disabled>
@@ -883,19 +987,39 @@ Ich bin Anna wohne.
     const pastedTextInput = document.getElementById('pasted-text');
     const pasteInvalid = document.getElementById('paste-invalid');
     const previewOpenButton = document.getElementById('open-import-preview');
+    const readClipboardButton = document.getElementById('read-clipboard-button');
     const questionsPreviewEl = document.getElementById('questions-preview');
     const importPreviewCountEl = document.getElementById('import-preview-count');
+    const importPreviewMetaEl = document.getElementById('import-preview-meta');
     const clearImportPreviewButton = document.getElementById('clear-import-preview');
     const saveQuestionsButton = document.getElementById('save-questions');
+    const importSourceStatusEl = document.getElementById('import-source-status');
+    const wordBridgeUrlInput = document.getElementById('word-bridge-url');
+    const prepareWordHelperButton = document.getElementById('prepare-word-helper');
+    const checkWordBridgeButton = document.getElementById('check-word-bridge');
+    const openWordDocumentSelect = document.getElementById('open-word-document-select');
+    const refreshOpenWordDocumentsButton = document.getElementById('refresh-open-word-documents');
+    const importOpenWordButton = document.getElementById('import-open-word-button');
     const richImageUpload = document.getElementById('rich-image-upload');
     const csrfToken = getCookie('csrftoken') || questionForm.querySelector('input[name=csrfmiddlewaretoken]')?.value;
     const previewModalElement = document.getElementById('importPreviewModal');
     const previewModal = window.bootstrap ? new bootstrap.Modal(previewModalElement) : null;
+    const previewPageSize = 20;
     let importedQuestions = [];
+    let importedPreviewToken = '';
+    let importedSourceLabel = '';
+    let importParseDurationMs = 0;
+    let currentPreviewPage = 1;
     let imageTargetEditorId = 'question-editor';
     let activeEditorId = 'question-editor';
 
     let nextAnswerEditorIndex = 0;
+    const bridgeStorageKey = 'quizWordBridgeUrl';
+    const wordHelperExeDownloadUrl = "{% url 'administrator:download-office-helper-exe' %}";
+    const wordHelperState = {
+      bridgeReachable: false,
+      transport: null,
+    };
 
     function editorHasContent(editorEl) {
       const text = (editorEl.innerText || '').replace(/\u00a0/g, ' ').trim();
@@ -1047,12 +1171,250 @@ Ich bin Anna wohne.
       return String.fromCharCode(65 + (index % 26));
     }
 
+    function setImportSourceStatus(text, iconClass = 'fa-layer-group') {
+      if (!importSourceStatusEl) {
+        return;
+      }
+      importSourceStatusEl.innerHTML = `<i class="fa ${iconClass}"></i> ${text}`;
+    }
+
+    function normalizeBridgeBaseUrl(rawValue) {
+      return (rawValue || 'http://127.0.0.1:8765').trim().replace(/\/+$/, '');
+    }
+
+    function getBridgeBaseUrl() {
+      return normalizeBridgeBaseUrl(wordBridgeUrlInput?.value || '');
+    }
+
+    function setOpenWordDocumentPlaceholder(message) {
+      if (!openWordDocumentSelect) {
+        return;
+      }
+      openWordDocumentSelect.innerHTML = `<option value="">${escapeHtml(message)}</option>`;
+      syncOpenWordButtons();
+    }
+
+    async function parseJsonResponse(response) {
+      const rawText = await response.text();
+
+      try {
+        return JSON.parse(rawText);
+      } catch (error) {
+        const compactText = (rawText || '').trim();
+        if (compactText.startsWith('<')) {
+          throw new Error("Javobni o'qishning iloji bo'lmadi.");
+        }
+        throw new Error(compactText || "Javobni o'qib bo'lmadi.");
+      }
+    }
+
+    function bridgeFetchErrorMessage(error) {
+      const code = error?.code || '';
+      const message = (error?.message || '').trim();
+
+      if (code === 'HELPER_SETUP_REQUIRED') {
+        return "Katta Office faylini bir bosishda olish uchun yordamchi dastur kerak. 'Yordamchi .exe ni olish' tugmasini bosing.";
+      }
+
+      if (code === 'HELPER_APP_NOT_RUNNING') {
+        return "Yordamchi dastur hali ishga tushmagan. Uni oching, keyin yana urinib ko'ring.";
+      }
+
+      if (code === 'NO_OPEN_OFFICE_DOCUMENTS') {
+        return "Word, Excel yoki PowerPoint ichida savollar bor faylni ochib qo'ying, keyin ro'yxatni yangilang.";
+      }
+
+      if (code === 'DOCUMENT_SELECTION_REQUIRED') {
+        return "Avval ro'yxatdan kerakli Office oynasini tanlang.";
+      }
+
+      if (!message) {
+        return "Oddiy yo'l sifatida Word ichida savollarni belgilang, Ctrl+C bosing va 'Worddan tez olish' tugmasini bosing.";
+      }
+
+      return message;
+    }
+
+    function openHelperDownload(url) {
+      const popup = window.open(url, '_blank', 'noopener');
+      if (!popup) {
+        window.location.href = url;
+      }
+    }
+
+    async function showWordHelperSetupPrompt(reasonText = '') {
+      const result = await Swal.fire({
+        title: "Yordamchi .exe ni ishga tushirish",
+        html: `
+          <div class="text-start">
+            <p class="mb-3">Katta Office fayllarini bir bosishda olish uchun bir marta yordamchi dastur kerak bo'ladi.</p>
+            <div class="mb-3">
+              <div class="fw-semibold mb-1">1-qadam</div>
+              <div class="text-muted small"><code>QuizOfficeHelper.exe</code> faylini yuklab oling.</div>
+            </div>
+            <div class="mb-3">
+              <div class="fw-semibold mb-1">2-qadam</div>
+              <div class="text-muted small">Faylni oching. U orqa fonda ishlaydi va yopilmaydi.</div>
+            </div>
+            <div class="mb-3">
+              <div class="fw-semibold mb-1">3-qadam</div>
+              <div class="text-muted small">Word, Excel yoki PowerPoint faylini ochiq qoldirib, shu sahifaga qayting va ro'yxatni yangilang.</div>
+            </div>
+            ${reasonText ? `<div class="alert alert-light border mb-0 small">${escapeHtml(reasonText)}</div>` : ''}
+          </div>
+        `,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: ".exe ni yuklab olish",
+        cancelButtonText: 'Yopish',
+      });
+
+      if (result.isConfirmed) {
+        openHelperDownload(wordHelperExeDownloadUrl);
+        await Swal.fire(
+          'Davom eting',
+          "Yuklab olingan .exe faylini oching. Keyin shu sahifaga qaytib 'Dastur ishlayotganini tekshirish' tugmasini bosing.",
+          'success'
+        );
+      }
+    }
+
+    async function detectWordHelperExtension({ force = false } = {}) {
+      return false;
+    }
+
+    async function callWordHelperThroughExtension(path, { method = 'GET', body = null, headers = {} } = {}) {
+      const unsupportedError = new Error("Yordamchi dastur to'g'ridan-to'g'ri ulanadi.");
+      unsupportedError.code = 'HELPER_SETUP_REQUIRED';
+      throw unsupportedError;
+    }
+
+    async function callWordHelperDirect(path, { method = 'GET', body = null, headers = {} } = {}) {
+      const bridgeBaseUrl = getBridgeBaseUrl();
+      if (!bridgeBaseUrl) {
+        const helperUrlError = new Error("Word yordamchisi manzili topilmadi.");
+        helperUrlError.code = 'HELPER_SETUP_REQUIRED';
+        throw helperUrlError;
+      }
+
+      const requestHeaders = {
+        'X-Requested-With': 'XMLHttpRequest',
+        ...headers,
+      };
+
+      const fetchOptions = {
+        method,
+        headers: requestHeaders,
+      };
+
+      if (body !== null) {
+        if (!requestHeaders['Content-Type']) {
+          requestHeaders['Content-Type'] = 'application/json';
+        }
+        fetchOptions.body = typeof body === 'string' ? body : JSON.stringify(body);
+      }
+
+      let response;
+      try {
+        response = await fetch(`${bridgeBaseUrl}${path}`, fetchOptions);
+      } catch (error) {
+        const directError = new Error("Word yordamchisi bilan bog'lanib bo'lmadi.");
+        directError.code = 'HELPER_SETUP_REQUIRED';
+        throw directError;
+      }
+
+      const data = await parseJsonResponse(response);
+      if (!response.ok) {
+        const responseError = new Error(
+          data?.message || data?.errors || "Word yordamchisidan ma'lumot olib bo'lmadi."
+        );
+        responseError.status = response.status;
+        responseError.code = 'HELPER_APP_NOT_RUNNING';
+        throw responseError;
+      }
+
+      return {
+        ok: true,
+        status: response.status,
+        data,
+        transport: 'direct',
+      };
+    }
+
+    async function callWordHelper(path, options = {}) {
+      try {
+        const result = await callWordHelperDirect(path, options);
+        wordHelperState.transport = result.transport;
+        wordHelperState.bridgeReachable = true;
+        return result;
+      } catch (error) {
+        wordHelperState.bridgeReachable = false;
+        throw error;
+      }
+    }
+
+    async function refreshWordHelperState({ silent = false, announceReady = false } = {}) {
+      setOpenWordDocumentPlaceholder("Yordamchi dastur ishga tushgach ochiq Office oynalari shu yerda ko'rinadi");
+
+      try {
+        const result = await callWordHelper('/health');
+        const data = result.data || {};
+        const transportLabel = "To'g'ridan-to'g'ri";
+        setImportSourceStatus(
+          `Yordamchi dastur tayyor. ${transportLabel} ulandi.`,
+          'fa-circle-check'
+        );
+
+        if (announceReady) {
+          await Swal.fire(
+            'Tayyor',
+            "Word yordamchisi ishlayapti. Endi hujjatlar ro'yxatini yangilab, Word oynasidan savollarni yuklashingiz mumkin.",
+            'success'
+          );
+        }
+        return true;
+      } catch (error) {
+        wordHelperState.bridgeReachable = false;
+        setImportSourceStatus(
+          "Oddiy yo'l: Word ichida savollarni belgilang, Ctrl+C bosing va 'Worddan tez olish' tugmasini bosing.",
+          'fa-clipboard'
+        );
+        return false;
+      }
+    }
+
+    function getPreviewPageCount() {
+      return Math.max(1, Math.ceil(importedQuestions.length / previewPageSize));
+    }
+
+    function getCurrentPreviewSlice() {
+      const pageCount = getPreviewPageCount();
+      currentPreviewPage = Math.min(Math.max(currentPreviewPage, 1), pageCount);
+      const startIndex = (currentPreviewPage - 1) * previewPageSize;
+      const endIndex = Math.min(startIndex + previewPageSize, importedQuestions.length);
+      return { startIndex, endIndex, pageCount };
+    }
+
     function updatePreviewControls() {
       const hasQuestions = importedQuestions.length > 0;
       previewOpenButton.disabled = !hasQuestions;
       clearImportPreviewButton.disabled = !hasQuestions;
       saveQuestionsButton.disabled = !hasQuestions;
+      if (!hasQuestions) {
+        importPreviewCountEl.innerHTML = `<i class="fa fa-layer-group"></i> 0 ta savol`;
+        if (importPreviewMetaEl) {
+          importPreviewMetaEl.textContent = "To'g'ri javoblarni shu yerning o'zida belgilab, keyin bir martada saqlashingiz mumkin.";
+        }
+        return;
+      }
+
+      const { startIndex, endIndex, pageCount } = getCurrentPreviewSlice();
       importPreviewCountEl.innerHTML = `<i class="fa fa-layer-group"></i> ${importedQuestions.length} ta savol`;
+      if (importPreviewMetaEl) {
+        const sourceText = importedSourceLabel ? `${importedSourceLabel} | ` : '';
+        const parseText = importParseDurationMs ? `${importParseDurationMs} ms | ` : '';
+        importPreviewMetaEl.textContent = `${sourceText}${parseText}${startIndex + 1}-${endIndex} ko'rsatilmoqda, ${pageCount} ta sahifa.`;
+      }
     }
 
     function renderImportedPreview() {
@@ -1071,7 +1433,28 @@ Ich bin Anna wohne.
         return;
       }
 
-      questionsPreviewEl.innerHTML = importedQuestions.map((question, questionIndex) => `
+      const { startIndex, endIndex, pageCount } = getCurrentPreviewSlice();
+      const visibleQuestions = importedQuestions.slice(startIndex, endIndex);
+      const paginationHtml = pageCount > 1 ? `
+        <div class="preview-pagination">
+          <div class="preview-meta-note">${startIndex + 1}-${endIndex} oralig'idagi savollar ko'rsatilmoqda</div>
+          <div class="preview-pagination-actions">
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-preview-nav="prev" ${currentPreviewPage === 1 ? 'disabled' : ''}>
+              <i class="fa fa-chevron-left me-1"></i> Oldingi
+            </button>
+            <span class="btn btn-light btn-sm disabled">Sahifa ${currentPreviewPage} / ${pageCount}</span>
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-preview-nav="next" ${currentPreviewPage === pageCount ? 'disabled' : ''}>
+              Keyingi <i class="fa fa-chevron-right ms-1"></i>
+            </button>
+          </div>
+        </div>
+      ` : '';
+
+      questionsPreviewEl.innerHTML = `
+        ${paginationHtml}
+        ${visibleQuestions.map((question, visibleIndex) => {
+          const questionIndex = startIndex + visibleIndex;
+          return `
         <div class="preview-card mb-3">
           <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
             <div class="fw-semibold">Savol ${questionIndex + 1}</div>
@@ -1094,12 +1477,187 @@ Ich bin Anna wohne.
             `).join('')}
           </div>
         </div>
-      `).join('');
+          `;
+        }).join('')}
+        ${paginationHtml}
+      `;
     }
 
     function openPreviewModal() {
       if (previewModal) {
         previewModal.show();
+      }
+    }
+
+    function resetImportedPreviewState() {
+      importedQuestions = [];
+      importedPreviewToken = '';
+      importedSourceLabel = '';
+      importParseDurationMs = 0;
+      currentPreviewPage = 1;
+      renderImportedPreview();
+      setImportValidationState(false);
+      setImportSourceStatus("Paste yoki ochiq Office oynasidan yuklashingiz mumkin", 'fa-layer-group');
+    }
+
+    function applyImportResponse(data) {
+      importedQuestions = normalizeImportedQuestions(data.questions);
+      importedPreviewToken = data.preview_token || '';
+      importedSourceLabel = data.source_label || '';
+      importParseDurationMs = data.parse_duration_ms || 0;
+      currentPreviewPage = 1;
+
+      if (!importedQuestions.length) {
+        Swal.fire('Xatolik!', "Savollar formatini o'qishning iloji bo'lmadi. Markerlarni tekshirib qayta urinib ko'ring.", 'error');
+        renderImportedPreview();
+        return false;
+      }
+
+      renderImportedPreview();
+      setImportSourceStatus(
+        `${importedQuestions.length} ta savol ${importedSourceLabel ? `${importedSourceLabel.toLowerCase()} orqali` : 'import'} tayyorlandi`,
+        'fa-check-circle'
+      );
+      openPreviewModal();
+      return true;
+    }
+
+    async function readClipboardIntoImportEditor() {
+      if (!navigator.clipboard) {
+        throw new Error("Bu brauzerda to'g'ridan-to'g'ri Worddan olish ishlamadi. Savollarni paste oynasiga qo'lda qo'yib ko'ring.");
+      }
+
+      try {
+        let clipboardHtml = '';
+        let clipboardText = '';
+
+        if (typeof navigator.clipboard.read === 'function') {
+          const items = await navigator.clipboard.read();
+          for (const item of items) {
+            if (!clipboardHtml && item.types.includes('text/html')) {
+              const htmlBlob = await item.getType('text/html');
+              clipboardHtml = await htmlBlob.text();
+            }
+            if (!clipboardText && item.types.includes('text/plain')) {
+              const textBlob = await item.getType('text/plain');
+              clipboardText = await textBlob.text();
+            }
+          }
+        }
+
+        if (!clipboardText && typeof navigator.clipboard.readText === 'function') {
+          clipboardText = await navigator.clipboard.readText();
+        }
+
+        if (!clipboardHtml && !clipboardText.trim()) {
+          throw new Error("Avval Word ichida kerakli savollarni belgilang va Ctrl+C bosing. Keyin yana 'Worddan tez olish' tugmasini bosing.");
+        }
+
+        if (clipboardHtml) {
+          pasteEditor.innerHTML = clipboardHtml;
+        } else {
+          pasteEditor.innerHTML = plainTextToHtml(clipboardText);
+        }
+
+        pastedHtmlInput.value = clipboardHtml || pasteEditor.innerHTML || '';
+        pastedTextInput.value = clipboardText || pasteEditor.innerText || '';
+        setImportValidationState(false);
+        focusEditor('paste-editor');
+      } catch (error) {
+        if (error && (error.name === 'NotAllowedError' || error.name === 'SecurityError')) {
+          throw new Error("Brauzer ruxsat so'radi yoki ruxsat bermadi. Ruxsat bering, keyin 'Worddan tez olish' tugmasini yana bosing.");
+        }
+        throw error;
+      }
+    }
+
+    function buildCorrectAnswerIndexes() {
+      return importedQuestions.map((question) => (
+        (question.answers || []).reduce((indexes, answer, answerIndex) => {
+          if (answer.is_correct) {
+            indexes.push(answerIndex);
+          }
+          return indexes;
+        }, [])
+      ));
+    }
+
+    function syncOpenWordButtons() {
+      if (!openWordDocumentSelect || !importOpenWordButton) {
+        return;
+      }
+      importOpenWordButton.disabled = !openWordDocumentSelect.value;
+    }
+
+    async function checkWordBridgeConnection({ silent = false } = {}) {
+      try {
+        const helperReady = await refreshWordHelperState({ silent, announceReady: !silent });
+        if (!helperReady) {
+          const helperError = new Error("Word yordamchisi hali tayyor emas.");
+          helperError.code = 'HELPER_SETUP_REQUIRED';
+          throw helperError;
+        }
+        return true;
+      } catch (error) {
+        if (!silent) {
+          throw error;
+        }
+        setImportSourceStatus(
+          "Oddiy yo'l: Word ichida savollarni belgilang, Ctrl+C bosing va 'Worddan tez olish' tugmasini bosing.",
+          'fa-clipboard'
+        );
+        return false;
+      }
+    }
+
+    async function loadOpenWordDocuments({ silent = false } = {}) {
+      if (!refreshOpenWordDocumentsButton || !openWordDocumentSelect) {
+        return;
+      }
+
+      refreshOpenWordDocumentsButton.disabled = true;
+
+      try {
+        const helperReady = await refreshWordHelperState({ silent: true });
+        if (!helperReady) {
+          const helperError = new Error("Word yordamchisi hali tayyor emas.");
+          helperError.code = 'HELPER_SETUP_REQUIRED';
+          throw helperError;
+        }
+
+        const result = await callWordHelper('/api/office/windows');
+        const data = result.data || {};
+        const documents = data.documents || [];
+        openWordDocumentSelect.innerHTML = documents.length
+          ? documents.map((document) => `
+              <option value="${escapeHtml(document.key)}" ${document.is_active ? 'selected' : ''}>
+                [${escapeHtml(document.app_name || 'Office')}] ${escapeHtml(document.name)}${document.path ? ` - ${escapeHtml(document.path)}` : ''}
+              </option>
+            `).join('')
+          : '<option value="">Office oynalari ochiq, lekin savollar fayli topilmadi</option>';
+
+        syncOpenWordButtons();
+        if (documents.length) {
+          setImportSourceStatus(`${documents.length} ta ochiq Office oynasi topildi`, 'fa-file-word');
+        } else {
+          const noDocumentsError = new Error("Office fayli hozircha topilmadi.");
+          noDocumentsError.code = 'NO_OPEN_OFFICE_DOCUMENTS';
+          setImportSourceStatus("Yordamchi dastur tayyor, endi savollar bor Office faylini ochib qo'ying.", 'fa-file-word');
+          if (!silent) {
+            await Swal.fire('Eslatma', bridgeFetchErrorMessage(noDocumentsError), 'info');
+          }
+        }
+      } catch (error) {
+        setOpenWordDocumentPlaceholder("Yordamchi dastur ishga tushgach ochiq Office oynalari shu yerda ko'rinadi");
+        if (!silent) {
+          if (error?.code === 'HELPER_SETUP_REQUIRED' || error?.code === 'HELPER_APP_NOT_RUNNING') {
+            await showWordHelperSetupPrompt(bridgeFetchErrorMessage(error));
+          } else {
+            await Swal.fire('Xatolik!', bridgeFetchErrorMessage(error), 'error');
+          }
+        }
+      } finally {
+        refreshOpenWordDocumentsButton.disabled = false;
       }
     }
 
@@ -1470,8 +2028,7 @@ Ich bin Anna wohne.
     });
 
     clearImportPreviewButton.addEventListener('click', () => {
-      importedQuestions = [];
-      renderImportedPreview();
+      resetImportedPreviewState();
     });
 
     document.getElementById('submit-question').addEventListener('click', async (event) => {
@@ -1536,7 +2093,7 @@ Ich bin Anna wohne.
             'X-Requested-With': 'XMLHttpRequest',
           },
         });
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
         await Swal.fire({
           title: data.success ? 'Muvaffaqiyatli!' : 'Xatolik!',
           text: data.message || data.errors || "Savolni saqlashda xatolik yuz berdi.",
@@ -1576,18 +2133,11 @@ Ich bin Anna wohne.
             'X-Requested-With': 'XMLHttpRequest',
           },
         });
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
         Swal.close();
 
         if (data.success) {
-          importedQuestions = normalizeImportedQuestions(data.questions);
-          if (!importedQuestions.length) {
-            Swal.fire('Xatolik!', "Savollar formatini o'qishning iloji bo'lmadi. Markerlarni tekshirib qayta urinib ko'ring.", 'error');
-            renderImportedPreview();
-            return;
-          }
-          renderImportedPreview();
-          openPreviewModal();
+          applyImportResponse(data);
         } else {
           Swal.fire('Xatolik!', data.errors || "Savollarni import qilishda xatolik yuz berdi.", 'error');
         }
@@ -1598,6 +2148,130 @@ Ich bin Anna wohne.
     };
 
     document.getElementById('submit-paste-button').addEventListener('click', handleImportSubmit);
+
+    if (openWordDocumentSelect) {
+      openWordDocumentSelect.addEventListener('change', syncOpenWordButtons);
+    }
+
+    if (refreshOpenWordDocumentsButton) {
+      refreshOpenWordDocumentsButton.addEventListener('click', () => {
+        loadOpenWordDocuments();
+      });
+    }
+
+    if (prepareWordHelperButton) {
+      prepareWordHelperButton.addEventListener('click', async () => {
+        await showWordHelperSetupPrompt();
+      });
+    }
+
+    if (wordBridgeUrlInput) {
+      const savedBridgeUrl = localStorage.getItem(bridgeStorageKey);
+      if (savedBridgeUrl) {
+        wordBridgeUrlInput.value = savedBridgeUrl;
+      }
+      wordBridgeUrlInput.addEventListener('change', () => {
+        const normalizedUrl = getBridgeBaseUrl();
+        wordBridgeUrlInput.value = normalizedUrl;
+        if (normalizedUrl) {
+          localStorage.setItem(bridgeStorageKey, normalizedUrl);
+        } else {
+          localStorage.removeItem(bridgeStorageKey);
+        }
+      });
+    }
+
+    if (checkWordBridgeButton) {
+      checkWordBridgeButton.addEventListener('click', async () => {
+        try {
+          await checkWordBridgeConnection();
+        } catch (error) {
+          if (error?.code === 'HELPER_SETUP_REQUIRED' || error?.code === 'HELPER_APP_NOT_RUNNING') {
+            await showWordHelperSetupPrompt(bridgeFetchErrorMessage(error));
+          } else {
+            await Swal.fire('Xatolik!', bridgeFetchErrorMessage(error), 'error');
+          }
+        }
+      });
+    }
+
+    if (readClipboardButton) {
+      readClipboardButton.addEventListener('click', async () => {
+        Swal.fire({
+          title: 'Clipboard o‘qilmoqda...',
+          title: "Word matni olinmoqda...",
+          text: "Word'dan nusxalangan savollar tekshirilmoqda.",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        try {
+          await readClipboardIntoImportEditor();
+          Swal.close();
+          setImportSourceStatus("Clipboard ichidagi Word matni tayyorlandi", 'fa-clipboard');
+          await handleImportSubmit(new Event('submit'));
+        } catch (error) {
+          Swal.close();
+          Swal.fire(
+            'Xatolik!',
+            error.message || "Clipboard'dan ma'lumot o'qishda xatolik yuz berdi.",
+            'error'
+          );
+        }
+      });
+    }
+
+    if (importOpenWordButton) {
+      importOpenWordButton.addEventListener('click', async () => {
+        if (!openWordDocumentSelect.value) {
+          const selectionError = new Error("Avval Office oynasini tanlang.");
+          selectionError.code = 'DOCUMENT_SELECTION_REQUIRED';
+          await Swal.fire('Eslatma', bridgeFetchErrorMessage(selectionError), 'info');
+          return;
+        }
+
+        Swal.fire({
+          title: 'Office oynasi yuklanmoqda...',
+          text: "Tanlangan Office oynasidagi matn olinmoqda.",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        try {
+          const result = await callWordHelper('/api/office/document-content', {
+            method: 'POST',
+            body: {
+              document_key: openWordDocumentSelect.value,
+            },
+          });
+          const data = result.data || {};
+          Swal.close();
+
+          if (!data.ok) {
+            const importWordError = new Error(data.message || "Tanlangan Office oynasini o'qib bo'lmadi.");
+            importWordError.code = 'HELPER_APP_NOT_RUNNING';
+            throw importWordError;
+          }
+
+          pasteEditor.innerHTML = data.html || plainTextToHtml(data.text || '');
+          pastedHtmlInput.value = data.html || pasteEditor.innerHTML || '';
+          pastedTextInput.value = data.text || pasteEditor.innerText || '';
+          setImportValidationState(false);
+          setImportSourceStatus(
+            `${data.document_name || 'Office hujjati'} olindi, endi preview tayyorlanmoqda`,
+            'fa-file-word'
+          );
+          await handleImportSubmit(new Event('submit'));
+        } catch (error) {
+          Swal.close();
+          if (error?.code === 'HELPER_SETUP_REQUIRED' || error?.code === 'HELPER_APP_NOT_RUNNING') {
+            await showWordHelperSetupPrompt(bridgeFetchErrorMessage(error));
+          } else {
+            await Swal.fire('Xatolik!', bridgeFetchErrorMessage(error), 'error');
+          }
+        }
+      });
+    }
 
     questionsPreviewEl.addEventListener('change', (event) => {
       const checkbox = event.target.closest('.preview-answer-correct');
@@ -1614,6 +2288,22 @@ Ich bin Anna wohne.
       }
 
       answer.is_correct = checkbox.checked;
+      renderImportedPreview();
+    });
+
+    questionsPreviewEl.addEventListener('click', (event) => {
+      const navigationButton = event.target.closest('[data-preview-nav]');
+      if (!navigationButton) {
+        return;
+      }
+
+      const navDirection = navigationButton.dataset.previewNav;
+      if (navDirection === 'prev' && currentPreviewPage > 1) {
+        currentPreviewPage -= 1;
+      } else if (navDirection === 'next' && currentPreviewPage < getPreviewPageCount()) {
+        currentPreviewPage += 1;
+      }
+
       renderImportedPreview();
     });
 
@@ -1644,16 +2334,20 @@ Ich bin Anna wohne.
       }
 
       try {
-        const response = await fetch("{% url 'administrator:save-imported-questions' %}", {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': csrfToken,
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          body: JSON.stringify({ questions: importedQuestions }),
-        });
-        const data = await response.json();
+          const response = await fetch("{% url 'administrator:save-imported-questions' %}", {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': csrfToken,
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+            },
+          body: JSON.stringify({
+            preview_token: importedPreviewToken,
+            correct_answer_indexes: buildCorrectAnswerIndexes(),
+            questions: importedPreviewToken ? [] : importedQuestions,
+          }),
+          });
+        const data = await parseJsonResponse(response);
         if (data.success) {
           await Swal.fire('Muvaffaqiyatli!', data.message, 'success');
           window.location.reload();
@@ -1664,6 +2358,8 @@ Ich bin Anna wohne.
         Swal.fire('Xatolik!', "Server bilan bog'lanishda xatolik yuz berdi.", 'error');
       }
     });
+
+    refreshWordHelperState({ silent: true });
   });
 </script>
 {% endblock script %}

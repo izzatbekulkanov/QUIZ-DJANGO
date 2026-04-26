@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Quiz Word Helper",
+  "version": "1.0.0",
+  "description": "Quiz tizimi uchun Windows Word yordamchisi bilan brauzer orasida aloqa qiladi.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:8765/*",
+    "http://localhost:8765/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start"
+    }
+  ]
+}

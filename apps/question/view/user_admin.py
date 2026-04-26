@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
 
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.core.cache import cache
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Avg, Count, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -19,6 +21,22 @@ from apps.question.models import StudentTest, StudentTestAssignment, Test
 
 USERS_STATS_CACHE_TTL = 120
 USERS_GROUPS_CACHE_TTL = 300
+
+
+def _clear_users_cache():
+    cache.delete("administrator_users_group_names")
+    cache.delete(f"administrator_users_stats:{timezone.localdate().isoformat()}")
+
+
+def _force_delete_user(user):
+    profile_picture = user.profile_picture if user.profile_picture else None
+
+    with transaction.atomic():
+        Log.objects.filter(user=user).delete()
+        user.delete()
+
+    if profile_picture:
+        profile_picture.delete(save=False)
 
 
 @method_decorator(login_required, name='dispatch')
@@ -158,6 +176,7 @@ class UsersView(View):
                 return JsonResponse({"success": False, "message": error_message}, status=400)
 
             user.delete()
+            _clear_users_cache()
             return JsonResponse({"success": True, "message": "Foydalanuvchi muvaffaqiyatli o'chirildi!"})
         except CustomUser.DoesNotExist:
             return JsonResponse({"success": False, "message": "Foydalanuvchi topilmadi!"}, status=404)
@@ -328,6 +347,7 @@ class EditUserView(View):
         try:
             user.save()
             user.groups.set(Group.objects.filter(id__in=role_group_ids))
+            _clear_users_cache()
             return JsonResponse(
                 {
                     "success": True,
@@ -337,3 +357,43 @@ class EditUserView(View):
             )
         except Exception as exc:
             return JsonResponse({"success": False, "message": f"Xatolik yuz berdi: {str(exc)}"}, status=500)
+
+
+@method_decorator(login_required, name='dispatch')
+class ForceDeleteUserView(View):
+    def post(self, request, id):
+        user = get_object_or_404(CustomUser, id=id)
+        is_self_delete = request.user.id == user.id
+        confirmation_username = (request.POST.get("confirmation_username") or "").strip()
+
+        if confirmation_username != user.username:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Majburiy o'chirish uchun foydalanuvchining aniq username qiymatini kiriting.",
+                },
+                status=400,
+            )
+
+        try:
+            _force_delete_user(user)
+            _clear_users_cache()
+
+            if is_self_delete:
+                logout(request)
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Foydalanuvchi va unga tegishli ma'lumotlar to'liq o'chirildi.",
+                    "redirect_url": reverse('login') if is_self_delete else reverse('administrator:users'),
+                }
+            )
+        except Exception as exc:
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": f"Majburiy o'chirishda xatolik yuz berdi: {str(exc)}",
+                },
+                status=500,
+            )
