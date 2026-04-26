@@ -1,0 +1,23 @@
+[Unit]
+Description=Quiz Django Project Service
+After=network.target
+
+[Service]
+Type=simple
+User=test
+Group=www-data
+WorkingDirectory=/home/test/QUIZ-DJANGO
+EnvironmentFile=/home/test/QUIZ-DJANGO/.env
+Environment="PATH=/home/test/QUIZ-DJANGO/venv/bin"
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/home/test/QUIZ-DJANGO/venv/bin/gunicorn -c /home/test/QUIZ-DJANGO/gunicorn.conf.py core.wsgi:application
+Restart=always
+RestartSec=5
+TimeoutStartSec=60
+TimeoutStopSec=60
+KillSignal=SIGTERM
+LimitNOFILE=65535
+UMask=0002
+
+[Install]
+WantedBy=multi-user.target
