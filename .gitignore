@@ -7,6 +7,8 @@ __pycache__/
 .Python
 build/
 dist/
+!desktop/windows_word_bridge/dist/
+!desktop/windows_word_bridge/dist/QuizOfficeHelper.exe
 *.egg-info/
 
 # Virtual environments

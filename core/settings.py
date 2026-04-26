@@ -14,6 +14,7 @@ DEFAULT_SECRET_KEY = "django-insecure-local-dev-only-change-me"
 
 SECRET_KEY = env("DJANGO_SECRET_KEY", DEFAULT_SECRET_KEY) or DEFAULT_SECRET_KEY
 DEBUG = env_bool("DJANGO_DEBUG", default=True)
+IS_PRODUCTION = not DEBUG
 
 if not DEBUG and SECRET_KEY == DEFAULT_SECRET_KEY:
     raise ImproperlyConfigured("Set DJANGO_SECRET_KEY in .env before running with DJANGO_DEBUG=False.")
@@ -146,6 +147,7 @@ CKEDITOR_5_CONFIGS = {
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -192,29 +194,31 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "core.wsgi.application"
 
-database_engine = env("DJANGO_DB_ENGINE", "django.db.backends.sqlite3") or "django.db.backends.sqlite3"
-database_name = env("DJANGO_DB_NAME", "db.sqlite3") or "db.sqlite3"
-
-if database_engine == "django.db.backends.sqlite3":
+if DEBUG:
+    database_name = env("DJANGO_SQLITE_NAME", "db.sqlite3") or "db.sqlite3"
     database_path = Path(database_name)
     if not database_path.is_absolute():
         database_path = BASE_DIR / database_path
 
     DATABASES = {
         "default": {
-            "ENGINE": database_engine,
+            "ENGINE": "django.db.backends.sqlite3",
             "NAME": database_path,
         }
     }
 else:
     DATABASES = {
         "default": {
-            "ENGINE": database_engine,
-            "NAME": database_name,
-            "USER": env("DJANGO_DB_USER", "") or "",
-            "PASSWORD": env("DJANGO_DB_PASSWORD", "") or "",
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("DJANGO_DB_NAME", "question_db") or "question_db",
+            "USER": env("DJANGO_DB_USER", "question_user") or "question_user",
+            "PASSWORD": env("DJANGO_DB_PASSWORD", "question_1231") or "question_1231",
             "HOST": env("DJANGO_DB_HOST", "localhost") or "localhost",
             "PORT": env("DJANGO_DB_PORT", "5432") or "5432",
+            "CONN_MAX_AGE": env_int("DJANGO_DB_CONN_MAX_AGE", 60),
+            "OPTIONS": {
+                "connect_timeout": env_int("DJANGO_DB_CONNECT_TIMEOUT", 5),
+            },
         }
     }
 
@@ -242,9 +246,18 @@ USE_I18N = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+DJANGO_SERVE_MEDIA = env_bool("DJANGO_SERVE_MEDIA", default=DEBUG)
 
 EMAIL_BACKEND = env("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend") or (
     "django.core.mail.backends.smtp.EmailBackend"
@@ -290,13 +303,20 @@ LOGOUT_REDIRECT_URL = "landing:login"
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_AGE = env_int("SESSION_COOKIE_AGE", 1800)
-SESSION_COOKIE_SECURE = env_bool("SESSION_COOKIE_SECURE", default=not DEBUG)
+SESSION_COOKIE_SECURE = env_bool("SESSION_COOKIE_SECURE", default=IS_PRODUCTION)
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 SESSION_SAVE_EVERY_REQUEST = True
 
-CSRF_COOKIE_SECURE = env_bool("CSRF_COOKIE_SECURE", default=not DEBUG)
+CSRF_COOKIE_SECURE = env_bool("CSRF_COOKIE_SECURE", default=IS_PRODUCTION)
 CSRF_COOKIE_SAMESITE = "Lax"
 SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", default=False)
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-USE_X_FORWARDED_HOST = env_bool("USE_X_FORWARDED_HOST", default=not DEBUG)
+SECURE_PROXY_SSL_HEADER = (
+    ("HTTP_X_FORWARDED_PROTO", "https")
+    if env_bool("SECURE_PROXY_SSL_HEADER", default=IS_PRODUCTION)
+    else None
+)
+USE_X_FORWARDED_HOST = env_bool("USE_X_FORWARDED_HOST", default=IS_PRODUCTION)
+SECURE_HSTS_SECONDS = env_int("SECURE_HSTS_SECONDS", 0)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool("SECURE_HSTS_INCLUDE_SUBDOMAINS", default=False)
+SECURE_HSTS_PRELOAD = env_bool("SECURE_HSTS_PRELOAD", default=False)
