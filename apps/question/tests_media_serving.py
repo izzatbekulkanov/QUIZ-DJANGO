@@ -28,6 +28,7 @@ class MediaServingViewTests(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Length"], str(target_file.stat().st_size))
         self.assertEqual(response["X-Content-Type-Options"], "nosniff")
+        response.close()
 
     def test_serve_media_file_returns_not_modified_for_matching_header(self):
         media_root = Path(self.temp_dir.name)
@@ -46,3 +47,4 @@ class MediaServingViewTests(SimpleTestCase):
             )
 
         self.assertEqual(response.status_code, 304)
+        response.close()
