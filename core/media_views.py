@@ -1,10 +1,9 @@
 import mimetypes
 from pathlib import Path
 
+from django.conf import settings
 from django.http import FileResponse, Http404, HttpResponseNotModified
 from django.utils.http import http_date, parse_http_date_safe
-
-from core import settings
 
 
 MEDIA_CACHE_SECONDS = 86400
@@ -28,7 +27,7 @@ def serve_media_file(request, path: str):
 
     stat = file_path.stat()
     modified_since = parse_http_date_safe(request.headers.get("If-Modified-Since", ""))
-    if modified_since >= int(stat.st_mtime):
+    if modified_since is not None and modified_since >= int(stat.st_mtime):
         return HttpResponseNotModified()
 
     content_type = mimetypes.guess_type(str(file_path))[0] or "application/octet-stream"
